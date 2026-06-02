@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Must — направление «Агентства»</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Manrope:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <div data-header></div>
+
+  <div class="crumbs"><a href="index.html">Направление</a> <span>›</span> Must</div>
+
+  <main>
+    <h1>Must-задачи</h1>
+    <p class="lede">
+      Только итерации с MoSCoW = Must, по умолчанию отсортированы по Final Score
+      (убыв.). Те же фильтры, поиск и сортировка, что и в общем бэклоге.
+    </p>
+
+    <div data-backlog data-must></div>
+  </main>
+
+  <footer class="site-footer">
+    Срез <code>MoSCoW == Must</code> из <code>data/backlog.json</code>.
+  </footer>
+
+  <script src="assets/app.js"></script>
+</body>
+</html>
