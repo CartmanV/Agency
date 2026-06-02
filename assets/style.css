@@ -82,17 +82,46 @@ h1 { font-family: var(--f-display); font-weight: 700; font-size: 34px; margin: 1
 h2 { font-family: var(--f-display); font-weight: 600; font-size: 22px; margin: 32px 0 12px; }
 .lede { color: var(--cream-soft); font-size: 16px; max-width: 70ch; }
 
+/* --- двухколоночная главная: видение слева, карточки справа --- */
+.home {
+  display: grid;
+  grid-template-columns: minmax(0, 2.6fr) minmax(260px, 1fr);
+  gap: 32px;
+  align-items: stretch;
+  margin-top: 8px;
+}
+.home-cards { display: flex; flex-direction: column; gap: 14px; }
+@media (max-width: 900px) {
+  .home { grid-template-columns: 1fr; }
+}
+
+/* --- видение --- */
+.vision h2 { font-size: 20px; margin: 26px 0 8px; color: var(--cream); }
+.vision h2:first-of-type { margin-top: 18px; }
+.vision p { color: var(--cream-soft); max-width: 72ch; }
+.vision ol, .vision ul { color: var(--cream-soft); padding-left: 22px; max-width: 72ch; }
+.vision li { margin: 4px 0; }
+.vision .bet { border-left: 2px solid var(--copper-dk); padding-left: 14px; margin: 10px 0; }
+.vision .nsm {
+  border: 1px solid var(--line); border-left: 3px solid var(--pink);
+  background: var(--panel); border-radius: 10px; padding: 14px 16px; margin: 12px 0;
+}
+.vision .nsm .k { font-family: var(--f-mono); font-size: 11px; color: var(--pink); text-transform: uppercase; letter-spacing: .05em; }
+.vision .goal { color: var(--cream); font-weight: 600; }
+
 /* --- карточки-входы на главной --- */
-.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; margin-top: 24px; }
 .tile {
-  display: block; padding: 20px; border: 1px solid var(--line);
+  display: block; padding: 18px 20px; border: 1px solid var(--line);
   border-radius: 12px; background: var(--panel); color: var(--cream);
   transition: border-color .15s, transform .15s;
+  flex: 1 1 0;
 }
-.tile:hover { border-color: var(--copper); transform: translateY(-2px); text-decoration: none; }
+a.tile:hover { border-color: var(--copper); transform: translateY(-2px); text-decoration: none; }
 .tile h3 { font-family: var(--f-display); margin: 0 0 6px; font-size: 18px; }
 .tile p { margin: 0; color: var(--cream-dim); font-size: 13.5px; }
 .tile .k { font-family: var(--f-mono); font-size: 11px; color: var(--copper); text-transform: uppercase; letter-spacing: .05em; }
+.tile--soon { opacity: .6; cursor: not-allowed; }
+.tile--soon .k { color: var(--cream-dim); }
 
 /* --- панель статистики --- */
 .stats { display: flex; gap: 28px; flex-wrap: wrap; margin: 20px 0 8px; }
