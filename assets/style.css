@@ -1,0 +1,137 @@
+/* Сайт направления «Агентства» — стиль каркаса (итерация 0).
+   Палитра и шрифты из Design Guide v3. */
+
+:root {
+  --bg:          #0E2A1E;
+  --panel:       #143729;
+  --panel-2:     #1E4734;
+  --line:        #2D5E45;
+  --line-soft:   #3A6B50;
+  --cream:       #EFE3C0;
+  --cream-soft:  #D9CDA9;
+  --cream-dim:   #A0B4A2;
+  --copper:      #C68A52;
+  --copper-dk:   #A26B3A;
+  --pink:        #E63973;
+  --pink-soft:   #F4B5CA;
+  --pink-dim:    rgba(230, 57, 115, 0.10);
+  --emerald:     #2C8059;
+
+  --f-display: 'Playfair Display', Georgia, serif;
+  --f-body:    'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+  --f-mono:    'JetBrains Mono', ui-monospace, monospace;
+
+  --maxw: 1280px;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--cream);
+  font-family: var(--f-body);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--copper); text-decoration: none; }
+a:hover { color: var(--copper-dk); text-decoration: underline; }
+
+/* --- хедер --- */
+.site-header {
+  position: sticky; top: 0; z-index: 20;
+  background: rgba(14, 42, 30, 0.92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+.site-header__inner {
+  max-width: var(--maxw); margin: 0 auto;
+  display: flex; align-items: center; gap: 28px;
+  padding: 14px 24px;
+}
+.brand {
+  font-family: var(--f-display);
+  font-size: 19px; color: var(--cream);
+  white-space: nowrap;
+}
+.brand b { color: var(--pink); font-weight: 700; }
+.nav { display: flex; gap: 4px; flex-wrap: wrap; }
+.nav a {
+  font-family: var(--f-mono); font-size: 12.5px;
+  color: var(--cream-dim); padding: 6px 12px; border-radius: 6px;
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.nav a:hover { background: var(--panel-2); color: var(--cream); text-decoration: none; }
+.nav a.is-active { color: var(--cream); background: var(--panel-2); }
+
+/* --- крошки --- */
+.crumbs {
+  max-width: var(--maxw); margin: 0 auto; padding: 12px 24px 0;
+  font-family: var(--f-mono); font-size: 12px; color: var(--cream-dim);
+}
+.crumbs span { color: var(--cream-dim); }
+
+/* --- основное --- */
+main { max-width: var(--maxw); margin: 0 auto; padding: 28px 24px 64px; }
+
+h1 { font-family: var(--f-display); font-weight: 700; font-size: 34px; margin: 16px 0 6px; }
+h2 { font-family: var(--f-display); font-weight: 600; font-size: 22px; margin: 32px 0 12px; }
+.lede { color: var(--cream-soft); font-size: 16px; max-width: 70ch; }
+
+/* --- карточки-входы на главной --- */
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; margin-top: 24px; }
+.tile {
+  display: block; padding: 20px; border: 1px solid var(--line);
+  border-radius: 12px; background: var(--panel); color: var(--cream);
+  transition: border-color .15s, transform .15s;
+}
+.tile:hover { border-color: var(--copper); transform: translateY(-2px); text-decoration: none; }
+.tile h3 { font-family: var(--f-display); margin: 0 0 6px; font-size: 18px; }
+.tile p { margin: 0; color: var(--cream-dim); font-size: 13.5px; }
+.tile .k { font-family: var(--f-mono); font-size: 11px; color: var(--copper); text-transform: uppercase; letter-spacing: .05em; }
+
+/* --- панель статистики --- */
+.stats { display: flex; gap: 28px; flex-wrap: wrap; margin: 20px 0 8px; }
+.stat { }
+.stat .v { font-family: var(--f-display); font-size: 28px; color: var(--cream); }
+.stat .l { font-family: var(--f-mono); font-size: 11px; color: var(--cream-dim); text-transform: uppercase; letter-spacing: .05em; }
+
+/* --- таблица бэклога --- */
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; margin-top: 18px; }
+table.backlog { border-collapse: collapse; width: 100%; font-size: 13px; }
+table.backlog th, table.backlog td {
+  text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+table.backlog thead th {
+  position: sticky; top: 0; background: var(--panel-2);
+  font-family: var(--f-mono); font-size: 11px; text-transform: uppercase;
+  letter-spacing: .04em; color: var(--cream-soft); white-space: nowrap;
+}
+table.backlog tbody tr:hover { background: var(--panel); }
+table.backlog td.num, table.backlog td.score { font-family: var(--f-mono); color: var(--cream-soft); white-space: nowrap; }
+table.backlog td.title { min-width: 260px; color: var(--cream); }
+table.backlog td.muted { color: var(--cream-dim); }
+
+/* --- бейджи --- */
+.badge {
+  display: inline-block; font-family: var(--f-mono); font-size: 11px;
+  padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line-soft);
+  color: var(--cream-soft); white-space: nowrap;
+}
+.badge--must  { color: var(--pink); border-color: var(--pink); background: var(--pink-dim); }
+.badge--should{ color: var(--copper); border-color: var(--copper-dk); }
+.badge--could, .badge--wont { color: var(--cream-dim); }
+
+.loading, .error { font-family: var(--f-mono); color: var(--cream-dim); padding: 24px 0; }
+.error { color: var(--pink-soft); }
+
+footer.site-footer {
+  max-width: var(--maxw); margin: 0 auto; padding: 24px;
+  border-top: 1px solid var(--line); color: var(--cream-dim);
+  font-family: var(--f-mono); font-size: 11.5px;
+}

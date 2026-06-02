@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Направление «Агентства» — рабочее пространство</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Manrope:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <div data-header></div>
+
+  <main>
+    <h1>Направление «Агентства»</h1>
+    <p class="lede">
+      Единое пространство по направлению: бэклог, дерево работ, агентства, метрики
+      и легенды — вместо россыпи .md/.xlsx/.html в папке. Данные берутся из единого
+      бэклога v5 и пересобираются скриптом; сайт — просмотрщик.
+    </p>
+
+    <h2>Разделы</h2>
+    <div class="tiles">
+      <a class="tile" href="backlog.html">
+        <div class="k">219 итераций</div>
+        <h3>Бэклог</h3>
+        <p>Все итерации направления в одной таблице. Фильтры и поиск — следующая итерация.</p>
+      </a>
+      <a class="tile" style="opacity:.55;cursor:not-allowed" onclick="return false">
+        <div class="k">скоро</div>
+        <h3>Must</h3>
+        <p>Срез только Must-задач, сортировка по Final Score.</p>
+      </a>
+      <a class="tile" style="opacity:.55;cursor:not-allowed" onclick="return false">
+        <div class="k">скоро</div>
+        <h3>Дерево</h3>
+        <p>Иерархия Тема → Уровень 2 → Итерация, кратко и подробно.</p>
+      </a>
+      <a class="tile" style="opacity:.55;cursor:not-allowed" onclick="return false">
+        <div class="k">скоро</div>
+        <h3>Агентства</h3>
+        <p>Цифры и сегментация по текущим агентствам из отчёта 2026-04.</p>
+      </a>
+      <a class="tile" style="opacity:.55;cursor:not-allowed" onclick="return false">
+        <div class="k">скоро</div>
+        <h3>Метрики</h3>
+        <p>9 активных + 6 целевых: описание, формула, актуальные цифры.</p>
+      </a>
+      <a class="tile" style="opacity:.55;cursor:not-allowed" onclick="return false">
+        <div class="k">скоро</div>
+        <h3>Легенды</h3>
+        <p>Value ladder, 4 механизма, 7 подцелей, гипотезы, RICE/MoSCoW/ProductV.</p>
+      </a>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    Итерация 0 — каркас + данные. Источник: единый бэклог v5 (2026-06-02).
+    Сборка: <code>python3 build/build.py</code>.
+  </footer>
+
+  <script src="assets/app.js"></script>
+</body>
+</html>
