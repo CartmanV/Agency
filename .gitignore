@@ -3,3 +3,7 @@ __pycache__/
 *.pyc
 .venv/
 venv/
+
+# Агентский инструментарий (skills) — локально, не часть сайта
+.agents/
+skills-lock.json
