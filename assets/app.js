@@ -3,6 +3,7 @@
 
 const NAV = [
   { href: "index.html",    label: "Направление" },
+  { href: "vision.html",   label: "Видение" },
   { href: "backlog.html",  label: "Бэклог" },
   { href: "must.html",     label: "Must" },
   { href: "tree.html",     label: "Дерево", disabled: true },

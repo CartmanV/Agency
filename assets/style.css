@@ -2,20 +2,23 @@
    Палитра и шрифты из Design Guide v3. */
 
 :root {
-  --bg:          #0E2A1E;
-  --panel:       #143729;
-  --panel-2:     #1E4734;
-  --line:        #2D5E45;
-  --line-soft:   #3A6B50;
-  --cream:       #EFE3C0;
-  --cream-soft:  #D9CDA9;
-  --cream-dim:   #A0B4A2;
-  --copper:      #C68A52;
-  --copper-dk:   #A26B3A;
-  --pink:        #E63973;
-  --pink-soft:   #F4B5CA;
-  --pink-dim:    rgba(230, 57, 115, 0.10);
-  --emerald:     #2C8059;
+  /* Refined Brand Green — глубже, чище, ярче акценты */
+  --bg:          #0A1F16;
+  --bg-2:        #08190F;
+  --panel:       #102A1F;
+  --panel-2:     #163A2A;
+  --line:        #244A38;
+  --line-soft:   #336B4E;
+  --cream:       #F2EAD3;
+  --cream-soft:  #D6C9A6;
+  --cream-dim:   #9FB3A4;
+  --copper:      #E2B355;   /* золото — ссылки/вторичный акцент */
+  --copper-dk:   #C99537;
+  --gold:        #E2B355;
+  --pink:        #FF5C8A;    /* ярче розовый — основной акцент */
+  --pink-soft:   #FFA9C2;
+  --pink-dim:    rgba(255, 92, 138, 0.12);
+  --emerald:     #3DA372;
 
   --f-display: 'Playfair Display', Georgia, serif;
   --f-body:    'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -66,7 +69,7 @@ a, button, select, input, [role="button"] { touch-action: manipulation; }
 /* --- хедер --- */
 .site-header {
   position: sticky; top: 0; z-index: 20;
-  background: rgba(14, 42, 30, 0.92);
+  background: rgba(10, 31, 22, 0.92);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--line);
 }
@@ -105,18 +108,100 @@ h2 { font-family: var(--f-display); font-weight: 600; font-size: 22px; margin: 3
 h3 { text-wrap: balance; }
 .lede { color: var(--cream-soft); font-size: 16px; max-width: 70ch; }
 
-/* --- двухколоночная главная: видение слева, карточки справа --- */
-.home {
-  display: grid;
-  grid-template-columns: minmax(0, 2.6fr) minmax(260px, 1fr);
-  gap: 32px;
-  align-items: stretch;
-  margin-top: 8px;
+/* ===================== ЛЕНДИНГ-ВИТРИНА (главная) ===================== */
+.eyebrow {
+  font-family: var(--f-mono); font-size: 12px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--gold); margin: 4px 0 0;
 }
-.home-cards { display: flex; flex-direction: column; gap: 14px; }
-@media (max-width: 900px) {
-  .home { grid-template-columns: 1fr; }
+
+/* --- герой --- */
+.hero {
+  display: grid; grid-template-columns: 1.5fr 1fr; gap: 40px;
+  align-items: center; padding: 24px 0 40px;
+  border-bottom: 1px solid var(--line);
 }
+.hero h1 { font-size: clamp(34px, 5vw, 56px); line-height: 1.05; margin: 14px 0 16px; }
+.hero h1 .accent { color: var(--pink); font-style: italic; }
+.hero p.sub { color: var(--cream-soft); font-size: 17px; max-width: 56ch; margin: 0 0 24px; }
+.hero-goal {
+  background: linear-gradient(160deg, var(--panel-2), var(--panel));
+  border: 1px solid var(--line-soft); border-radius: 16px;
+  padding: 28px 26px; text-align: center;
+}
+.hero-goal .num {
+  font-family: var(--f-display); font-weight: 700;
+  font-size: clamp(56px, 8vw, 92px); line-height: 1; color: var(--gold);
+  font-variant-numeric: tabular-nums;
+}
+.hero-goal .cap { font-family: var(--f-mono); font-size: 12px; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--cream-soft); margin-top: 8px; }
+.hero-goal .sub2 { color: var(--cream-dim); font-size: 13px; margin-top: 4px; }
+@media (max-width: 860px) { .hero { grid-template-columns: 1fr; gap: 24px; } }
+
+/* --- кнопки --- */
+.cta-row { display: flex; flex-wrap: wrap; gap: 12px; }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--f-mono); font-size: 13px; letter-spacing: .02em;
+  padding: 11px 18px; border-radius: 10px; border: 1px solid var(--line-soft);
+  color: var(--cream); background: var(--panel);
+  transition: border-color .15s, background .15s, transform .15s;
+}
+.btn:hover { border-color: var(--gold); transform: translateY(-1px); text-decoration: none; }
+.btn--primary { background: var(--pink); border-color: var(--pink); color: #2A0512; font-weight: 600; }
+.btn--primary:hover { background: var(--pink-soft); border-color: var(--pink-soft); color: #2A0512; }
+
+/* --- общий заголовок секции --- */
+.section { padding: 40px 0; border-bottom: 1px solid var(--line); }
+.section:last-of-type { border-bottom: 0; }
+.section > .eyebrow { margin-bottom: 6px; }
+.section h2 { margin: 0 0 20px; }
+
+/* --- три акцент-блока (NSM + 2 ставки) --- */
+.accent-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+@media (max-width: 820px) { .accent-grid { grid-template-columns: 1fr; } }
+.accent-card {
+  border: 1px solid var(--line); border-radius: 14px; background: var(--panel);
+  padding: 22px; border-top: 3px solid var(--line-soft);
+}
+.accent-card.is-nsm { border-top-color: var(--pink); }
+.accent-card.is-bet1 { border-top-color: var(--gold); }
+.accent-card.is-bet2 { border-top-color: var(--emerald); }
+.accent-card .k { font-family: var(--f-mono); font-size: 11px; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--cream-dim); }
+.accent-card h3 { font-family: var(--f-display); font-size: 21px; margin: 8px 0 10px; }
+.accent-card p { margin: 0; color: var(--cream-soft); font-size: 14px; }
+
+/* --- лестница ценности --- */
+.ladder { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+@media (max-width: 820px) { .ladder { grid-template-columns: 1fr 1fr; } }
+.ladder-step {
+  border: 1px solid var(--line); border-radius: 12px; background: var(--panel);
+  padding: 16px; position: relative;
+}
+.ladder-step .n { font-family: var(--f-mono); font-size: 12px; color: var(--cream-dim); }
+.ladder-step h3 { font-family: var(--f-display); font-size: 17px; margin: 6px 0 6px; }
+.ladder-step p { margin: 0; font-size: 12.5px; color: var(--cream-dim); }
+.ladder-step.is-focus {
+  border-color: var(--pink); background: var(--pink-dim);
+}
+.ladder-step.is-focus .n { color: var(--pink); }
+.ladder-focus-note { font-family: var(--f-mono); font-size: 12px; color: var(--pink); margin: 14px 0 0; }
+
+/* --- боли агентств --- */
+.pains { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; counter-reset: pain; }
+@media (max-width: 820px) { .pains { grid-template-columns: 1fr 1fr; } }
+.pain {
+  border: 1px solid var(--line); border-radius: 12px; background: var(--panel); padding: 16px;
+}
+.pain::before {
+  counter-increment: pain; content: counter(pain);
+  font-family: var(--f-display); font-size: 26px; color: var(--gold); display: block; margin-bottom: 6px;
+}
+.pain p { margin: 0; font-size: 13px; color: var(--cream-soft); }
+
+/* --- входы в разделы --- */
+.entries { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
 
 /* --- видение --- */
 .vision h2 { font-size: 20px; margin: 26px 0 8px; color: var(--cream); }
@@ -137,7 +222,6 @@ h3 { text-wrap: balance; }
   display: block; padding: 18px 20px; border: 1px solid var(--line);
   border-radius: 12px; background: var(--panel); color: var(--cream);
   transition: border-color .15s, transform .15s;
-  flex: 1 1 0;
 }
 a.tile:hover { border-color: var(--copper); transform: translateY(-2px); text-decoration: none; }
 .tile h3 { font-family: var(--f-display); margin: 0 0 6px; font-size: 18px; }
