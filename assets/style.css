@@ -26,7 +26,7 @@
 
 * { box-sizing: border-box; }
 
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; color-scheme: dark; }
 
 body {
   margin: 0;
@@ -40,6 +40,28 @@ body {
 
 a { color: var(--copper); text-decoration: none; }
 a:hover { color: var(--copper-dk); text-decoration: underline; }
+
+/* интерактив: убрать задержку double-tap на тач-экранах */
+a, button, select, input, [role="button"] { touch-action: manipulation; }
+
+/* видимый фокус с клавиатуры (не показываем при клике мышью) */
+:focus-visible { outline: 2px solid var(--copper); outline-offset: 2px; border-radius: 4px; }
+
+/* skip-link к основному содержимому */
+.skip-link {
+  position: absolute; left: 12px; top: -48px; z-index: 50;
+  background: var(--panel-2); color: var(--cream);
+  font-family: var(--f-mono); font-size: 12.5px;
+  padding: 8px 14px; border: 1px solid var(--copper); border-radius: 8px;
+  transition: top .15s;
+}
+.skip-link:focus { top: 12px; text-decoration: none; }
+
+/* уважать prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { transition-duration: .001ms !important; animation-duration: .001ms !important; }
+}
 
 /* --- хедер --- */
 .site-header {
@@ -78,8 +100,9 @@ a:hover { color: var(--copper-dk); text-decoration: underline; }
 /* --- основное --- */
 main { max-width: var(--maxw); margin: 0 auto; padding: 28px 24px 64px; }
 
-h1 { font-family: var(--f-display); font-weight: 700; font-size: 34px; margin: 16px 0 6px; }
-h2 { font-family: var(--f-display); font-weight: 600; font-size: 22px; margin: 32px 0 12px; }
+h1 { font-family: var(--f-display); font-weight: 700; font-size: 34px; margin: 16px 0 6px; text-wrap: balance; }
+h2 { font-family: var(--f-display); font-weight: 600; font-size: 22px; margin: 32px 0 12px; text-wrap: balance; }
+h3 { text-wrap: balance; }
 .lede { color: var(--cream-soft); font-size: 16px; max-width: 70ch; }
 
 /* --- двухколоночная главная: видение слева, карточки справа --- */
@@ -126,7 +149,7 @@ a.tile:hover { border-color: var(--copper); transform: translateY(-2px); text-de
 /* --- панель статистики --- */
 .stats { display: flex; gap: 28px; flex-wrap: wrap; margin: 20px 0 8px; }
 .stat { }
-.stat .v { font-family: var(--f-display); font-size: 28px; color: var(--cream); }
+.stat .v { font-family: var(--f-display); font-size: 28px; color: var(--cream); font-variant-numeric: tabular-nums; }
 .stat .l { font-family: var(--f-mono); font-size: 11px; color: var(--cream-dim); text-transform: uppercase; letter-spacing: .05em; }
 
 /* --- таблица бэклога --- */
@@ -142,7 +165,7 @@ table.backlog thead th {
   letter-spacing: .04em; color: var(--cream-soft); white-space: nowrap;
 }
 table.backlog tbody tr:hover { background: var(--panel); }
-table.backlog td.num, table.backlog td.score { font-family: var(--f-mono); color: var(--cream-soft); white-space: nowrap; }
+table.backlog td.num, table.backlog td.score { font-family: var(--f-mono); color: var(--cream-soft); white-space: nowrap; font-variant-numeric: tabular-nums; }
 table.backlog td.title { min-width: 260px; color: var(--cream); }
 table.backlog td.muted { color: var(--cream-dim); }
 
@@ -163,18 +186,24 @@ table.backlog td.muted { color: var(--cream-dim); }
 .ctl {
   font-family: var(--f-mono); font-size: 12.5px; color: var(--cream);
   background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
-  padding: 8px 10px; outline: none;
+  padding: 8px 10px;
 }
-.ctl:focus { border-color: var(--copper); }
-select.ctl { cursor: pointer; max-width: 230px; }
+.ctl:hover { border-color: var(--line-soft); }
+.ctl:focus-visible { outline: 2px solid var(--copper); outline-offset: 1px; border-color: var(--copper); }
+select.ctl { cursor: pointer; max-width: 230px; background-color: var(--panel); color: var(--cream); }
 .ctl--search { flex: 1 1 280px; min-width: 220px; }
 .ctl--reset { cursor: pointer; color: var(--cream-dim); }
 .ctl--reset:hover { color: var(--cream); border-color: var(--copper); }
 .result-meta { font-family: var(--f-mono); font-size: 11.5px; color: var(--cream-dim); margin: 4px 0 0; }
 
-table.backlog th.th-sort { cursor: pointer; user-select: none; }
-table.backlog th.th-sort:hover { color: var(--cream); }
-table.backlog th.th-sort.is-sorted { color: var(--copper); }
+/* сортировка — кнопка внутри th (доступна с клавиатуры) */
+table.backlog th .th-sort {
+  all: unset; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
+  font: inherit; color: inherit; text-transform: inherit; letter-spacing: inherit;
+}
+table.backlog th .th-sort:hover { color: var(--cream); }
+table.backlog th .th-sort:focus-visible { outline: 2px solid var(--copper); outline-offset: 2px; }
+table.backlog th[aria-sort] .th-sort { color: var(--copper); }
 
 .loading, .error { font-family: var(--f-mono); color: var(--cream-dim); padding: 24px 0; }
 .error { color: var(--pink-soft); }

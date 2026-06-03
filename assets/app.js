@@ -21,8 +21,8 @@ function mountHeader() {
   const cur = currentPage();
   const links = NAV.map((n) => {
     if (n.disabled) {
-      return `<a class="nav__soon" title="будет в следующих итерациях"
-                 style="opacity:.4;cursor:not-allowed">${n.label}</a>`;
+      return `<span class="nav__soon" aria-disabled="true" title="будет в следующих итерациях"
+                 style="opacity:.4;cursor:not-allowed">${n.label}</span>`;
     }
     const active = n.href === cur ? " is-active" : "";
     return `<a class="${active.trim()}" href="${n.href}">${n.label}</a>`;
@@ -140,16 +140,17 @@ async function mountBacklog() {
       const opts = [`<option value="">${label}: все</option>`]
         .concat(options.map(([v, c]) =>
           `<option value="${esc(v)}">${esc(v)} (${c})</option>`));
-      return `<select data-filter="${field}" class="ctl">${opts.join("")}</select>`;
+      return `<select data-filter="${field}" class="ctl" aria-label="Фильтр: ${esc(label)}">${opts.join("")}</select>`;
     }).join("");
     return `
-      <div class="toolbar">
+      <div class="toolbar" role="search">
         <input type="search" class="ctl ctl--search" data-search
+               aria-label="Поиск по бэклогу" autocomplete="off" spellcheck="false"
                placeholder="Поиск по названию, job story, агентствам, цитатам, ID…" />
         ${selects}
-        <button class="ctl ctl--reset" data-reset>Сбросить</button>
+        <button type="button" class="ctl ctl--reset" data-reset>Сбросить</button>
       </div>
-      <div class="result-meta" data-meta></div>`;
+      <div class="result-meta" data-meta aria-live="polite"></div>`;
   }
 
   function rowsHTML(items) {
@@ -175,7 +176,8 @@ async function mountBacklog() {
       if (!sortable) return `<th>${label}</th>`;
       const act = state.sort.key === key;
       const arrow = act ? (state.sort.dir === "asc" ? " ▲" : " ▼") : "";
-      return `<th class="th-sort${act ? " is-sorted" : ""}" data-sort="${key}">${label}${arrow}</th>`;
+      const ariaSort = act ? ` aria-sort="${state.sort.dir === "asc" ? "ascending" : "descending"}"` : "";
+      return `<th${ariaSort}><button type="button" class="th-sort" data-sort="${key}">${label}${arrow}</button></th>`;
     }).join("");
   }
 
@@ -205,9 +207,9 @@ async function mountBacklog() {
   }
 
   function bindSort() {
-    host.querySelectorAll("[data-sort]").forEach((th) => {
-      th.onclick = () => {
-        const key = th.dataset.sort;
+    host.querySelectorAll("button[data-sort]").forEach((btn) => {
+      btn.onclick = () => {
+        const key = btn.dataset.sort;
         if (state.sort.key === key) state.sort.dir = state.sort.dir === "asc" ? "desc" : "asc";
         else state.sort = { key, dir: key === "finalScore" || key === "num" ? "desc" : "asc" };
         apply();
