@@ -1,0 +1,2768 @@
+{
+  "source": "Единый бэклог направления Агентства v6 (2026-06-03, Reach v1.5).xlsx",
+  "count": 214,
+  "themes": 7,
+  "tree": [
+    {
+      "theme": "Агентская админка",
+      "count": 51,
+      "mustCount": 0,
+      "level2": [
+        {
+          "name": "A. Финансы клиента",
+          "count": 6,
+          "items": [
+            {
+              "id": "agentskaya-adminka-a-finansy-klienta-53",
+              "num": 53,
+              "title": "Новые условия сборов (не равно, сбор за ночь, Сбор DSA в АО)",
+              "iteration": "A4",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 7,
+              "gate": "OK"
+            },
+            {
+              "id": "agentskaya-adminka-a-finansy-klienta-84",
+              "num": 84,
+              "title": "Ценообразование и Сборы — наследование + история изменений",
+              "iteration": "A5",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 4,
+              "gate": "OK"
+            },
+            {
+              "id": "agentskaya-adminka-a-finansy-klienta-87",
+              "num": 87,
+              "title": "Таксы VT/XT: столбцы, ограничения, юзабилити",
+              "iteration": "A2",
+              "moscow": "Should",
+              "stage": "Не мешать + Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 4,
+              "gate": "OK"
+            },
+            {
+              "id": "agentskaya-adminka-a-finansy-klienta-160",
+              "num": 160,
+              "title": "НДС, плательщик и юзабилити раздела сборов",
+              "iteration": "A6",
+              "moscow": "Could",
+              "stage": "Не мешать",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 5,
+              "gate": "OK"
+            },
+            {
+              "id": "agentskaya-adminka-a-finansy-klienta-164",
+              "num": 164,
+              "title": "FM-комиссии: миграция из Планеты и перенастройка контрактов сборов",
+              "iteration": "A3",
+              "moscow": "Could",
+              "stage": "Не мешать + Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 4,
+              "gate": "OK"
+            },
+            {
+              "id": "agentskaya-adminka-a-finansy-klienta-191",
+              "num": 191,
+              "title": "ССБ — матрица событий (обмен, возврат, аннуляция) по типам услуг",
+              "iteration": "A1",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 2,
+              "gate": "OK"
+            }
+          ]
+        },
+        {
+          "name": "G. Документы и шаблоны",
+          "count": 5,
+          "items": [
+            {
+              "id": "agentskaya-adminka-g-dokumenty-i-shablony-64",
+              "num": 64,
+              "title": "Уведомления: настройки, передача email, группа Offline услуги",
+              "iteration": "G1",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 6,
+              "gate": "OK"
+            },
+            {
+              "id": "agentskaya-adminka-g-dokumenty-i-shablony-92",
+              "num": 92,
+              "title": "Маршрутная квитанция и ваучеры: шаблоны, таксы/НДС, квитанция ЖД, контакты",
+              "iteration": "G3",
+              "moscow": "Should",
+              "stage": "Не мешать + Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 4,
+              "gate": "OK"
+            },
+            {
+              "id": "agentskaya-adminka-g-dokumenty-i-shablony-115",
+              "num": 115,
+              "title": "Редактор шаблонов: движок, подсказки, emoji, блок «Информация о командировке»",
+              "iteration": "G2",
+              "moscow": "Should",
+              "stage": "Не мешать + Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 2,
+              "gate": "OK"
+            },
+            {
+              "id": "agentskaya-adminka-g-dokumenty-i-shablony-168",
+              "num": 168,
+              "title": "Информационные сообщения: условия и Лимит такси",
+              "iteration": "G5",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 4,
+              "gate": "OK"
+            },
+            {
+              "id": "agentskaya-adminka-g-dokumenty-i-shablony-169",
+              "num": 169,
+              "title": "Новости: миграция из Планеты, изображения, косметика",
+              "iteration": "G4",
+              "moscow": "Could",
+              "stage": "Не мешать + Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 4,
+              "gate": "OK"
+            }
+          ]
+        },
+        {
+          "name": "B. Услуги, способы оплаты и контракты поставщиков",
+          "count": 6,
+          "items": [
+            {
+              "id": "agentskaya-adminka-b-uslugi-sposoby-oplaty-i-kontrakty-postavschikov-71",
+              "num": 71,
+              "title": "Новые услуги: Лимит такси, Справки о перелёте, Offline поставщик",
+              "iteration": "B6",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 6,
+              "gate": "OK"
+            },
+            {
+              "id": "agentskaya-adminka-b-uslugi-sposoby-oplaty-i-kontrakty-postavschikov-74",
+              "num": 74,
+              "title": "Автовыписка и автобронирование (включая расписание авиа)",
+              "iteration": "B3",
+              "moscow": "Should",
+              "stage": "Не мешать + Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 6,
+              "gate": "OK"
+            },
+            {
+              "id": "agentskaya-adminka-b-uslugi-sposoby-oplaty-i-kontrakty-postavschikov-91",
+              "num": 91,
+              "title": "Услуги и способы оплаты — юзабилити и единообразие",
+              "iteration": "B1",
+              "moscow": "Should",
+              "stage": "Не мешать",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 4,
+              "gate": "OK"
+            },
+            {
+              "id": "agentskaya-adminka-b-uslugi-sposoby-oplaty-i-kontrakty-postavschikov-99",
+              "num": 99,
+              "title": "Новые условия в Услугах: фильтр Рейс, комментарий, способы оплаты на профайле, история",
+              "iteration": "B2",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 4,
+              "gate": "OK"
+            },
+            {
+              "id": "agentskaya-adminka-b-uslugi-sposoby-oplaty-i-kontrakty-postavschikov-166",
+              "num": 166,
+              "title": "Способы оплаты для групп, субсидированные тарифы, выдача авиа по маршруту",
+              "iteration": "B5",
+              "moscow": "Could",
+              "stage": "Не мешать + Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 4,
+              "gate": "OK"
+            },
+            {
+              "id": "agentskaya-adminka-b-uslugi-sposoby-oplaty-i-kontrakty-postavschikov-178",
+              "num": 178,
+              "title": "Контракты поставщиков — юзабилити, ID, фильтры, сортировка, тестовые",
+              "iteration": "B4",
+              "moscow": "Could",
+              "stage": "Не мешать + Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 3,
+              "gate": "OK"
+            }
+          ]
+        },
+        {
+          "name": "D. Чёрные/белые списки",
+          "count": 4,
+          "items": [
+            {
+              "id": "agentskaya-adminka-d-chernye-belye-spiski-75",
+              "num": 75,
+              "title": "Ч/Б списки — массовые операции (редактирование, фильтры, копирование)",
+              "iteration": "D3",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 6,
+              "gate": "OK"
+            },
+            {
+              "id": "agentskaya-adminka-d-chernye-belye-spiski-88",
+              "num": 88,
+              "title": "Ч/Б списки — юзабилити наследования на агентском и клиентском уровнях",
+              "iteration": "D2",
+              "moscow": "Should",
+              "stage": "Не мешать",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 4,
+              "gate": "OK"
+            },
+            {
+              "id": "agentskaya-adminka-d-chernye-belye-spiski-106",
+              "num": 106,
+              "title": "Ч/Б списки — стратегия и новое представление",
+              "iteration": "D1",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 3,
+              "gate": "Review"
+            },
+            {
+              "id": "agentskaya-adminka-d-chernye-belye-spiski-184",
+              "num": 184,
+              "title": "Ч/Б списки — рефакторинг хранения в БД",
+              "iteration": "D4",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 3,
+              "gate": "OK"
+            }
+          ]
+        },
+        {
+          "name": "C. Политики поиска и авторизация заказа",
+          "count": 4,
+          "items": [
+            {
+              "id": "agentskaya-adminka-c-politiki-poiska-i-avtorizatsiya-zakaza-85",
+              "num": 85,
+              "title": "Ограничения авиа — перенос, история, разделение агентство/клиент",
+              "iteration": "C2",
+              "moscow": "Should",
+              "stage": "Не мешать + Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 4,
+              "gate": "OK"
+            },
+            {
+              "id": "agentskaya-adminka-c-politiki-poiska-i-avtorizatsiya-zakaza-147",
+              "num": 147,
+              "title": "Авторизация заказа — перенос из Планеты + доработка страницы",
+              "iteration": "C1",
+              "moscow": "Could",
+              "stage": "Не мешать",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 7,
+              "gate": "OK"
+            },
+            {
+              "id": "agentskaya-adminka-c-politiki-poiska-i-avtorizatsiya-zakaza-167",
+              "num": 167,
+              "title": "Юзабилити политик поиска — IATA-коды, массовая вставка",
+              "iteration": "C4",
+              "moscow": "Could",
+              "stage": "Не мешать + Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 4,
+              "gate": "OK"
+            },
+            {
+              "id": "agentskaya-adminka-c-politiki-poiska-i-avtorizatsiya-zakaza-179",
+              "num": 179,
+              "title": "Политики поиска — новые предикаты (маршрут, LSO, тариф такси), мультиязычность",
+              "iteration": "C3",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 3,
+              "gate": "OK"
+            }
+          ]
+        },
+        {
+          "name": "H. История изменений",
+          "count": 4,
+          "items": [
+            {
+              "id": "agentskaya-adminka-h-istoriya-izmeneniy-89",
+              "num": 89,
+              "title": "Инфраструктура истории изменений — типографика + переключение тоггла",
+              "iteration": "H1",
+              "moscow": "Should",
+              "stage": "Не мешать + Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 4,
+              "gate": "OK"
+            },
+            {
+              "id": "agentskaya-adminka-h-istoriya-izmeneniy-105",
+              "num": 105,
+              "title": "История в блоке клиента (Основные сведения, Профайлы, Баланс, Валюта, Банк. карты)",
+              "iteration": "H2",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 3,
+              "gate": "OK"
+            },
+            {
+              "id": "agentskaya-adminka-h-istoriya-izmeneniy-172",
+              "num": 172,
+              "title": "История в документах (Отельный ваучер, Маршрутная квитанция, Об агентстве, Инфо, Полезные ссылки)",
+              "iteration": "H3",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 4,
+              "gate": "OK"
+            },
+            {
+              "id": "agentskaya-adminka-h-istoriya-izmeneniy-173",
+              "num": 173,
+              "title": "История финансовых и операционных разделов (доп. расходы, уведомления, АО, Коды бронирования)",
+              "iteration": "H4",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 4,
+              "gate": "OK"
+            }
+          ]
+        },
+        {
+          "name": "E. Профайлы, сотрудники и корп. данные",
+          "count": 6,
+          "items": [
+            {
+              "id": "agentskaya-adminka-e-profayly-sotrudniki-i-korp-dannye-97",
+              "num": 97,
+              "title": "Корп. данные и поля профайла (ЭФ, доступ, валюта, «Не сотрудник»)",
+              "iteration": "E2",
+              "moscow": "Should",
+              "stage": "Не мешать + Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 4,
+              "gate": "OK"
+            },
+            {
+              "id": "agentskaya-adminka-e-profayly-sotrudniki-i-korp-dannye-100",
+              "num": 100,
+              "title": "Ракетный загрузчик профайлов — файлы, ошибки, унификация с Client API",
+              "iteration": "E3",
+              "moscow": "Should",
+              "stage": "Не мешать + Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 4,
+              "gate": "OK"
+            },
+            {
+              "id": "agentskaya-adminka-e-profayly-sotrudniki-i-korp-dannye-107",
+              "num": 107,
+              "title": "Валидация и UX форм (контакты, код сотрудника, селекторы, форма бронирования)",
+              "iteration": "E5",
+              "moscow": "Should",
+              "stage": "Не мешать + Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 3,
+              "gate": "OK"
+            },
+            {
+              "id": "agentskaya-adminka-e-profayly-sotrudniki-i-korp-dannye-112",
+              "num": 112,
+              "title": "Профайлы 3.0 — миграция настроек + страница настроек + уровни групп/офисов",
+              "iteration": "E1",
+              "moscow": "Should",
+              "stage": "Не мешать + Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 2,
+              "gate": "OK"
+            },
+            {
+              "id": "agentskaya-adminka-e-profayly-sotrudniki-i-korp-dannye-155",
+              "num": 155,
+              "title": "Миграция из Планеты: телефон/почта, рассылка паролей, менеджер-селектор",
+              "iteration": "E6",
+              "moscow": "Could",
+              "stage": "Не мешать + Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 5,
+              "gate": "OK"
+            },
+            {
+              "id": "agentskaya-adminka-e-profayly-sotrudniki-i-korp-dannye-157",
+              "num": 157,
+              "title": "Юр. лица и корп. домены в АА",
+              "iteration": "E4",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 5,
+              "gate": "OK"
+            }
+          ]
+        },
+        {
+          "name": "F. Командировка, суточные, авансовый отчёт, КЭДО",
+          "count": 5,
+          "items": [
+            {
+              "id": "agentskaya-adminka-f-komandirovka-sutochnye-avansovyy-otchet-kedo-98",
+              "num": 98,
+              "title": "Авансовый отчёт: конструктор формы + данные бухгалтера",
+              "iteration": "F4",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 4,
+              "gate": "OK"
+            },
+            {
+              "id": "agentskaya-adminka-f-komandirovka-sutochnye-avansovyy-otchet-kedo-101",
+              "num": 101,
+              "title": "КЭДО — выпуск ПЭП и настройка подписантов",
+              "iteration": "F5",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 4,
+              "gate": "OK"
+            },
+            {
+              "id": "agentskaya-adminka-f-komandirovka-sutochnye-avansovyy-otchet-kedo-103",
+              "num": 103,
+              "title": "Суточные — миграция кастомных калькуляторов в унифицированные настройки",
+              "iteration": "F1",
+              "moscow": "Should",
+              "stage": "Не мешать + Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 3,
+              "gate": "OK"
+            },
+            {
+              "id": "agentskaya-adminka-f-komandirovka-sutochnye-avansovyy-otchet-kedo-158",
+              "num": 158,
+              "title": "Суточные — расширения (равно/не равно, мультиселект, Внутри региона)",
+              "iteration": "F2",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 5,
+              "gate": "OK"
+            },
+            {
+              "id": "agentskaya-adminka-f-komandirovka-sutochnye-avansovyy-otchet-kedo-171",
+              "num": 171,
+              "title": "Командировка: формирование документов + миграция настроек 305 и 248",
+              "iteration": "F3",
+              "moscow": "Could",
+              "stage": "Не мешать + Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 4,
+              "gate": "OK"
+            }
+          ]
+        },
+        {
+          "name": "K. Баланс, валюта и мультивалюта",
+          "count": 1,
+          "items": [
+            {
+              "id": "agentskaya-adminka-k-balans-valyuta-i-multivalyuta-102",
+              "num": 102,
+              "title": "Мультивалюта на уровне клиента и поиск валют по кодам",
+              "iteration": "K1",
+              "moscow": "Should",
+              "stage": "Не мешать + Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 4,
+              "gate": "OK"
+            }
+          ]
+        },
+        {
+          "name": "I. Платформа АА",
+          "count": 4,
+          "items": [
+            {
+              "id": "agentskaya-adminka-i-platforma-aa-108",
+              "num": 108,
+              "title": "Шапка, навигация, поиск клиента, города, переходы",
+              "iteration": "I2",
+              "moscow": "Should",
+              "stage": "Не мешать",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 3,
+              "gate": "OK"
+            },
+            {
+              "id": "agentskaya-adminka-i-platforma-aa-176",
+              "num": 176,
+              "title": "Косметика и технический долг (имя клиента, бренды, обрезка текста, TODO, owner_service_actions)",
+              "iteration": "I4",
+              "moscow": "Could",
+              "stage": "Не мешать + Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 4,
+              "gate": "OK"
+            },
+            {
+              "id": "agentskaya-adminka-i-platforma-aa-186",
+              "num": 186,
+              "title": "Адаптив под мобилку и мультиязычность объектов",
+              "iteration": "I3",
+              "moscow": "Could",
+              "stage": "Не мешать + Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 2,
+              "gate": "OK"
+            },
+            {
+              "id": "agentskaya-adminka-i-platforma-aa-195",
+              "num": 195,
+              "title": "Наследование — разобраться, унифицировать, мультиагентская схема",
+              "iteration": "I1",
+              "moscow": "Could",
+              "stage": "Не мешать + Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 1,
+              "gate": "OK"
+            }
+          ]
+        },
+        {
+          "name": "J. Расширение АА",
+          "count": 6,
+          "items": [
+            {
+              "id": "agentskaya-adminka-j-rasshirenie-aa-154",
+              "num": 154,
+              "title": "Чат и Push в АА — перенос из Планеты",
+              "iteration": "J2",
+              "moscow": "Could",
+              "stage": "Не мешать + Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 5,
+              "gate": "OK"
+            },
+            {
+              "id": "agentskaya-adminka-j-rasshirenie-aa-175",
+              "num": 175,
+              "title": "Раздел «Консультанты» в Настройках АА",
+              "iteration": "J4",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 3,
+              "gate": "OK"
+            },
+            {
+              "id": "agentskaya-adminka-j-rasshirenie-aa-177",
+              "num": 177,
+              "title": "Миграция мета-разделов настроек из Планеты (Настройки, Бронирование, офферсьюты, договоры)",
+              "iteration": "J1",
+              "moscow": "Could",
+              "stage": "Не мешать",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 3,
+              "gate": "OK"
+            },
+            {
+              "id": "agentskaya-adminka-j-rasshirenie-aa-180",
+              "num": 180,
+              "title": "Фича-флаги, Онбординг, Пользователи и отзывы, сессия",
+              "iteration": "J3",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 3,
+              "gate": "OK"
+            },
+            {
+              "id": "agentskaya-adminka-j-rasshirenie-aa-187",
+              "num": 187,
+              "title": "Автопарк — новая услуга в АА",
+              "iteration": "J5",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 2,
+              "gate": "OK"
+            },
+            {
+              "id": "agentskaya-adminka-j-rasshirenie-aa-208",
+              "num": 208,
+              "title": "Клиентская админка — трансформационная инициатива (ВНЕ Q2)",
+              "iteration": "J6",
+              "moscow": "Won't",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "1 + 2 (трудозатраты + тормоза)",
+              "finalScore": 0,
+              "gate": "OK"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "theme": "Заказы",
+      "count": 42,
+      "mustCount": 0,
+      "level2": [
+        {
+          "name": "Заказы",
+          "count": 42,
+          "items": [
+            {
+              "id": "zakazy-6",
+              "num": 6,
+              "title": "Документы: массовое скачивание + ФИО в названии",
+              "iteration": "C4.2",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Освободить время",
+              "finalScore": 82,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-8",
+              "num": 8,
+              "title": "Avia: история МК и тайм-лимиты",
+              "iteration": "C1a.1",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Освободить время",
+              "finalScore": 50,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-9",
+              "num": 9,
+              "title": "Hotel: статусы и блокировки",
+              "iteration": "C1h.2",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Освободить время",
+              "finalScore": 50,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-11",
+              "num": 11,
+              "title": "Документы: привязка билета к пассажиру (номер у ФИО)",
+              "iteration": "C4.3",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Освободить время",
+              "finalScore": 43,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-12",
+              "num": 12,
+              "title": "Документы: отправка + статус + имя отправителя",
+              "iteration": "C4.1",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Освободить время",
+              "finalScore": 37,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-14",
+              "num": 14,
+              "title": "Документы: единое модальное окно (фундамент)",
+              "iteration": "C4.0",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Освободить время",
+              "finalScore": 37,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-16",
+              "num": 16,
+              "title": "Документы: цветовые статусы + подтверждение аннуляции",
+              "iteration": "C4.4",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Освободить время + Убрать тормоза",
+              "finalScore": 36,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-17",
+              "num": 17,
+              "title": "Командировка: скрытие, кост-центры",
+              "iteration": "C9.1",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Освободить время",
+              "finalScore": 36,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-19",
+              "num": 19,
+              "title": "Hotel: сборы, детализация",
+              "iteration": "C1h.3",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Освободить время",
+              "finalScore": 27,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-20",
+              "num": 20,
+              "title": "Avia: аннуляции, стоимость",
+              "iteration": "C1a.2",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Освободить время",
+              "finalScore": 26,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-28",
+              "num": 28,
+              "title": "История: причины аннуляции",
+              "iteration": "C7.1",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Освободить время",
+              "finalScore": 15,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-29",
+              "num": 29,
+              "title": "Финансы: ручное редактирование цен",
+              "iteration": "C3.1",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Освободить время",
+              "finalScore": 14,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-38",
+              "num": 38,
+              "title": "Чат к услуге: UX",
+              "iteration": "C5.1",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Убрать операционные тормоза",
+              "finalScore": 10,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-40",
+              "num": 40,
+              "title": "Скрытие и перенос услуг",
+              "iteration": "B3.1",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Масштабирование без роста штата",
+              "finalScore": 8,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-43",
+              "num": 43,
+              "title": "Список: сортировка и поиск",
+              "iteration": "B1.1",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Освободить время",
+              "finalScore": 8,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-51",
+              "num": 51,
+              "title": "Авторизация: кнопки, права",
+              "iteration": "C6.2",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Освободить время",
+              "finalScore": 7,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-52",
+              "num": 52,
+              "title": "Авторизация: чат, перезапуск",
+              "iteration": "C6.3",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Освободить время",
+              "finalScore": 7,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-60",
+              "num": 60,
+              "title": "Уведомления: статусы и причины",
+              "iteration": "C11.1",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Убрать операционные тормоза",
+              "finalScore": 7,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-61",
+              "num": 61,
+              "title": "Корзина: цены Hotel/Avia",
+              "iteration": "A2.1",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Освободить время",
+              "finalScore": 7,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-62",
+              "num": 62,
+              "title": "Авторизация: статусы",
+              "iteration": "C6.1",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Освободить время + Убрать тормоза",
+              "finalScore": 6,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-65",
+              "num": 65,
+              "title": "Прочие: ЖД и трансферы",
+              "iteration": "C1o.1",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Освободить время",
+              "finalScore": 6,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-66",
+              "num": 66,
+              "title": "Оффлайн: дубль, мультивалюта",
+              "iteration": "C2.2",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Убрать операционные тормоза",
+              "finalScore": 6,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-78",
+              "num": 78,
+              "title": "Список: фильтры",
+              "iteration": "B1.2",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Освободить время",
+              "finalScore": 5,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-79",
+              "num": 79,
+              "title": "Перенос: командировка, мультиагентство",
+              "iteration": "C8.2",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Освободить время + Масштабирование",
+              "finalScore": 5,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-82",
+              "num": 82,
+              "title": "Финансы: сборы при аннуляции",
+              "iteration": "C3.2",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Освободить время",
+              "finalScore": 5,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-130",
+              "num": 130,
+              "title": "Avia: атрибуты (iata, политика)",
+              "iteration": "C1a.3",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Освободить время",
+              "finalScore": 68,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-131",
+              "num": 131,
+              "title": "Hotel: ваучер и языки",
+              "iteration": "C1h.1",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Освободить время",
+              "finalScore": 60,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-133",
+              "num": 133,
+              "title": "Документы: управление файлами (переименование, метаданные)",
+              "iteration": "C4.5",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Минимизировать когнитивную нагрузку",
+              "finalScore": 34,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-135",
+              "num": 135,
+              "title": "Командировка: расходы и дизайн",
+              "iteration": "C9.2",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Освободить время",
+              "finalScore": 15,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-138",
+              "num": 138,
+              "title": "Корзина: парити отелей",
+              "iteration": "A4.1",
+              "moscow": "Could",
+              "stage": "Не мешать",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Минимизировать когнитивную нагрузку",
+              "finalScore": 10,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-139",
+              "num": 139,
+              "title": "История: контекст, переводы",
+              "iteration": "C7.2",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Освободить время",
+              "finalScore": 9,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-140",
+              "num": 140,
+              "title": "Перенос услуги в другой заказ",
+              "iteration": "C8.1",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Освободить время",
+              "finalScore": 8,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-142",
+              "num": 142,
+              "title": "Корзина: экстрафилды",
+              "iteration": "A3.2",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Освободить время",
+              "finalScore": 8,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-143",
+              "num": 143,
+              "title": "Корзина: политика авторизации",
+              "iteration": "A1.1",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Освободить время",
+              "finalScore": 8,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-145",
+              "num": 145,
+              "title": "Оффлайн в заказе: UX",
+              "iteration": "C2.1",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Убрать операционные тормоза",
+              "finalScore": 7,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-148",
+              "num": 148,
+              "title": "Делегирование прав",
+              "iteration": "B3.2",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Убрать операционные тормоза",
+              "finalScore": 6,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-151",
+              "num": 151,
+              "title": "Корзина: ЮЛ и контракты",
+              "iteration": "A3.1",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Освободить время",
+              "finalScore": 6,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-156",
+              "num": 156,
+              "title": "Корзина: чеккеры и подсказки",
+              "iteration": "A1.2",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Освободить время",
+              "finalScore": 5,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-161",
+              "num": 161,
+              "title": "Прочие: автопарк, такси, страхование",
+              "iteration": "C1o.2",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Освободить время",
+              "finalScore": 5,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-165",
+              "num": 165,
+              "title": "Список: парити отображения",
+              "iteration": "B2.1",
+              "moscow": "Could",
+              "stage": "Не мешать",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Минимизировать когнитивную нагрузку",
+              "finalScore": 4,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-174",
+              "num": 174,
+              "title": "Корзина: парити ЖД и АЭ",
+              "iteration": "A4.2",
+              "moscow": "Could",
+              "stage": "Не мешать",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Минимизировать когнитивную нагрузку",
+              "finalScore": 4,
+              "gate": "OK"
+            },
+            {
+              "id": "zakazy-185",
+              "num": 185,
+              "title": "Боковая панель: парити",
+              "iteration": "C10.1",
+              "moscow": "Could",
+              "stage": "Не мешать",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Минимизировать когнитивную нагрузку",
+              "finalScore": 3,
+              "gate": "OK"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "theme": "Сервис для клиента",
+      "count": 36,
+      "mustCount": 1,
+      "level2": [
+        {
+          "name": "Сервис для клиента",
+          "count": 36,
+          "items": [
+            {
+              "id": "servis-dlya-klienta-1",
+              "num": 1,
+              "title": "Реестр справок о перелёте",
+              "iteration": "S4",
+              "moscow": "Must",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Сервис для клиента",
+              "subgoal": "Освободить время консультанта",
+              "finalScore": 62,
+              "gate": "OK"
+            },
+            {
+              "id": "servis-dlya-klienta-25",
+              "num": 25,
+              "title": "Причина отмены командировки",
+              "iteration": "S6",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Сервис для клиента",
+              "subgoal": "Освободить время консультанта",
+              "finalScore": 18,
+              "gate": "OK"
+            },
+            {
+              "id": "servis-dlya-klienta-26",
+              "num": 26,
+              "title": "Адрес отеля на странице заказа",
+              "iteration": "S1",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Сервис для клиента",
+              "subgoal": "Освободить время консультанта",
+              "finalScore": 16,
+              "gate": "OK"
+            },
+            {
+              "id": "servis-dlya-klienta-27",
+              "num": 27,
+              "title": "Уведомление об аннуляции услуги после согласования заказа",
+              "iteration": "S5",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Сервис для клиента",
+              "subgoal": "Освободить время консультанта",
+              "finalScore": 15,
+              "gate": "OK"
+            },
+            {
+              "id": "servis-dlya-klienta-32",
+              "num": 32,
+              "title": "Признак приватности профайла",
+              "iteration": "S7",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Сервис для клиента",
+              "subgoal": "Освободить время консультанта",
+              "finalScore": 12,
+              "gate": "OK"
+            },
+            {
+              "id": "servis-dlya-klienta-33",
+              "num": 33,
+              "title": "Скачать все документы заказа архивом",
+              "iteration": "S3",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Сервис для клиента",
+              "subgoal": "Освободить время консультанта",
+              "finalScore": 12,
+              "gate": "OK"
+            },
+            {
+              "id": "servis-dlya-klienta-35",
+              "num": 35,
+              "title": "Поиск по городам прилёта/вылета в списке заказов",
+              "iteration": "S2",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Сервис для клиента",
+              "subgoal": "Освободить время консультанта",
+              "finalScore": 10,
+              "gate": "OK"
+            },
+            {
+              "id": "servis-dlya-klienta-41",
+              "num": 41,
+              "title": "ЭвоКом: уведомление о незакрытых файлах за 24 часа",
+              "iteration": "S8",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Сервис для клиента",
+              "subgoal": "Освободить время консультанта",
+              "finalScore": 8,
+              "gate": "OK"
+            },
+            {
+              "id": "servis-dlya-klienta-69",
+              "num": 69,
+              "title": "Редактирование онлайн-услуги клиентом",
+              "iteration": "S10",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Сервис для клиента",
+              "subgoal": "Освободить время консультанта",
+              "finalScore": 6,
+              "gate": "OK"
+            },
+            {
+              "id": "servis-dlya-klienta-70",
+              "num": 70,
+              "title": "Фильтры тревел-менеджера по доп.полям профайлов",
+              "iteration": "S12",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Сервис для клиента",
+              "subgoal": "Освободить время консультанта",
+              "finalScore": 6,
+              "gate": "OK"
+            },
+            {
+              "id": "servis-dlya-klienta-77",
+              "num": 77,
+              "title": "Отправка АО и прикреплённых файлов на почту в вебе",
+              "iteration": "S9",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Сервис для клиента",
+              "subgoal": "Освободить время консультанта",
+              "finalScore": 5,
+              "gate": "OK"
+            },
+            {
+              "id": "servis-dlya-klienta-90",
+              "num": 90,
+              "title": "Редактирование offline-услуг через ССБ",
+              "iteration": "S11",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Сервис для клиента",
+              "subgoal": "Освободить время консультанта",
+              "finalScore": 4,
+              "gate": "OK"
+            },
+            {
+              "id": "servis-dlya-klienta-94",
+              "num": 94,
+              "title": "Создать сборы для справок о перелёте",
+              "iteration": "S13",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Сервис для клиента",
+              "subgoal": "Освободить время консультанта + Дать больше зарабатывать",
+              "finalScore": 4,
+              "gate": "OK"
+            },
+            {
+              "id": "servis-dlya-klienta-136",
+              "num": 136,
+              "title": "Признак политики и комментария в Mobile при согласовании",
+              "iteration": "S14",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Сервис для клиента",
+              "subgoal": "Освободить время консультанта",
+              "finalScore": 12,
+              "gate": "OK"
+            },
+            {
+              "id": "servis-dlya-klienta-137",
+              "num": 137,
+              "title": "Причина аннуляции в уведомлении",
+              "iteration": "S15",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Сервис для клиента",
+              "subgoal": "Освободить время консультанта",
+              "finalScore": 12,
+              "gate": "OK"
+            },
+            {
+              "id": "servis-dlya-klienta-141",
+              "num": 141,
+              "title": "Политика авторизации перелёта в нужную страну",
+              "iteration": "S17",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Сервис для клиента",
+              "subgoal": "Убрать операционные тормоза",
+              "finalScore": 8,
+              "gate": "OK"
+            },
+            {
+              "id": "servis-dlya-klienta-146",
+              "num": 146,
+              "title": "Автоподстановка руководителя в pdf-форму АО",
+              "iteration": "S18",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Сервис для клиента",
+              "subgoal": "Освободить время консультанта",
+              "finalScore": 7,
+              "gate": "OK"
+            },
+            {
+              "id": "servis-dlya-klienta-149",
+              "num": 149,
+              "title": "Перевыписка билета без апрува (в рамках политики)",
+              "iteration": "S16",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Сервис для клиента",
+              "subgoal": "Освободить время консультанта + Убрать тормоза",
+              "finalScore": 6,
+              "gate": "OK"
+            },
+            {
+              "id": "servis-dlya-klienta-150",
+              "num": 150,
+              "title": "Шлюмберже: уведомление об услугах в ночное время",
+              "iteration": "S21",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Сервис для клиента",
+              "subgoal": "Освободить время консультанта",
+              "finalScore": 6,
+              "gate": "OK"
+            },
+            {
+              "id": "servis-dlya-klienta-159",
+              "num": 159,
+              "title": "Перенос ЖД услуг в заказ другого клиента",
+              "iteration": "S20",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Сервис для клиента",
+              "subgoal": "Освободить время консультанта",
+              "finalScore": 5,
+              "gate": "OK"
+            },
+            {
+              "id": "servis-dlya-klienta-163",
+              "num": 163,
+              "title": "Делегирование прав на утверждение АО",
+              "iteration": "S19",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Сервис для клиента",
+              "subgoal": "Убрать операционные тормоза",
+              "finalScore": 4,
+              "gate": "OK"
+            },
+            {
+              "id": "servis-dlya-klienta-181",
+              "num": 181,
+              "title": "«Помощь» → персональный менеджер",
+              "iteration": "S22",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Сервис для клиента",
+              "subgoal": "Убрать операционные тормоза",
+              "finalScore": 3,
+              "gate": "OK"
+            },
+            {
+              "id": "servis-dlya-klienta-182",
+              "num": 182,
+              "title": "Фильтры по дате выполнения услуг",
+              "iteration": "S23",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Сервис для клиента",
+              "subgoal": "Освободить время консультанта",
+              "finalScore": 3,
+              "gate": "OK"
+            },
+            {
+              "id": "servis-dlya-klienta-183",
+              "num": 183,
+              "title": "Не хватает строк в отчётах об РЗ ПВ",
+              "iteration": "S24",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Сервис для клиента",
+              "subgoal": "Освободить время консультанта",
+              "finalScore": 3,
+              "gate": "OK"
+            },
+            {
+              "id": "servis-dlya-klienta-188",
+              "num": 188,
+              "title": "Datalens для клиента Билайн (KazTour)",
+              "iteration": "S28",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Сервис для клиента",
+              "subgoal": "Освободить время консультанта",
+              "finalScore": 2,
+              "gate": "Review"
+            },
+            {
+              "id": "servis-dlya-klienta-189",
+              "num": 189,
+              "title": "Слепки путешественников в business_trips / business_trips_travellers",
+              "iteration": "S25",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Сервис для клиента",
+              "subgoal": "Освободить время консультанта",
+              "finalScore": 2,
+              "gate": "OK"
+            },
+            {
+              "id": "servis-dlya-klienta-190",
+              "num": 190,
+              "title": "Слепки путешественников в tickets",
+              "iteration": "S26",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Сервис для клиента",
+              "subgoal": "Освободить время консультанта",
+              "finalScore": 2,
+              "gate": "OK"
+            },
+            {
+              "id": "servis-dlya-klienta-192",
+              "num": 192,
+              "title": "Статус купона в отчётах HR2 и SOP",
+              "iteration": "S30",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Сервис для клиента",
+              "subgoal": "Освободить время консультанта",
+              "finalScore": 2,
+              "gate": "OK"
+            },
+            {
+              "id": "servis-dlya-klienta-193",
+              "num": 193,
+              "title": "Отправка отчёта ЛокоТех-Сервис на email",
+              "iteration": "S31",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Сервис для клиента",
+              "subgoal": "Освободить время консультанта",
+              "finalScore": 2,
+              "gate": "OK"
+            },
+            {
+              "id": "servis-dlya-klienta-194",
+              "num": 194,
+              "title": "(НОВАЯ) Сложные маршруты — конструктор многосегментного маршрута",
+              "iteration": "S27",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Сервис для клиента",
+              "subgoal": "Освободить время консультанта",
+              "finalScore": 2,
+              "gate": "Review"
+            },
+            {
+              "id": "servis-dlya-klienta-196",
+              "num": 196,
+              "title": "ETL и окружение для клиента ФракДжет Волга",
+              "iteration": "S32",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Сервис для клиента",
+              "subgoal": "Освободить время консультанта",
+              "finalScore": 2,
+              "gate": "Review"
+            },
+            {
+              "id": "servis-dlya-klienta-197",
+              "num": 197,
+              "title": "Показатели метрик на дашборд МБС",
+              "iteration": "S29",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Сервис для клиента",
+              "subgoal": "Освободить время консультанта",
+              "finalScore": 1,
+              "gate": "Review"
+            },
+            {
+              "id": "servis-dlya-klienta-200",
+              "num": 200,
+              "title": "Лимит такси: блокировка поля «Ограничение по сумме»",
+              "iteration": "S33",
+              "moscow": "Won't",
+              "stage": "Увеличить маржу",
+              "mechanism": "Сервис для клиента",
+              "subgoal": "Дать агентству больше зарабатывать",
+              "finalScore": 5,
+              "gate": "OK"
+            },
+            {
+              "id": "servis-dlya-klienta-201",
+              "num": 201,
+              "title": "Лимит такси: не передавать СС в Яндекс при окончании лимита",
+              "iteration": "S34",
+              "moscow": "Won't",
+              "stage": "Увеличить маржу",
+              "mechanism": "Сервис для клиента",
+              "subgoal": "Дать агентству больше зарабатывать",
+              "finalScore": 4,
+              "gate": "OK"
+            },
+            {
+              "id": "servis-dlya-klienta-203",
+              "num": 203,
+              "title": "Лимит такси: задавать допустимые тарифы при создании лимита",
+              "iteration": "S35",
+              "moscow": "Won't",
+              "stage": "Увеличить маржу",
+              "mechanism": "Сервис для клиента",
+              "subgoal": "Дать агентству больше зарабатывать",
+              "finalScore": 2,
+              "gate": "OK"
+            },
+            {
+              "id": "servis-dlya-klienta-207",
+              "num": 207,
+              "title": "Объединение клиентов в холдинговую структуру",
+              "iteration": "S36",
+              "moscow": "Won't",
+              "stage": "Увеличить маржу",
+              "mechanism": "Сервис для клиента",
+              "subgoal": "Дать агентству больше зарабатывать",
+              "finalScore": 1,
+              "gate": "Review"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "theme": "Предложения 2.0",
+      "count": 36,
+      "mustCount": 0,
+      "level2": [
+        {
+          "name": "Предложения 2.0",
+          "count": 36,
+          "items": [
+            {
+              "id": "predlozheniya-2-0-22",
+              "num": 22,
+              "title": "Лупа → «Найти эту услугу» (primary)",
+              "iteration": "P2.7",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "2 (операционные тормоза)",
+              "finalScore": 25,
+              "gate": "OK"
+            },
+            {
+              "id": "predlozheniya-2-0-23",
+              "num": 23,
+              "title": "Feature flag «v2.0»",
+              "iteration": "P1.1",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "2 (операционные тормоза)",
+              "finalScore": 22,
+              "gate": "OK"
+            },
+            {
+              "id": "predlozheniya-2-0-30",
+              "num": 30,
+              "title": "Карточка Трансфера (место добавления)",
+              "iteration": "P3.4",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "2 (операционные тормоза)",
+              "finalScore": 12,
+              "gate": "OK"
+            },
+            {
+              "id": "predlozheniya-2-0-31",
+              "num": 31,
+              "title": "Отображение всех блоков с услугами (независимо от настроек)",
+              "iteration": "P4.4",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "2 (операционные тормоза)",
+              "finalScore": 12,
+              "gate": "OK"
+            },
+            {
+              "id": "predlozheniya-2-0-34",
+              "num": 34,
+              "title": "«Добавить все варианты в предложение» (ЖД и Отели)",
+              "iteration": "P2.4",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "2 (операционные тормоза)",
+              "finalScore": 12,
+              "gate": "OK"
+            },
+            {
+              "id": "predlozheniya-2-0-36",
+              "num": 36,
+              "title": "Блок действий в карточке услуги (Удалить/Редактировать/Комментарий)",
+              "iteration": "P3.5",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "2 (операционные тормоза)",
+              "finalScore": 10,
+              "gate": "OK"
+            },
+            {
+              "id": "predlozheniya-2-0-37",
+              "num": 37,
+              "title": "Уведомления об обновлении предложений",
+              "iteration": "P5.4",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "2 (операционные тормоза)",
+              "finalScore": 10,
+              "gate": "OK"
+            },
+            {
+              "id": "predlozheniya-2-0-39",
+              "num": 39,
+              "title": "Общие таблицы предложения",
+              "iteration": "P1.2",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "2 (операционные тормоза)",
+              "finalScore": 9,
+              "gate": "OK"
+            },
+            {
+              "id": "predlozheniya-2-0-42",
+              "num": 42,
+              "title": "«Преобразовать в текст»",
+              "iteration": "P5.2",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "2 (операционные тормоза)",
+              "finalScore": 8,
+              "gate": "OK"
+            },
+            {
+              "id": "predlozheniya-2-0-44",
+              "num": 44,
+              "title": "Фильтры/сортировка офферов + «фильтр выбранные / Показать все»",
+              "iteration": "P2.3",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "2 (операционные тормоза)",
+              "finalScore": 8,
+              "gate": "OK"
+            },
+            {
+              "id": "predlozheniya-2-0-45",
+              "num": 45,
+              "title": "Карточка Отеля (e-mail / форма оплаты гостиницы)",
+              "iteration": "P3.3",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "2 (операционные тормоза)",
+              "finalScore": 8,
+              "gate": "OK"
+            },
+            {
+              "id": "predlozheniya-2-0-46",
+              "num": 46,
+              "title": "Структура объекта Авиа",
+              "iteration": "P1.3",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "2 (операционные тормоза)",
+              "finalScore": 8,
+              "gate": "OK"
+            },
+            {
+              "id": "predlozheniya-2-0-47",
+              "num": 47,
+              "title": "Структура объекта Отель",
+              "iteration": "P1.4",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "2 (операционные тормоза)",
+              "finalScore": 8,
+              "gate": "OK"
+            },
+            {
+              "id": "predlozheniya-2-0-48",
+              "num": 48,
+              "title": "Структура объекта ЖД",
+              "iteration": "P1.5",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "2 (операционные тормоза)",
+              "finalScore": 8,
+              "gate": "OK"
+            },
+            {
+              "id": "predlozheniya-2-0-49",
+              "num": 49,
+              "title": "Структура объекта Трансфер",
+              "iteration": "P1.7",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "2 (операционные тормоза)",
+              "finalScore": 8,
+              "gate": "OK"
+            },
+            {
+              "id": "predlozheniya-2-0-50",
+              "num": 50,
+              "title": "Копирование предложения (вместо «Добавить путешественника»)",
+              "iteration": "P2.8",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "2 (операционные тормоза)",
+              "finalScore": 7,
+              "gate": "OK"
+            },
+            {
+              "id": "predlozheniya-2-0-54",
+              "num": 54,
+              "title": "Структура объекта Аэроэкспресс",
+              "iteration": "P1.6",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "2 (операционные тормоза)",
+              "finalScore": 7,
+              "gate": "OK"
+            },
+            {
+              "id": "predlozheniya-2-0-55",
+              "num": 55,
+              "title": "Резервирование оффера, добавленного в предложение",
+              "iteration": "P2.6",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "2 (операционные тормоза)",
+              "finalScore": 7,
+              "gate": "OK"
+            },
+            {
+              "id": "predlozheniya-2-0-56",
+              "num": 56,
+              "title": "Мультивыбор офферов",
+              "iteration": "P2.5",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "2 (операционные тормоза)",
+              "finalScore": 7,
+              "gate": "OK"
+            },
+            {
+              "id": "predlozheniya-2-0-57",
+              "num": 57,
+              "title": "Карточка ЖД-услуги (составной маршрут, поезд без вагона)",
+              "iteration": "P3.2",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "2 (операционные тормоза)",
+              "finalScore": 7,
+              "gate": "OK"
+            },
+            {
+              "id": "predlozheniya-2-0-58",
+              "num": 58,
+              "title": "Шаблоны уведомлений с OfferSuite",
+              "iteration": "P5.3",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "2 (операционные тормоза)",
+              "finalScore": 7,
+              "gate": "OK"
+            },
+            {
+              "id": "predlozheniya-2-0-67",
+              "num": 67,
+              "title": "Мультивалюта в оффере",
+              "iteration": "P4.2",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "2 (операционные тормоза)",
+              "finalScore": 6,
+              "gate": "OK"
+            },
+            {
+              "id": "predlozheniya-2-0-76",
+              "num": 76,
+              "title": "Финансы карточки услуги (НДС, сервисный сбор через модалку, цена «от/до», изначальная цена)",
+              "iteration": "P4.1",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "2 (операционные тормоза)",
+              "finalScore": 6,
+              "gate": "OK"
+            },
+            {
+              "id": "predlozheniya-2-0-80",
+              "num": 80,
+              "title": "Карточка Авиа-услуги (сегменты, время в пересадке, доработки)",
+              "iteration": "P3.1",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "2 (операционные тормоза)",
+              "finalScore": 5,
+              "gate": "OK"
+            },
+            {
+              "id": "predlozheniya-2-0-81",
+              "num": 81,
+              "title": "Маршрут+Даты + переработка логики добавления",
+              "iteration": "P2.2",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "2 (операционные тормоза)",
+              "finalScore": 5,
+              "gate": "OK"
+            },
+            {
+              "id": "predlozheniya-2-0-83",
+              "num": 83,
+              "title": "Агентское / клиентское оформление",
+              "iteration": "P5.5",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "2 (операционные тормоза)",
+              "finalScore": 5,
+              "gate": "OK"
+            },
+            {
+              "id": "predlozheniya-2-0-95",
+              "num": 95,
+              "title": "Интерактивный экран получателя (sticky-кнопка + выбор тарифа)",
+              "iteration": "P5.1",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "2 (операционные тормоза)",
+              "finalScore": 3,
+              "gate": "OK"
+            },
+            {
+              "id": "predlozheniya-2-0-104",
+              "num": 104,
+              "title": "Редизайн главной страницы предложений",
+              "iteration": "P2.1",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "2 (операционные тормоза)",
+              "finalScore": 3,
+              "gate": "OK"
+            },
+            {
+              "id": "predlozheniya-2-0-134",
+              "num": 134,
+              "title": "Корпоративный тариф в оффере",
+              "iteration": "P4.3",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "2 (операционные тормоза)",
+              "finalScore": 15,
+              "gate": "OK"
+            },
+            {
+              "id": "predlozheniya-2-0-170",
+              "num": 170,
+              "title": "Мобильное приложение получателя",
+              "iteration": "P5.6",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "2 (операционные тормоза)",
+              "finalScore": 4,
+              "gate": "OK"
+            },
+            {
+              "id": "predlozheniya-2-0-209",
+              "num": 209,
+              "title": "OfferSuites. Изменить отображение авиауслуг в pdf",
+              "iteration": "—",
+              "moscow": "Won't",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": null,
+              "finalScore": null,
+              "gate": null
+            },
+            {
+              "id": "predlozheniya-2-0-210",
+              "num": 210,
+              "title": "Offersuites. Обновить дизайн pdf предложения",
+              "iteration": "—",
+              "moscow": "Won't",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": null,
+              "finalScore": null,
+              "gate": null
+            },
+            {
+              "id": "predlozheniya-2-0-211",
+              "num": 211,
+              "title": "OfferSuites. Изменить сортировку офферов в pdf-версии",
+              "iteration": "—",
+              "moscow": "Won't",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": null,
+              "finalScore": null,
+              "gate": null
+            },
+            {
+              "id": "predlozheniya-2-0-212",
+              "num": 212,
+              "title": "Что видит получатель по битой ссылке",
+              "iteration": "—",
+              "moscow": "Won't",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": null,
+              "finalScore": null,
+              "gate": null
+            },
+            {
+              "id": "predlozheniya-2-0-213",
+              "num": 213,
+              "title": "Лимит такси (доработки). Добавить лимит такси в OfferSuites",
+              "iteration": "—",
+              "moscow": "Won't",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": null,
+              "finalScore": null,
+              "gate": null
+            },
+            {
+              "id": "predlozheniya-2-0-214",
+              "num": 214,
+              "title": "Лимит такси. Добавить в предложение",
+              "iteration": "—",
+              "moscow": "Won't",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": null,
+              "finalScore": null,
+              "gate": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "theme": "Оффлайн 4.0",
+      "count": 23,
+      "mustCount": 1,
+      "level2": [
+        {
+          "name": "Упростить UX клиента (Epic 534)",
+          "count": 4,
+          "items": [
+            {
+              "id": "offlayn-4-0-uprostit-ux-klienta-epic-534-2",
+              "num": 2,
+              "title": "Кнопка «Запросить услугу»: выдача + ЛК + карточка командировки, единый UX",
+              "iteration": "Ф3 И1",
+              "moscow": "Must",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Сервис для клиента",
+              "subgoal": "Когн. нагрузка клиента + Время конса + Когн. нагрузка агента + Time-to-cash",
+              "finalScore": 8,
+              "gate": "Review"
+            },
+            {
+              "id": "offlayn-4-0-uprostit-ux-klienta-epic-534-110",
+              "num": 110,
+              "title": "Формы доп.услуг отеля (завтрак/выезд/парковка)",
+              "iteration": "Ф3 И5",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Сервис для клиента + Оффлайн 4.0",
+              "subgoal": "Когн. нагрузка клиента + Время конса",
+              "finalScore": 2,
+              "gate": "OK"
+            },
+            {
+              "id": "offlayn-4-0-uprostit-ux-klienta-epic-534-111",
+              "num": 111,
+              "title": "Унификация карточки (со статусной моделью)",
+              "iteration": "Ф3 И3",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Сервис для клиента",
+              "subgoal": "Когн. нагрузка клиента + Когн. нагрузка агента + Время конса",
+              "finalScore": 2,
+              "gate": "OK"
+            },
+            {
+              "id": "offlayn-4-0-uprostit-ux-klienta-epic-534-113",
+              "num": 113,
+              "title": "Профиль клиента в Оффлайн 4.0 (матрица обязательных полей)",
+              "iteration": "Ф3 И6",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Оффлайн 4.0 + АА",
+              "subgoal": "Когн. нагрузка клиента + Когн. нагрузка агента + Время конса + Маржа",
+              "finalScore": 2,
+              "gate": "Review"
+            }
+          ]
+        },
+        {
+          "name": "Помочь агенту обрабатывать оффлайн (Epic 535)",
+          "count": 7,
+          "items": [
+            {
+              "id": "offlayn-4-0-pomoch-agentu-obrabatyvat-offlayn-epic-535-15",
+              "num": 15,
+              "title": "Шаблоны писем по статусам",
+              "iteration": "Ф2 И4",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "АА + Оффлайн 4.0",
+              "subgoal": "Время конса + Когн. нагрузка агента",
+              "finalScore": 37,
+              "gate": "Review"
+            },
+            {
+              "id": "offlayn-4-0-pomoch-agentu-obrabatyvat-offlayn-epic-535-63",
+              "num": 63,
+              "title": "Автопредзаполнение по истории клиента",
+              "iteration": "Ф2 И3",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Оффлайн 4.0",
+              "subgoal": "Время конса + Когн. нагрузка агента",
+              "finalScore": 6,
+              "gate": "OK"
+            },
+            {
+              "id": "offlayn-4-0-pomoch-agentu-obrabatyvat-offlayn-epic-535-109",
+              "num": 109,
+              "title": "Отчёт по оффлайн-услугам в АА",
+              "iteration": "Ф2 И6",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Маржа + Время супервизора + Когн. нагрузка агента",
+              "finalScore": 3,
+              "gate": "OK"
+            },
+            {
+              "id": "offlayn-4-0-pomoch-agentu-obrabatyvat-offlayn-epic-535-114",
+              "num": 114,
+              "title": "Назначение услуги на консультанта супервизором",
+              "iteration": "Ф2 И8",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "АА + Оффлайн 4.0",
+              "subgoal": "Когн. нагрузка агента + Время конса + Масштабирование",
+              "finalScore": 2,
+              "gate": "Review"
+            },
+            {
+              "id": "offlayn-4-0-pomoch-agentu-obrabatyvat-offlayn-epic-535-116",
+              "num": 116,
+              "title": "Групповые оффлайн услуги",
+              "iteration": "Ф2 И2",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Оффлайн 4.0",
+              "subgoal": "Время конса + Когн. нагрузка агента",
+              "finalScore": 2,
+              "gate": "Review"
+            },
+            {
+              "id": "offlayn-4-0-pomoch-agentu-obrabatyvat-offlayn-epic-535-153",
+              "num": 153,
+              "title": "Справочник «Типы оффлайн услуг» в АА",
+              "iteration": "Ф2 И1",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "АА + Оффлайн 4.0",
+              "subgoal": "Время конса + Когн. нагрузка агента",
+              "finalScore": 5,
+              "gate": "OK"
+            },
+            {
+              "id": "offlayn-4-0-pomoch-agentu-obrabatyvat-offlayn-epic-535-206",
+              "num": 206,
+              "title": "Синхронизация с ЛК поставщика (прайсы, статусы)",
+              "iteration": "Ф2 И5",
+              "moscow": "Won't",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Оффлайн 4.0",
+              "subgoal": "Время конса",
+              "finalScore": 2,
+              "gate": null
+            }
+          ]
+        },
+        {
+          "name": "Оффлайн к онлайну (Epic 522)",
+          "count": 8,
+          "items": [
+            {
+              "id": "offlayn-4-0-offlayn-k-onlaynu-epic-522-18",
+              "num": 18,
+              "title": "Предупреждать о дубле оффлайн-услуги",
+              "iteration": "Ф1 И7",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Оффлайн 4.0",
+              "subgoal": "Время конса + Когн. нагрузка агента",
+              "finalScore": 30,
+              "gate": "OK"
+            },
+            {
+              "id": "offlayn-4-0-offlayn-k-onlaynu-epic-522-24",
+              "num": 24,
+              "title": "Оффлайн ЖД услуга",
+              "iteration": "Ф1 И1",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Оффлайн 4.0",
+              "subgoal": "Время конса + Маржа",
+              "finalScore": 21,
+              "gate": "OK"
+            },
+            {
+              "id": "offlayn-4-0-offlayn-k-onlaynu-epic-522-68",
+              "num": 68,
+              "title": "Трансферная оффлайн услуга",
+              "iteration": "Ф1 И4",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Оффлайн 4.0",
+              "subgoal": "Время конса + Маржа",
+              "finalScore": 6,
+              "gate": "OK"
+            },
+            {
+              "id": "offlayn-4-0-offlayn-k-onlaynu-epic-522-72",
+              "num": 72,
+              "title": "Оффлайн Отель услуга",
+              "iteration": "Ф1 И3",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Оффлайн 4.0",
+              "subgoal": "Время конса + Маржа",
+              "finalScore": 6,
+              "gate": "OK"
+            },
+            {
+              "id": "offlayn-4-0-offlayn-k-onlaynu-epic-522-86",
+              "num": 86,
+              "title": "Формировать МК (авиа)",
+              "iteration": "Ф1 И6",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Оффлайн 4.0 + АА",
+              "subgoal": "Маржа + Время конса + Time-to-cash",
+              "finalScore": 5,
+              "gate": "Review"
+            },
+            {
+              "id": "offlayn-4-0-offlayn-k-onlaynu-epic-522-93",
+              "num": 93,
+              "title": "Оффлайн Авиа услуга",
+              "iteration": "Ф1 И2",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Оффлайн 4.0",
+              "subgoal": "Время конса + Маржа",
+              "finalScore": 4,
+              "gate": "OK"
+            },
+            {
+              "id": "offlayn-4-0-offlayn-k-onlaynu-epic-522-96",
+              "num": 96,
+              "title": "Формировать ваучер (отель)",
+              "iteration": "Ф1 И5",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Оффлайн 4.0 + АА",
+              "subgoal": "Маржа + Время конса",
+              "finalScore": 5,
+              "gate": "Review"
+            },
+            {
+              "id": "offlayn-4-0-offlayn-k-onlaynu-epic-522-152",
+              "num": 152,
+              "title": "Оффлайн страхование (тип услуги)",
+              "iteration": "Ф1 И8",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Оффлайн 4.0",
+              "subgoal": "Время конса + Маржа",
+              "finalScore": 6,
+              "gate": "OK"
+            }
+          ]
+        },
+        {
+          "name": "Мультиагентская схема (отдельный stream)",
+          "count": 3,
+          "items": [
+            {
+              "id": "offlayn-4-0-multiagentskaya-shema-otdelnyy-stream-199",
+              "num": 199,
+              "title": "Agency API: id агентства при создании (#28984)",
+              "iteration": "—",
+              "moscow": "Won't",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Мидофис",
+              "subgoal": "—",
+              "finalScore": 8,
+              "gate": null
+            },
+            {
+              "id": "offlayn-4-0-multiagentskaya-shema-otdelnyy-stream-202",
+              "num": 202,
+              "title": "Адаптация оффлайн-услуги к м/а схеме (#28208)",
+              "iteration": "—",
+              "moscow": "Won't",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Мидофис",
+              "subgoal": "—",
+              "finalScore": 3,
+              "gate": null
+            },
+            {
+              "id": "offlayn-4-0-multiagentskaya-shema-otdelnyy-stream-204",
+              "num": 204,
+              "title": "Адаптация сборов и ССБ оффлайн (#28982)",
+              "iteration": "—",
+              "moscow": "Won't",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Мидофис",
+              "subgoal": "—",
+              "finalScore": 2,
+              "gate": null
+            }
+          ]
+        },
+        {
+          "name": "Мультивалюта (отдельный stream)",
+          "count": 1,
+          "items": [
+            {
+              "id": "offlayn-4-0-multivalyuta-otdelnyy-stream-205",
+              "num": 205,
+              "title": "Мультивалюта. Offline услуга (#10809)",
+              "iteration": "—",
+              "moscow": "Won't",
+              "stage": "Снимать нагрузку",
+              "mechanism": "—",
+              "subgoal": "—",
+              "finalScore": 2,
+              "gate": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "theme": "Онлайн-услуги",
+      "count": 16,
+      "mustCount": 2,
+      "level2": [
+        {
+          "name": "Автоматизация онлайн-операций",
+          "count": 5,
+          "items": [
+            {
+              "id": "onlayn-uslugi-avtomatizatsiya-onlayn-operatsiy-4",
+              "num": 4,
+              "title": "Возврат / рефанд авиа",
+              "iteration": "L3.2.Б1",
+              "moscow": "Must",
+              "stage": "2 «Снимать нагрузку»",
+              "mechanism": "Сервис для клиента + Рабочее место агентства",
+              "subgoal": "Освободить время консультанта",
+              "finalScore": null,
+              "gate": "OK"
+            },
+            {
+              "id": "onlayn-uslugi-avtomatizatsiya-onlayn-operatsiy-5",
+              "num": 5,
+              "title": "Обмен авиа (полный + вторичный)",
+              "iteration": "L3.2.Б2",
+              "moscow": "Must",
+              "stage": "2 «Снимать нагрузку»",
+              "mechanism": "Сервис для клиента + Рабочее место агентства",
+              "subgoal": "Освободить время консультанта",
+              "finalScore": null,
+              "gate": "OK"
+            },
+            {
+              "id": "onlayn-uslugi-avtomatizatsiya-onlayn-operatsiy-117",
+              "num": 117,
+              "title": "Частичная аннуляция и частичный обмен",
+              "iteration": "L3.2.Б3",
+              "moscow": "Should",
+              "stage": "2 «Снимать нагрузку»",
+              "mechanism": "Сервис для клиента + Рабочее место агентства",
+              "subgoal": "Освободить время консультанта",
+              "finalScore": null,
+              "gate": "OK"
+            },
+            {
+              "id": "onlayn-uslugi-avtomatizatsiya-onlayn-operatsiy-128",
+              "num": 128,
+              "title": "Авторетрив и обработка статусов",
+              "iteration": "L3.2.Б4",
+              "moscow": "Should",
+              "stage": "2 «Снимать нагрузку»",
+              "mechanism": "Сервис для клиента + Рабочее место агентства",
+              "subgoal": "Освободить время консультанта",
+              "finalScore": null,
+              "gate": "OK"
+            },
+            {
+              "id": "onlayn-uslugi-avtomatizatsiya-onlayn-operatsiy-129",
+              "num": 129,
+              "title": "ЖД — аннуляции мультисегментов",
+              "iteration": "L3.2.Б5",
+              "moscow": "Should",
+              "stage": "2 «Снимать нагрузку»",
+              "mechanism": "Сервис для клиента + Рабочее место агентства",
+              "subgoal": "Освободить время консультанта",
+              "finalScore": null,
+              "gate": "OK"
+            }
+          ]
+        },
+        {
+          "name": "Онлайн-паритет вертикалей",
+          "count": 4,
+          "items": [
+            {
+              "id": "onlayn-uslugi-onlayn-paritet-vertikaley-118",
+              "num": 118,
+              "title": "Отели — UX поиска и страницы",
+              "iteration": "L3.1.Г",
+              "moscow": "Should",
+              "stage": "1 «Не мешать»",
+              "mechanism": "—",
+              "subgoal": "Минимизировать когнитивную нагрузку на агента",
+              "finalScore": null,
+              "gate": "OK"
+            },
+            {
+              "id": "onlayn-uslugi-onlayn-paritet-vertikaley-119",
+              "num": 119,
+              "title": "Авиа-поиск и UX",
+              "iteration": "L3.1.А",
+              "moscow": "Should",
+              "stage": "1 «Не мешать»",
+              "mechanism": "—",
+              "subgoal": "Минимизировать когнитивную нагрузку на агента",
+              "finalScore": null,
+              "gate": "OK"
+            },
+            {
+              "id": "onlayn-uslugi-onlayn-paritet-vertikaley-120",
+              "num": 120,
+              "title": "ЖД-схемы вагонов",
+              "iteration": "L3.1.Б",
+              "moscow": "Should",
+              "stage": "1 «Не мешать»",
+              "mechanism": "—",
+              "subgoal": "Минимизировать когнитивную нагрузку на агента",
+              "finalScore": null,
+              "gate": "OK"
+            },
+            {
+              "id": "onlayn-uslugi-onlayn-paritet-vertikaley-127",
+              "num": 127,
+              "title": "ЖД-баги тарифов и спецслучаи",
+              "iteration": "L3.1.В",
+              "moscow": "Should",
+              "stage": "1 «Не мешать»",
+              "mechanism": "—",
+              "subgoal": "Минимизировать когнитивную нагрузку на агента",
+              "finalScore": null,
+              "gate": "OK"
+            }
+          ]
+        },
+        {
+          "name": "Стабилизация онлайн-операций (авиа)",
+          "count": 7,
+          "items": [
+            {
+              "id": "onlayn-uslugi-stabilizatsiya-onlayn-operatsiy-avia-121",
+              "num": 121,
+              "title": "Стабилизация: ретрив, статусы и купоны (авиа)",
+              "iteration": "L3.3.С1",
+              "moscow": "Should",
+              "stage": "2 «Снимать нагрузку»",
+              "mechanism": "Сервис для клиента + Рабочее место агентства",
+              "subgoal": "Освободить время консультанта",
+              "finalScore": null,
+              "gate": "Review"
+            },
+            {
+              "id": "onlayn-uslugi-stabilizatsiya-onlayn-operatsiy-avia-122",
+              "num": 122,
+              "title": "Стабилизация: бронирование и SSR (авиа)",
+              "iteration": "L3.3.С2",
+              "moscow": "Should",
+              "stage": "1 «Не мешать»",
+              "mechanism": "—",
+              "subgoal": "Минимизировать когнитивную нагрузку на агента",
+              "finalScore": null,
+              "gate": "Review"
+            },
+            {
+              "id": "onlayn-uslugi-stabilizatsiya-onlayn-operatsiy-avia-123",
+              "num": 123,
+              "title": "Стабилизация: поиск, тарифы и политики (авиа)",
+              "iteration": "L3.3.С3",
+              "moscow": "Should",
+              "stage": "1 «Не мешать»",
+              "mechanism": "—",
+              "subgoal": "Минимизировать когнитивную нагрузку на агента",
+              "finalScore": null,
+              "gate": "OK"
+            },
+            {
+              "id": "onlayn-uslugi-stabilizatsiya-onlayn-operatsiy-avia-124",
+              "num": 124,
+              "title": "Стабилизация: возврат и штрафы (авиа)",
+              "iteration": "L3.3.С4",
+              "moscow": "Should",
+              "stage": "2 «Снимать нагрузку»",
+              "mechanism": "Сервис для клиента + Рабочее место агентства",
+              "subgoal": "Освободить время консультанта",
+              "finalScore": null,
+              "gate": "Review"
+            },
+            {
+              "id": "onlayn-uslugi-stabilizatsiya-onlayn-operatsiy-avia-125",
+              "num": 125,
+              "title": "Стабилизация: обмен и reprice (авиа)",
+              "iteration": "L3.3.С5",
+              "moscow": "Should",
+              "stage": "2 «Снимать нагрузку»",
+              "mechanism": "Сервис для клиента + Рабочее место агентства",
+              "subgoal": "Освободить время консультанта",
+              "finalScore": null,
+              "gate": "Review"
+            },
+            {
+              "id": "onlayn-uslugi-stabilizatsiya-onlayn-operatsiy-avia-126",
+              "num": 126,
+              "title": "Стабилизация: выписка (авиа)",
+              "iteration": "L3.3.С6",
+              "moscow": "Should",
+              "stage": "2 «Снимать нагрузку»",
+              "mechanism": "Сервис для клиента + Рабочее место агентства",
+              "subgoal": "Освободить время консультанта",
+              "finalScore": null,
+              "gate": "Review"
+            },
+            {
+              "id": "onlayn-uslugi-stabilizatsiya-onlayn-operatsiy-avia-198",
+              "num": 198,
+              "title": "Стабилизация: отмена и аннуляция (авиа)",
+              "iteration": "L3.3.С7",
+              "moscow": "Could",
+              "stage": "2 «Снимать нагрузку»",
+              "mechanism": "Сервис для клиента + Рабочее место агентства",
+              "subgoal": "Освободить время консультанта",
+              "finalScore": null,
+              "gate": "OK"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "theme": "Единый чат",
+      "count": 10,
+      "mustCount": 1,
+      "level2": [
+        {
+          "name": "Чат-бот в едином чате (Авиа)",
+          "count": 2,
+          "items": [
+            {
+              "id": "edinyy-chat-chat-bot-v-edinom-chate-avia-3",
+              "num": 3,
+              "title": "Чат-бот + доп. багаж (объединённая итерация)",
+              "iteration": "B1–B4 + Ф3 И2 (объединено)",
+              "moscow": "Must",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Сервис для клиента + Оффлайн 4.0",
+              "subgoal": "Время конса + Когн. нагрузка клиента + Маржа",
+              "finalScore": 1,
+              "gate": "Review"
+            },
+            {
+              "id": "edinyy-chat-chat-bot-v-edinom-chate-avia-144",
+              "num": 144,
+              "title": "Аналитика веток + петля обратной связи (воронки, drop-off, оптимизация)",
+              "iteration": "B5",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Время конса + Когн. нагрузка агента",
+              "finalScore": 7,
+              "gate": "Review"
+            }
+          ]
+        },
+        {
+          "name": "Единый чат для агентства",
+          "count": 8,
+          "items": [
+            {
+              "id": "edinyy-chat-edinyy-chat-dlya-agentstva-7",
+              "num": 7,
+              "title": "Информация о заказе на правой панели чата",
+              "iteration": "E6",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Время конса + Тормоза + Когн. нагрузка агента",
+              "finalScore": 62,
+              "gate": "OK"
+            },
+            {
+              "id": "edinyy-chat-edinyy-chat-dlya-agentstva-10",
+              "num": 10,
+              "title": "Поиск и основные фильтры (по ФИО, по номеру заказа)",
+              "iteration": "E2",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Время конса + Тормоза",
+              "finalScore": 49,
+              "gate": "OK"
+            },
+            {
+              "id": "edinyy-chat-edinyy-chat-dlya-agentstva-13",
+              "num": 13,
+              "title": "Раздел «Чаты» + список + кнопка «Обновить» вручную",
+              "iteration": "E1",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Время конса + Тормоза",
+              "finalScore": 37,
+              "gate": "OK"
+            },
+            {
+              "id": "edinyy-chat-edinyy-chat-dlya-agentstva-21",
+              "num": 21,
+              "title": "Вкладки разделения чатов (С клиентом / Внутри / С поставщиком / Все / Файлы / Заметки)",
+              "iteration": "E3",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Время конса + Тормоза + Когн. нагрузка агента",
+              "finalScore": 25,
+              "gate": "OK"
+            },
+            {
+              "id": "edinyy-chat-edinyy-chat-dlya-agentstva-59",
+              "num": 59,
+              "title": "Уведомления (push в браузере + email с warning «ответь в Ракете»)",
+              "iteration": "E7",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства + Сервис для клиента",
+              "subgoal": "Время конса + Тормоза",
+              "finalScore": 7,
+              "gate": "OK"
+            },
+            {
+              "id": "edinyy-chat-edinyy-chat-dlya-agentstva-73",
+              "num": 73,
+              "title": "Интеграция раздела «Помощь» (Help как тип чата + email-дублирование)",
+              "iteration": "E5",
+              "moscow": "Should",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства + Сервис для клиента",
+              "subgoal": "Тормоза + Время конса",
+              "finalScore": 6,
+              "gate": "OK"
+            },
+            {
+              "id": "edinyy-chat-edinyy-chat-dlya-agentstva-132",
+              "num": 132,
+              "title": "Красные метки на карточке услуги при непрочитанных сообщениях",
+              "iteration": "E8",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства + Сервис для клиента",
+              "subgoal": "Тормоза + Время конса",
+              "finalScore": 59,
+              "gate": "OK"
+            },
+            {
+              "id": "edinyy-chat-edinyy-chat-dlya-agentstva-162",
+              "num": 162,
+              "title": "Остальные фильтры (по типу чата, по дате, по источнику)",
+              "iteration": "E4",
+              "moscow": "Could",
+              "stage": "Снимать нагрузку",
+              "mechanism": "Рабочее место агентства",
+              "subgoal": "Время конса + Тормоза",
+              "finalScore": 5,
+              "gate": "OK"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

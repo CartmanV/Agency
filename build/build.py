@@ -27,7 +27,6 @@ except ImportError:
 SITE_DIR = Path(__file__).resolve().parent.parent          # site/
 WORK_DIR = SITE_DIR.parent                                 # My work/  (источники)
 DATA_DIR = SITE_DIR / "data"
-SOURCE_GLOB = "*v5*.xlsx"  # «Единый бэклог направления Агентства v5 (…).xlsx»
 SHEET = "Бэклог"
 
 # Заголовок колонки xlsx -> ключ в JSON
@@ -94,10 +93,19 @@ def clean(value):
 
 
 def find_source():
-    matches = sorted(WORK_DIR.glob(SOURCE_GLOB))
-    if not matches:
-        sys.exit(f"Не найден источник {SOURCE_GLOB!r} в {WORK_DIR}")
-    return matches[-1]  # самая свежая ревизия по имени
+    """Самый свежий файл единого бэклога (по версии vN) в папке My work.
+    Устойчиво к ревизиям (v5 → v6 → …) и NFD/NFC-нормализации имён на macOS."""
+    cands = []
+    for p in WORK_DIR.glob("*.xlsx"):
+        name = unicodedata.normalize("NFC", p.name)
+        low = name.lower()
+        if "бэклог направлени" in low and "соответствие" not in low and "черновик" not in low:
+            m = re.search(r"\bv(\d+)\b", name)
+            cands.append((int(m.group(1)) if m else 0, name, p))
+    if not cands:
+        sys.exit(f"Не найден файл единого бэклога (*.xlsx с «бэклог направления») в {WORK_DIR}")
+    cands.sort(key=lambda c: (c[0], c[1]))
+    return cands[-1][2]  # наивысшая версия
 
 
 def build_backlog():
@@ -167,6 +175,33 @@ def build_backlog():
     return items, errors
 
 
+def build_tree(items):
+    """Иерархия Тема (L1) → Уровень 2 → Итерация (ссылка на backlog id).
+    Лестница и механизмы — оси-бейджи, не ветви (см. план р. 4.2)."""
+    from collections import OrderedDict
+    themes = OrderedDict()
+    for it in items:
+        th = it.get("theme") or "—"
+        l2 = it.get("level2") or "—"
+        themes.setdefault(th, OrderedDict()).setdefault(l2, []).append({
+            "id": it["id"], "num": it["num"], "title": it.get("title"),
+            "iteration": it.get("iteration"), "moscow": it.get("moscow"),
+            "stage": it.get("stage"), "mechanism": it.get("mechanism"),
+            "subgoal": it.get("subgoal"), "finalScore": it.get("finalScore"),
+            "gate": it.get("gate"),
+        })
+    tree = []
+    for th, l2map in themes.items():
+        l2list, tcount, tmust = [], 0, 0
+        for l2, arr in l2map.items():
+            tcount += len(arr)
+            tmust += sum(1 for x in arr if x["moscow"] == "Must")
+            l2list.append({"name": l2, "count": len(arr), "items": arr})
+        tree.append({"theme": th, "count": tcount, "mustCount": tmust, "level2": l2list})
+    tree.sort(key=lambda t: -t["count"])
+    return tree
+
+
 def main():
     items, errors = build_backlog()
     DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -179,6 +214,17 @@ def main():
     }
     out.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"Записано {len(items)} итераций → {out.relative_to(SITE_DIR)}")
+
+    # tree.json — дерево из того же источника
+    tree = build_tree(items)
+    tree_out = DATA_DIR / "tree.json"
+    tree_out.write_text(json.dumps({
+        "source": find_source().name,
+        "count": len(items),
+        "themes": len(tree),
+        "tree": tree,
+    }, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"Дерево: {len(tree)} тем × Уровень 2 × итерации → {tree_out.relative_to(SITE_DIR)}")
 
     must = sum(1 for x in items if x.get("moscow") == "Must")
     print(f"  Must: {must}  ·  с Final Score: {sum(1 for x in items if x['finalScore'] is not None)}")

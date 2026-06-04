@@ -413,3 +413,56 @@ table.productv thead th { font-family: var(--f-mono); font-size: 10.5px; text-tr
 .m-verdict.is-rework  { border-left: 3px solid var(--copper); }
 .m-verdict p { margin: 0; font-size: 13.5px; color: var(--cream-soft); }
 .m-src { margin: 14px 0 0; font-family: var(--f-mono); font-size: 11px; color: var(--cream-dim); }
+
+/* ===================== Дерево работ (tree.html) ===================== */
+.tree-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 18px 0 18px; }
+.tree-controls .result-meta { margin: 0; margin-left: auto; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.seg__btn {
+  all: unset; cursor: pointer; font-family: var(--f-mono); font-size: 12.5px;
+  padding: 8px 16px; color: var(--cream-dim);
+}
+.seg__btn:hover { color: var(--cream); background: var(--panel); }
+.seg__btn:focus-visible { outline: 2px solid var(--copper); outline-offset: -2px; }
+.seg__btn.is-active { background: var(--panel-2); color: var(--cream); }
+
+.tree-body { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+
+details.tnode { border-bottom: 1px solid var(--line); }
+details.tnode:last-child { border-bottom: 0; }
+.tnode summary.tsum {
+  display: flex; align-items: center; gap: 12px; cursor: pointer;
+  padding: 12px 16px; list-style: none;
+}
+.tnode summary.tsum::-webkit-details-marker { display: none; }
+.tnode summary.tsum:hover { background: var(--panel); }
+.tnode summary.tsum:focus-visible { outline: 2px solid var(--copper); outline-offset: -2px; }
+.tchev { color: var(--cream-dim); transition: transform .15s; font-size: 12px; }
+details.tnode[open] > summary .tchev { transform: rotate(90deg); }
+.tname { color: var(--cream); }
+.tname--theme { font-family: var(--f-display); font-size: 18px; }
+.tnode--l2 .tname { font-family: var(--f-mono); font-size: 13px; color: var(--cream-soft); }
+.tcount {
+  font-family: var(--f-mono); font-size: 11px; color: var(--cream-dim);
+  border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px;
+}
+.tlink { font-family: var(--f-mono); font-size: 11px; margin-left: auto; white-space: nowrap; }
+
+.tnode--theme > .tnode__children { padding: 0 0 6px 14px; }
+.tnode--l2 { border-bottom: 0; border-top: 1px dashed var(--line); }
+.tnode--l2 > .tnode__children { padding-left: 14px; }
+
+.titems { list-style: none; margin: 0; padding: 0 12px 8px; }
+.titem {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 7px 8px; border-bottom: 1px solid var(--line);
+}
+.titem:last-child { border-bottom: 0; }
+.titem:hover { background: var(--panel); border-radius: 8px; }
+.titem__link { display: flex; align-items: baseline; gap: 10px; flex: 1 1 320px; min-width: 0; }
+.titem__link:hover { text-decoration: none; }
+.titem__it { font-family: var(--f-mono); font-size: 11px; color: var(--gold); white-space: nowrap; min-width: 42px; }
+.titem__title { color: var(--cream); overflow: hidden; text-overflow: ellipsis; }
+.titem__link:hover .titem__title { color: var(--copper); }
+.titem__detail { font-family: var(--f-mono); font-size: 11px; color: var(--cream-dim); margin-left: auto; }
+.tree-body:not(.is-detailed) .titem__detail { display: none; }

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0A1F16" />
+  <title>Дерево работ — направление «Агентства»</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Manrope:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">К содержанию</a>
+  <div data-header></div>
+
+  <div class="crumbs"><a href="index.html">Направление</a> <span>›</span> Дерево работ</div>
+
+  <main id="main">
+    <h1>Дерево работ</h1>
+    <p class="lede">
+      Иерархия Тема → Уровень 2 → Итерация. Режим «Кратко» — свёрнутые ветки;
+      «Подробно» — с этапом, механизмом и Final. Этапы лестницы и механизмы —
+      оси-фильтры, не ветви. Клик по итерации открывает её в
+      <a href="backlog.html">Бэклоге</a>.
+    </p>
+
+    <div data-tree></div>
+  </main>
+
+  <footer class="site-footer">
+    Данные: <code>data/tree.json</code> ← <code>python3 build/build.py</code> (из единого бэклога).
+  </footer>
+
+  <script src="assets/app.js"></script>
+</body>
+</html>

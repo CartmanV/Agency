@@ -6,7 +6,7 @@ const NAV = [
   { href: "vision.html",   label: "Видение" },
   { href: "backlog.html",  label: "Бэклог" },
   { href: "must.html",     label: "Must" },
-  { href: "tree.html",     label: "Дерево", disabled: true },
+  { href: "tree.html",     label: "Дерево" },
   { href: "agencies.html", label: "Агентства", disabled: true },
   { href: "metrics.html",  label: "Метрики", disabled: true },
   { href: "legend.html",   label: "Легенды", disabled: true },
@@ -243,7 +243,22 @@ async function mountBacklog() {
     state.q = ""; state.filters = {};
     host.querySelector("[data-search]").value = "";
     host.querySelectorAll("[data-filter]").forEach((s) => (s.value = ""));
+    history.replaceState(null, "", location.pathname);
     apply();
+  });
+
+  // deep-link из дерева: ?q=<id|текст> и/или ?theme=…&stage=… и т.д.
+  const params = new URLSearchParams(location.search);
+  const qp = params.get("q");
+  if (qp) { state.q = qp; host.querySelector("[data-search]").value = qp; }
+  filterDefs.forEach(({ field }) => {
+    const v = params.get(field);
+    if (v == null) return;
+    const sel = host.querySelector(`[data-filter="${field}"]`);
+    if (sel && [...sel.options].some((o) => o.value === v)) {
+      sel.value = v;
+      state.filters[field] = v;
+    }
   });
 
   apply();
@@ -381,8 +396,96 @@ async function mountMust() {
     () => host.querySelectorAll(".mcard__head").forEach((b) => setMustCard(b, false)));
 }
 
+// ===================== Дерево работ (tree.html) =====================
+function renderTitem(it) {
+  const fin = it.finalScore == null ? "—" : it.finalScore;
+  const detail = [it.stage, it.mechanism].filter(Boolean).join(" · ");
+  return `
+    <li class="titem">
+      <a class="titem__link" href="backlog.html?q=${encodeURIComponent(it.id)}">
+        <span class="titem__it">${esc(it.iteration || "—")}</span>
+        <span class="titem__title">${esc(it.title || "—")}</span>
+      </a>
+      <span class="badge badge--${moscowClass(it.moscow)}">${esc(it.moscow || "—")}</span>
+      <span class="titem__detail">${detail ? esc(detail) + " · " : ""}Final ${fin}</span>
+    </li>`;
+}
+function renderTitems(items) {
+  return `<ul class="titems">${items.map(renderTitem).join("")}</ul>`;
+}
+function renderL2(l) {
+  return `
+    <details class="tnode tnode--l2">
+      <summary class="tsum">
+        <span class="tchev" aria-hidden="true">▸</span>
+        <span class="tname">${esc(l.name)}</span>
+        <span class="tcount">${l.count}</span>
+      </summary>
+      <div class="tnode__children">${renderTitems(l.items)}</div>
+    </details>`;
+}
+function renderTheme(t) {
+  const single = t.level2.length === 1 && t.level2[0].name === t.theme;
+  const children = single
+    ? `<div class="tnode__children">${renderTitems(t.level2[0].items)}</div>`
+    : `<div class="tnode__children">${t.level2.map(renderL2).join("")}</div>`;
+  const mustB = t.mustCount ? `<span class="badge badge--must">${t.mustCount} Must</span>` : "";
+  return `
+    <details class="tnode tnode--theme" open>
+      <summary class="tsum">
+        <span class="tchev" aria-hidden="true">▸</span>
+        <span class="tname tname--theme">${esc(t.theme)}</span>
+        <span class="tcount">${t.count}</span>
+        ${mustB}
+        <a class="tlink" href="backlog.html?theme=${encodeURIComponent(t.theme)}">в бэклоге →</a>
+      </summary>
+      ${children}
+    </details>`;
+}
+
+async function mountTree() {
+  const host = document.querySelector("[data-tree]");
+  if (!host) return;
+  host.innerHTML = `<div class="loading">Загрузка дерева…</div>`;
+  let data;
+  try { data = await loadJSON("data/tree.json"); }
+  catch (e) { host.innerHTML = `<div class="error">${esc(e.message)}</div>`; return; }
+
+  const tree = data.tree || [];
+  host.innerHTML = `
+    <div class="tree-controls">
+      <div class="seg" role="group" aria-label="Режим отображения дерева">
+        <button type="button" class="seg__btn is-active" data-mode="brief" aria-pressed="true">Кратко</button>
+        <button type="button" class="seg__btn" data-mode="detail" aria-pressed="false">Подробно</button>
+      </div>
+      <button type="button" class="btn" data-expand>Развернуть всё</button>
+      <button type="button" class="btn" data-collapse>Свернуть всё</button>
+      <span class="result-meta">${data.themes} тем · ${data.count} итераций</span>
+    </div>
+    <div class="tree-body" data-tree-body>${tree.map(renderTheme).join("")}</div>`;
+
+  const bodyEl = host.querySelector("[data-tree-body]");
+  host.querySelectorAll("[data-mode]").forEach((b) => {
+    b.addEventListener("click", () => {
+      host.querySelectorAll("[data-mode]").forEach((x) => {
+        const on = x === b;
+        x.classList.toggle("is-active", on);
+        x.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+      const detail = b.dataset.mode === "detail";
+      bodyEl.classList.toggle("is-detailed", detail);
+      bodyEl.querySelectorAll("details.tnode--l2").forEach((d) => (d.open = detail));
+    });
+  });
+  host.querySelector("[data-expand]").addEventListener("click",
+    () => bodyEl.querySelectorAll("details").forEach((d) => (d.open = true)));
+  host.querySelector("[data-collapse]").addEventListener("click",
+    () => bodyEl.querySelectorAll("details.tnode--l2").forEach((d) => (d.open = false)));
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   mountHeader();
   mountBacklog();
   mountMust();
+  mountTree();
 });
