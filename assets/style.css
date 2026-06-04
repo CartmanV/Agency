@@ -773,3 +773,50 @@ a.pcard:hover { border-color: var(--copper); transform: translateY(-2px); text-d
 .vis-sect__body { padding: 0 18px 16px 18px; }
 .vis-sect__body p { color: var(--cream-soft); max-width: 78ch; }
 .vis-sect__body ol, .vis-sect__body ul { color: var(--cream-soft); max-width: 78ch; padding-left: 22px; }
+
+/* ===================== Лестница ценности (lestnica.html) ===================== */
+.lad-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 14px 0 18px; }
+.lad-controls .result-meta { margin: 0; margin-left: auto; }
+.lad-stages { display: flex; flex-direction: column; gap: 12px; }
+.lad-stage { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); overflow: hidden; }
+.lad-stage.is-focus { border-color: var(--pink); }
+.lad-sum { list-style: none; cursor: pointer; display: grid; grid-template-columns: auto auto 1fr; gap: 6px 14px; align-items: baseline; padding: 16px 18px; }
+.lad-sum::-webkit-details-marker { display: none; }
+.lad-sum:hover { background: var(--panel-2); }
+.lad-sum:focus-visible { outline: 2px solid var(--copper); outline-offset: -2px; }
+.lad-n { font-family: var(--f-display); font-size: 30px; color: var(--copper); line-height: 1; font-variant-numeric: tabular-nums; }
+.lad-stage.is-focus .lad-n { color: var(--pink); }
+.lad-name { font-family: var(--f-display); font-size: 21px; color: var(--cream); }
+.lad-focus { font-family: var(--f-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--pink); border: 1px solid var(--pink); border-radius: 999px; padding: 2px 8px; }
+.lad-mean { grid-column: 1 / -1; font-size: 13.5px; color: var(--cream-dim); line-height: 1.5; }
+.lad-body { padding: 0 18px 18px; }
+
+.lad-block { border-top: 1px solid var(--line); padding-top: 14px; margin-top: 6px; }
+.lad-block__sub { font-family: var(--f-mono); font-size: 12px; color: var(--gold); }
+.lad-block__label { font-family: var(--f-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--cream-dim); margin: 2px 0 10px; }
+.lad-grp { margin-bottom: 10px; }
+.lad-grp__h { font-family: var(--f-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--cream-dim); }
+.lad-hyp { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 6px; }
+.lad-hyp li { display: flex; gap: 10px; font-size: 13px; color: var(--cream-soft); line-height: 1.5; }
+.lad-h { font-family: var(--f-mono); font-size: 11px; color: var(--copper); border: 1px solid var(--copper-dk); border-radius: 6px; padding: 1px 7px; height: max-content; white-space: nowrap; }
+.lad-crit { margin: 6px 0 0; padding-left: 20px; font-size: 13px; color: var(--cream-soft); }
+.lad-crit li { margin: 2px 0; }
+.lad-metrics { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 8px; }
+.lad-mh { font-family: var(--f-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .05em; }
+.lad-mh.act { color: var(--emerald); } .lad-mh.tgt { color: var(--copper); }
+.lad-m { font-family: var(--f-mono); font-size: 11px; color: var(--cream-soft); border: 1px solid var(--line-soft); border-radius: 999px; padding: 2px 9px; }
+.lad-note { font-size: 12px; color: var(--pink-soft); background: var(--pink-dim); border-radius: 8px; padding: 9px 11px; margin: 10px 0 0; line-height: 1.45; }
+.lad-foot { margin: 12px 0 0; display: grid; gap: 4px; border-top: 1px solid var(--line); padding-top: 12px; }
+.lad-foot > div { display: flex; gap: 10px; }
+.lad-foot dt { font-family: var(--f-mono); font-size: 11px; color: var(--cream-dim); min-width: 200px; flex-shrink: 0; }
+.lad-foot dd { margin: 0; font-size: 13px; color: var(--cream-soft); }
+
+.sg-map { display: grid; gap: 4px; }
+.sg-row { display: flex; align-items: center; gap: 12px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+.sg-n { font-family: var(--f-display); font-size: 18px; color: var(--copper); min-width: 18px; }
+.sg-name { flex: 1; color: var(--cream-soft); font-size: 14px; }
+.sg-stage { font-family: var(--f-mono); font-size: 11px; color: var(--cream-dim); border: 1px solid var(--line-soft); border-radius: 999px; padding: 2px 9px; }
+
+.lad-caveat { border: 1px solid var(--line); border-left: 3px solid var(--gold); border-radius: 10px; background: var(--panel); padding: 16px 18px; }
+.lad-caveat__h { font-family: var(--f-display); font-size: 17px; color: var(--cream); margin-bottom: 8px; }
+.lad-caveat p { margin: 0; color: var(--cream-soft); font-size: 13.5px; line-height: 1.6; max-width: 90ch; }

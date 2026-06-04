@@ -8,6 +8,7 @@ const NAV = [
   { href: "must.html",     label: "Must" },
   { href: "tree.html",     label: "Дерево" },
   { href: "levels.html",   label: "Карта L1/L2" },
+  { href: "lestnica.html", label: "Лестница" },
   { href: "legend.html",   label: "Легенды" },
   { href: "research.html", label: "Исследования" },
   { href: "agencies.html", label: "Агентства" },
@@ -685,6 +686,83 @@ async function mountAgencies() {
   }
 }
 
+// ===================== Лестница ценности (lestnica.html) =====================
+async function mountLadder() {
+  const host = document.querySelector("[data-ladder]");
+  if (!host) return;
+  host.innerHTML = `<div class="loading">Загрузка лестницы…</div>`;
+  let data;
+  try { data = await loadJSON("data/ladder.json"); }
+  catch (e) { host.innerHTML = `<div class="error">${esc(e.message)}</div>`; return; }
+
+  const focusStages = new Set(["1", "2"]);
+  const hChip = (h) => `<a class="lad-h" href="backlog.html?q=${encodeURIComponent(h.code)}" title="${esc(h.text)}">${esc(h.code)}</a>`;
+  const mChip = (m) => `<span class="lad-m">${esc(m)}</span>`;
+
+  function block(b) {
+    return `
+      <div class="lad-block">
+        <div class="lad-block__sub">Подцель: ${esc(b.subgoal)}</div>
+        <div class="lad-block__label">${esc(b.label)}</div>
+        <div class="lad-grp"><span class="lad-grp__h">Гипотезы</span>
+          <ul class="lad-hyp">${b.hypotheses.map((h) => `<li>${hChip(h)} <span>${esc(h.text)}</span></li>`).join("")}</ul></div>
+        <div class="lad-grp"><span class="lad-grp__h">Критерии успешности</span>
+          <ul class="lad-crit">${b.criteria.map((c) => `<li>${esc(c)}</li>`).join("")}</ul></div>
+        <div class="lad-metrics">
+          ${b.metricsActive.length ? `<div><span class="lad-mh act">Активные</span> ${b.metricsActive.map(mChip).join(" ")}</div>` : ""}
+          ${b.metricsTarget.length ? `<div><span class="lad-mh tgt">Целевые</span> ${b.metricsTarget.map(mChip).join(" ")}</div>` : ""}
+        </div>
+        ${b.note ? `<p class="lad-note">${esc(b.note)}</p>` : ""}
+      </div>`;
+  }
+
+  function stage(s) {
+    const focus = focusStages.has(s.n);
+    return `
+      <details class="lad-stage${focus ? " is-focus" : ""}"${focus ? " open" : ""}>
+        <summary class="lad-sum">
+          <span class="lad-n">${esc(s.n)}</span>
+          <span class="lad-name">${esc(s.name)}</span>
+          ${focus ? `<span class="lad-focus">фокус 2026</span>` : ""}
+          <span class="lad-mean">${esc(s.meaning)}</span>
+        </summary>
+        <div class="lad-body">
+          ${s.blocks.map(block).join("")}
+          <dl class="lad-foot">
+            <div><dt>Что должна делать Ракета</dt><dd>${esc(s.doWhat)}</dd></div>
+            <div><dt>Результат для агентства</dt><dd>${esc(s.result)}</dd></div>
+            <div><dt>Цель этапа</dt><dd>${esc(s.goal)}</dd></div>
+          </dl>
+        </div>
+      </details>`;
+  }
+
+  const subMap = (data.subgoalMap || []).map((s) =>
+    `<div class="sg-row"><span class="sg-n">${esc(s.n)}</span><span class="sg-name">${esc(s.name)}</span><span class="sg-stage">этап ${esc(s.stage)}</span></div>`).join("");
+
+  host.innerHTML = `
+    <p class="lede" style="margin-bottom:8px">${esc(data.focus || "")}</p>
+    <div class="lad-controls">
+      <button type="button" class="btn" data-lad-expand>Раскрыть все</button>
+      <button type="button" class="btn" data-lad-collapse>Свернуть все</button>
+      <span class="result-meta">источник: ${esc(data.source)} v${esc(data.version)}</span>
+    </div>
+    <div class="lad-stages">${data.stages.map(stage).join("")}</div>
+
+    <h2>7 подцелей → этап</h2>
+    <div class="sg-map">${subMap}</div>
+
+    <h2>Методологическая оговорка</h2>
+    <div class="lad-caveat">
+      <div class="lad-caveat__h">${esc(data.caveat.title)}</div>
+      <p>${esc(data.caveat.text)}</p>
+    </div>`;
+
+  const all = () => host.querySelectorAll("details.lad-stage");
+  host.querySelector("[data-lad-expand]").addEventListener("click", () => all().forEach((d) => (d.open = true)));
+  host.querySelector("[data-lad-collapse]").addEventListener("click", () => all().forEach((d) => (d.open = false)));
+}
+
 // ===================== Исследования (research.html) =====================
 function hypStatusClass(s) {
   const t = String(s || "").toLowerCase();
@@ -910,4 +988,5 @@ document.addEventListener("DOMContentLoaded", () => {
   mountAgencies();
   mountMetrics();
   mountResearch();
+  mountLadder();
 });
