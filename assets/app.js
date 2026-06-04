@@ -249,7 +249,140 @@ async function mountBacklog() {
   apply();
 }
 
+// ===================== Must — аккордеон карточек ProductV =====================
+function verdictClass(v) { return v === "Proceed" ? "is-proceed" : "is-rework"; }
+function deltaClass(d) {
+  const s = String(d).trim();
+  if (s.startsWith("+")) return "pos";
+  if (s.startsWith("−") || s.startsWith("-")) return "neg";
+  return "zero";
+}
+function riceStr(r) {
+  if (!r) return "—";
+  const e = r.e == null ? "—" : r.e;
+  return `${r.r}·${r.i}·${r.c}·${e}`;
+}
+function mList(arr, ordered) {
+  if (!arr || !arr.length) return "";
+  const tag = ordered ? "ol" : "ul";
+  return `<${tag} class="m-list">${arr.map((x) => `<li>${esc(x)}</li>`).join("")}</${tag}>`;
+}
+function mBlock(label, inner) {
+  if (!inner) return "";
+  return `<div class="m-sect"><div class="m-sect__h">${esc(label)}</div>${inner}</div>`;
+}
+
+function renderMustCard(c) {
+  const bodyId = `mc-${c.num}-body`;
+  const meta = [
+    ["Этап / Блок", c.stageBlock],
+    ["Механизм", c.mechanism],
+    ["Подцель", c.subgoal],
+    ["Уровень 2", c.level2],
+    ["GitLab", c.gitlab],
+    ["Статус", c.status],
+  ].filter(([, v]) => v)
+   .map(([k, v]) => `<div class="m-meta__row"><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("");
+
+  const pvRows = (c.productv || []).map((p) =>
+    `<tr>
+       <td class="pv-th">${esc(p.thinker)}</td>
+       <td class="pv-mod">${esc(p.modifier)}</td>
+       <td class="pv-delta ${deltaClass(p.delta)}">${esc(p.delta)}</td>
+       <td class="pv-basis">${esc(p.basis)}</td>
+     </tr>`).join("");
+
+  const scenario = c.scenario
+    ? `<div class="m-scn">
+         <div class="m-scn__col m-scn__as"><span class="t">As is</span><p>${esc(c.scenario.asIs)}</p></div>
+         <div class="m-scn__col m-scn__to"><span class="t">To be</span><p>${esc(c.scenario.toBe)}</p></div>
+       </div>` : "";
+
+  const finalStr = c.finalXlsx == null ? "—" : c.finalXlsx;
+
+  return `
+    <article class="mcard" data-verdict="${verdictClass(c.verdict)}">
+      <button type="button" class="mcard__head" aria-expanded="false" aria-controls="${bodyId}">
+        <span class="mcard__num">${c.num}</span>
+        <span class="mcard__title">${esc(c.title)}</span>
+        <span class="mcard__theme">${esc(c.theme)}</span>
+        <span class="vbadge ${verdictClass(c.verdict)}">${esc(c.verdict)}</span>
+        <span class="mcard__metrics">
+          <span title="Reach·Impact·Confidence·Effort">${riceStr(c.rice)}</span>
+          <span>Final ${finalStr}</span>
+          <span>PV ${Number(c.pvProductV).toFixed(2)}</span>
+        </span>
+        <span class="mcard__chev" aria-hidden="true">▸</span>
+      </button>
+      <div class="mcard__body" id="${bodyId}" hidden>
+        <dl class="m-meta">${meta}</dl>
+        ${mBlock("Гипотеза", `<p class="m-hyp">${esc(c.hypothesis)}</p>`)}
+        ${c.composition ? mBlock("Состав эпика", `<p>${esc(c.composition)}</p>`) : ""}
+        ${c.flag ? `<p class="m-flag">⚠ ${esc(c.flag)}</p>` : ""}
+        ${mBlock("Поток ролей", mList(c.roleFlow))}
+        ${mBlock("Проблема", mList(c.problem, true))}
+        ${mBlock("Результат", mList(c.result, true))}
+        ${mBlock("Влияние на цель", mList(c.impact))}
+        ${mBlock("Пользовательский сценарий", scenario)}
+        ${mBlock("Образ результата (энтелехия)", `<p class="m-ent">${esc(c.entelechy)}</p>`)}
+        ${c.tasks && c.tasks.length ? mBlock("Задачи", mList(c.tasks, true)) : ""}
+        ${mBlock("ProductV · пятикнижный фильтр", `
+          <div class="table-wrap">
+            <table class="productv">
+              <thead><tr><th>Мыслитель</th><th>Модиф.</th><th>Δ</th><th>Основание</th></tr></thead>
+              <tbody>${pvRows}</tbody>
+            </table>
+          </div>
+          <p class="m-pvsum">${esc(c.pvSum)}</p>`)}
+        ${mBlock("RICE — обоснование", `<p class="m-rice">${esc(c.riceRationale)}</p>`)}
+        <div class="m-verdict ${verdictClass(c.verdict)}">
+          <span class="vbadge ${verdictClass(c.verdict)}">${esc(c.verdict)}</span>
+          <p>${esc(c.verdictText)}</p>
+        </div>
+        <p class="m-src">Источники: ${esc(c.sources)}</p>
+      </div>
+    </article>`;
+}
+
+function setMustCard(btn, open) {
+  const body = document.getElementById(btn.getAttribute("aria-controls"));
+  btn.setAttribute("aria-expanded", open ? "true" : "false");
+  if (body) body.hidden = !open;
+  const card = btn.closest(".mcard");
+  if (card) card.classList.toggle("is-open", open);
+}
+
+async function mountMust() {
+  const host = document.querySelector("[data-must-cards]");
+  if (!host) return;
+  host.innerHTML = `<div class="loading">Загрузка Must-карточек…</div>`;
+  let data;
+  try { data = await loadJSON("data/must.json"); }
+  catch (e) { host.innerHTML = `<div class="error">${esc(e.message)}</div>`; return; }
+
+  const cards = (data.cards || []).slice()
+    .sort((a, b) => (b.finalXlsx ?? -1) - (a.finalXlsx ?? -1));
+
+  host.innerHTML = `
+    <p class="must-note">${esc(data.note || "")}</p>
+    <div class="must-controls">
+      <button type="button" class="btn" data-expand-all>Развернуть все</button>
+      <button type="button" class="btn" data-collapse-all>Свернуть все</button>
+      <span class="result-meta">Источник: ${esc(data.source || "")}</span>
+    </div>
+    <div class="mcards">${cards.map(renderMustCard).join("")}</div>`;
+
+  host.querySelectorAll(".mcard__head").forEach((btn) => {
+    btn.addEventListener("click", () => setMustCard(btn, btn.getAttribute("aria-expanded") !== "true"));
+  });
+  host.querySelector("[data-expand-all]").addEventListener("click",
+    () => host.querySelectorAll(".mcard__head").forEach((b) => setMustCard(b, true)));
+  host.querySelector("[data-collapse-all]").addEventListener("click",
+    () => host.querySelectorAll(".mcard__head").forEach((b) => setMustCard(b, false)));
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   mountHeader();
   mountBacklog();
+  mountMust();
 });
