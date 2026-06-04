@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0A1F16" />
+  <title>Агентства. Цифры — направление «Агентства»</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700&family=Manrope:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">К содержанию</a>
+  <div data-header></div>
+
+  <div class="crumbs"><a href="index.html">Направление</a> <span>›</span> Агентства. Цифры</div>
+
+  <main id="main">
+    <h1>Агентства. Цифры</h1>
+    <p class="lede">
+      Текущие агентства в цифрах: объёмы, сегменты, концентрация, отток. Срез на
+      31.05.2026, метрика — количество операций. База для оценки Impact/Reach и метки
+      «Концентрация» в <a href="backlog.html">Бэклоге</a>.
+    </p>
+
+    <!-- 1. Сводка направления + концентрация -->
+    <div data-ag-summary></div>
+
+    <!-- 2. Сегменты (редакторский слой: сегмент → механизм, раздел 5.2) -->
+    <h2>Сегменты и кому какой механизм</h2>
+    <div class="accent-grid">
+      <article class="accent-card is-nsm">
+        <div class="k">Strategists · ядро</div>
+        <h3>IBC, ATH, Global Air</h3>
+        <p>Несут основной объём. Механизмы: Сервис для клиента и Мидофис (селф-сервис
+        клиента, бесшовные интеграции) — удержать и углубить.</p>
+      </article>
+      <article class="accent-card is-bet1">
+        <div class="k">Growth leaders / Stable</div>
+        <h3>Аэроглобус, Корпорэйт Трэвел, KazTour</h3>
+        <p>Растущие и устойчивые. Механизм: Рабочее место агентства (единое окно,
+        автоматизация рутины) — снять операционные тормоза.</p>
+      </article>
+      <article class="accent-card is-bet2">
+        <div class="k">Risers + новички</div>
+        <h3>ГСП-Сервис, KMP, Космос · Симпл Флайт, Рейна-Тур…</h3>
+        <p>Разгон и онбординг. Фокус — этап 1 / подцель 7: функциональный паритет,
+        не потерять привычный флоу на старте, не свалиться в саппорт.</p>
+      </article>
+    </div>
+
+    <!-- 3. Таблица агентств -->
+    <h2>Все активные агентства</h2>
+    <div data-ag-table></div>
+
+    <!-- 5. Отток (редакторский слой, KR-2) -->
+    <h2>Отток 2024–25 — почему «+20» это чистая дельта</h2>
+    <p class="lede" style="font-size:14px">
+      Цель KR-2 «+20 агентств» считается как <b>привлечено − отток</b>, а не валовой
+      прирост. За 2024–25 направление потеряло 9 агентств — это фон, который новые
+      привлечения должны сначала компенсировать.
+    </p>
+    <div class="churn">
+      <div class="churn-item"><span class="churn-type t-comp">уход к конкуренту</span> TUI Corporate · Да-Тревел · ATPI</div>
+      <div class="churn-item"><span class="churn-type t-mig">cross-agency миграция</span> Демлинк Атлас · Броневик TMC · доп. офисы KazTour</div>
+      <div class="churn-item"><span class="churn-type t-other">прочее / демо</span> МАКС-АВИА · OBT Raketa Travel · демо-сущности</div>
+    </div>
+    <p class="lede" style="font-size:13px;color:var(--cream-dim);margin-top:14px">
+      Типы и состав оттока — из анализов 2026-04 («Удержание и сегментация», «полная
+      сводка чата»). Точные объёмы потерянных — требуют отдельной выгрузки.
+    </p>
+  </main>
+
+  <footer class="site-footer">
+    Данные: <code>data/agencies.json</code> ← «Свод по агентствам 2026-05.xlsx» (срез 31.05.2026)
+    через <code>build/build.py</code>. Сегментация — рабочее допущение по объёму+тренду.
+    Репозиторий приватный: выручка и имена.
+  </footer>
+
+  <script src="assets/app.js"></script>
+</body>
+</html>

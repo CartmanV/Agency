@@ -234,6 +234,68 @@ def build_legend(src):
             "count": sum(len(s["items"]) for s in sections)}
 
 
+def find_agencies_source():
+    """Файл «Свод по агентствам …xlsx» (устойчиво к NFD/NFC и дате)."""
+    cands = []
+    for p in WORK_DIR.glob("*.xlsx"):
+        if "свод по агентствам" in unicodedata.normalize("NFC", p.name).lower():
+            cands.append(p)
+    return sorted(cands)[-1] if cands else None
+
+
+def build_agencies():
+    """Свод по агентствам (срез) → agencies.json: на агентство + агрегаты направления."""
+    src = find_agencies_source()
+    if not src:
+        return None
+    wb = openpyxl.load_workbook(src, data_only=True, read_only=True)
+    sheet = next((s for s in wb.sheetnames if "свод" in s.lower()), wb.sheetnames[0])
+    rows = list(wb[sheet].iter_rows(values_only=True))
+
+    def num(v):
+        if v is None or v == "":
+            return None
+        try:
+            return round(float(v), 4)
+        except (TypeError, ValueError):
+            return None
+
+    agencies, total = [], None
+    for r in rows[1:]:
+        name = clean(r[1])
+        if not name:
+            continue
+        rec = {
+            "name": name, "segment": clean(r[2]),
+            "may": num(r[3]), "apr": num(r[4]), "momPct": num(r[5]),
+            "l3m": num(r[6]), "l6m": num(r[7]), "may25": num(r[8]), "yoyPct": num(r[9]),
+            "sharePct": num(r[10]), "band": clean(r[11]),
+        }
+        if str(name).startswith("ИТОГО"):
+            total = {"may": rec["may"], "apr": rec["apr"], "momPct": rec["momPct"], "count": len(agencies)}
+            continue
+        rec["id"] = clean(r[0])
+        agencies.append(rec)
+
+    shares = sorted((a["sharePct"] or 0) for a in agencies)[::-1]
+    top3 = round(sum(shares[:3]), 4)
+    top5 = round(sum(shares[:5]), 4)
+
+    # читаем мета-заметку из вкладки «Легенда» свода (если есть)
+    note = None
+    if "Легенда" in wb.sheetnames:
+        for r in wb["Легенда"].iter_rows(values_only=True):
+            if r and r[0] and "источник" in str(r[0]).lower():
+                note = clean(r[1]); break
+
+    return {
+        "source": src.name, "cut": "31.05.2026", "metric": "операции (ops)",
+        "note": note, "total": total,
+        "concentration": {"top3": top3, "top5": top5},
+        "agencies": agencies,
+    }
+
+
 def main():
     items, errors = build_backlog()
     DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -264,6 +326,14 @@ def main():
         legend_out = DATA_DIR / "legend.json"
         legend_out.write_text(json.dumps(legend, ensure_ascii=False, indent=2), encoding="utf-8")
         print(f"Легенда: {len(legend['sections'])} секций · {legend['count']} определений → {legend_out.relative_to(SITE_DIR)}")
+
+    # agencies.json — свод по агентствам
+    agencies = build_agencies()
+    if agencies:
+        ag_out = DATA_DIR / "agencies.json"
+        ag_out.write_text(json.dumps(agencies, ensure_ascii=False, indent=2), encoding="utf-8")
+        c = agencies["concentration"]
+        print(f"Агентства: {len(agencies['agencies'])} активных · ТОП-3 {c['top3']:.0%} / ТОП-5 {c['top5']:.0%} → {ag_out.relative_to(SITE_DIR)}")
 
     must = sum(1 for x in items if x.get("moscow") == "Must")
     print(f"  Must: {must}  ·  с Final Score: {sum(1 for x in items if x['finalScore'] is not None)}")

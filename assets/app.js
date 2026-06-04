@@ -9,7 +9,7 @@ const NAV = [
   { href: "tree.html",     label: "Дерево" },
   { href: "levels.html",   label: "Карта L1/L2" },
   { href: "legend.html",   label: "Легенды" },
-  { href: "agencies.html", label: "Агентства", disabled: true },
+  { href: "agencies.html", label: "Агентства" },
   { href: "metrics.html",  label: "Метрики", disabled: true },
 ];
 
@@ -603,6 +603,87 @@ async function mountLevels() {
     () => bodyEl.querySelectorAll("details.tnode--l2").forEach((d) => (d.open = false)));
 }
 
+// ===================== Агентства. Цифры (agencies.html) =====================
+const RU_NUM = new Intl.NumberFormat("ru-RU");
+function fmtNum(n) { return n == null ? "—" : RU_NUM.format(Math.round(n)); }
+function fmtPct(x, digits = 1) { return x == null ? "—" : (x * 100).toFixed(digits) + "%"; }
+function pctCell(x) {
+  if (x == null) return `<span class="muted">—</span>`;
+  const cls = x > 0 ? "pos" : x < 0 ? "neg" : "zero";
+  const sign = x > 0 ? "+" : "";
+  return `<span class="delta ${cls}">${sign}${(x * 100).toFixed(1)}%</span>`;
+}
+
+async function mountAgencies() {
+  const sumHost = document.querySelector("[data-ag-summary]");
+  const tblHost = document.querySelector("[data-ag-table]");
+  if (!sumHost && !tblHost) return;
+  let data;
+  try { data = await loadJSON("data/agencies.json"); }
+  catch (e) { if (sumHost) sumHost.innerHTML = `<div class="error">${esc(e.message)}</div>`; return; }
+
+  const ags = data.agencies || [];
+  const t = data.total || {};
+  const c = data.concentration || {};
+
+  if (sumHost) {
+    sumHost.innerHTML = `
+      <div class="ag-plates">
+        <div class="ag-plate"><div class="v">${t.count ?? ags.length}</div><div class="l">активных агентств</div><div class="s">есть операции в L3M (мар–май'26)</div></div>
+        <div class="ag-plate"><div class="v">${fmtNum(t.may)}</div><div class="l">операций · май'26</div><div class="s">апрель ${fmtNum(t.apr)} · ${pctCell(t.momPct)} MoM</div></div>
+        <div class="ag-plate"><div class="v">${fmtPct(c.top3, 0)}</div><div class="l">концентрация ТОП-3</div><div class="s">ТОП-5 ${fmtPct(c.top5, 0)} — высокая хрупкость базы</div></div>
+        <div class="ag-plate ag-plate--accent"><div class="v">+20</div><div class="l">цель 2026 (KR-2)</div><div class="s">чистая дельта: привлечено − отток</div></div>
+      </div>
+      <div class="conc-wrap">
+        <div class="conc-bar" role="img" aria-label="Концентрация: ТОП-3 ${fmtPct(c.top3,0)}, ТОП-5 ${fmtPct(c.top5,0)}">
+          ${ags.slice(0, 5).map((a, i) => `<span class="conc-seg s${i}" style="flex:${(a.sharePct || 0) * 100}" title="${esc(a.name)} · ${fmtPct(a.sharePct)}"></span>`).join("")}
+          <span class="conc-seg rest" style="flex:${(1 - (ags.slice(0, 5).reduce((s, a) => s + (a.sharePct || 0), 0))) * 100}" title="остальные"></span>
+        </div>
+        <div class="conc-cap">Топ-3 агентства = ${fmtPct(c.top3, 0)} всех операций. Потеря одного крупного обваливает метрику направления — отсюда метка «Концентрация» в бэклоге.</div>
+      </div>`;
+  }
+
+  if (tblHost) {
+    const segs = [...new Set(ags.map((a) => a.segment).filter(Boolean))];
+    const bands = [...new Set(ags.map((a) => a.band).filter(Boolean))];
+    const state = { seg: "", band: "" };
+
+    const rows = () => {
+      const list = ags.filter((a) => (!state.seg || a.segment === state.seg) && (!state.band || a.band === state.band));
+      if (!list.length) return `<tr><td colspan="8" class="muted" style="padding:20px">Ничего не найдено.</td></tr>`;
+      return list.map((a) => `
+        <tr>
+          <td class="title">${esc(a.name)}</td>
+          <td class="muted">${esc(a.segment ?? "—")}</td>
+          <td class="muted">${esc(a.band ?? "—")}</td>
+          <td class="num">${fmtNum(a.may)}</td>
+          <td class="num">${fmtPct(a.sharePct)}</td>
+          <td class="num">${pctCell(a.momPct)}</td>
+          <td class="num">${pctCell(a.yoyPct)}</td>
+          <td class="num">${fmtNum(a.l6m)}</td>
+        </tr>`).join("");
+    };
+    const sel = (key, label, opts) =>
+      `<select class="ctl" data-ag="${key}" aria-label="${esc(label)}"><option value="">${esc(label)}: все</option>${opts.map((o) => `<option value="${esc(o)}">${esc(o)}</option>`).join("")}</select>`;
+
+    tblHost.innerHTML = `
+      <div class="toolbar">${sel("seg", "Сегмент", segs)}${sel("band", "Концентрация", bands)}</div>
+      <div class="table-wrap">
+        <table class="backlog">
+          <thead><tr>
+            <th>Агентство</th><th>Сегмент</th><th>Концентрация</th>
+            <th>Май'26</th><th>Доля</th><th>MoM</th><th>YoY</th><th>L6M ср.</th>
+          </tr></thead>
+          <tbody>${rows()}</tbody>
+        </table>
+      </div>`;
+    tblHost.querySelectorAll("[data-ag]").forEach((s) => s.addEventListener("change", (e) => {
+      state[e.target.dataset.ag] = e.target.value;
+      tblHost.querySelector("tbody").innerHTML = rows();
+    }));
+  }
+}
+
 // ===================== Легенды (legend.html) =====================
 async function mountLegend() {
   const host = document.querySelector("[data-legend]");
@@ -644,4 +725,5 @@ document.addEventListener("DOMContentLoaded", () => {
   mountLevels();
   mountJtbd();
   mountLegend();
+  mountAgencies();
 });
