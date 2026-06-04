@@ -61,41 +61,67 @@ function esc(s) {
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 }
 
-// --- столбцы таблицы: [ключ, заголовок, тип, сортируемый] ---
-const COLS = [
+// --- полный набор колонок бэклога: [ключ, заголовок, тип, видна по умолчанию] ---
+// тип: num | mono | text | badge | badge-plain | title | long
+const COLS_FULL = [
   ["num", "#", "num", true],
+  ["status", "Статус", "text", false],
   ["moscow", "MoSCoW", "badge", true],
-  ["theme", "Тема", "muted", true],
-  ["level2", "Уровень 2", "muted", true],
-  ["iteration", "Итерация", "num", true],
+  ["theme", "Тема", "text", true],
+  ["level2", "Уровень 2", "text", true],
+  ["iteration", "Итерация", "mono", true],
+  ["gitlabId", "ID гитлаб", "mono", false],
   ["title", "Название", "title", true],
-  ["stage", "Этап", "muted", true],
-  ["mechanism", "Механизм", "muted", true],
-  ["subgoal", "Подцель", "muted", true],
-  ["finalScore", "Final", "score", true],
+  ["jobStory", "Проблема (Job Story)", "long", true],
+  ["problemSource", "Проблема: источник", "text", false],
+  ["stage", "Этап", "text", true],
+  ["block", "Блок", "text", true],
+  ["mechanism", "Механизм", "text", true],
+  ["subgoal", "Подцель", "text", true],
+  ["hypothesis", "Гипотеза", "long", true],
+  ["reach", "Reach", "num", true],
+  ["impact", "Impact", "num", true],
+  ["confidence", "Confidence", "num", true],
+  ["effort", "Effort", "num", true],
+  ["rice", "RICE", "num", true],
+  ["pvMult", "PV Mult", "num", true],
+  ["finalScore", "Final", "num", true],
   ["gate", "Gate", "badge-plain", true],
+  ["concentration", "Концентрация", "text", true],
+  ["quote", "Цитата / данные", "long", true],
+  ["agencies", "Агентства (исслед.)", "long", true],
+  ["rationale", "Обоснование", "long", false],
+  ["pvNotes", "PV Notes", "text", false],
+  ["activeMetrics", "Активные метрики", "text", true],
+  ["targetMetrics", "Целевые метрики", "text", true],
 ];
+const NUMERIC_TYPES = new Set(["num"]);
 
-// поля, по которым строятся выпадающие фильтры
+// выпадающие фильтры (поле → подпись)
 const FILTER_FIELDS = [
   ["theme", "Тема"],
+  ["moscow", "MoSCoW"],
   ["stage", "Этап"],
   ["mechanism", "Механизм"],
   ["subgoal", "Подцель"],
-  ["moscow", "MoSCoW"],
   ["gate", "Gate"],
+  ["hCode", "Гипотеза"],
+  ["concentration", "Концентрация"],
 ];
 
-// поля, по которым ищет строка поиска
-const SEARCH_FIELDS = ["title", "jobStory", "iteration", "id", "gitlabId", "quote", "rationale", "agencies"];
+const SEARCH_FIELDS = ["title", "jobStory", "iteration", "id", "gitlabId", "quote", "rationale", "agencies", "hypothesis"];
+const COLS_STORAGE = "agency-backlog-cols-v1";
 
+function hCodeOf(s) {
+  const m = /^\s*(H\d+(?:\.\d+)*)/.exec(String(s || ""));
+  return m ? m[1] : "";
+}
 function compare(a, b, key, dir) {
   let va = a[key], vb = b[key];
   if (key === "moscow") { va = MOSCOW_ORDER[va] ?? 9; vb = MOSCOW_ORDER[vb] ?? 9; }
-  // Пустые значения всегда внизу — независимо от направления сортировки.
   const ea = va == null || va === "", eb = vb == null || vb === "";
   if (ea && eb) return 0;
-  if (ea) return 1;
+  if (ea) return 1;            // пустые всегда вниз, независимо от направления
   if (eb) return -1;
   let r;
   if (typeof va === "number" && typeof vb === "number") r = va - vb;
@@ -103,83 +129,157 @@ function compare(a, b, key, dir) {
   return dir === "desc" ? -r : r;
 }
 
-/** Универсальный рендер бэклога. opts.mustOnly — страница Must. */
 async function mountBacklog() {
   const host = document.querySelector("[data-backlog]");
   if (!host) return;
-  const mustOnly = host.hasAttribute("data-must");
   host.innerHTML = `<div class="loading">Загрузка бэклога…</div>`;
 
   let data;
   try { data = await loadJSON("data/backlog.json"); }
   catch (e) { host.innerHTML = `<div class="error">${esc(e.message)}</div>`; return; }
 
-  let all = data.items || [];
-  if (mustOnly) all = all.filter((x) => x.moscow === "Must");
+  const all = data.items || [];
+  all.forEach((it) => { it.hCode = hCodeOf(it.hypothesis); });
+
+  const defaultsOn = COLS_FULL.filter((c) => c[3]).map((c) => c[0]);
+  let savedCols = null;
+  try { const raw = localStorage.getItem(COLS_STORAGE); if (raw) savedCols = JSON.parse(raw); } catch (e) { /* ignore */ }
+  const visInit = Array.isArray(savedCols) && savedCols.length
+    ? new Set(savedCols.filter((k) => COLS_FULL.some((c) => c[0] === k)))
+    : new Set(defaultsOn);
 
   const state = {
     q: "",
-    filters: {},                                   // field -> выбранное значение ("" = все)
-    sort: mustOnly ? { key: "finalScore", dir: "desc" } : { key: "num", dir: "asc" },
+    filters: {},
+    sort: { key: "moscow", dir: "asc" },      // дефолт: MoSCoW → Final (тай-брейк)
+    expanded: new Set(),
+    vis: visInit,
   };
+  const visCols = () => COLS_FULL.filter((c) => state.vis.has(c[0]));
+  const colType = (key) => (COLS_FULL.find((c) => c[0] === key) || [])[2];
 
-  // --- опции фильтров: только реальные значения данных, по убыванию частоты ---
-  const filterDefs = FILTER_FIELDS
-    .filter(([f]) => !(mustOnly && f === "moscow"))   // на Must фильтр MoSCoW не нужен
-    .map(([field, label]) => {
-      const counts = new Map();
-      all.forEach((x) => {
-        const v = x[field] == null || x[field] === "" ? "—" : x[field];
-        counts.set(v, (counts.get(v) || 0) + 1);
-      });
-      const options = [...counts.entries()].sort((a, b) => b[1] - a[1]);
-      return { field, label, options };
+  // опции фильтров — из реальных значений, по убыванию частоты
+  const filterDefs = FILTER_FIELDS.map(([field, label]) => {
+    const counts = new Map();
+    all.forEach((x) => {
+      const v = x[field] == null || x[field] === "" ? "—" : x[field];
+      counts.set(v, (counts.get(v) || 0) + 1);
     });
+    const options = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+    return { field, label, options };
+  });
 
   function controlsHTML() {
     const selects = filterDefs.map(({ field, label, options }) => {
-      const opts = [`<option value="">${label}: все</option>`]
-        .concat(options.map(([v, c]) =>
-          `<option value="${esc(v)}">${esc(v)} (${c})</option>`));
+      const opts = [`<option value="">${esc(label)}: все</option>`]
+        .concat(options.map(([v, c]) => `<option value="${esc(v)}">${esc(v)} (${c})</option>`));
       return `<select data-filter="${field}" class="ctl" aria-label="Фильтр: ${esc(label)}">${opts.join("")}</select>`;
     }).join("");
+    const boxes = COLS_FULL.map(([key, label]) =>
+      `<label class="colbox"><input type="checkbox" data-col="${key}" ${state.vis.has(key) ? "checked" : ""}/> ${esc(label)}</label>`).join("");
     return `
       <div class="toolbar" role="search">
         <input type="search" class="ctl ctl--search" data-search
                aria-label="Поиск по бэклогу" autocomplete="off" spellcheck="false"
-               placeholder="Поиск по названию, job story, агентствам, цитатам, ID…" />
+               placeholder="Поиск по названию, job story, гипотезе, агентствам, цитатам, ID…" />
         ${selects}
         <button type="button" class="ctl ctl--reset" data-reset>Сбросить</button>
       </div>
+      <details class="cols-panel">
+        <summary>Колонки <span data-cols-count>(${state.vis.size}/${COLS_FULL.length})</span></summary>
+        <div class="cols-grid">${boxes}</div>
+      </details>
       <div class="result-meta" data-meta aria-live="polite"></div>`;
   }
 
+  function cellHTML(it, col) {
+    const [key, , type] = col;
+    const raw = it[key];
+    const empty = raw == null || raw === "";
+    if (type === "badge") {
+      return `<td><span class="badge badge--${moscowClass(raw)}">${esc(empty ? "—" : raw)}</span></td>`;
+    }
+    if (type === "badge-plain") {
+      const g = empty ? "—" : raw;
+      const gc = g === "OK" ? " badge--ok" : g === "Review" ? " badge--review" : "";
+      return `<td><span class="badge${gc}">${esc(g)}</span></td>`;
+    }
+    if (type === "num") return `<td class="num">${esc(empty ? "—" : raw)}</td>`;
+    if (type === "mono") return `<td class="mono">${esc(empty ? "—" : raw)}</td>`;
+    if (type === "title" || type === "long") {
+      const cls = type === "title" ? "b-title" : "b-long";
+      return `<td class="${cls}" title="${empty ? "" : esc(raw)}"><div class="clamp2">${esc(empty ? "—" : raw)}</div></td>`;
+    }
+    return `<td>${esc(empty ? "—" : raw)}</td>`;
+  }
+
+  function detailHTML(it, span) {
+    const cols = COLS_FULL;
+    const get = (k) => { const v = it[k]; return v == null || v === "" ? null : v; };
+    const row = (label, val) => val ? `<div class="bd-row"><dt>${esc(label)}</dt><dd>${esc(val)}</dd></div>` : "";
+    const score = `R ${get("reach") ?? "—"} · I ${get("impact") ?? "—"} · C ${get("confidence") ?? "—"} · E ${get("effort") ?? "—"} → RICE ${get("rice") ?? "—"} → PV ${get("pvMult") ?? "—"} → Final ${get("finalScore") ?? "—"}`;
+    return `
+      <tr class="b-detailrow" data-detail="${esc(it.id)}" hidden>
+        <td colspan="${span}">
+          <div class="b-card">
+            <div class="bd-head">
+              <span class="bd-title">${esc(it.title || "—")}</span>
+              <span class="bd-path">${esc(it.theme || "—")} › ${esc(it.level2 || "—")} › ${esc(it.iteration || "—")}</span>
+              ${get("gitlabId") ? `<span class="bd-git">${esc(it.gitlabId)}</span>` : ""}
+            </div>
+            <div class="bd-sect"><div class="bd-h">Логика ценности</div><dl>
+              ${row("Этап", get("stage"))}${row("Блок", get("block"))}${row("Механизм", get("mechanism"))}${row("Подцель", get("subgoal"))}${row("Гипотеза", get("hypothesis"))}
+            </dl></div>
+            <div class="bd-sect"><div class="bd-h">Проблема</div><dl>
+              ${row("Job Story", get("jobStory"))}${row("Источник", get("problemSource"))}${row("Цитата / данные", get("quote"))}
+            </dl></div>
+            <div class="bd-sect"><div class="bd-h">Скоринг</div><dl>
+              <div class="bd-row"><dt>RICE</dt><dd class="mono">${esc(score)}</dd></div>
+              ${row("Gate", get("gate"))}${row("Концентрация", get("concentration"))}
+            </dl></div>
+            <div class="bd-sect"><div class="bd-h">Метрики</div><dl>
+              ${row("Активные", get("activeMetrics"))}${row("Целевые", get("targetMetrics"))}
+            </dl></div>
+            <div class="bd-sect"><div class="bd-h">ProductV</div><dl>
+              ${row("PV Notes", get("pvNotes"))}${row("Обоснование", get("rationale"))}
+            </dl></div>
+            ${get("agencies") ? `<div class="bd-sect"><div class="bd-h">Агентства (исследования)</div><dl>${row("Агентства", get("agencies"))}</dl></div>` : ""}
+          </div>
+        </td>
+      </tr>`;
+  }
+
   function rowsHTML(items) {
-    if (!items.length) return `<tr><td colspan="${COLS.length}" class="muted" style="padding:24px">Ничего не найдено — измени фильтры или поиск.</td></tr>`;
-    return items.map((it) => COLS.map(([key, , kind]) => {
-      if (kind === "badge") {
-        const m = it[key];
-        return `<td><span class="badge badge--${moscowClass(m)}">${esc(m ?? "—")}</span></td>`;
-      }
-      if (kind === "badge-plain") {
-        const g = it[key] ?? "—";
-        const gc = g === "OK" ? " badge--ok" : g === "Review" ? " badge--review" : "";
-        return `<td><span class="badge${gc}">${esc(g)}</span></td>`;
-      }
-      const cls = kind === "title" ? "title" : (kind === "num" || kind === "score") ? kind : "muted";
-      const v = it[key];
-      return `<td class="${cls}">${esc(v == null || v === "" ? "—" : v)}</td>`;
-    }).join("")).map((tds) => `<tr>${tds}</tr>`).join("");
+    const cols = visCols();
+    const span = cols.length + 1;
+    if (!items.length) return `<tr><td colspan="${span}" class="muted" style="padding:24px">Ничего не найдено — измени фильтры или поиск.</td></tr>`;
+    return items.map((it) => {
+      const open = state.expanded.has(it.id);
+      const exp = `<td class="b-exp-cell"><button type="button" class="b-exp" data-exp="${esc(it.id)}" aria-expanded="${open}" aria-label="Раскрыть карточку">${open ? "▾" : "▸"}</button></td>`;
+      const cells = cols.map((c) => cellHTML(it, c)).join("");
+      const main = `<tr class="b-row" data-row="${esc(it.id)}">${exp}${cells}</tr>`;
+      const detail = detailHTML(it, span).replace("hidden>", open ? ">" : "hidden>");
+      return main + detail;
+    }).join("");
   }
 
   function theadHTML() {
-    return COLS.map(([key, label, , sortable]) => {
-      if (!sortable) return `<th>${label}</th>`;
+    const ths = visCols().map(([key, label]) => {
       const act = state.sort.key === key;
       const arrow = act ? (state.sort.dir === "asc" ? " ▲" : " ▼") : "";
       const ariaSort = act ? ` aria-sort="${state.sort.dir === "asc" ? "ascending" : "descending"}"` : "";
-      return `<th${ariaSort}><button type="button" class="th-sort" data-sort="${key}">${label}${arrow}</button></th>`;
+      return `<th${ariaSort}><button type="button" class="th-sort" data-sort="${key}">${esc(label)}${arrow}</button></th>`;
     }).join("");
+    return `<th class="b-exp-cell" aria-hidden="true"></th>${ths}`;
+  }
+
+  function sortItems(items) {
+    return items.slice().sort((a, b) => {
+      let r = compare(a, b, state.sort.key, state.sort.dir);
+      if (r === 0 && state.sort.key !== "finalScore") r = compare(a, b, "finalScore", "desc");
+      if (r === 0 && state.sort.key !== "num") r = compare(a, b, "num", "asc");
+      return r;
+    });
   }
 
   function apply() {
@@ -196,14 +296,13 @@ async function mountBacklog() {
       }
       return true;
     });
-    items = items.slice().sort((a, b) => compare(a, b, state.sort.key, state.sort.dir));
+    items = sortItems(items);
 
-    host.querySelector("tbody").innerHTML = rowsHTML(items);
     host.querySelector("thead tr").innerHTML = theadHTML();
-    bindSort();
-    const meta = host.querySelector("[data-meta]");
+    host.querySelector("tbody").innerHTML = rowsHTML(items);
+    bindSort(); bindExpanders();
     const activeF = Object.values(state.filters).filter(Boolean).length;
-    meta.textContent = `Показано ${items.length} из ${all.length}`
+    host.querySelector("[data-meta]").textContent = `Показано ${items.length} из ${all.length}`
       + (activeF || q ? ` · фильтров: ${activeF}${q ? " + поиск" : ""}` : "");
   }
 
@@ -212,25 +311,38 @@ async function mountBacklog() {
       btn.onclick = () => {
         const key = btn.dataset.sort;
         if (state.sort.key === key) state.sort.dir = state.sort.dir === "asc" ? "desc" : "asc";
-        else state.sort = { key, dir: key === "finalScore" || key === "num" ? "desc" : "asc" };
+        else state.sort = { key, dir: NUMERIC_TYPES.has(colType(key)) ? "desc" : "asc" };
         apply();
       };
     });
   }
+  function bindExpanders() {
+    host.querySelectorAll("button[data-exp]").forEach((btn) => {
+      btn.onclick = () => {
+        const id = btn.dataset.exp;
+        const open = !state.expanded.has(id);
+        if (open) state.expanded.add(id); else state.expanded.delete(id);
+        btn.setAttribute("aria-expanded", String(open));
+        btn.textContent = open ? "▾" : "▸";
+        const detail = host.querySelector(`tr[data-detail="${CSS.escape(id)}"]`);
+        if (detail) detail.hidden = !open;
+      };
+    });
+  }
 
-  const mustCount = mustOnly ? all.length : all.filter((x) => x.moscow === "Must").length;
+  const mustCount = all.filter((x) => x.moscow === "Must").length;
   const themes = new Set(all.map((x) => x.theme).filter(Boolean));
 
   host.innerHTML = `
     <div class="stats">
-      <div class="stat"><div class="v">${all.length}</div><div class="l">${mustOnly ? "Must-итераций" : "итераций"}</div></div>
-      ${mustOnly ? "" : `<div class="stat"><div class="v">${mustCount}</div><div class="l">Must</div></div>`}
+      <div class="stat"><div class="v">${all.length}</div><div class="l">итераций</div></div>
+      <div class="stat"><div class="v">${mustCount}</div><div class="l">Must</div></div>
       <div class="stat"><div class="v">${themes.size}</div><div class="l">тем</div></div>
     </div>
     ${controlsHTML()}
-    <div class="table-wrap">
-      <table class="backlog">
-        <thead><tr>${theadHTML()}</tr></thead>
+    <div class="table-wrap table-wrap--full">
+      <table class="backlog backlog--full">
+        <thead><tr></tr></thead>
         <tbody></tbody>
       </table>
     </div>`;
@@ -246,8 +358,18 @@ async function mountBacklog() {
     history.replaceState(null, "", location.pathname);
     apply();
   });
+  host.querySelectorAll("[data-col]").forEach((cb) => {
+    cb.addEventListener("change", (e) => {
+      const key = e.target.dataset.col;
+      if (e.target.checked) state.vis.add(key); else state.vis.delete(key);
+      try { localStorage.setItem(COLS_STORAGE, JSON.stringify([...state.vis])); } catch (err) { /* ignore */ }
+      const c = host.querySelector("[data-cols-count]");
+      if (c) c.textContent = `(${state.vis.size}/${COLS_FULL.length})`;
+      apply();
+    });
+  });
 
-  // deep-link из дерева: ?q=<id|текст> и/или ?theme=…&stage=… и т.д.
+  // deep-link: ?q=… и/или фильтры (?theme=&stage=&moscow=&gate=&hCode=&concentration=&…)
   const params = new URLSearchParams(location.search);
   const qp = params.get("q");
   if (qp) { state.q = qp; host.querySelector("[data-search]").value = qp; }
@@ -255,10 +377,7 @@ async function mountBacklog() {
     const v = params.get(field);
     if (v == null) return;
     const sel = host.querySelector(`[data-filter="${field}"]`);
-    if (sel && [...sel.options].some((o) => o.value === v)) {
-      sel.value = v;
-      state.filters[field] = v;
-    }
+    if (sel && [...sel.options].some((o) => o.value === v)) { sel.value = v; state.filters[field] = v; }
   });
 
   apply();
