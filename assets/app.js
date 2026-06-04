@@ -10,7 +10,7 @@ const NAV = [
   { href: "levels.html",   label: "Карта L1/L2" },
   { href: "legend.html",   label: "Легенды" },
   { href: "agencies.html", label: "Агентства" },
-  { href: "metrics.html",  label: "Метрики", disabled: true },
+  { href: "metrics.html",  label: "Метрики" },
 ];
 
 function currentPage() {
@@ -110,7 +110,7 @@ const FILTER_FIELDS = [
   ["concentration", "Концентрация"],
 ];
 
-const SEARCH_FIELDS = ["title", "jobStory", "iteration", "id", "gitlabId", "quote", "rationale", "agencies", "hypothesis"];
+const SEARCH_FIELDS = ["title", "jobStory", "iteration", "id", "gitlabId", "quote", "rationale", "agencies", "hypothesis", "activeMetrics", "targetMetrics"];
 const COLS_STORAGE = "agency-backlog-cols-v1";
 
 function hCodeOf(s) {
@@ -684,6 +684,80 @@ async function mountAgencies() {
   }
 }
 
+// ===================== Метрики (metrics.html) =====================
+async function mountMetrics() {
+  const host = document.querySelector("[data-metrics]");
+  if (!host) return;
+  host.innerHTML = `<div class="loading">Загрузка метрик…</div>`;
+  let data;
+  try { data = await loadJSON("data/metrics.json"); }
+  catch (e) { host.innerHTML = `<div class="error">${esc(e.message)}</div>`; return; }
+
+  const metrics = data.metrics || [];
+  // порядок групп
+  const groups = [
+    ["1", "Этап 1 «Не мешать»"],
+    ["2A", "Этап 2A — трудозатраты консультанта"],
+    ["2B", "Этап 2B — операционные тормоза"],
+    ["3", "Вне фокуса Q2 — этапы 3–4"],
+    ["4", "Вне фокуса Q2 — этапы 3–4"],
+  ];
+  const seen = new Set();
+
+  function card(m) {
+    const dirGood = `хорошо ${esc(m.direction)}`;
+    const typeBadge = m.type === "active"
+      ? `<span class="m-type m-type--act">активная</span>`
+      : `<span class="m-type m-type--tgt">целевая</span>`;
+    const lead = m.leading ? `<span class="m-lead">ведущая</span>` : "";
+    const base = m.baseline
+      ? `<div class="m-base"><span class="m-base__h">baseline 2026-05</span> ${esc(m.baseline)}</div>`
+      : `<div class="m-base m-base--need">baseline нужен</div>`;
+    const note = m.note ? `<div class="m-note">${esc(m.note)}</div>` : "";
+    return `
+      <article class="m-card ${m.type === "active" ? "is-act" : "is-tgt"}">
+        <div class="m-card__top">
+          <span class="m-dir ${m.direction === "↑" ? "up" : "down"}">${esc(m.direction)}</span>
+          <span class="m-code">${esc(m.code)}</span>
+          ${typeBadge}${lead}
+        </div>
+        <div class="m-name">${esc(m.name)}</div>
+        <p class="m-measures">${esc(m.measures)}</p>
+        <div class="m-meta">
+          <span title="${esc(dirGood)}">${dirGood}</span>
+          <span>подцель ${esc(m.subgoal)}</span>
+          <span>${esc(m.hypothesis)}</span>
+        </div>
+        ${base}${note}
+        <a class="m-link" href="backlog.html?q=${encodeURIComponent(m.code)}">итерации с метрикой →</a>
+      </article>`;
+  }
+
+  let body = "";
+  for (const [key, title] of groups) {
+    if (seen.has(title)) continue;
+    seen.add(title);
+    const inGroup = metrics.filter((m) => (title.includes("3–4") ? (m.stage === "3" || m.stage === "4") : m.stage === key));
+    if (!inGroup.length) continue;
+    body += `<section class="m-group"><h2>${esc(title)}</h2><div class="m-grid">${inGroup.map(card).join("")}</div></section>`;
+  }
+
+  const leadHTML = Object.entries(data.leading || {}).map(([blk, arr]) =>
+    `<div class="lead-row"><span class="lead-blk">${esc(blk)}</span> ${arr.map((x) => `<span class="lead-chip">${esc(x)}</span>`).join(" ")}</div>`).join("");
+
+  host.innerHTML = `
+    <div class="m-intro">
+      <div class="stats">
+        <div class="stat"><div class="v">9</div><div class="l">активных</div></div>
+        <div class="stat"><div class="v">6</div><div class="l">целевых</div></div>
+        <div class="stat"><div class="v">v${esc(data.version || "")}</div><div class="l">${esc(data.date || "")}</div></div>
+      </div>
+      <p class="lede">${esc(data.intro || "")}</p>
+    </div>
+    <section class="m-group"><h2>Ведущие метрики по блокам <span class="m-h-note">(зеркало Impact в скоринге)</span></h2><div class="lead-wrap">${leadHTML}</div></section>
+    ${body}`;
+}
+
 // ===================== Легенды (legend.html) =====================
 async function mountLegend() {
   const host = document.querySelector("[data-legend]");
@@ -726,4 +800,5 @@ document.addEventListener("DOMContentLoaded", () => {
   mountJtbd();
   mountLegend();
   mountAgencies();
+  mountMetrics();
 });
