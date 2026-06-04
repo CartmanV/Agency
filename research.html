@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0A1F16" />
+  <title>Исследования — направление «Агентства»</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700&family=Manrope:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">К содержанию</a>
+  <div data-header></div>
+
+  <div class="crumbs"><a href="index.html">Направление</a> <span>›</span> Исследования</div>
+
+  <main id="main">
+    <h1>Исследования — доказательная база</h1>
+    <p class="lede">
+      Реестр находок из UX-исследований: что мы знаем, статус гипотезы, связь с
+      этапом и гипотезой H1–H5. Группируется по Теме/Роли, раскрывается до данных.
+      Имена людей обезличены (репозиторий приватный). Статусы гипотез: подтв. /
+      частично / конкур. / гипотеза-идея / закрыто.
+    </p>
+
+    <div data-research></div>
+  </main>
+
+  <footer class="site-footer">
+    Данные: <code>data/research.json</code> ← «Реестр исследований — единая таблица.xlsx»
+    через <code>build/build.py</code>. Матрица соответствия (этап→H→боль→итерация→метрика)
+    и gap-анализ — следующим шагом.
+  </footer>
+
+  <script src="assets/app.js"></script>
+</body>
+</html>

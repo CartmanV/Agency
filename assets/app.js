@@ -9,6 +9,7 @@ const NAV = [
   { href: "tree.html",     label: "Дерево" },
   { href: "levels.html",   label: "Карта L1/L2" },
   { href: "legend.html",   label: "Легенды" },
+  { href: "research.html", label: "Исследования" },
   { href: "agencies.html", label: "Агентства" },
   { href: "metrics.html",  label: "Метрики" },
 ];
@@ -684,6 +685,113 @@ async function mountAgencies() {
   }
 }
 
+// ===================== Исследования (research.html) =====================
+function hypStatusClass(s) {
+  const t = String(s || "").toLowerCase();
+  if (t.startsWith("подтв") || t.startsWith("закрыто") || t.startsWith("✅")) return "ok";
+  if (t.startsWith("конкур")) return "comp";
+  if (t.startsWith("частично")) return "part";
+  if (t.startsWith("гипотеза") || t.startsWith("идея") || t.startsWith("данные") || t.startsWith("спорн") || t.includes("не пров")) return "open";
+  return "neu";
+}
+
+async function mountResearch() {
+  const host = document.querySelector("[data-research]");
+  if (!host) return;
+  host.innerHTML = `<div class="loading">Загрузка исследований…</div>`;
+  let data;
+  try { data = await loadJSON("data/research.json"); }
+  catch (e) { host.innerHTML = `<div class="error">${esc(e.message)}</div>`; return; }
+
+  const all = data.findings || [];
+  const state = { groupBy: "theme", filters: {} };
+  const FF = [["theme", "Тема"], ["role", "Роль"], ["stage", "Этап"], ["mechanism", "Механизм"], ["hCode", "Гипотеза"], ["hypStatus", "Статус гипотезы"]];
+
+  const optsFor = (field) => {
+    const c = new Map();
+    all.forEach((x) => { const v = x[field] || "—"; c.set(v, (c.get(v) || 0) + 1); });
+    return [...c.entries()].sort((a, b) => b[1] - a[1]);
+  };
+
+  function findingHTML(f) {
+    const chips = [
+      f.role ? `<span class="rf-chip">${esc(f.role)}</span>` : "",
+      f.reachCount ? `<span class="rf-chip" title="подтв. агентств">👥 ${esc(f.reachCount)}</span>` : "",
+      f.hCode ? `<span class="rf-chip rf-h">${esc(f.hCode)}</span>` : "",
+      f.stage && f.stage !== "—" ? `<span class="rf-chip">этап ${esc(f.stage)}</span>` : "",
+      f.hypStatus ? `<span class="rf-stat ${hypStatusClass(f.hypStatus)}">${esc(f.hypStatus)}</span>` : "",
+    ].join("");
+    const row = (l, v) => v && v !== "—" ? `<div class="rf-row"><dt>${esc(l)}</dt><dd>${esc(v)}</dd></div>` : "";
+    return `
+      <details class="rf">
+        <summary class="rf-sum">
+          <span class="rf-id">${esc(f.id || "")}</span>
+          <span class="rf-text">${esc(f.finding || "—")}</span>
+          <span class="rf-chips">${chips}</span>
+        </summary>
+        <div class="rf-body"><dl>
+          ${row("Кол. данные", f.qty)}${row("JTBD", f.jtbd)}${row("Reach (агентства)", f.reach)}
+          ${row("Механизм", f.mechanism)}${row("Статус", f.status)}${row("Источник", f.src)}
+        </dl>
+        ${f.hCode ? `<a class="rf-link" href="backlog.html?q=${encodeURIComponent(f.hCode)}">итерации по ${esc(f.hCode)} →</a>` : ""}
+        </div>
+      </details>`;
+  }
+
+  function render() {
+    const list = all.filter((f) => FF.every(([field]) => {
+      const v = state.filters[field];
+      return !v || (f[field] || "—") === v;
+    }));
+
+    const map = new Map();
+    list.forEach((f) => { const k = f[state.groupBy] || "—"; (map.get(k) || map.set(k, []).get(k)).push(f); });
+    const groups = [...map.entries()].sort((a, b) => b[1].length - a[1].length);
+
+    const groupsHTML = groups.map(([name, arr]) => `
+      <details class="rg" open>
+        <summary class="rg-sum"><span class="rg-name">${esc(name)}</span><span class="rg-count">${arr.length}</span></summary>
+        <div class="rg-body">${arr.map(findingHTML).join("")}</div>
+      </details>`).join("") || `<div class="muted" style="padding:20px">Ничего не найдено.</div>`;
+
+    host.querySelector("[data-rg]").innerHTML = groupsHTML;
+    host.querySelector("[data-rmeta]").textContent = `Показано ${list.length} из ${all.length}`;
+  }
+
+  const selects = FF.map(([field, label]) =>
+    `<select class="ctl" data-rf="${field}" aria-label="${esc(label)}"><option value="">${esc(label)}: все</option>${optsFor(field).map(([v, c]) => `<option value="${esc(v)}">${esc(v)} (${c})</option>`).join("")}</select>`).join("");
+
+  const confirmed = all.filter((f) => hypStatusClass(f.hypStatus) === "ok").length;
+  const left = all.filter((f) => String(f.status || "").includes("Осталось")).length;
+
+  host.innerHTML = `
+    <div class="stats">
+      <div class="stat"><div class="v">${all.length}</div><div class="l">находок</div></div>
+      <div class="stat"><div class="v">${confirmed}</div><div class="l">подтв./закрыто</div></div>
+      <div class="stat"><div class="v">${new Set(all.map((x) => x.theme).filter(Boolean)).size}</div><div class="l">тем</div></div>
+    </div>
+    <div class="toolbar">
+      <div class="seg" role="group" aria-label="Группировка">
+        <button type="button" class="seg__btn is-active" data-grp="theme">по Теме</button>
+        <button type="button" class="seg__btn" data-grp="role">по Роли</button>
+      </div>
+      ${selects}
+      <button type="button" class="ctl ctl--reset" data-rreset>Сбросить</button>
+    </div>
+    <div class="result-meta" data-rmeta aria-live="polite"></div>
+    <div data-rg></div>`;
+
+  host.querySelectorAll("[data-rf]").forEach((s) => s.addEventListener("change", (e) => { state.filters[e.target.dataset.rf] = e.target.value; render(); }));
+  host.querySelectorAll("[data-grp]").forEach((b) => b.addEventListener("click", () => {
+    host.querySelectorAll("[data-grp]").forEach((x) => x.classList.toggle("is-active", x === b));
+    state.groupBy = b.dataset.grp; render();
+  }));
+  host.querySelector("[data-rreset]").addEventListener("click", () => {
+    state.filters = {}; host.querySelectorAll("[data-rf]").forEach((s) => (s.value = "")); render();
+  });
+  render();
+}
+
 // ===================== Метрики (metrics.html) =====================
 async function mountMetrics() {
   const host = document.querySelector("[data-metrics]");
@@ -801,4 +909,5 @@ document.addEventListener("DOMContentLoaded", () => {
   mountLegend();
   mountAgencies();
   mountMetrics();
+  mountResearch();
 });

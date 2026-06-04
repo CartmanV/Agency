@@ -296,6 +296,50 @@ def build_agencies():
     }
 
 
+def find_work_xlsx(needle):
+    """Файл *.xlsx, чьё имя (NFC, lower) содержит подстроку needle."""
+    for p in WORK_DIR.glob("*.xlsx"):
+        if needle in unicodedata.normalize("NFC", p.name).lower():
+            return p
+    return None
+
+
+def build_research():
+    """Реестр исследований (90 строк) → research.json. Имена людей обезличиваем."""
+    src = find_work_xlsx("реестр исследован")
+    if not src:
+        return None
+    wb = openpyxl.load_workbook(src, data_only=True, read_only=True)
+    sheet = next((s for s in wb.sheetnames if "реестр" in s.lower()), wb.sheetnames[0])
+    rows = list(wb[sheet].iter_rows(values_only=True))
+    hdr = [clean(c) or "" for c in rows[0]]
+    idx = {h: i for i, h in enumerate(hdr)}
+
+    def cell(r, name):
+        i = idx.get(name)
+        return clean(r[i]) if i is not None and i < len(r) else None
+
+    findings = []
+    for r in rows[1:]:
+        fid = cell(r, "ID")
+        finding = cell(r, "Боль / находка")
+        if not fid and not finding:
+            continue
+        reach_raw = cell(r, "Подтв. агентства (Reach)") or ""
+        # обезличиваем: убираем скобки с именами людей
+        reach = re.sub(r"\s*\([^)]*\)", "", str(reach_raw)).strip(" ·,")
+        agencies = [a.strip() for a in re.split(r"[,/+]| и ", reach) if a.strip() and a.strip() != "—"]
+        findings.append({
+            "id": fid, "theme": cell(r, "Тема"), "finding": finding,
+            "role": cell(r, "Роль"), "reach": reach or None, "reachCount": len(agencies),
+            "hypStatus": cell(r, "Статус гипотезы"), "qty": cell(r, "Кол. данные"),
+            "stage": cell(r, "Этап"), "mechanism": cell(r, "Механизм"),
+            "hCode": cell(r, "H"), "jtbd": cell(r, "JTBD (кратко)"),
+            "status": cell(r, "Статус"), "src": cell(r, "Источник"),
+        })
+    return {"source": src.name, "count": len(findings), "findings": findings}
+
+
 def main():
     items, errors = build_backlog()
     DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -334,6 +378,13 @@ def main():
         ag_out.write_text(json.dumps(agencies, ensure_ascii=False, indent=2), encoding="utf-8")
         c = agencies["concentration"]
         print(f"Агентства: {len(agencies['agencies'])} активных · ТОП-3 {c['top3']:.0%} / ТОП-5 {c['top5']:.0%} → {ag_out.relative_to(SITE_DIR)}")
+
+    # research.json — реестр исследований
+    research = build_research()
+    if research:
+        r_out = DATA_DIR / "research.json"
+        r_out.write_text(json.dumps(research, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(f"Исследования: {research['count']} находок → {r_out.relative_to(SITE_DIR)}")
 
     must = sum(1 for x in items if x.get("moscow") == "Must")
     print(f"  Must: {must}  ·  с Final Score: {sum(1 for x in items if x['finalScore'] is not None)}")
