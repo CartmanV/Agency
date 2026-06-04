@@ -19,6 +19,8 @@
   --pink-soft:   #FFA9C2;
   --pink-dim:    rgba(255, 92, 138, 0.12);
   --emerald:     #3DA372;
+  --blue:        #6BA8E6;    /* роль «консультант · adoption» в JTBD */
+  --blue-soft:   #A9CCE8;
 
   --f-display: 'Playfair Display', Georgia, serif;
   --f-body:    'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -534,3 +536,80 @@ tr.b-detailrow > td { background: var(--bg-2); padding: 0; }
 .bd-row dt { font-family: var(--f-mono); font-size: 11px; color: var(--cream-dim); min-width: 130px; flex-shrink: 0; }
 .bd-row dd { margin: 0; color: var(--cream-soft); font-size: 13px; max-width: 90ch; }
 .bd-row dd.mono { font-family: var(--f-mono); font-size: 12px; color: var(--cream); }
+
+/* ===================== Дерево работ — JTBD (tree.html) ===================== */
+.jtbd-sub { font-family: var(--f-display); font-style: italic; font-size: 18px; color: var(--cream-soft); max-width: 760px; line-height: 1.5; padding-bottom: 24px; margin: 6px 0 28px; border-bottom: 1px solid var(--line); }
+.jtbd-tools { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 28px; }
+.leg { display: inline-flex; align-items: center; gap: 8px; font-family: var(--f-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--cream-dim); padding: 6px 11px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+.leg .dot { width: 10px; height: 10px; border-radius: 50%; }
+.leg .dot.blue { background: var(--blue); }
+.leg .dot.orange { background: var(--gold); }
+.leg .dot.green { background: var(--emerald); }
+.jtbd-tools .spacer { flex: 1; }
+
+/* корень */
+.jtbd-root { border: 1.5px solid var(--copper); background: rgba(226,179,85,.07); border-radius: 12px; padding: 22px 26px; margin-bottom: 6px; }
+.jtbd-root .tag { font-family: var(--f-mono); font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--copper); margin-bottom: 10px; }
+.jtbd-root .txt { font-family: var(--f-display); font-style: italic; font-size: 21px; line-height: 1.3; color: var(--cream); }
+.jtbd-root .sub { font-size: 13px; color: var(--cream-dim); margin-top: 10px; line-height: 1.55; }
+.jtbd-trunk { width: 2px; height: 26px; background: var(--line-soft); margin: 0 0 6px 40px; }
+
+/* Big job — нативный details */
+details.big { border: 1px solid var(--line-soft); border-radius: 12px; background: var(--panel); margin-bottom: 18px; position: relative; overflow: hidden; }
+details.big::before { content: ""; position: absolute; top: 0; left: 0; width: 4px; height: 100%; }
+details.big.blue::before { background: var(--blue); }
+details.big.orange::before { background: var(--gold); }
+details.big.green::before { background: var(--emerald); }
+.big-head { list-style: none; cursor: pointer; padding: 18px 24px 18px 30px; display: flex; align-items: flex-start; gap: 14px; }
+.big-head::-webkit-details-marker { display: none; }
+.big-head:hover { background: var(--panel-2); }
+.big-head:focus-visible { outline: 2px solid var(--copper); outline-offset: -2px; }
+.big-chev { font-family: var(--f-mono); color: var(--copper); font-size: 14px; transition: transform .2s; margin-top: 4px; }
+details.big[open] .big-chev { transform: rotate(90deg); }
+.big-meta { flex: 1; min-width: 0; }
+.role { font-family: var(--f-mono); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; margin-bottom: 8px; }
+.big.blue .role { color: var(--blue-soft); }
+.big.orange .role { color: var(--copper); }
+.big.green .role { color: #7FB89A; }
+.big-title { font-family: var(--f-display); font-size: 22px; line-height: 1.25; color: var(--cream); }
+.big-title em { font-style: italic; color: var(--copper); }
+.big-sub { font-size: 13px; color: var(--cream-dim); margin-top: 8px; line-height: 1.5; }
+.big-body { padding: 0 26px 24px 30px; }
+
+/* Medium (подцель) */
+.med { margin-top: 18px; border-left: 2px solid var(--line); padding-left: 20px; }
+.med-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+.med-num { font-family: var(--f-display); font-size: 24px; color: var(--copper); line-height: 1; font-variant-numeric: tabular-nums; }
+.med-name { font-family: var(--f-display); font-size: 17px; color: var(--cream); }
+.med-stage { font-family: var(--f-mono); font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: var(--bg); background: var(--copper); padding: 3px 8px; border-radius: 4px; }
+.med-stage.s2b { background: var(--emerald); }
+.med-stage.s1 { background: var(--pink); color: #2A0512; }
+.med-stage.sx { background: var(--line-soft); color: var(--cream); }
+
+/* Small (job story) */
+.small { padding: 12px 16px; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; margin-bottom: 7px; }
+.small-txt { font-size: 13.5px; color: var(--cream-soft); line-height: 1.5; }
+.small-foot { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+.chip { font-family: var(--f-mono); font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; padding: 3px 9px; border: 1px solid var(--line-soft); border-radius: 999px; color: var(--cream-dim); }
+.chip.stage { border-color: var(--copper-dk); color: var(--copper); }
+a.chip.branch { background: rgba(226,179,85,.10); border-color: rgba(226,179,85,.35); color: var(--copper); }
+a.chip.branch:hover { border-color: var(--copper); color: var(--cream); text-decoration: none; }
+.assume { display: inline-block; font-family: var(--f-mono); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--pink-soft); margin-left: 8px; }
+
+/* силы торможения */
+.friction { margin-top: 18px; border-left: 3px solid var(--pink); background: var(--pink-dim); border-radius: 8px; padding: 16px 20px; }
+.friction .fh { font-family: var(--f-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--pink-soft); margin-bottom: 10px; }
+.friction .fitem { font-size: 13px; line-height: 1.55; margin-bottom: 10px; color: var(--cream-soft); }
+.friction .fitem:last-child { margin-bottom: 0; }
+.friction .fitem strong { color: var(--cream); }
+
+/* находки E.1–E.7 */
+.findings { margin-top: 56px; }
+.findings .sec-title { padding-bottom: 14px; margin-bottom: 22px; border-bottom: 1px solid var(--line); }
+.findings .sec-title .num { display: block; font-family: var(--f-mono); font-size: 11px; letter-spacing: .24em; color: var(--copper); margin-bottom: 8px; }
+.findings .sec-title .ttl { display: block; font-family: var(--f-display); font-size: 28px; color: var(--cream); }
+.fcard { border: 1px solid var(--line); border-radius: 10px; background: var(--panel); padding: 18px 22px; margin-bottom: 10px; }
+.fcard .ft { font-family: var(--f-display); font-size: 17px; color: var(--cream); margin-bottom: 6px; }
+.fcard .ft em { font-style: italic; color: var(--copper); }
+.fcard .fc { font-size: 13.5px; color: var(--cream-soft); line-height: 1.6; }
+.fcard .fc strong { color: var(--cream); }

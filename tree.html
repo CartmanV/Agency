@@ -4,32 +4,164 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#0A1F16" />
-  <title>Дерево работ — направление «Агентства»</title>
+  <title>Дерево работ — JTBD — направление «Агентства»</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Manrope:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400;1,600&family=Manrope:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/style.css" />
 </head>
 <body>
   <a class="skip-link" href="#main">К содержанию</a>
   <div data-header></div>
 
-  <div class="crumbs"><a href="index.html">Направление</a> <span>›</span> Дерево работ</div>
+  <div class="crumbs"><a href="index.html">Направление</a> <span>›</span> Дерево работ (JTBD)</div>
 
   <main id="main">
-    <h1>Дерево работ</h1>
-    <p class="lede">
-      Иерархия Тема → Уровень 2 → Итерация. Режим «Кратко» — свёрнутые ветки;
-      «Подробно» — с этапом, механизмом и Final. Этапы лестницы и механизмы —
-      оси-фильтры, не ветви. Клик по итерации открывает её в
-      <a href="backlog.html">Бэклоге</a>.
+    <p class="eyebrow">JTBD · Онтология направления · v1.2 (2026-06-01)</p>
+    <h1>Дерево работ <em style="font-style:italic;color:var(--copper)">«Агентства»</em></h1>
+    <p class="jtbd-sub">
+      Big → Medium → Small. Чью работу и на каком уровне абстракции мы закрываем —
+      а не что делаем в Q2. Этап лестницы ценности — перекрёстная ось, не уровень дерева.
     </p>
 
-    <div data-tree></div>
+    <div class="jtbd-tools">
+      <span class="leg"><span class="dot blue"></span>Консультант · adoption</span>
+      <span class="leg"><span class="dot orange"></span>Супервизор · сервис команды</span>
+      <span class="leg"><span class="dot green"></span>Руководитель / Бухгалтерия / IT · renewal</span>
+      <span class="spacer"></span>
+      <button type="button" class="btn" data-jtbd-expand>Раскрыть всё</button>
+      <button type="button" class="btn" data-jtbd-collapse>Свернуть всё</button>
+    </div>
+
+    <!-- КОРЕНЬ -->
+    <div class="jtbd-root">
+      <div class="tag">B.0 · Корневая Big job агентства (бизнес)</div>
+      <div class="txt">«Оставаться нужным корпоративному клиенту — зарабатывать больше и обслуживать больше клиентов, не раздувая штат, и не дать клиенту уйти ни напрямую в bundled-платформу (SmartWay, Trivio), ни к более технологичному агентству.»</div>
+      <div class="sub">Носитель — руководитель / владелец. Все роли своими Big jobs работают на неё. <b style="color:var(--cream)">Два слоя конкуренции:</b> Corteos / SmartWay / Trivio — конкуренты <b style="color:var(--cream)">Ракеты</b> (за то, на чьей платформе работает агентство), а не агентства. Угроза самому агентству — дисинтермедиация (клиент уходит напрямую в bundled-платформу, минуя посредника) или уход к более технологичному агентству. Роль Ракеты — оружие против дисинтермедиации; его сила ограничена паритетом платформы с Corteos/SmartWay (Parity gap, этап 1). См. находку E.7.</div>
+    </div>
+    <div class="jtbd-trunk"></div>
+
+    <!-- BIG 1: Консультант -->
+    <details class="big blue" open>
+      <summary class="big-head">
+        <span class="big-chev">▶</span>
+        <span class="big-meta">
+          <span class="role">🟦 B.1 · Big job консультанта · решает adoption</span>
+          <span class="big-title">«Быть агентом, который не косячит, держит SLA и которого клиент <em>любит</em> — и при этом не выгорать.»</span>
+          <span class="big-sub">Эмоциональный/репутационный прогресс. Если работа не двигается — консультант саботирует внедрение и откатывается к терминалу (H1.1, H1.2). Параллельная финансовая Big job: «заработать» — бонус завязан на число операций. Две Big job в конфликте.</span>
+        </span>
+      </summary>
+      <div class="big-body">
+        <div class="med">
+          <div class="med-head"><span class="med-num">1</span><span class="med-name">Освободить время консультанта</span><span class="med-stage">этап 2A</span></div>
+          <div class="small"><div class="small-txt">Когда клиент отправил запрос — хочу быстро собрать полную информацию (маршрут/даты/предпочтения/бюджет), чтобы минимизировать задержки.</div><div class="small-foot"><span class="chip stage">до</span><a class="chip branch" href="backlog.html?theme=Заказы">Заказы / Виджеты</a></div></div>
+          <div class="small"><div class="small-txt">Когда подобрал варианты — хочу собрать понятное КП за пару кликов, чтобы клиент быстрее дал добро на выписку.</div><div class="small-foot"><span class="chip stage">до</span><a class="chip branch" href="backlog.html?theme=Предложения%202.0">Предложения 2.0</a></div></div>
+          <div class="small"><div class="small-txt">Когда пишет клиент с проблемой — хочу видеть контекст поездки на одном экране, чтобы не искать заказ в разных админках.</div><div class="small-foot"><span class="chip stage">во время</span><a class="chip branch" href="backlog.html?theme=Заказы">Заказы · H2.4</a></div></div>
+          <div class="small"><div class="small-txt">Когда клиенту нужен багаж/доп.место/VIP — хочу готовый структурированный запрос, чтобы сразу зафиксировать в Ракете.</div><div class="small-foot"><span class="chip stage">во время</span><a class="chip branch" href="backlog.html?theme=Оффлайн%204.0">Оффлайн 4.0 · H2.1</a></div></div>
+          <div class="small"><div class="small-txt">Когда у клиента меняется дата — хочу структурированный запрос, чтобы не уточнять каждую услугу отдельно.</div><div class="small-foot"><span class="chip stage">во время</span><a class="chip branch" href="backlog.html?theme=Оффлайн%204.0">Оффлайн 4.0</a></div></div>
+          <div class="small"><div class="small-txt">Когда запрос пришёл в свободной форме — хочу структурированный запрос, чтобы не упустить детали.</div><div class="small-foot"><span class="chip stage">во время</span><a class="chip branch" href="backlog.html?theme=Оффлайн%204.0">Оффлайн 4.0</a></div></div>
+          <div class="small"><div class="small-txt">Когда бронирование завершено — хочу собрать документы в один пакет и отправить одной ссылкой.</div><div class="small-foot"><span class="chip stage">после</span><a class="chip branch" href="backlog.html?theme=Сервис%20для%20клиента">Сервис для клиента</a></div></div>
+          <div class="small"><div class="small-txt">Когда нужен обмен/возврат/частичная аннуляция авиа — хочу сделать это сам в АА, не эскалируя в саппорт Ракеты.<span class="assume">производная · H2.6</span></div><div class="small-foot"><span class="chip stage">во время</span><a class="chip branch" href="backlog.html?theme=Онлайн-услуги">Автоматизация онлайн-операций</a></div></div>
+        </div>
+
+        <div class="med">
+          <div class="med-head"><span class="med-num">2</span><span class="med-name">Убрать операционные тормоза</span><span class="med-stage s2b">этап 2B</span></div>
+          <div class="small"><div class="small-txt">Когда веду переписку в WhatsApp/почте, а заказ в Ракете — хочу единый чат, привязанный к заказу, чтобы не терять контекст и не дублировать ответы.</div><div class="small-foot"><span class="chip stage">во время</span><a class="chip branch" href="backlog.html?theme=Единый%20чат">Единый чат · H2.5</a></div></div>
+          <div class="small"><div class="small-txt">Когда в Ракете появились фичи — хочу показать это в новостях клиенту, чтобы он меньше обращался в поддержку.</div><div class="small-foot"><span class="chip stage">до</span><span class="chip branch">Виджеты / Новости</span></div></div>
+          <div class="small"><div class="small-txt">Хочу удерживать SLA и поддерживать прозрачную коммуникацию по статусу на своём участке.<span class="assume">Тип 2</span></div><div class="small-foot"><span class="chip stage">во время</span></div></div>
+        </div>
+
+        <div class="med">
+          <div class="med-head"><span class="med-num">7</span><span class="med-name">Когнитивная нагрузка агента</span><span class="med-stage s1">этап 1</span></div>
+          <div class="small"><div class="small-txt">Когда стартую с новым клиентом/функцией — хочу не терять привычный флоу и не сваливаться в саппорт.</div><div class="small-foot"><span class="chip stage">до</span><span class="chip branch">функциональный паритет</span></div></div>
+          <div class="small"><div class="small-txt">Покрывается также «единым окном» и «структурированными запросами» выше — они снижают и время (1), и нагрузку (7).</div></div>
+        </div>
+
+        <div class="friction">
+          <div class="fh">⚠ Силы торможения Big job [этап 1] — барьеры, гасящие adoption даже при готовом функционале</div>
+          <div class="fitem"><strong>Долг доверия (trust debt).</strong> Один косяк Ракеты → консультант фиксирует «в терминале надёжнее» и не пользуется даже существующим функционалом. Силы: habit (12.5), anxiety (H1.2), асимметрия (12.1 Талеб). Формализовано в <strong>H1.4</strong> — доверие-гейт, отдельный от H1.1. Паритет необходим, но НЕ достаточен. Сигналы: Incidents-per-services ↓, Rework rate ↓, Adoption-in-AA ↑.</div>
+          <div class="fitem"><strong>Конфликт финансовой мотивации (12.4 Аджемоглу).</strong> Бонус завязан на число операций. <em>Ускорить</em> биллинговую операцию — согласовано (бонус сохраняется, успевает больше) → Q2-фокус. <em>Унести</em> операцию к клиенту (этап 4) — в конфликте. Правило 2A: целимся в «ускорить операцию» и не-бонусную рутину, а не в «убрать операцию у консультанта».</div>
+        </div>
+      </div>
+    </details>
+
+    <!-- BIG 2: Супервизор -->
+    <details class="big orange" open>
+      <summary class="big-head">
+        <span class="big-chev">▶</span>
+        <span class="big-meta">
+          <span class="role">🟧 B.2 · Big job супервизора · сервис команды</span>
+          <span class="big-title">«Держать уровень сервиса и SLA всей команды при колебаниях нагрузки — <em>развивая</em> людей, а не теряя их в перегрузе.»</span>
+          <span class="big-sub">Прогресс на стыке операционного и управленческого. Балансировка нагрузки — сирота сверху (см. находку E.1): обслуживается косвенно через подцель 2.</span>
+        </span>
+      </summary>
+      <div class="big-body">
+        <div class="med">
+          <div class="med-head"><span class="med-num">7</span><span class="med-name">Функциональный паритет</span><span class="med-stage s1">этап 1</span></div>
+          <div class="small"><div class="small-txt">Когда появляется новый клиент — хочу произвести настройки, чтобы клиент быстрее начал работать.</div><div class="small-foot"><span class="chip stage">до</span><a class="chip branch" href="backlog.html?theme=Агентская%20админка">Агентская админка</a></div></div>
+          <div class="small"><div class="small-txt">Когда выходят новые фичи — хочу, чтобы клиент их видел.</div><div class="small-foot"><span class="chip stage">до</span></div></div>
+        </div>
+
+        <div class="med">
+          <div class="med-head"><span class="med-num">2</span><span class="med-name">Убрать тормоза</span><span class="med-stage s2b">этап 2B</span></div>
+          <div class="small"><div class="small-txt">Когда клиент эскалирует на уровень руководства — хочу одним кликом открыть полную историю кейса, чтобы понять, где сбой.</div><div class="small-foot"><span class="chip stage">во время</span><a class="chip branch" href="backlog.html?theme=Заказы">Заказы / История</a></div></div>
+          <div class="small"><div class="small-txt">Когда копятся жалобы/переработки по типам услуг — хочу отчёт по источникам ошибок за период.</div><div class="small-foot"><span class="chip stage">после</span><span class="chip branch">Рабочее место агентства</span></div></div>
+        </div>
+
+        <div class="med">
+          <div class="med-head"><span class="med-num">—</span><span class="med-name">Управление нагрузкой команды</span><span class="med-stage sx">вне 7 подцелей · E.1</span></div>
+          <div class="small"><div class="small-txt">Когда открываю Ракету в начале/конце дня — хочу видеть по каждому консультанту активные заявки, среднее время, хвосты, чтобы балансировать нагрузку.</div><div class="small-foot"><span class="chip stage">во время</span><span class="chip branch">Дашборд SLA / загрузка</span></div></div>
+          <div class="small"><div class="small-txt">Когда растёт очередь и до SLA мало времени — хочу сигнал «риск нарушения SLA» и инструменты перераспределения заявок.</div><div class="small-foot"><span class="chip stage">во время</span><span class="chip branch">Дашборд SLA</span></div></div>
+        </div>
+      </div>
+    </details>
+
+    <!-- BIG 3: gap-роли -->
+    <details class="big green" open>
+      <summary class="big-head">
+        <span class="big-chev">▶</span>
+        <span class="big-meta">
+          <span class="role">🟩 B.3 · Руководитель / Бухгалтерия / IT · решают renewal/экономику</span>
+          <span class="big-title">Деловой прогресс: <em>«маржа × число клиентов, масштаб без штата»</em></span>
+          <span class="big-sub">Руководитель = носитель корневой Big job. Бухгалтерия: «закрывать деньги быстро и без ошибок». IT: «чтобы интеграции (1С/мидофис) работали без ручного ввода». Допущение: gap-роли в .pages не описаны, Big jobs выведены из коротких целей — нужен точечный интервью при заходе в этапы 3–5.</span>
+        </span>
+      </summary>
+      <div class="big-body">
+        <div class="med">
+          <div class="med-head"><span class="med-num">6</span><span class="med-name">Бухгалтерия · Ускорить получение денег</span><span class="med-stage sx">этап 3 · вне Q2</span></div>
+          <div class="small"><div class="small-txt">Хочу сверять платежи и видеть остатки без ручной выгрузки.<span class="assume">допущение</span></div><div class="small-foot"><span class="chip stage">после</span><span class="chip branch">Баланс/мультивалюта</span></div></div>
+          <div class="small"><div class="small-txt">Хочу, чтобы закрывающие документы формировались без ручного ввода в 1С.<span class="assume">допущение</span></div><div class="small-foot"><span class="chip branch">Мидофис</span></div></div>
+        </div>
+
+        <div class="med">
+          <div class="med-head"><span class="med-num">4·5</span><span class="med-name">Руководитель · Маржа и масштаб</span><span class="med-stage sx">этапы 4–5 · вне Q2</span></div>
+          <div class="small"><div class="small-txt">Хочу настраивать сервисные сборы и правила выписки сам в админке, чтобы управлять маржой (H4.1).<span class="assume">допущение</span></div><div class="small-foot"><a class="chip branch" href="backlog.html?theme=Агентская%20админка">Агентская админка</a></div></div>
+          <div class="small"><div class="small-txt">Хочу обслуживать больше клиентов тем же штатом за счёт селф-сервиса клиента (H4.2).<span class="assume">допущение</span></div><div class="small-foot"><a class="chip branch" href="backlog.html?theme=Сервис%20для%20клиента">Сервис для клиента</a></div></div>
+        </div>
+
+        <div class="med">
+          <div class="med-head"><span class="med-num">5</span><span class="med-name">IT · Интеграции без сбоев</span><span class="med-stage sx">этап 4 · вне Q2</span></div>
+          <div class="small"><div class="small-txt">Хочу, чтобы интеграция с 1С/мидофисом работала без ручного ввода и сбоев.<span class="assume">допущение</span></div><div class="small-foot"><span class="chip branch">Мидофис</span></div></div>
+        </div>
+      </div>
+    </details>
+
+    <!-- НАХОДКИ -->
+    <div class="findings">
+      <div class="sec-title"><span class="num">◆ E</span><span class="ttl">Находки — аналитический payoff дерева</span></div>
+      <div class="fcard"><div class="ft">E.1 · <em>Сирота сверху:</em> супервизор не покрыт 7 подцелями</div><div class="fc">Балансировка нагрузки и управление риском SLA не отображается ни в одну из 7 подцелей. <strong>Решение (вариант А):</strong> обслуживаем косвенно как подмножество подцели 2; в карточках явно пишем «работает на подцель 2 через Big job супервизора».</div></div>
+      <div class="fcard"><div class="ft">E.2 · Подцели 3–6 не имеют агентских Small jobs в Q2</div><div class="fc">Их Small лежат у клиента или руководителя/IT. Это <strong>подтверждает корректность фокуса</strong>: 1, 2, 7 — работы пользователя (adoption), 3–6 — работы ЛПР (renewal).</div></div>
+      <div class="fcard"><div class="ft">E.3 · Big job консультанта обслуживается напрямую, но без активной метрики</div><div class="fc">CSAT/NPS висят под Big job минуя Medium, но не входят в 9 активных метрик. Измеряем процесс, не итог. Фиксируем как осознанный gap — без новой метрики.</div></div>
+      <div class="fcard"><div class="ft">E.4 · Повторяющиеся Small jobs у двух ролей</div><div class="fc">«Новости клиенту» есть и у консультанта, и у супервизора — при проработке свести в одну итерацию с двумя инициаторами.</div></div>
+      <div class="fcard"><div class="ft">E.5 · Доверие — гейт этапа 1, а не следствие паритета</div><div class="fc">Консультант не пользуется даже <strong>существующим</strong> функционалом из-за одного косяка. Рядом с паритетом — отдельная работа «заслужить доверие». Формализовано в H1.4. Сигнал — Adoption-in-AA при закрытом Parity gap.</div></div>
+      <div class="fcard"><div class="ft">E.6 · Пользователь, которого мы оптимизируем, финансово против оптимизации</div><div class="fc">Блок 2A оптимизирует время того, чей бонус завязан на число операций. Рычаг: <em>ускорять</em> биллинговую операцию (согласовано), а не <em>уносить</em> её (конфликт). Прямой минус по фильтру 12.4 за унос операции без realignment.</div></div>
+      <div class="fcard"><div class="ft">E.7 · <em>Конкуренция агентства ≠ конкуренция Ракеты</em> (два слоя)</div><div class="fc">Corteos/SmartWay — конкуренты <strong>Ракеты</strong> (слой платформы), а не агентства. Угроза агентству — <strong>дисинтермедиация</strong> (клиент уходит напрямую в bundled-платформу: SmartWay 2-в-1, Trivio) или уход к более технологичному агентству. Паритет Ракеты с конкурентами — не угроза агентству, а <strong>фактор силы его оружия</strong>. Даёт этапу 1 второе обоснование помимо H1.1/H1.4.</div></div>
+    </div>
   </main>
 
   <footer class="site-footer">
-    Данные: <code>data/tree.json</code> ← <code>python3 build/build.py</code> (из единого бэклога).
+    Источник: <code>Дерево работ направления «Агентства».md</code> v1.2 (2026-06-01) ·
+    схема <code>Дерево работ — диаграмма.svg</code>. Онтология, не бэклог — скоринг здесь не живёт.
   </footer>
 
   <script src="assets/app.js"></script>

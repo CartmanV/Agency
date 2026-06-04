@@ -7,6 +7,7 @@ const NAV = [
   { href: "backlog.html",  label: "Бэклог" },
   { href: "must.html",     label: "Must" },
   { href: "tree.html",     label: "Дерево" },
+  { href: "levels.html",   label: "Карта L1/L2" },
   { href: "agencies.html", label: "Агентства", disabled: true },
   { href: "metrics.html",  label: "Метрики", disabled: true },
   { href: "legend.html",   label: "Легенды", disabled: true },
@@ -562,10 +563,10 @@ function renderTheme(t) {
     </details>`;
 }
 
-async function mountTree() {
-  const host = document.querySelector("[data-tree]");
+async function mountLevels() {
+  const host = document.querySelector("[data-levels]");
   if (!host) return;
-  host.innerHTML = `<div class="loading">Загрузка дерева…</div>`;
+  host.innerHTML = `<div class="loading">Загрузка карты уровней…</div>`;
   let data;
   try { data = await loadJSON("data/tree.json"); }
   catch (e) { host.innerHTML = `<div class="error">${esc(e.message)}</div>`; return; }
@@ -602,9 +603,20 @@ async function mountTree() {
     () => bodyEl.querySelectorAll("details.tnode--l2").forEach((d) => (d.open = false)));
 }
 
+// JTBD-дерево (tree.html) — раскрыть/свернуть все Big-блоки
+function mountJtbd() {
+  const exp = document.querySelector("[data-jtbd-expand]");
+  const col = document.querySelector("[data-jtbd-collapse]");
+  if (!exp && !col) return;
+  const bigs = () => document.querySelectorAll("details.big");
+  if (exp) exp.addEventListener("click", () => bigs().forEach((d) => (d.open = true)));
+  if (col) col.addEventListener("click", () => bigs().forEach((d) => (d.open = false)));
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   mountHeader();
   mountBacklog();
   mountMust();
-  mountTree();
+  mountLevels();
+  mountJtbd();
 });
