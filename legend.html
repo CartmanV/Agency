@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0A1F16" />
+  <title>Легенды — направление «Агентства»</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700&family=Manrope:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">К содержанию</a>
+  <div data-header></div>
+
+  <div class="crumbs"><a href="index.html">Направление</a> <span>›</span> Легенды</div>
+
+  <main id="main">
+    <h1>Легенды — библиотека определений</h1>
+    <p class="lede">
+      Что означает каждый термин и бейдж направления: этапы лестницы, подцели,
+      механизмы, скоринг (RICE / MoSCoW / PV / Gate), метрики и поля. Сюда ведут
+      ссылки-якоря со всех страниц. Источник — вкладка «Легенда» единого бэклога v6.
+    </p>
+
+    <div data-legend></div>
+
+    <p class="lede" style="margin-top:32px;font-size:14px;color:var(--cream-dim)">
+      Следующим шагом — редакторский слой: полные формулировки гипотез H1–H5,
+      карта ролей (3+6+gap), фильтры неопределённости 12.x и расширенный глоссарий
+      (из «Логика ценности v2.5», «Карта ролей», «Проектные инструкции v2»).
+    </p>
+  </main>
+
+  <footer class="site-footer">
+    Данные: <code>data/legend.json</code> ← вкладка «Легенда» v6 через <code>build/build.py</code>.
+  </footer>
+
+  <script src="assets/app.js"></script>
+</body>
+</html>

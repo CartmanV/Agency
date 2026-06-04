@@ -8,9 +8,9 @@ const NAV = [
   { href: "must.html",     label: "Must" },
   { href: "tree.html",     label: "Дерево" },
   { href: "levels.html",   label: "Карта L1/L2" },
+  { href: "legend.html",   label: "Легенды" },
   { href: "agencies.html", label: "Агентства", disabled: true },
   { href: "metrics.html",  label: "Метрики", disabled: true },
-  { href: "legend.html",   label: "Легенды", disabled: true },
 ];
 
 function currentPage() {
@@ -603,6 +603,30 @@ async function mountLevels() {
     () => bodyEl.querySelectorAll("details.tnode--l2").forEach((d) => (d.open = false)));
 }
 
+// ===================== Легенды (legend.html) =====================
+async function mountLegend() {
+  const host = document.querySelector("[data-legend]");
+  if (!host) return;
+  host.innerHTML = `<div class="loading">Загрузка легенды…</div>`;
+  let data;
+  try { data = await loadJSON("data/legend.json"); }
+  catch (e) { host.innerHTML = `<div class="error">${esc(e.message)}</div>`; return; }
+
+  const secs = data.sections || [];
+  const toc = secs.map((s) => `<a class="leg-toc__item" href="#${s.id}">${esc(s.title)}</a>`).join("");
+  const body = secs.map((s) => `
+    <section class="leg-sect" id="${s.id}">
+      <h2>${esc(s.title)}</h2>
+      <dl class="leg-list">
+        ${s.items.map((it) => `<div class="leg-row" id="${it.id}"><dt>${esc(it.term)}</dt><dd>${esc(it.def)}</dd></div>`).join("")}
+      </dl>
+    </section>`).join("");
+
+  host.innerHTML = `
+    <nav class="leg-toc" aria-label="Разделы легенды">${toc}</nav>
+    <div class="leg-body">${body}</div>`;
+}
+
 // JTBD-дерево (tree.html) — раскрыть/свернуть все Big-блоки
 function mountJtbd() {
   const exp = document.querySelector("[data-jtbd-expand]");
@@ -619,4 +643,5 @@ document.addEventListener("DOMContentLoaded", () => {
   mountMust();
   mountLevels();
   mountJtbd();
+  mountLegend();
 });

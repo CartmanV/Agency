@@ -202,6 +202,38 @@ def build_tree(items):
     return tree
 
 
+def build_legend(src):
+    """Вкладка «Легенда» (термин→определение, секции ВЕРХним регистром) → legend.json."""
+    wb = openpyxl.load_workbook(src, data_only=True, read_only=True)
+    if "Легенда" not in wb.sheetnames:
+        return None
+    ws = wb["Легенда"]
+    rows = list(ws.iter_rows(values_only=True))
+
+    # чистые id для известных секций (по ключевому слову заголовка)
+    def section_id(title):
+        t = title.lower()
+        for key, sid in (("о файле", "about"), ("как читать", "columns"),
+                         ("механизм", "mechanisms"), ("подцель", "subgoals"),
+                         ("этап", "stages"), ("скоринг", "scoring"),
+                         ("метрик", "metrics"), ("пристыков", "research")):
+            if key in t:
+                return sid
+        return slug(title) or "section"
+
+    sections, cur = [], None
+    for r in rows[1:]:  # row0 — общий заголовок файла
+        a = clean(r[0])
+        b = clean(r[1]) if len(r) > 1 else None
+        if a and not b:                       # заголовок секции
+            cur = {"id": section_id(a), "title": a, "items": []}
+            sections.append(cur)
+        elif a and b and cur is not None:     # термин → определение
+            cur["items"].append({"id": f"{cur['id']}--{slug(a)}", "term": a, "def": b})
+    return {"source": src.name, "sections": sections,
+            "count": sum(len(s["items"]) for s in sections)}
+
+
 def main():
     items, errors = build_backlog()
     DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -225,6 +257,13 @@ def main():
         "tree": tree,
     }, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"Дерево: {len(tree)} тем × Уровень 2 × итерации → {tree_out.relative_to(SITE_DIR)}")
+
+    # legend.json — справочник из вкладки «Легенда»
+    legend = build_legend(find_source())
+    if legend:
+        legend_out = DATA_DIR / "legend.json"
+        legend_out.write_text(json.dumps(legend, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(f"Легенда: {len(legend['sections'])} секций · {legend['count']} определений → {legend_out.relative_to(SITE_DIR)}")
 
     must = sum(1 for x in items if x.get("moscow") == "Must")
     print(f"  Must: {must}  ·  с Final Score: {sum(1 for x in items if x['finalScore'] is not None)}")

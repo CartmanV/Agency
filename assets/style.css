@@ -613,3 +613,23 @@ a.chip.branch:hover { border-color: var(--copper); color: var(--cream); text-dec
 .fcard .ft em { font-style: italic; color: var(--copper); }
 .fcard .fc { font-size: 13.5px; color: var(--cream-soft); line-height: 1.6; }
 .fcard .fc strong { color: var(--cream); }
+
+/* ===================== Легенды (legend.html) ===================== */
+.leg-toc { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 28px; padding-bottom: 20px; border-bottom: 1px solid var(--line); }
+.leg-toc__item {
+  font-family: var(--f-mono); font-size: 11.5px; color: var(--cream-dim);
+  padding: 6px 11px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel);
+}
+.leg-toc__item:hover { color: var(--cream); border-color: var(--copper); text-decoration: none; }
+
+.leg-sect { scroll-margin-top: 80px; margin-bottom: 38px; }
+.leg-sect h2 { font-size: 19px; color: var(--cream); padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+.leg-list { margin: 14px 0 0; display: grid; gap: 0; }
+.leg-row {
+  display: grid; grid-template-columns: minmax(160px, 240px) 1fr; gap: 8px 24px;
+  padding: 10px 0; border-bottom: 1px solid var(--line); scroll-margin-top: 80px;
+}
+@media (max-width: 680px) { .leg-row { grid-template-columns: 1fr; gap: 4px; } }
+.leg-row:target { background: var(--pink-dim); border-radius: 8px; padding-left: 10px; padding-right: 10px; }
+.leg-row dt { font-family: var(--f-mono); font-size: 13px; color: var(--gold); }
+.leg-row dd { margin: 0; color: var(--cream-soft); font-size: 14px; line-height: 1.55; }
