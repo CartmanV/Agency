@@ -1104,3 +1104,15 @@ a.fl-task:hover { color: var(--pink-soft); }
   .projbar__meta { gap: 8px; flex-direction: column; }
   .vm-regs { grid-template-columns: 1fr; }
 }
+
+/* ===================== Инлайн-расшифровка жаргона (Р6) ===================== */
+abbr.gloss, abbr.assume-mark {
+  text-decoration: none; cursor: help; border-bottom: 1px dotted var(--copper-dk);
+}
+abbr.gloss { color: inherit; }
+abbr.assume-mark {
+  color: var(--copper); font-weight: 600; border-bottom: none; margin-left: 1px;
+  font-size: .85em; vertical-align: super; line-height: 0;
+}
+abbr.gloss:hover, abbr.assume-mark:hover { border-bottom-color: var(--copper); }
+.projbar__sib--gloss { border-style: dotted; color: var(--cream-dim); }

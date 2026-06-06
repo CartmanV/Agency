@@ -79,6 +79,56 @@ function esc(s) {
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 }
 
+// Пометка «редакторское допущение» — вместо сырого [*] (тултип вместо непонятного знака).
+const ASSUME = `<abbr class="assume-mark" title="редакторское допущение по сборке — не подтверждено данными">*</abbr>`;
+
+// ---- Инлайн-расшифровка жаргона (Р6): оборачивает термины в <abbr> с пояснением. ----
+// На вход — УЖЕ экранированный текст (без своих тегов). Один проход, без вложенности.
+const GLOSS_TERMS = [
+  ["TTFO", "Time To First Order — время до первой закрытой услуги новым агентством"],
+  ["T-op", "трудозатраты на операцию (время консультанта)"],
+  ["T-wait", "время ожидания: очередь, саппорт, согласования"],
+  ["OPEX", "операционные расходы агентства"],
+  ["NSM", "North Star Metric — главная метрика направления"],
+  ["Q2", "2-й квартал 2026 — текущий фокус направления"],
+];
+function gloss(s) {
+  if (!s) return s;
+  let out = String(s)
+    .replace(/\b(H\d+(?:\.\d+){1,2})\b/g,
+      `<abbr class="gloss" title="проверяемая гипотеза ценности — раскрыта в Лестнице и Легендах">$1</abbr>`)
+    .replace(/\b(E\.\d)\b/g,
+      `<abbr class="gloss" title="находка анализа дерева работ — см. Дерево (JTBD)">$1</abbr>`);
+  for (const [t, def] of GLOSS_TERMS) {
+    const esc_t = t.replace(/[-]/g, "\\-");
+    out = out.replace(new RegExp(`(?<![\\wА-Яа-я-])(${esc_t})(?![\\wА-Яа-я-])`, "g"),
+      `<abbr class="gloss" title="${def}">$1</abbr>`);
+  }
+  return out;
+}
+const GLOSS_TEST = /\b(?:H\d+\.\d|E\.\d|TTFO|T-op|T-wait|OPEX|NSM|Q2)\b/;
+// Расшифровать жаргон в готовом DOM (для статических страниц вроде tree.html).
+function glossifyDOM(root) {
+  if (!root) return;
+  const skip = new Set(["A", "ABBR", "BUTTON", "CODE", "SCRIPT", "STYLE", "INPUT", "TEXTAREA"]);
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(n) {
+      if (!n.nodeValue || !GLOSS_TEST.test(n.nodeValue)) return NodeFilter.FILTER_REJECT;
+      for (let p = n.parentNode; p && p !== root.parentNode; p = p.parentNode) {
+        if (skip.has(p.nodeName)) return NodeFilter.FILTER_REJECT;
+      }
+      return NodeFilter.FILTER_ACCEPT;
+    },
+  });
+  const targets = [];
+  while (walker.nextNode()) targets.push(walker.currentNode);
+  targets.forEach((node) => {
+    const span = document.createElement("span");
+    span.innerHTML = gloss(esc(node.nodeValue));
+    node.replaceWith(...span.childNodes);
+  });
+}
+
 // --- полный набор колонок бэклога: [ключ, заголовок, тип, видна по умолчанию] ---
 // тип: num | mono | text | badge | badge-plain | title | long
 const COLS_FULL = [
@@ -587,7 +637,7 @@ function renderLevelBucket(bucketName, treeByTheme) {
   const single = tb.level2.length === 1 && tb.level2[0].name === bucketName;
   const head = `<div class="l2group__h">${esc(bucketName)}<span class="c">${tb.count}</span></div>`;
   const l2 = single
-    ? `<ul class="l2"><li><span class="dot"></span><span class="nm muted">единый L2 — разнести при разборе [*]</span><span class="c">${tb.count}</span></li></ul>`
+    ? `<ul class="l2"><li><span class="dot"></span><span class="nm muted">единый L2 — разнести при разборе ${ASSUME}</span><span class="c">${tb.count}</span></li></ul>`
     : `<ul class="l2">${tb.level2.slice().sort((a, b) => b.count - a.count).map((l) =>
         `<li><span class="dot"></span><span class="nm">${esc(l.name)}</span><span class="c">${l.count}</span></li>`).join("")}</ul>`;
   return `<div class="l2group">${head}${l2}</div>`;
@@ -650,7 +700,7 @@ function l2count(l, byTheme) {
 function l2countStr(l, byTheme, withStar) {
   const c = l2count(l, byTheme);
   if (c.n == null) return "—";
-  return c.n + (withStar && c.star ? " [*]" : "");
+  return c.n + (withStar && c.star ? " " + ASSUME : "");
 }
 function renderTasksBlock(l, bucketTheme) {
   if (!(l.tasks && l.tasks.length)) return "";
@@ -667,7 +717,7 @@ function renderTasksBlock(l, bucketTheme) {
 }
 // Правая панель — тема L1 (полное описание + список подтем).
 function panelTheme(t, byTheme) {
-  const cnt = (t.buckets && t.buckets.length) ? String(themeCount(t, byTheme)) : "[*]";
+  const cnt = (t.buckets && t.buckets.length) ? String(themeCount(t, byTheme)) : ASSUME;
   const tags = [
     `<span class="ltag">Механизм · ${esc(t.mechanism)}</span>`,
     `<span class="ltag">${esc(t.subgoal)}</span>`,
@@ -687,11 +737,11 @@ function panelTheme(t, byTheme) {
           <span class="pn-sub__c">${l2countStr(l, byTheme, true)} ›</span></a></li>`;
       }).join("")}</ul></div>`;
   } else if (t.buckets && t.buckets.length) {
-    sub = `<div class="fl-sect"><h4>Подтемы L2 <span class="muted">(бакеты бэклога)</span></h4>
+    sub = `<div class="fl-sect"><h4>Подтемы L2 <span class="muted">(группы бэклога)</span></h4>
       <div class="l2grid">${t.buckets.map((b) => renderLevelBucket(b, byTheme)).join("")}</div>
       <a class="foot-link" href="backlog.html?theme=${encodeURIComponent(t.buckets[0])}">все итерации темы в бэклоге →</a></div>`;
   } else {
-    sub = `<p class="muted pn__todo">${esc(t.note || "Нет итераций в бэклоге [*]")}</p>`;
+    sub = `<p class="muted pn__todo">${t.note ? esc(t.note) : "Нет итераций в бэклоге " + ASSUME}</p>`;
   }
   return `<div class="pn">
     <div class="pn__head">
@@ -701,7 +751,7 @@ function panelTheme(t, byTheme) {
     </div>
     <p class="pn__about">${esc(t.about)}</p>
     <div class="ltags">${tags}</div>
-    ${t.full ? renderFull(t.full) : `<p class="muted pn__todo">Полное описание этой темы ещё не перенесено из источника [*].</p>`}
+    ${t.full ? renderFull(t.full) : `<p class="muted pn__todo">Полное описание этой темы ещё не перенесено из источника ${ASSUME}.</p>`}
     ${sub}
   </div>`;
 }
@@ -730,7 +780,7 @@ function panelL2(t, l, byTheme) {
 function railBranch(b, byTheme, idx, sel) {
   const themes = b.themes.map((t) => {
     const tid = "t:" + t.name;
-    const cnt = (t.buckets && t.buckets.length) ? themeCount(t, byTheme) : "[*]";
+    const cnt = (t.buckets && t.buckets.length) ? themeCount(t, byTheme) : ASSUME;
     const subs = (t.editorialL2 && t.editorialL2.length)
       ? `<ul class="rail-l2">${t.editorialL2.map((l, i) => {
           const lid = "l:" + t.name + ":" + i;
@@ -767,9 +817,9 @@ async function mountLevels() {
   levels.branches.forEach((b) => b.themes.forEach((t) => (t.buckets || []).forEach((x) => mapped.add(x))));
   const orphans = (tree.tree || []).filter((t) => !mapped.has(t.theme));
   const orphanBranch = orphans.length ? {
-    name: "Вне карты [*]", stage: "бакеты бэклога без темы L1",
+    name: "Вне каталога", stage: "группы бэклога без темы уровня 1",
     themes: orphans.map((o) => ({ name: o.theme, role: "", about:
-      "Бакет бэклога ещё не разнесён по темам уровня 1 — требует редакторского решения.",
+      "Группа бэклога ещё не разнесена по темам уровня 1 — требует редакторского решения.",
       mechanism: "—", subgoal: "—", bigjob: "—", hyp: "—", buckets: [o.theme] })),
   } : null;
   const branches = orphanBranch ? levels.branches.concat([orphanBranch]) : levels.branches;
@@ -806,6 +856,7 @@ async function mountLevels() {
       html = t ? panelTheme(t, byTheme) : `<p class="error">Тема не найдена</p>`;
     }
     panelEl.innerHTML = html;
+    glossifyDOM(panelEl);
     panelEl.scrollTop = 0;
   }
   host.addEventListener("click", (e) => {
@@ -940,14 +991,14 @@ async function mountLadder() {
         <div class="lad-block__sub">Подцель: ${esc(b.subgoal)}</div>
         <div class="lad-block__label">${esc(b.label)}</div>
         <div class="lad-grp"><span class="lad-grp__h">Гипотезы</span>
-          <ul class="lad-hyp">${b.hypotheses.map((h) => `<li>${hChip(h)} <span>${esc(h.text)}</span></li>`).join("")}</ul></div>
+          <ul class="lad-hyp">${b.hypotheses.map((h) => `<li>${hChip(h)} <span>${gloss(esc(h.text))}</span></li>`).join("")}</ul></div>
         <div class="lad-grp"><span class="lad-grp__h">Критерии успешности</span>
-          <ul class="lad-crit">${b.criteria.map((c) => `<li>${esc(c)}</li>`).join("")}</ul></div>
+          <ul class="lad-crit">${b.criteria.map((c) => `<li>${gloss(esc(c))}</li>`).join("")}</ul></div>
         <div class="lad-metrics">
           ${b.metricsActive.length ? `<div><span class="lad-mh act">Активные</span> ${b.metricsActive.map(mChip).join(" ")}</div>` : ""}
           ${b.metricsTarget.length ? `<div><span class="lad-mh tgt">Целевые</span> ${b.metricsTarget.map(mChip).join(" ")}</div>` : ""}
         </div>
-        ${b.note ? `<p class="lad-note">${esc(b.note)}</p>` : ""}
+        ${b.note ? `<p class="lad-note">${gloss(esc(b.note))}</p>` : ""}
       </div>`;
   }
 
@@ -963,15 +1014,15 @@ async function mountLadder() {
           <span class="lad-n">${esc(s.n)}</span>
           <span class="lad-name">${esc(s.name)}</span>
           ${focus ? `<span class="lad-focus">фокус 2026</span>` : ""}
-          <span class="lad-mean">${esc(s.meaning)}</span>
+          <span class="lad-mean">${gloss(esc(s.meaning))}</span>
         </summary>
         <div class="lad-body">
           ${cnChip ? `<div class="lad-concept-row">${cnChip}</div>` : ""}
           ${s.blocks.map(block).join("")}
           <dl class="lad-foot">
-            <div><dt>Что должна делать Ракета</dt><dd>${esc(s.doWhat)}</dd></div>
-            <div><dt>Результат для агентства</dt><dd>${esc(s.result)}</dd></div>
-            <div><dt>Цель этапа</dt><dd>${esc(s.goal)}</dd></div>
+            <div><dt>Что должна делать Ракета</dt><dd>${gloss(esc(s.doWhat))}</dd></div>
+            <div><dt>Результат для агентства</dt><dd>${gloss(esc(s.result))}</dd></div>
+            <div><dt>Цель этапа</dt><dd>${gloss(esc(s.goal))}</dd></div>
           </dl>
         </div>
       </details>`;
@@ -1240,8 +1291,8 @@ function conceptCardHTML(c) {
       ? `<a class="cn-mech__link" href="backlog.html?theme=${encodeURIComponent(m.backlogTheme)}">в Бэклоге →</a>` : "";
     return `
       <div class="cn-mech">
-        <div class="cn-mech__h"><span class="cn-mech__name">${esc(m.name)}</span>${link}</div>
-        <p class="cn-mech__desc">${esc(m.desc)}</p>
+        <div class="cn-mech__h"><span class="cn-mech__name">${gloss(esc(m.name))}</span>${link}</div>
+        <p class="cn-mech__desc">${gloss(esc(m.desc))}</p>
         ${metrics}
       </div>`;
   }).join("");
@@ -1253,15 +1304,15 @@ function conceptCardHTML(c) {
         ${q2Badge(c.q2)}
       </div>
       <dl class="cncard__meta">
-        <div><dt>Этапы лестницы</dt><dd>${esc(c.stages)}</dd></div>
+        <div><dt>Этапы лестницы</dt><dd>${gloss(esc(c.stages))}</dd></div>
         <div><dt>Подцели</dt><dd>${esc(c.subgoals)}</dd></div>
         <div><dt>Чья работа</dt><dd>${esc(c.role)}</dd></div>
         <div><dt>Первичный адресат</dt><dd>${esc(c.addressee)}</dd></div>
       </dl>
-      <p class="cncard__idea"><b>Ключевая идея.</b> ${esc(c.idea)}</p>
-      ${c.q2Note ? `<p class="cncard__q2note">⚠ Граница Q2. ${esc(c.q2Note)}</p>` : ""}
+      <p class="cncard__idea"><b>Ключевая идея.</b> ${gloss(esc(c.idea))}</p>
+      ${c.q2Note ? `<p class="cncard__q2note">⚠ Граница Q2. ${gloss(esc(c.q2Note))}</p>` : ""}
       <div class="cn-mechs"><div class="cn-mechs__h">Механизмы</div>${mechs}</div>
-      <p class="cncard__effect"><b>Ожидаемый эффект.</b> ${esc(c.effect)}</p>
+      <p class="cncard__effect"><b>Ожидаемый эффект.</b> ${gloss(esc(c.effect))}</p>
     </article>`;
 }
 function valueMatrixHTML(data) {
@@ -1377,6 +1428,7 @@ function mountProjbar() {
         <span class="projbar__sibh">${isReg ? "Стратегические проекции:" : "Другие проекции:"}</span>
         ${sibs}
         <a class="projbar__sib projbar__sib--map" href="vision.html#karta">Карта связей →</a>
+        <a class="projbar__sib projbar__sib--gloss" href="legend.html" title="Расшифровка терминов, кодов и метрик">Сокращения ⓘ</a>
       </div>
     </div>`;
 }
@@ -1389,6 +1441,7 @@ function mountJtbd() {
   const bigs = () => document.querySelectorAll("details.big");
   if (exp) exp.addEventListener("click", () => bigs().forEach((d) => (d.open = true)));
   if (col) col.addEventListener("click", () => bigs().forEach((d) => (d.open = false)));
+  glossifyDOM(document.getElementById("main"));
 }
 
 document.addEventListener("DOMContentLoaded", () => {
