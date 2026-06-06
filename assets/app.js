@@ -10,6 +10,7 @@ const NAV = [
   { href: "tree.html",     label: "Дерево" },
   { href: "levels.html",   label: "Структура работ" },
   { href: "lestnica.html", label: "Лестница" },
+  { href: "concepts.html", label: "Концепции" },
   { href: "legend.html",   label: "Легенды" },
   { href: "research.html", label: "Исследования" },
   { href: "agencies.html", label: "Агентства" },
@@ -922,6 +923,14 @@ async function mountLadder() {
   catch (e) { host.innerHTML = `<div class="error">${esc(e.message)}</div>`; return; }
 
   const focusStages = new Set(["1", "2"]);
+  // Этап лестницы → концепция ценности (concepts.html). Концепции 1–2 — зонтики.
+  const STAGE_CONCEPT = {
+    "1": { anchor: "c0", label: "Концепция 0 · Не мешать" },
+    "2": { anchor: "c1", label: "Концепции 1–2 · Постпродажное / Тормоза" },
+    "3": { anchor: "c2", label: "Концепция 2 · Баланс" },
+    "4": { anchor: "c3", label: "Концепция 3 · контур A" },
+    "5": { anchor: "c3", label: "Концепция 3 · контур B" },
+  };
   const hChip = (h) => `<a class="lad-h" href="backlog.html?q=${encodeURIComponent(h.code)}" title="${esc(h.text)}">${esc(h.code)}</a>`;
   const mChip = (m) => `<span class="lad-m">${esc(m)}</span>`;
 
@@ -944,6 +953,10 @@ async function mountLadder() {
 
   function stage(s) {
     const focus = focusStages.has(s.n);
+    const cn = STAGE_CONCEPT[s.n];
+    const cnChip = cn
+      ? `<a class="lad-concept" href="concepts.html#${cn.anchor}" title="Что строим на этом этапе">${esc(cn.label)} →</a>`
+      : "";
     return `
       <details class="lad-stage${focus ? " is-focus" : ""}"${focus ? " open" : ""}>
         <summary class="lad-sum">
@@ -953,6 +966,7 @@ async function mountLadder() {
           <span class="lad-mean">${esc(s.meaning)}</span>
         </summary>
         <div class="lad-body">
+          ${cnChip ? `<div class="lad-concept-row">${cnChip}</div>` : ""}
           ${s.blocks.map(block).join("")}
           <dl class="lad-foot">
             <div><dt>Что должна делать Ракета</dt><dd>${esc(s.doWhat)}</dd></div>
@@ -1208,6 +1222,114 @@ async function mountLegend() {
   }
 }
 
+// ===================== Концепции ценности (concepts.html + матрица в vision) =====================
+const Q2_BADGE = {
+  focus:   ["q2-focus", "Фокус Q2"],
+  partial: ["q2-part",  "Частично в Q2"],
+  out:     ["q2-out",   "Вне Q2"],
+};
+function q2Badge(kind) {
+  const b = Q2_BADGE[kind] || Q2_BADGE.out;
+  return `<span class="cn-q2 ${b[0]}">${b[1]}</span>`;
+}
+function conceptCardHTML(c) {
+  const mechs = (c.mechanisms || []).map((m) => {
+    const metrics = (m.metrics || []).length
+      ? `<span class="cn-mech__metrics">${m.metrics.map((x) => `<span class="cn-m">${esc(x)}</span>`).join(" ")}</span>` : "";
+    const link = m.backlogTheme
+      ? `<a class="cn-mech__link" href="backlog.html?theme=${encodeURIComponent(m.backlogTheme)}">в Бэклоге →</a>` : "";
+    return `
+      <div class="cn-mech">
+        <div class="cn-mech__h"><span class="cn-mech__name">${esc(m.name)}</span>${link}</div>
+        <p class="cn-mech__desc">${esc(m.desc)}</p>
+        ${metrics}
+      </div>`;
+  }).join("");
+  return `
+    <article class="cncard" id="c${esc(c.n)}">
+      <div class="cncard__top">
+        <span class="cncard__n">${esc(c.n)}</span>
+        <h2 class="cncard__title">${esc(c.title)}</h2>
+        ${q2Badge(c.q2)}
+      </div>
+      <dl class="cncard__meta">
+        <div><dt>Этапы лестницы</dt><dd>${esc(c.stages)}</dd></div>
+        <div><dt>Подцели</dt><dd>${esc(c.subgoals)}</dd></div>
+        <div><dt>Чья работа</dt><dd>${esc(c.role)}</dd></div>
+        <div><dt>Первичный адресат</dt><dd>${esc(c.addressee)}</dd></div>
+      </dl>
+      <p class="cncard__idea"><b>Ключевая идея.</b> ${esc(c.idea)}</p>
+      ${c.q2Note ? `<p class="cncard__q2note">⚠ Граница Q2. ${esc(c.q2Note)}</p>` : ""}
+      <div class="cn-mechs"><div class="cn-mechs__h">Механизмы</div>${mechs}</div>
+      <p class="cncard__effect"><b>Ожидаемый эффект.</b> ${esc(c.effect)}</p>
+    </article>`;
+}
+function valueMatrixHTML(data) {
+  const rows = (data.matrix || []).map((r) => {
+    const mech = (r.mechanisms || []).map((m) => `<span class="vm-m">${esc(m)}</span>`).join(" ");
+    const q2 = r.q2 ? `<span class="vm-q2 on">Q2</span>` : `<span class="vm-q2">—</span>`;
+    return `
+      <tr class="vm-row${r.q2 ? " is-q2" : ""}">
+        <td class="vm-stage"><a href="lestnica.html"><span class="vm-sn">${esc(r.stage)}</span> ${esc(r.stageName)}</a></td>
+        <td class="vm-sub">${esc(r.subgoals)}</td>
+        <td class="vm-concept"><a href="concepts.html#c${esc(String(r.concept).replace(/[^0-9].*$/, "").trim() || r.concept)}"><b>${esc(r.concept)}</b> · ${esc(r.conceptName)}</a></td>
+        <td class="vm-mech">${mech}</td>
+        <td class="vm-role"><a href="tree.html"><span class="vm-dot ${esc(r.roleColor)}"></span>${esc(r.role)}</a></td>
+        <td class="vm-foc">${q2}</td>
+      </tr>`;
+  }).join("");
+  const lenses = (data.lenses || []).map((l) => `
+    <a class="vm-lens" href="${esc(l.href)}">
+      <span class="vm-lens__k">${esc(l.k)}</span>
+      <span class="vm-lens__n">${esc(l.name)}</span>
+      <span class="vm-lens__d">${esc(l.desc)}</span>
+    </a>`).join("");
+  return `
+    <div class="vm-lenses">${lenses}</div>
+    <div class="table-wrap">
+      <table class="vmatrix">
+        <thead><tr>
+          <th>Этап (Лестница)</th><th>Подцель</th><th>Концепция</th>
+          <th>Механизмы (что строим)</th><th>Чья работа (Дерево)</th><th>Фокус</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    <p class="vm-note">Концепции 1 и 2 — зонтики: они покрывают несколько этапов, поэтому
+    встречаются в разных строках. Подробно каждая концепция — в
+    <a href="concepts.html">Концепциях</a>.</p>`;
+}
+async function mountConcepts() {
+  const cardsHost = document.querySelector("[data-concepts]");
+  const matrixHost = document.querySelector("[data-value-matrix]");
+  if (!cardsHost && !matrixHost) return;
+  let data;
+  try { data = await loadJSON("data/concepts.json"); }
+  catch (e) {
+    const msg = `<div class="error">${esc(e.message)}</div>`;
+    if (cardsHost) cardsHost.innerHTML = msg;
+    if (matrixHost) matrixHost.innerHTML = msg;
+    return;
+  }
+  if (matrixHost) matrixHost.innerHTML = valueMatrixHTML(data);
+  if (cardsHost) {
+    cardsHost.innerHTML = `
+      <p class="cn-intro">${esc(data.intro || "")}</p>
+      <div class="vm-lenses">${(data.lenses || []).map((l) => `
+        <a class="vm-lens" href="${esc(l.href)}">
+          <span class="vm-lens__k">${esc(l.k)}</span>
+          <span class="vm-lens__n">${esc(l.name)}</span>
+          <span class="vm-lens__d">${esc(l.desc)}</span>
+        </a>`).join("")}</div>
+      <div class="cncards">${(data.concepts || []).map(conceptCardHTML).join("")}</div>
+      <p class="result-meta" style="margin-top:18px">источник: ${esc(data.source)} v${esc(data.version)}</p>`;
+    if (location.hash) {
+      const el = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+      if (el) { el.scrollIntoView({ block: "start" }); el.classList.add("is-target"); }
+    }
+  }
+}
+
 // JTBD-дерево (tree.html) — раскрыть/свернуть все Big-блоки
 function mountJtbd() {
   const exp = document.querySelector("[data-jtbd-expand]");
@@ -1230,4 +1352,5 @@ document.addEventListener("DOMContentLoaded", () => {
   mountMetrics();
   mountResearch();
   mountLadder();
+  mountConcepts();
 });

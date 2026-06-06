@@ -966,3 +966,99 @@ a.fl-task:hover { color: var(--pink-soft); }
   .pn { max-width: none; }
   .pn-sub__m { display: none; }
 }
+
+/* ===================== Концепции ценности (concepts.html) ===================== */
+.cn-intro { color: var(--cream-soft); font-size: 1.02rem; line-height: 1.65; max-width: 70ch; margin: 0 0 22px; }
+
+/* три проекции — карточки-линзы (общие для concepts и матрицы в vision) */
+.vm-lenses { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 0 0 26px; }
+.vm-lens {
+  display: block; text-decoration: none; padding: 14px 16px;
+  border: 1px solid var(--line); border-radius: 12px; background: var(--panel);
+  transition: border-color .15s, transform .15s;
+}
+.vm-lens:hover { border-color: var(--line-soft); transform: translateY(-2px); }
+.vm-lens__k { display: block; font: 500 .72rem/1 var(--f-mono); letter-spacing: .04em; text-transform: uppercase; color: var(--copper); }
+.vm-lens__n { display: block; font: 600 1.05rem/1.2 var(--f-display); color: var(--cream); margin: 6px 0 4px; }
+.vm-lens__d { display: block; color: var(--cream-dim); font-size: .86rem; line-height: 1.5; }
+
+.cncards { display: flex; flex-direction: column; gap: 20px; }
+.cncard {
+  border: 1px solid var(--line); border-radius: 16px; background: var(--panel);
+  padding: 22px 24px; scroll-margin-top: 80px;
+}
+.cncard.is-target { border-color: var(--copper); box-shadow: 0 0 0 2px rgba(226,179,85,.25); }
+.cncard__top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.cncard__n {
+  font: 700 1.1rem/1 var(--f-mono); color: var(--bg); background: var(--copper);
+  width: 34px; height: 34px; display: grid; place-items: center; border-radius: 9px; flex: none;
+}
+.cncard__title { font: 600 1.4rem/1.2 var(--f-display); color: var(--cream); margin: 0; flex: 1 1 auto; }
+.cn-q2 { font: 500 .72rem/1 var(--f-mono); padding: 5px 9px; border-radius: 999px; white-space: nowrap; }
+.cn-q2.q2-focus { color: var(--bg); background: var(--emerald); }
+.cn-q2.q2-part  { color: var(--bg); background: var(--gold); }
+.cn-q2.q2-out   { color: var(--cream-dim); background: transparent; border: 1px solid var(--line-soft); }
+
+.cncard__meta { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px 24px; margin: 16px 0; }
+.cncard__meta > div { display: grid; grid-template-columns: 130px 1fr; gap: 10px; padding: 5px 0; border-bottom: 1px solid var(--line); }
+.cncard__meta dt { font: 500 .8rem/1.4 var(--f-mono); color: var(--muted); }
+.cncard__meta dd { margin: 0; color: var(--cream-soft); font-size: .9rem; line-height: 1.45; }
+.cncard__idea, .cncard__effect { color: var(--cream-soft); line-height: 1.6; margin: 12px 0 0; }
+.cncard__idea b, .cncard__effect b { color: var(--cream); }
+.cncard__q2note {
+  color: var(--cream-soft); line-height: 1.55; margin: 12px 0 0; font-size: .9rem;
+  border-left: 3px solid var(--gold); padding: 8px 0 8px 12px; background: rgba(226,179,85,.06);
+}
+
+.cn-mechs { margin: 18px 0 4px; }
+.cn-mechs__h { font: 500 .8rem/1 var(--f-mono); letter-spacing: .04em; text-transform: uppercase; color: var(--copper); margin-bottom: 10px; }
+.cn-mech { border-left: 2px solid var(--line-soft); padding: 2px 0 2px 14px; margin-bottom: 12px; }
+.cn-mech__h { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.cn-mech__name { font: 600 .98rem/1.3 var(--f-body); color: var(--cream); }
+.cn-mech__link { font: 500 .78rem/1 var(--f-mono); color: var(--copper); text-decoration: none; }
+.cn-mech__link:hover { text-decoration: underline; }
+.cn-mech__desc { color: var(--cream-dim); font-size: .88rem; line-height: 1.5; margin: 4px 0 6px; }
+.cn-mech__metrics { display: inline-flex; gap: 6px; flex-wrap: wrap; }
+.cn-m { font: 500 .74rem/1 var(--f-mono); color: var(--emerald); border: 1px solid var(--line-soft); border-radius: 999px; padding: 4px 8px; }
+
+/* ===================== Карта соответствия (матрица в vision) ===================== */
+.vmatrix { width: 100%; border-collapse: collapse; font-size: .88rem; }
+.vmatrix thead th {
+  text-align: left; font: 500 .76rem/1.3 var(--f-mono); color: var(--muted);
+  padding: 10px 12px; border-bottom: 1px solid var(--line-soft); white-space: nowrap;
+}
+.vmatrix td { padding: 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.vm-row.is-q2 { background: rgba(61,163,114,.05); }
+.vmatrix a { color: inherit; text-decoration: none; }
+.vmatrix a:hover { color: var(--copper); }
+.vm-stage { min-width: 150px; }
+.vm-sn { font: 700 .82rem/1 var(--f-mono); color: var(--bg); background: var(--copper); padding: 2px 7px; border-radius: 6px; margin-right: 6px; }
+.vm-stage a { color: var(--cream); font-weight: 600; }
+.vm-sub { color: var(--cream-dim); font-family: var(--f-mono); white-space: nowrap; }
+.vm-concept a { color: var(--cream-soft); }
+.vm-concept b { color: var(--copper); }
+.vm-mech { color: var(--cream-dim); }
+.vm-m { display: inline-block; font-size: .8rem; border: 1px solid var(--line); border-radius: 6px; padding: 2px 7px; margin: 2px 3px 2px 0; color: var(--cream-soft); }
+.vm-role { white-space: nowrap; color: var(--cream-soft); }
+.vm-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 7px; vertical-align: middle; }
+.vm-dot.blue { background: var(--blue); }
+.vm-dot.orange { background: #E08A4B; }
+.vm-dot.green { background: var(--emerald); }
+.vm-q2 { font: 600 .76rem/1 var(--f-mono); color: var(--muted); }
+.vm-q2.on { color: var(--bg); background: var(--emerald); padding: 3px 8px; border-radius: 999px; }
+.vm-note { color: var(--cream-dim); font-size: .85rem; line-height: 1.5; margin: 14px 0 0; }
+
+/* чип концепции в строках лестницы */
+.lad-concept-row { margin: 0 0 14px; }
+.lad-concept {
+  display: inline-block; font: 500 .8rem/1 var(--f-mono); color: var(--copper);
+  text-decoration: none; border: 1px dashed var(--line-soft); border-radius: 999px; padding: 6px 12px;
+}
+.lad-concept:hover { border-color: var(--copper); }
+
+@media (max-width: 720px) {
+  .vm-lenses { grid-template-columns: 1fr; }
+  .cncard__meta { grid-template-columns: 1fr; }
+  .cncard__meta > div { grid-template-columns: 1fr; gap: 2px; }
+  .vmatrix { font-size: .82rem; }
+}
