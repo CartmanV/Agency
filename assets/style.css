@@ -1186,3 +1186,116 @@ abbr.gloss:hover, abbr.assume-mark:hover { border-bottom-color: var(--copper); }
 .color-key__group { display: flex; align-items: center; gap: 10px; }
 .color-key__h { font: 500 .72rem/1 var(--f-mono); letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
 .color-key__items { display: inline-flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+/* ===================== Режим главной: кратко / полно ===================== */
+.view-toggle {
+  display: flex; align-items: center; gap: 8px; padding: 8px 14px;
+  border: 1px solid var(--line); border-radius: 999px; background: var(--panel);
+  width: fit-content; margin: 0 0 18px;
+}
+.view-toggle__h { font: 500 .76rem/1 var(--f-mono); color: var(--muted); letter-spacing: .04em; text-transform: uppercase; margin-right: 4px; }
+.vt-btn {
+  font: 500 .82rem/1 var(--f-body); color: var(--cream-dim); background: transparent;
+  border: none; border-radius: 999px; padding: 7px 12px; cursor: pointer; transition: background .15s, color .15s;
+}
+.vt-btn:hover { color: var(--cream); }
+.vt-btn.is-on { color: var(--bg); background: var(--copper); font-weight: 600; }
+.mode-brief .brief-hide { display: none !important; }
+
+/* ===================== Executive Summary ===================== */
+.section--exec { padding-top: 4px; }
+.ex-card {
+  border: 1px solid var(--line); border-left: 3px solid var(--copper); border-radius: 16px;
+  background: var(--panel); padding: 22px 24px;
+}
+.ex-oneliner { font: 600 1.5rem/1.3 var(--f-display); color: var(--cream); margin: 0 0 8px; }
+.ex-subline { color: var(--cream-soft); font-size: .98rem; line-height: 1.55; margin: 0 0 22px; max-width: 75ch; }
+
+.ex-progress {
+  border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin: 0 0 22px;
+  background: rgba(255,255,255,.02);
+}
+.ex-progress__head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+.ex-progress__lbl { color: var(--cream-soft); font-size: .9rem; }
+.ex-progress__num { font-family: var(--f-mono); color: var(--cream-dim); font-size: .95rem; }
+.ex-progress__num b { color: var(--copper); font-size: 1.4rem; font-weight: 700; margin-right: 4px; }
+.ex-progress__pct { color: var(--emerald); margin-left: 8px; font-weight: 600; }
+.ex-progress__bar { height: 8px; border-radius: 999px; background: var(--bg-2); margin: 10px 0 8px; overflow: hidden; }
+.ex-progress__fill { height: 100%; background: linear-gradient(90deg, var(--emerald), var(--copper)); border-radius: 999px; transition: width .4s ease; }
+.ex-progress__sub { color: var(--muted); font-size: .82rem; }
+
+.ex-section { margin: 22px 0 0; }
+.ex-section__h {
+  font: 500 .76rem/1 var(--f-mono); letter-spacing: .05em; text-transform: uppercase;
+  color: var(--copper); margin: 0 0 12px;
+}
+
+/* бизнес-кейс — цепочка */
+.bc { display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px; }
+.bc-step {
+  flex: 1 1 200px; min-width: 200px; padding: 12px 14px; border: 1px solid var(--line);
+  border-radius: 10px; background: rgba(255,255,255,.02); display: flex; flex-direction: column; gap: 4px;
+}
+.bc-k { font: 600 .72rem/1 var(--f-mono); letter-spacing: .05em; text-transform: uppercase; color: var(--copper); }
+.bc-t { color: var(--cream-soft); font-size: .88rem; line-height: 1.45; }
+.bc-arr { align-self: center; color: var(--copper); font-size: 1.2rem; flex: 0 0 auto; }
+
+/* ставки */
+.bets { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.bet { padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: rgba(255,255,255,.02); }
+.bet__top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.bet__n { font: 600 .76rem/1 var(--f-mono); color: var(--copper); letter-spacing: .04em; text-transform: uppercase; }
+.bet__name { font: 600 1rem/1.3 var(--f-display); color: var(--cream); }
+.bet__status { display: flex; align-items: center; gap: 8px; margin: 8px 0; }
+.status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.status-dot.status--ok   { background: var(--emerald); box-shadow: 0 0 0 3px rgba(61,163,114,.18); }
+.status-dot.status--prog { background: var(--copper);  box-shadow: 0 0 0 3px rgba(226,179,85,.18); }
+.status-dot.status--risk { background: var(--pink);    box-shadow: 0 0 0 3px rgba(255,92,138,.18); }
+.status-dot.status--idle { background: var(--muted);   box-shadow: 0 0 0 3px rgba(126,147,132,.18); }
+.status-lbl { font-size: .82rem; color: var(--cream-soft); }
+.bet__what { color: var(--cream-soft); font-size: .9rem; line-height: 1.5; margin: 4px 0 8px; }
+.bet__metric { color: var(--cream-dim); font-size: .82rem; }
+.bet__mh { color: var(--muted); margin-right: 6px; font-family: var(--f-mono); font-size: .74rem; text-transform: uppercase; letter-spacing: .04em; }
+
+/* риски */
+.risks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.risk-card {
+  display: block; text-decoration: none; padding: 14px 16px; border: 1px solid var(--line);
+  border-radius: 12px; background: var(--panel); transition: border-color .15s, transform .15s;
+}
+.risk-card:hover { transform: translateY(-2px); border-color: var(--line-soft); }
+.risk-card.risk--high { border-left: 3px solid var(--pink); }
+.risk-card.risk--med  { border-left: 3px solid var(--gold); }
+.risk-card.risk--low  { border-left: 3px solid var(--muted); }
+.risk-card__top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.risk-card__lvl { font: 600 .68rem/1 var(--f-mono); letter-spacing: .05em; text-transform: uppercase; color: var(--cream-dim); }
+.risk--high .risk-card__lvl { color: var(--pink); }
+.risk--med .risk-card__lvl { color: var(--gold); }
+.risk-card__val { font: 700 1.3rem/1 var(--f-display); color: var(--cream); }
+.risk-card__val-lbl { color: var(--muted); font-size: .76rem; margin-bottom: 8px; }
+.risk-card__title { font: 600 1rem/1.3 var(--f-display); color: var(--cream); margin: 4px 0 6px; }
+.risk-card__what { color: var(--cream-dim); font-size: .85rem; line-height: 1.5; margin: 0 0 10px; }
+.risk-card__link { color: var(--copper); font-size: .82rem; font-family: var(--f-mono); }
+
+/* запрос руководителю */
+.ex-ask {
+  margin-top: 22px; padding: 14px 18px; border: 1px solid var(--line-soft); border-radius: 12px;
+  background: rgba(226,179,85,.06);
+}
+.ex-ask__h { font: 600 .82rem/1 var(--f-mono); color: var(--copper); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px; }
+.ex-ask p { color: var(--cream-soft); font-size: .92rem; line-height: 1.55; margin: 0; }
+.ex-ask.is-placeholder { border-style: dashed; }
+.ex-ask.is-placeholder p { color: var(--cream-dim); font-style: italic; }
+
+/* подзаголовок плитки */
+.tile__sub { color: var(--copper); font-weight: 500; font-size: .8em; font-style: italic; }
+
+@media (max-width: 920px) {
+  .bets { grid-template-columns: 1fr; }
+  .risks { grid-template-columns: 1fr; }
+}
+@media (max-width: 720px) {
+  .ex-oneliner { font-size: 1.2rem; }
+  .bc-arr { display: none; }
+  .ex-progress__head { flex-direction: column; align-items: flex-start; gap: 4px; }
+}

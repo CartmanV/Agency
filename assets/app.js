@@ -1454,6 +1454,122 @@ function mountProjbar() {
     </div>`;
 }
 
+// ===================== Executive Summary (главная для C-level) =====================
+const BET_STATUS = {
+  "in-progress": ["status--prog", "В работе"],
+  "on-track":    ["status--ok",   "В графике"],
+  "at-risk":     ["status--risk", "На риске"],
+  "blocked":     ["status--risk", "Блокер"],
+  "not-started": ["status--idle", "Не начата"],
+};
+function betStatus(s) {
+  const b = BET_STATUS[s] || BET_STATUS["in-progress"];
+  return `<span class="status-dot ${b[0]}"></span><span class="status-lbl">${b[1]}</span>`;
+}
+async function mountExec() {
+  const host = document.querySelector("[data-exec]");
+  if (!host) return;
+  let d;
+  try { d = await loadJSON("data/exec.json"); }
+  catch (e) { host.innerHTML = `<div class="error">${esc(e.message)}</div>`; return; }
+
+  const pct = Math.min(100, Math.round((d.progress.done / d.progress.goal) * 100));
+  const remaining = d.progress.goal - d.progress.done;
+
+  const bc = (d.businessCase || []).map((x, i, a) => `
+    <span class="bc-step">
+      <span class="bc-k">${esc(x.k)}</span>
+      <span class="bc-t">${gloss(esc(x.t))}</span>
+    </span>${i < a.length - 1 ? `<span class="bc-arr" aria-hidden="true">→</span>` : ""}`).join("");
+
+  const bets = (d.bets || []).map((b) => `
+    <article class="bet">
+      <div class="bet__top">
+        <span class="bet__n">Ставка ${esc(b.n)}</span>
+        ${stageTag(b.stage, `этап ${b.stage}`)}
+        <span class="bet__name">${esc(b.name)} · ${esc(b.stageName)}</span>
+      </div>
+      <div class="bet__status">${betStatus(b.status)}</div>
+      <p class="bet__what">${gloss(esc(b.what))}</p>
+      <div class="bet__metric"><span class="bet__mh">Ключевые метрики</span> ${gloss(esc(b.metric))}</div>
+    </article>`).join("");
+
+  const RISK_BADGE = { high: ["risk--high", "критический"], medium: ["risk--med", "средний"], low: ["risk--low", "невысокий"] };
+  const risks = (d.risks || []).map((r) => {
+    const rb = RISK_BADGE[r.level] || RISK_BADGE.medium;
+    return `
+      <a class="risk-card ${rb[0]}" href="${esc(r.href)}">
+        <div class="risk-card__top">
+          <span class="risk-card__lvl">${rb[1]}</span>
+          <span class="risk-card__val">${esc(r.value)}</span>
+        </div>
+        <div class="risk-card__val-lbl">${esc(r.valueLabel)}</div>
+        <h3 class="risk-card__title">${esc(r.title)}</h3>
+        <p class="risk-card__what">${gloss(esc(r.what))}</p>
+        <span class="risk-card__link">${esc(r.linkLabel)} →</span>
+      </a>`;
+  }).join("");
+
+  const askBlock = d.ask ? `
+    <div class="ex-ask${d.ask.placeholder ? " is-placeholder" : ""}">
+      <div class="ex-ask__h">📌 ${esc(d.ask.title)}</div>
+      <p>${esc(d.ask.text)}</p>
+    </div>` : "";
+
+  host.innerHTML = `
+    <div class="ex-card">
+      <p class="ex-oneliner">${esc(d.oneliner)}</p>
+      <p class="ex-subline">${gloss(esc(d.subline))}</p>
+
+      <div class="ex-progress" role="img" aria-label="Прогресс к цели">
+        <div class="ex-progress__head">
+          <span class="ex-progress__lbl">${esc(d.progress.krLabel)} · ${esc(d.progress.label)}</span>
+          <span class="ex-progress__num"><b>${d.progress.done}</b> / ${d.progress.goal} <span class="ex-progress__pct">${pct}%</span></span>
+        </div>
+        <div class="ex-progress__bar"><div class="ex-progress__fill" style="width:${pct}%"></div></div>
+        <div class="ex-progress__sub">осталось привлечь: ${remaining} · период: ${esc(d.progress.period)}</div>
+      </div>
+
+      <div class="ex-section">
+        <div class="ex-section__h">Бизнес-кейс одной цепочкой</div>
+        <div class="bc">${bc}</div>
+      </div>
+
+      <div class="ex-section">
+        <div class="ex-section__h">Две ставки направления — где мы сейчас</div>
+        <div class="bets">${bets}</div>
+      </div>
+
+      <div class="ex-section">
+        <div class="ex-section__h">Стратегические риски</div>
+        <div class="risks">${risks}</div>
+      </div>
+
+      ${askBlock}
+    </div>`;
+}
+
+// Режим главной: «кратко (для руководителя)» / «полно (для команды)».
+const VIEW_KEY = "agency-view-mode-v1";
+function mountViewToggle() {
+  const host = document.querySelector("[data-view-toggle]");
+  if (!host) return;
+  const cur = localStorage.getItem(VIEW_KEY) === "full" ? "full" : "brief";
+  document.body.classList.toggle("mode-brief", cur === "brief");
+  host.innerHTML = `
+    <div class="view-toggle" role="group" aria-label="Режим главной">
+      <span class="view-toggle__h">Вид:</span>
+      <button type="button" class="vt-btn${cur === "brief" ? " is-on" : ""}" data-vt="brief">Кратко (для руководителя)</button>
+      <button type="button" class="vt-btn${cur === "full"  ? " is-on" : ""}" data-vt="full">Полно (для команды)</button>
+    </div>`;
+  host.querySelectorAll("[data-vt]").forEach((b) => b.addEventListener("click", () => {
+    const m = b.dataset.vt;
+    localStorage.setItem(VIEW_KEY, m);
+    document.body.classList.toggle("mode-brief", m === "brief");
+    host.querySelectorAll("[data-vt]").forEach((x) => x.classList.toggle("is-on", x === b));
+  }));
+}
+
 // JTBD-дерево (tree.html) — раскрыть/свернуть все Big-блоки
 function mountJtbd() {
   const exp = document.querySelector("[data-jtbd-expand]");
@@ -1479,4 +1595,6 @@ document.addEventListener("DOMContentLoaded", () => {
   mountLadder();
   mountConcepts();
   mountProjbar();
+  mountExec();
+  mountViewToggle();
 });
