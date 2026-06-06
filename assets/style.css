@@ -589,10 +589,11 @@ details.big[open] .big-chev { transform: rotate(90deg); }
 .med-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
 .med-num { font-family: var(--f-display); font-size: 24px; color: var(--copper); line-height: 1; font-variant-numeric: tabular-nums; }
 .med-name { font-family: var(--f-display); font-size: 17px; color: var(--cream); }
-.med-stage { font-family: var(--f-mono); font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: var(--bg); background: var(--copper); padding: 3px 8px; border-radius: 4px; }
+/* Канон цвета этапа (см. .stage-tag ниже): 1=pink, 2A/2B=emerald (фокус Q2), 3/4/5=muted. */
+.med-stage { font-family: var(--f-mono); font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: var(--bg); background: var(--emerald); padding: 3px 8px; border-radius: 4px; }
 .med-stage.s2b { background: var(--emerald); }
 .med-stage.s1 { background: var(--pink); color: #2A0512; }
-.med-stage.sx { background: var(--line-soft); color: var(--cream); }
+.med-stage.sx { background: transparent; color: var(--cream-dim); border: 1px solid var(--line-soft); padding: 2px 7px; }
 
 /* Small (job story) */
 .small { padding: 12px 16px; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; margin-bottom: 7px; }
@@ -1032,7 +1033,12 @@ a.fl-task:hover { color: var(--pink-soft); }
 .vmatrix a { color: inherit; text-decoration: none; }
 .vmatrix a:hover { color: var(--copper); }
 .vm-stage { min-width: 150px; }
-.vm-sn { font: 700 .82rem/1 var(--f-mono); color: var(--bg); background: var(--copper); padding: 2px 7px; border-radius: 6px; margin-right: 6px; }
+.vm-sn { font: 700 .82rem/1 var(--f-mono); color: var(--bg); background: var(--emerald); padding: 2px 7px; border-radius: 6px; margin-right: 6px; }
+.vm-sn[data-stage="1"]  { background: var(--pink); color: #2A0512; }
+.vm-sn[data-stage="2A"], .vm-sn[data-stage="2B"] { background: var(--emerald); }
+.vm-sn[data-stage="3"], .vm-sn[data-stage="4"], .vm-sn[data-stage="5"] {
+  background: transparent; color: var(--cream-dim); border: 1px solid var(--line-soft);
+}
 .vm-stage a { color: var(--cream); font-weight: 600; }
 .vm-sub { color: var(--cream-dim); font-family: var(--f-mono); white-space: nowrap; }
 .vm-concept a { color: var(--cream-soft); }
@@ -1148,3 +1154,35 @@ abbr.gloss:hover, abbr.assume-mark:hover { border-bottom-color: var(--copper); }
 .sh-title:hover { color: var(--copper); text-decoration: underline; }
 .sh-q { color: var(--cream-dim); font-size: .88rem; }
 .sh-d { color: var(--cream-dim); font-size: .85rem; line-height: 1.5; margin: 4px 0 0; }
+
+/* ===================== Канон визуального кодирования (Р8) =====================
+   Этапы: 1 — pink (вход, доверие), 2A/2B — emerald (фокус Q2), 3/4/5 — muted (вне Q2).
+   Роли:  консультант — blue, супервизор — orange, руководитель/IT/бухгалтерия — emerald. */
+.stage-tag {
+  display: inline-block; font: 600 .72rem/1 var(--f-mono); letter-spacing: .04em;
+  text-transform: uppercase; padding: 3px 8px; border-radius: 6px; white-space: nowrap;
+}
+.stage-tag.s-1 { background: var(--pink); color: #2A0512; }
+.stage-tag.s-2a, .stage-tag.s-2b { background: var(--emerald); color: var(--bg); }
+.stage-tag.s-3, .stage-tag.s-4, .stage-tag.s-5 {
+  background: transparent; color: var(--cream-dim); border: 1px solid var(--line-soft);
+}
+.stage-tag.s-x { background: transparent; color: var(--cream-dim); border: 1px dashed var(--line-soft); }
+.role-tag {
+  display: inline-block; font: 500 .76rem/1 var(--f-mono); padding: 3px 8px; border-radius: 6px;
+  border: 1px solid var(--line-soft); color: var(--cream-soft);
+}
+.role-tag::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.role-tag.r-c::before { background: var(--blue); }     /* консультант */
+.role-tag.r-s::before { background: #E08A4B; }         /* супервизор */
+.role-tag.r-r::before { background: var(--emerald); }  /* руководитель / IT / бухгалтерия */
+
+/* Каталог: чип этапа в строке подтемы и в баре панели L2 */
+.pn-sub__m { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.pn-sub__hyp { font-family: var(--f-mono); font-size: .76rem; color: var(--cream-dim); }
+
+/* Полоска-легенда на главной — выучить палитру один раз */
+.color-key { display: flex; flex-wrap: wrap; gap: 18px 28px; margin: 12px 0 0; padding: 12px 14px; border: 1px dashed var(--line-soft); border-radius: 10px; }
+.color-key__group { display: flex; align-items: center; gap: 10px; }
+.color-key__h { font: 500 .72rem/1 var(--f-mono); letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.color-key__items { display: inline-flex; gap: 8px; flex-wrap: wrap; align-items: center; }

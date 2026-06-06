@@ -88,6 +88,19 @@ function esc(s) {
 // Пометка «редакторское допущение» — вместо сырого [*] (тултип вместо непонятного знака).
 const ASSUME = `<abbr class="assume-mark" title="редакторское допущение по сборке — не подтверждено данными">*</abbr>`;
 
+// Канон цвета этапа: 1=pink, 2A/2B=emerald (фокус Q2), 3/4/5=muted.
+// Принимает строку вида "этап 2A", "2A (+2B)", "этап 4 «Увеличить маржу»", "1" — извлекает первый код.
+function stageCode(s) {
+  const m = String(s || "").match(/(?:^|[^\dA-Za-zА-Яа-я])(1|2A|2B|3|4|5)\b/i);
+  return m ? m[1].toUpperCase() : "";
+}
+function stageTag(s, label) {
+  const code = stageCode(s);
+  if (!code) return label || s ? `<span class="stage-tag s-x">${esc(label || s)}</span>` : "";
+  const txt = label != null ? label : String(s).trim();
+  return `<span class="stage-tag s-${code.toLowerCase()}" data-stage="${code}">${esc(txt)}</span>`;
+}
+
 // ---- Инлайн-расшифровка жаргона (Р6): оборачивает термины в <abbr> с пояснением. ----
 // На вход — УЖЕ экранированный текст (без своих тегов). Один проход, без вложенности.
 const GLOSS_TERMS = [
@@ -736,10 +749,11 @@ function panelTheme(t, byTheme) {
       ${t.editorialL2Note ? `<p class="l2src">${esc(t.editorialL2Note)}</p>` : ""}
       <ul class="pn-sublist">${t.editorialL2.map((l, i) => {
         const off = l.q2 === false ? `<span class="pn-sub__off">Won't Q2</span>` : "";
-        const meta = [l.stage, l.hyp].filter(Boolean).join(" · ");
+        const st = l.stage ? stageTag(l.stage) : "";
+        const hyp = l.hyp ? `<span class="pn-sub__hyp">${esc(l.hyp)}</span>` : "";
         return `<li><a class="pn-sub" data-sel="l:${esc(t.name)}:${i}">
           <span class="pn-sub__n">${esc(l.name)}${off}</span>
-          <span class="pn-sub__m">${esc(meta)}</span>
+          <span class="pn-sub__m">${st}${hyp}</span>
           <span class="pn-sub__c">${l2countStr(l, byTheme, true)} ›</span></a></li>`;
       }).join("")}</ul></div>`;
   } else if (t.buckets && t.buckets.length) {
@@ -763,12 +777,13 @@ function panelTheme(t, byTheme) {
 }
 // Правая панель — подтема L2 (полная карточка + задачи / ссылка в бэклог).
 function panelL2(t, l, byTheme) {
-  const meta = [l.stage, l.hyp].filter(Boolean).join(" · ");
   const off = l.q2 === false ? `<span class="ltag" style="margin-left:8px">Won't Q2</span>` : "";
   const linkTheme = l.countFrom || l.backlogTheme;
   let footer = "";
   if (l.tasks && l.tasks.length) footer = renderTasksBlock(l, t.buckets && t.buckets[0]);
   else if (linkTheme) footer = `<div class="fl-sect"><a class="foot-link" href="backlog.html?theme=${encodeURIComponent(linkTheme)}">итерации подтемы в бэклоге →</a></div>`;
+  const stageChip = l.stage ? stageTag(l.stage) : "";
+  const hypChip = l.hyp ? `<span class="ltag h">${esc(l.hyp)}</span>` : "";
   return `<div class="pn">
     <div class="pn__crumb"><a data-sel="t:${esc(t.name)}">‹ ${esc(t.name)}</a></div>
     <div class="pn__head">
@@ -776,7 +791,7 @@ function panelL2(t, l, byTheme) {
       <h2 class="pn__title">${esc(l.name)}</h2>${off}
       <span class="pn__cnt">${l2countStr(l, byTheme, true)}</span>
     </div>
-    ${meta ? `<div class="ltags"><span class="ltag h">${esc(meta)}</span></div>` : ""}
+    ${(stageChip || hypChip) ? `<div class="ltags">${stageChip}${hypChip}</div>` : ""}
     ${l.note ? `<p class="l2note">${esc(l.note)}</p>` : ""}
     ${renderFull(l.full)}
     ${footer}
@@ -1327,7 +1342,7 @@ function valueMatrixHTML(data) {
     const q2 = r.q2 ? `<span class="vm-q2 on">Q2</span>` : `<span class="vm-q2">—</span>`;
     return `
       <tr class="vm-row${r.q2 ? " is-q2" : ""}">
-        <td class="vm-stage"><a href="lestnica.html"><span class="vm-sn">${esc(r.stage)}</span> ${esc(r.stageName)}</a></td>
+        <td class="vm-stage"><a href="lestnica.html"><span class="vm-sn" data-stage="${esc(r.stage)}">${esc(r.stage)}</span> ${esc(r.stageName)}</a></td>
         <td class="vm-sub">${esc(r.subgoals)}</td>
         <td class="vm-concept"><a href="concepts.html#c${esc(String(r.concept).replace(/[^0-9].*$/, "").trim() || r.concept)}"><b>${esc(r.concept)}</b> · ${esc(r.conceptName)}</a></td>
         <td class="vm-mech">${mech}</td>
