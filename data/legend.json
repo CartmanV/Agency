@@ -1,5 +1,5 @@
 {
-  "source": "Единый бэклог направления Агентства v6 (2026-06-03, Reach v1.5).xlsx",
+  "source": "Единый бэклог направления Агентства v7 (2026-06-06, Impact A+B).xlsx",
   "sections": [
     {
       "id": "about",
@@ -333,6 +333,21 @@
           "def": "A — из исследования (цитата); B — боль уровня блока/заметка бэклога; C — выведено из названия, ⚠ требует валидации."
         }
       ]
+    },
+    {
+      "id": "v7-2026-06-06-patch-impact-a-b",
+      "title": "v7 (2026-06-06) — патч Impact A+B",
+      "items": []
+    },
+    {
+      "id": "impact-clamp-sloy-a-sloy-b-1-10-a-prezhniy-odnoshkalnyy-ball-silachastota-b-rynochnyy-modifikator-1-discovery-ne-zakryt-max-1-dopuschenie",
+      "title": "Impact = clamp(Слой A + Слой B, 1,10). A = прежний одношкальный балл (сила×частота). B = рыночный модификатор ±1 (discovery не закрыт → max ±1, «допущение»).",
+      "items": []
+    },
+    {
+      "id": "b-1-poputnyy-7-offlayn-uslugi-dostavka-2-24-68-72-93-110-116-152-b-1-vstrechnyy-6-1-standartnyy-onlayn-poisk-118-119-123-ostalnye-b-0-pv-mult-ne-trogali-predohranitel-rynok-tolko-v-impact-formuly-rice-final-zameneny-na-literaly-peresortirovka-moscowfinal",
+      "title": "B=+1 (попутный, §7): оффлайн-услуги-доставка #2,24,68,72,93,110,116,152. B=−1 (встречный, §6.1): стандартный онлайн-поиск #118,119,123. Остальные B=0. PV Mult не трогали (предохранитель: рынок только в Impact). Формулы RICE/Final заменены на литералы; пересортировка MoSCoW→Final.",
+      "items": []
     }
   ],
   "count": 57
