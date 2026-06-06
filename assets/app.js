@@ -2,20 +2,20 @@
    Хедер + бэклог как инструмент: фильтры, сортировка, поиск, бейджи; срез Must. */
 
 const NAV = [
-  { href: "index.html",    label: "Направление" },
-  { href: "now.html",      label: "Сейчас в работе" },
-  { href: "vision.html",   label: "Видение" },
-  { href: "backlog.html",  label: "Бэклог" },
-  { href: "must.html",     label: "Must" },
-  { href: "tree.html",     label: "Дерево (JTBD)" },
-  { href: "levels.html",   label: "Каталог задач" },
-  { href: "lestnica.html", label: "Лестница" },
-  { href: "concepts.html", label: "Концепции" },
-  { href: "legend.html",   label: "Легенды" },
-  { href: "research.html", label: "Исследования" },
-  { href: "agencies.html", label: "Агентства" },
-  { href: "rynok.html",    label: "Рынок" },
-  { href: "metrics.html",  label: "Метрики" },
+  { href: "index.html",    label: "Направление", group: "Обзор" },
+  { href: "now.html",      label: "Сейчас в работе", group: "Обзор" },
+  { href: "vision.html",   label: "Видение", group: "Обзор" },
+  { href: "lestnica.html", label: "Лестница", group: "Проекции" },
+  { href: "concepts.html", label: "Концепции", group: "Проекции" },
+  { href: "tree.html",     label: "Дерево (JTBD)", group: "Проекции" },
+  { href: "levels.html",   label: "Каталог задач", group: "Работа" },
+  { href: "backlog.html",  label: "Бэклог", group: "Работа" },
+  { href: "must.html",     label: "Must", group: "Работа" },
+  { href: "research.html", label: "Исследования", group: "Данные" },
+  { href: "agencies.html", label: "Агентства", group: "Данные" },
+  { href: "rynok.html",    label: "Рынок", group: "Данные" },
+  { href: "metrics.html",  label: "Метрики", group: "Данные" },
+  { href: "legend.html",   label: "Легенды", group: "Справка" },
 ];
 
 // Единственный источник правды по актуальности данных сайта.
@@ -38,13 +38,19 @@ function mountHeader() {
   const host = document.querySelector("[data-header]");
   if (!host) return;
   const cur = currentPage();
+  let prevGroup = null;
   const links = NAV.map((n) => {
+    let sep = "";
+    if (n.group && n.group !== prevGroup) {
+      sep = `<span class="nav__glabel" aria-hidden="true">${esc(n.group)}</span>`;
+      prevGroup = n.group;
+    }
     if (n.disabled) {
-      return `<span class="nav__soon" aria-disabled="true" title="будет в следующих итерациях"
+      return sep + `<span class="nav__soon" aria-disabled="true" title="будет в следующих итерациях"
                  style="opacity:.4;cursor:not-allowed">${n.label}</span>`;
     }
     const active = n.href === cur ? " is-active" : "";
-    return `<a class="${active.trim()}" href="${n.href}">${n.label}</a>`;
+    return sep + `<a class="${active.trim()}" href="${n.href}">${n.label}</a>`;
   }).join("");
   host.innerHTML = `
     <header class="site-header">
