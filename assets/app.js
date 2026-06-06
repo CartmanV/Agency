@@ -7,8 +7,8 @@ const NAV = [
   { href: "vision.html",   label: "Видение" },
   { href: "backlog.html",  label: "Бэклог" },
   { href: "must.html",     label: "Must" },
-  { href: "tree.html",     label: "Дерево" },
-  { href: "levels.html",   label: "Структура работ" },
+  { href: "tree.html",     label: "Дерево (JTBD)" },
+  { href: "levels.html",   label: "Каталог задач" },
   { href: "lestnica.html", label: "Лестница" },
   { href: "concepts.html", label: "Концепции" },
   { href: "legend.html",   label: "Легенды" },
@@ -1284,8 +1284,20 @@ function valueMatrixHTML(data) {
       <span class="vm-lens__n">${esc(l.name)}</span>
       <span class="vm-lens__d">${esc(l.desc)}</span>
     </a>`).join("");
+  const registry = (data.registry || []).map((r) => `
+    <a class="vm-reg" href="${esc(r.href)}">
+      <span class="vm-reg__n">${esc(r.name)}</span>
+      <span class="vm-reg__d">${esc(r.desc)}</span>
+    </a>`).join("");
   return `
-    <div class="vm-lenses">${lenses}</div>
+    <div class="vm-block">
+      <div class="vm-block__h">3 проекции — взгляды на одно направление</div>
+      <div class="vm-lenses">${lenses}</div>
+    </div>
+    ${registry ? `<div class="vm-block">
+      <div class="vm-block__h">+ реестр работ — где лежат конкретные задачи</div>
+      <div class="vm-regs">${registry}</div>
+    </div>` : ""}
     <div class="table-wrap">
       <table class="vmatrix">
         <thead><tr>
@@ -1315,12 +1327,6 @@ async function mountConcepts() {
   if (cardsHost) {
     cardsHost.innerHTML = `
       <p class="cn-intro">${esc(data.intro || "")}</p>
-      <div class="vm-lenses">${(data.lenses || []).map((l) => `
-        <a class="vm-lens" href="${esc(l.href)}">
-          <span class="vm-lens__k">${esc(l.k)}</span>
-          <span class="vm-lens__n">${esc(l.name)}</span>
-          <span class="vm-lens__d">${esc(l.desc)}</span>
-        </a>`).join("")}</div>
       <div class="cncards">${(data.concepts || []).map(conceptCardHTML).join("")}</div>
       <p class="result-meta" style="margin-top:18px">источник: ${esc(data.source)} v${esc(data.version)}</p>`;
     if (location.hash) {
@@ -1328,6 +1334,51 @@ async function mountConcepts() {
       if (el) { el.scrollIntoView({ block: "start" }); el.classList.add("is-target"); }
     }
   }
+}
+
+// ===================== Единая шапка проекции (projbar на 4 страницах) =====================
+// 3 проекции одного направления + 1 реестр. Снимает «почему здесь 4 одинаковых дерева».
+const PROJ = {
+  lestnica: { kicker: "Проекция · Зачем и когда", name: "Лестница ценности",
+    q: "в каком порядке создаём ценность", read: "5 этапов; фокус 2026 — этапы 1–2" },
+  concepts: { kicker: "Проекция · Что строим", name: "Концепции ценности",
+    q: "какие продуктовые блоки строим и в каком порядке", read: "4 концепции; бейдж Q2 = что в фокусе квартала" },
+  tree: { kicker: "Проекция · Чья работа", name: "Дерево работ (JTBD)",
+    q: "чью работу и на каком уровне абстракции закрываем", read: "Big → Medium → Small по ролям" },
+  levels: { kicker: "Реестр работ", name: "Каталог задач",
+    q: "где лежат конкретные задачи бэклога", read: "3 ветки → 7 тем → подтемы → итерации" },
+};
+const PROJ_SIBS = [
+  { key: "lestnica", href: "lestnica.html", label: "Лестница" },
+  { key: "concepts", href: "concepts.html", label: "Концепции" },
+  { key: "tree",     href: "tree.html",     label: "Дерево (JTBD)" },
+  { key: "levels",   href: "levels.html",   label: "Каталог задач" },
+];
+function mountProjbar() {
+  const host = document.querySelector("[data-projbar]");
+  if (!host) return;
+  const key = host.getAttribute("data-projbar");
+  const p = PROJ[key];
+  if (!p) return;
+  const isReg = key === "levels";
+  const sibs = PROJ_SIBS.filter((s) => s.key !== key)
+    .map((s) => `<a class="projbar__sib" href="${s.href}">${esc(s.label)}</a>`).join("");
+  host.innerHTML = `
+    <div class="projbar${isReg ? " projbar--reg" : ""}">
+      <div class="projbar__top">
+        <span class="projbar__kicker">${esc(p.kicker)}</span>
+        <span class="projbar__name">${esc(p.name)}</span>
+      </div>
+      <div class="projbar__meta">
+        <span class="projbar__q"><b>Отвечает:</b> ${esc(p.q)}</span>
+        <span class="projbar__read"><b>Как читать:</b> ${esc(p.read)}</span>
+      </div>
+      <div class="projbar__sibs">
+        <span class="projbar__sibh">${isReg ? "Стратегические проекции:" : "Другие проекции:"}</span>
+        ${sibs}
+        <a class="projbar__sib projbar__sib--map" href="vision.html#karta">Карта связей →</a>
+      </div>
+    </div>`;
 }
 
 // JTBD-дерево (tree.html) — раскрыть/свернуть все Big-блоки
@@ -1353,4 +1404,5 @@ document.addEventListener("DOMContentLoaded", () => {
   mountResearch();
   mountLadder();
   mountConcepts();
+  mountProjbar();
 });
