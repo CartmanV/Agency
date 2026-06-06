@@ -1,0 +1,75 @@
+{
+  "_meta": "Сводка дашбордов главной. Считается build.py из backlog/agencies/research + авторских JSON.",
+  "projections": {
+    "goal": 20,
+    "stages": 5,
+    "stagesFocus": "1–2",
+    "subgoals": 7,
+    "concepts": 4,
+    "conceptsFocus": 2,
+    "conceptsPartial": 1,
+    "conceptsOut": 1,
+    "treeRoles": 3,
+    "betsNames": [
+      "Безболезненный вход",
+      "Рабочее место консультанта"
+    ]
+  },
+  "work": {
+    "total": 214,
+    "moscow": {
+      "Must": 5,
+      "Should": 124,
+      "Could": 69,
+      "Won't": 16
+    },
+    "scored": 192,
+    "unscored": 22,
+    "topTitle": "Документы: массовое скачивание + ФИО в названии",
+    "topFinal": 82,
+    "themes": [
+      {
+        "name": "Агентская админка",
+        "count": 51
+      },
+      {
+        "name": "Заказы",
+        "count": 42
+      },
+      {
+        "name": "Сервис для клиента",
+        "count": 36
+      },
+      {
+        "name": "Предложения 2.0",
+        "count": 36
+      },
+      {
+        "name": "Оффлайн 4.0",
+        "count": 23
+      },
+      {
+        "name": "Онлайн-услуги",
+        "count": 16
+      },
+      {
+        "name": "Единый чат",
+        "count": 10
+      }
+    ],
+    "mustCount": 5
+  },
+  "data": {
+    "agenciesActive": 16,
+    "opsMay": 37954.0,
+    "momPct": -0.066,
+    "top3": 0.852,
+    "top5": 0.911,
+    "researchTotal": 89,
+    "researchConfirmed": 57,
+    "researchClosed": 18,
+    "metricsActive": 9,
+    "metricsTarget": 6,
+    "metricsBaseline": 3
+  }
+}

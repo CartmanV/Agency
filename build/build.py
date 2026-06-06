@@ -340,6 +340,90 @@ def build_research():
     return {"source": src.name, "count": len(findings), "findings": findings}
 
 
+def build_home(items, agencies, research):
+    """Сводка для дашбордов главной (Проекции / Работа / Данные) → home.json.
+    Цифры считаем здесь, а не хардкодим в HTML. Авторские слои (lestnica/concepts/
+    metrics/exec) читаем из готовых data/*.json — это счётчики, не источник истины."""
+    def load(name, default=None):
+        p = DATA_DIR / name
+        if not p.exists():
+            return default
+        try:
+            return json.loads(p.read_text(encoding="utf-8"))
+        except Exception:
+            return default
+
+    # --- Работа: бэклог ---
+    moscow_order = ["Must", "Should", "Could", "Won't"]
+    moscow = {k: sum(1 for x in items if x.get("moscow") == k) for k in moscow_order}
+    scored = sum(1 for x in items if isinstance(x.get("finalScore"), (int, float)))
+    themes = {}
+    for x in items:
+        t = x.get("theme")
+        if t:
+            themes[t] = themes.get(t, 0) + 1
+    themes_sorted = sorted(themes.items(), key=lambda kv: kv[1], reverse=True)
+    top = max(
+        (x for x in items if isinstance(x.get("finalScore"), (int, float))),
+        key=lambda x: x["finalScore"], default=None,
+    )
+    work = {
+        "total": len(items),
+        "moscow": moscow,
+        "scored": scored,
+        "unscored": len(items) - scored,
+        "topTitle": (top or {}).get("title"),
+        "topFinal": (top or {}).get("finalScore"),
+        "themes": [{"name": n, "count": c} for n, c in themes_sorted],
+        "mustCount": moscow.get("Must", 0),
+    }
+
+    # --- Данные: агентства + исследования + метрики + рынок ---
+    findings = (research or {}).get("findings", [])
+    confirmed = sum(1 for f in findings if str(f.get("hypStatus") or "").startswith("подтв"))
+    closed = sum(1 for f in findings if str(f.get("hypStatus") or "") == "закрыто")
+    metrics = load("metrics.json", {})
+    mlist = metrics.get("metrics", []) if isinstance(metrics, dict) else []
+    data_block = {
+        "agenciesActive": (agencies or {}).get("total", {}).get("count"),
+        "opsMay": (agencies or {}).get("total", {}).get("may"),
+        "momPct": (agencies or {}).get("total", {}).get("momPct"),
+        "top3": (agencies or {}).get("concentration", {}).get("top3"),
+        "top5": (agencies or {}).get("concentration", {}).get("top5"),
+        "researchTotal": (research or {}).get("count"),
+        "researchConfirmed": confirmed,
+        "researchClosed": closed,
+        "metricsActive": sum(1 for m in mlist if m.get("type") == "active"),
+        "metricsTarget": sum(1 for m in mlist if m.get("type") == "target"),
+        "metricsBaseline": sum(1 for m in mlist if m.get("baseline")),
+    }
+
+    # --- Проекции: видение / лестница / концепции / дерево ---
+    exec_data = load("exec.json", {})
+    ladder = load("ladder.json", {})
+    concepts = load("concepts.json", {})
+    clist = concepts.get("concepts", []) if isinstance(concepts, dict) else []
+    proj = {
+        "goal": (exec_data.get("progress") or {}).get("goal"),
+        "stages": len(ladder.get("stages", [])) if isinstance(ladder, dict) else None,
+        "stagesFocus": "1–2",
+        "subgoals": len(ladder.get("subgoalMap", [])) if isinstance(ladder, dict) else None,
+        "concepts": len(clist),
+        "conceptsFocus": sum(1 for c in clist if c.get("q2") == "focus"),
+        "conceptsPartial": sum(1 for c in clist if c.get("q2") == "partial"),
+        "conceptsOut": sum(1 for c in clist if c.get("q2") == "out"),
+        "treeRoles": 3,  # JTBD: консультант / супервизор / руководитель (редакторская онтология)
+        "betsNames": [b.get("name") for b in exec_data.get("bets", [])],
+    }
+
+    return {
+        "_meta": "Сводка дашбордов главной. Считается build.py из backlog/agencies/research + авторских JSON.",
+        "projections": proj,
+        "work": work,
+        "data": data_block,
+    }
+
+
 def main():
     items, errors = build_backlog()
     DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -385,6 +469,13 @@ def main():
         r_out = DATA_DIR / "research.json"
         r_out.write_text(json.dumps(research, ensure_ascii=False, indent=2), encoding="utf-8")
         print(f"Исследования: {research['count']} находок → {r_out.relative_to(SITE_DIR)}")
+
+    # home.json — сводка дашбордов главной
+    home = build_home(items, agencies, research)
+    home_out = DATA_DIR / "home.json"
+    home_out.write_text(json.dumps(home, ensure_ascii=False, indent=2), encoding="utf-8")
+    w, dd = home["work"], home["data"]
+    print(f"Главная: бэклог {w['total']} (Must {w['mustCount']}) · агентства {dd['agenciesActive']} · находки {dd['researchTotal']} → {home_out.relative_to(SITE_DIR)}")
 
     must = sum(1 for x in items if x.get("moscow") == "Must")
     print(f"  Must: {must}  ·  с Final Score: {sum(1 for x in items if x['finalScore'] is not None)}")

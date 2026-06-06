@@ -1518,9 +1518,6 @@ async function mountExec() {
 
   host.innerHTML = `
     <div class="ex-card">
-      <p class="ex-oneliner">${esc(d.oneliner)}</p>
-      <p class="ex-subline">${gloss(esc(d.subline))}</p>
-
       <div class="ex-progress" role="img" aria-label="Прогресс к цели">
         <div class="ex-progress__head">
           <span class="ex-progress__lbl">${esc(d.progress.krLabel)} · ${esc(d.progress.label)}</span>
@@ -1549,25 +1546,142 @@ async function mountExec() {
     </div>`;
 }
 
-// Режим главной: «кратко (для руководителя)» / «полно (для команды)».
-const VIEW_KEY = "agency-view-mode-v1";
-function mountViewToggle() {
-  const host = document.querySelector("[data-view-toggle]");
+// Дашборды главной (Проекции / Работа / Данные) из data/home.json
+function fmtInt(n) { return typeof n === "number" ? n.toLocaleString("ru-RU").replace(/,/g, " ") : "—"; }
+function fmtPct(x) { return typeof x === "number" ? Math.round(x * 100) + "%" : "—"; }
+function fmtSigned(x) {
+  if (typeof x !== "number") return "—";
+  const v = Math.round(x * 1000) / 10;
+  return (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v) + "%";
+}
+function dstat(n, label, accent) {
+  return `<div class="dstat"><div class="dstat__n${accent ? " dstat__n--" + accent : ""}">${n}</div><div class="dstat__l">${label}</div></div>`;
+}
+function dlinks(items) {
+  return `<div class="dash__links">${items.map((i) => `<a href="${i.href}">${esc(i.label)} →</a>`).join("")}</div>`;
+}
+
+async function mountDashboards() {
+  if (!document.querySelector("[data-dash]")) return;
+  let d;
+  try { d = await loadJSON("data/home.json"); }
+  catch (e) {
+    document.querySelectorAll("[data-dash]").forEach((h) => h.innerHTML = `<div class="error">${esc(e.message)}</div>`);
+    return;
+  }
+  const P = d.projections || {}, W = d.work || {}, D = d.data || {};
+
+  // --- Проекции ---
+  const proj = document.querySelector('[data-dash="proj"]');
+  if (proj) {
+    proj.innerHTML = `
+      <div class="dash dash--proj">
+        <p class="dash__lead">Одно направление с трёх сторон плюс портал-обзор. Каждая проекция отвечает на свой вопрос.</p>
+        <div class="dash__stats">
+          ${dstat("+" + (P.goal ?? "—"), "цель: новых агентств", "emerald")}
+          ${dstat(P.stages ?? "—", "этапов · фокус " + esc(P.stagesFocus || ""), "emerald")}
+          ${dstat(P.concepts ?? "—", "концепции ценности", "emerald")}
+          ${dstat(P.treeRoles ?? "—", "роли в дереве (JTBD)", "emerald")}
+        </div>
+        <div class="dash__note">
+          Концепции: <span class="dot-leg dot-leg--focus">${P.conceptsFocus ?? 0} в фокусе Q2</span> ·
+          <span class="dot-leg dot-leg--part">${P.conceptsPartial ?? 0} частично</span> ·
+          <span class="dot-leg dot-leg--out">${P.conceptsOut ?? 0} вне</span>.
+          Две ставки: ${(P.betsNames || []).map(esc).join(" · ")}.
+        </div>
+        ${dlinks([
+          { href: "vision.html", label: "Видение" },
+          { href: "lestnica.html", label: "Лестница" },
+          { href: "concepts.html", label: "Концепции" },
+          { href: "tree.html", label: "Дерево" },
+        ])}
+      </div>`;
+  }
+
+  // --- Работа ---
+  const work = document.querySelector('[data-dash="work"]');
+  if (work) {
+    const m = W.moscow || {};
+    const order = [["Must", "must"], ["Should", "should"], ["Could", "could"], ["Won't", "wont"]];
+    const total = W.total || order.reduce((s, [k]) => s + (m[k] || 0), 0);
+    const bar = order.map(([k, cls]) => {
+      const v = m[k] || 0; const w = total ? (v / total * 100) : 0;
+      return `<span class="mbar__seg mbar__seg--${cls}" style="width:${w}%" title="${k}: ${v}"></span>`;
+    }).join("");
+    const legend = order.map(([k, cls]) => `<span class="mleg"><span class="mleg__sw mbar__seg--${cls}"></span>${k} ${m[k] || 0}</span>`).join("");
+    work.innerHTML = `
+      <div class="dash dash--work">
+        <p class="dash__lead">Где лежат конкретные задачи: плоский список со скорингом, оглавление по темам и отобранные must.</p>
+        <div class="dash__stats">
+          ${dstat(fmtInt(W.total), "итераций всего", "gold")}
+          ${dstat(fmtInt(W.scored), "со скорингом", "gold")}
+          ${dstat(fmtInt(W.unscored), "без Effort", "muted")}
+          ${dstat(W.themes ? W.themes.length : "—", "тем в каталоге", "gold")}
+        </div>
+        <div class="mbar" role="img" aria-label="Распределение по MoSCoW">${bar}</div>
+        <div class="mleg-row">${legend}</div>
+        ${W.topTitle ? `<div class="dash__note">ТОП по приоритету (Final ${W.topFinal}): <b>${esc(W.topTitle)}</b></div>` : ""}
+        ${dlinks([
+          { href: "backlog.html", label: "Бэклог" },
+          { href: "levels.html", label: "Каталог" },
+          { href: "must.html", label: "Must" },
+        ])}
+      </div>`;
+  }
+
+  // --- Данные ---
+  const data = document.querySelector('[data-dash="data"]');
+  if (data) {
+    const top3 = typeof D.top3 === "number" ? D.top3 * 100 : 0;
+    const top5extra = typeof D.top5 === "number" ? Math.max(0, D.top5 * 100 - top3) : 0;
+    data.innerHTML = `
+      <div class="dash dash--data">
+        <p class="dash__lead">Фактура под направлением: цифры по агентствам, исследования, метрики и рынок.</p>
+        <div class="dash__stats">
+          ${dstat(fmtInt(D.agenciesActive), "активных агентств", "copper")}
+          ${dstat(fmtInt(D.opsMay) + ` <span class="dstat__d ${D.momPct < 0 ? "is-down" : "is-up"}">${fmtSigned(D.momPct)}</span>`, "операций в мае · м/м", "copper")}
+          ${dstat(fmtInt(D.researchTotal), `находок · подтв. ${D.researchConfirmed ?? "—"}`, "copper")}
+          ${dstat((D.metricsActive ?? "—") + " + " + (D.metricsTarget ?? "—"), "метрик: активных + целевых", "copper")}
+        </div>
+        <div class="cbar-wrap">
+          <div class="cbar" role="img" aria-label="Концентрация по операциям">
+            <span class="cbar__top3" style="width:${top3}%"></span>
+            <span class="cbar__top5" style="width:${top5extra}%"></span>
+          </div>
+          <div class="dash__note">Концентрация: ТОП-3 = <b>${fmtPct(D.top3)}</b> · ТОП-5 = <b>${fmtPct(D.top5)}</b> операций. База хрупкая.</div>
+        </div>
+        ${dlinks([
+          { href: "research.html", label: "Исследования" },
+          { href: "agencies.html", label: "Агентства" },
+          { href: "rynok.html", label: "Рынок" },
+          { href: "metrics.html", label: "Метрики" },
+        ])}
+      </div>`;
+  }
+}
+
+// «Сейчас в работе» — отдельный блок под саммари (данные из exec.json → now)
+async function mountNow() {
+  const host = document.querySelector("[data-now]");
   if (!host) return;
-  const cur = localStorage.getItem(VIEW_KEY) === "full" ? "full" : "brief";
-  document.body.classList.toggle("mode-brief", cur === "brief");
+  let d;
+  try { d = await loadJSON("data/exec.json"); }
+  catch (e) { host.innerHTML = `<div class="error">${esc(e.message)}</div>`; return; }
+  const n = d.now;
+  if (!n) return;
   host.innerHTML = `
-    <div class="view-toggle" role="group" aria-label="Режим главной">
-      <span class="view-toggle__h">Вид:</span>
-      <button type="button" class="vt-btn${cur === "brief" ? " is-on" : ""}" data-vt="brief">Кратко (для руководителя)</button>
-      <button type="button" class="vt-btn${cur === "full"  ? " is-on" : ""}" data-vt="full">Полно (для команды)</button>
-    </div>`;
-  host.querySelectorAll("[data-vt]").forEach((b) => b.addEventListener("click", () => {
-    const m = b.dataset.vt;
-    localStorage.setItem(VIEW_KEY, m);
-    document.body.classList.toggle("mode-brief", m === "brief");
-    host.querySelectorAll("[data-vt]").forEach((x) => x.classList.toggle("is-on", x === b));
-  }));
+    <a class="now-card" href="${esc(n.href)}">
+      <div class="now-card__head">
+        <span class="now-card__live"><span class="now-card__dot"></span>Сейчас в работе</span>
+        <span class="now-card__k">${esc(n.kicker)}</span>
+      </div>
+      <h3 class="now-card__title">${esc(n.title)}</h3>
+      <p class="now-card__what">${gloss(esc(n.what))}</p>
+      <div class="now-card__foot">
+        ${(n.stats || []).map((s) => `<span class="badge${s.badge ? " badge--" + esc(s.badge) : ""}">${esc(s.label)}</span>`).join("")}
+        <span class="now-card__link">${esc(n.linkLabel || "Открыть")} →</span>
+      </div>
+    </a>`;
 }
 
 // JTBD-дерево (tree.html) — раскрыть/свернуть все Big-блоки
@@ -1596,5 +1710,6 @@ document.addEventListener("DOMContentLoaded", () => {
   mountConcepts();
   mountProjbar();
   mountExec();
-  mountViewToggle();
+  mountNow();
+  mountDashboards();
 });
