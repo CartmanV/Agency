@@ -3,20 +3,34 @@
 
 const NAV = [
   { href: "index.html",    label: "Направление" },
+  { href: "now.html",      label: "Сейчас в работе" },
   { href: "vision.html",   label: "Видение" },
   { href: "backlog.html",  label: "Бэклог" },
   { href: "must.html",     label: "Must" },
   { href: "tree.html",     label: "Дерево" },
-  { href: "levels.html",   label: "Карта L1/L2" },
+  { href: "levels.html",   label: "Структура работ" },
   { href: "lestnica.html", label: "Лестница" },
   { href: "legend.html",   label: "Легенды" },
   { href: "research.html", label: "Исследования" },
   { href: "agencies.html", label: "Агентства" },
+  { href: "rynok.html",    label: "Рынок" },
   { href: "metrics.html",  label: "Метрики" },
 ];
 
+// Единственный источник правды по актуальности данных сайта.
+const SITE_UPDATED = "июнь 2026";
+
 function currentPage() {
   return location.pathname.split("/").pop() || "index.html";
+}
+
+function mountFooter() {
+  const host = document.querySelector("[data-footer]");
+  if (!host) return;
+  host.innerHTML = `
+    <footer class="site-footer">
+      Направление «Агентства» · внутренние данные направления · обновлено: ${SITE_UPDATED}.
+    </footer>`;
 }
 
 function mountHeader() {
@@ -565,44 +579,244 @@ function renderTheme(t) {
     </details>`;
 }
 
+// L1-карточка темы: список L2 с живыми числами из tree.json (по bucket-именам).
+function renderLevelBucket(bucketName, treeByTheme) {
+  const tb = treeByTheme[bucketName];
+  if (!tb) return "";
+  const single = tb.level2.length === 1 && tb.level2[0].name === bucketName;
+  const head = `<div class="l2group__h">${esc(bucketName)}<span class="c">${tb.count}</span></div>`;
+  const l2 = single
+    ? `<ul class="l2"><li><span class="dot"></span><span class="nm muted">единый L2 — разнести при разборе [*]</span><span class="c">${tb.count}</span></li></ul>`
+    : `<ul class="l2">${tb.level2.slice().sort((a, b) => b.count - a.count).map((l) =>
+        `<li><span class="dot"></span><span class="nm">${esc(l.name)}</span><span class="c">${l.count}</span></li>`).join("")}</ul>`;
+  return `<div class="l2group">${head}${l2}</div>`;
+}
+// Общий шаблон полного описания карточки (L1 и L2 одинаковый каркас).
+function renderFull(f) {
+  if (!f) return "";
+  const li = (arr) => `<ol class="fl-list">${arr.map((x) => `<li>${esc(x)}</li>`).join("")}</ol>`;
+  const meta = [];
+  if (f.block) meta.push(["Блок", f.block]);
+  if (f.subgoalFull) meta.push(["Подцель", f.subgoalFull]);
+  if (f.bigjobFull) meta.push(["Big job", f.bigjobFull]);
+  if (f.hypFull) meta.push(["Гипотеза", f.hypFull]);
+  const metaHtml = meta.length
+    ? `<dl class="fl-meta">${meta.map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join("")}</dl>` : "";
+  const roles = f.roles ? `
+    <div class="fl-sect"><h4>Поток ролей</h4>
+      <ul class="fl-roles">
+        <li><b>Инициатор:</b> ${esc(f.roles.initiator)}</li>
+        <li><b>Промежуточный:</b> ${esc(f.roles.intermediate)}</li>
+        <li><b>Завершающий:</b> ${esc(f.roles.finisher)}</li>
+        <li class="fl-gone"><b>Исчез из потока:</b> ${esc(f.roles.gone)}</li>
+      </ul></div>` : "";
+  const impact = f.impact ? `
+    <div class="fl-sect"><h4>Влияние на цель</h4>
+      <p class="fl-direct">${esc(f.impact.direct)}</p>
+      <div class="fl-metrics">
+        <div><span class="fl-mk">Активные</span><ul>${(f.impact.active || []).map((m) => `<li>${esc(m)}</li>`).join("")}</ul></div>
+        <div><span class="fl-mk">Целевые</span><ul>${(f.impact.target || []).map((m) => `<li>${esc(m)}</li>`).join("")}</ul></div>
+      </div></div>` : "";
+  const scen = f.scenario ? `
+    <div class="fl-sect"><h4>Сценарий</h4>
+      <p class="fl-scen"><span class="fl-tag fl-tag--is">As-is</span> ${esc(f.scenario.asis)}</p>
+      <p class="fl-scen"><span class="fl-tag fl-tag--will">To be</span> ${esc(f.scenario.aswill)}</p></div>` : "";
+  return `
+    <div class="fl">
+      ${metaHtml}
+      ${roles}
+      ${f.problem ? `<div class="fl-sect"><h4>Проблема</h4>${li(f.problem)}</div>` : ""}
+      ${f.result ? `<div class="fl-sect"><h4>Результат</h4>${li(f.result)}</div>` : ""}
+      ${impact}
+      ${scen}
+      ${f.entelechy ? `<div class="fl-sect"><h4>Образ результата</h4><p class="fl-ent">${esc(f.entelechy)}</p></div>` : ""}
+    </div>`;
+}
+// L2-подтема с раскрытием в полную карточку + ссылки на задачи в едином бэклоге.
+function levelsRoleCls(role) { return role === "r" ? "is-r" : role === "c" ? "is-c" : ""; }
+function themeCount(t, byTheme) {
+  return (t.buckets || []).reduce((s, b) => s + ((byTheme[b] && byTheme[b].count) || 0), 0);
+}
+// Индекс L2-узлов бэклога по имени (заполняется в mountLevels) — для живого счётчика подтем.
+let LEVELS_L2IDX = {};
+// Счётчик подтемы: живой из бакета-темы или из L2-узла (countFrom) либо предварительный [*] либо «—».
+function l2count(l, byTheme) {
+  if (l.countFrom && byTheme[l.countFrom]) return { n: byTheme[l.countFrom].count, star: false };
+  if (l.countFrom && LEVELS_L2IDX[l.countFrom] != null) return { n: LEVELS_L2IDX[l.countFrom], star: false };
+  if (l.count != null) return { n: l.count, star: true };
+  return { n: null, star: false };
+}
+function l2countStr(l, byTheme, withStar) {
+  const c = l2count(l, byTheme);
+  if (c.n == null) return "—";
+  return c.n + (withStar && c.star ? " [*]" : "");
+}
+function renderTasksBlock(l, bucketTheme) {
+  if (!(l.tasks && l.tasks.length)) return "";
+  return `
+    <div class="fl-sect"><h4>База задач → единый бэклог</h4>
+      <ul class="fl-tasks">${l.tasks.map((tk) => {
+        const st = tk.status && tk.status !== "—" ? `<span class="fl-st">${esc(tk.status)}</span>` : "";
+        return tk.iid
+          ? `<li><a class="fl-task" href="backlog.html?q=${encodeURIComponent(tk.iid)}">${esc(tk.title)} <span class="fl-iid">IID ${esc(tk.iid)} →</span></a>${st}</li>`
+          : `<li><span class="fl-task fl-task--noid">${esc(tk.title)}</span>${st}</li>`;
+      }).join("")}</ul>
+      ${bucketTheme ? `<a class="foot-link" href="backlog.html?theme=${encodeURIComponent(bucketTheme)}">все итерации темы в бэклоге →</a>` : ""}
+    </div>`;
+}
+// Правая панель — тема L1 (полное описание + список подтем).
+function panelTheme(t, byTheme) {
+  const cnt = (t.buckets && t.buckets.length) ? String(themeCount(t, byTheme)) : "[*]";
+  const tags = [
+    `<span class="ltag">Механизм · ${esc(t.mechanism)}</span>`,
+    `<span class="ltag">${esc(t.subgoal)}</span>`,
+    `<span class="ltag big">${esc(t.bigjob)}</span>`,
+    `<span class="ltag h">${esc(t.hyp)}</span>`,
+  ].join("");
+  let sub;
+  if (t.editorialL2 && t.editorialL2.length) {
+    sub = `<div class="fl-sect"><h4>Подтемы L2 — выберите для полного описания</h4>
+      ${t.editorialL2Note ? `<p class="l2src">${esc(t.editorialL2Note)}</p>` : ""}
+      <ul class="pn-sublist">${t.editorialL2.map((l, i) => {
+        const off = l.q2 === false ? `<span class="pn-sub__off">Won't Q2</span>` : "";
+        const meta = [l.stage, l.hyp].filter(Boolean).join(" · ");
+        return `<li><a class="pn-sub" data-sel="l:${esc(t.name)}:${i}">
+          <span class="pn-sub__n">${esc(l.name)}${off}</span>
+          <span class="pn-sub__m">${esc(meta)}</span>
+          <span class="pn-sub__c">${l2countStr(l, byTheme, true)} ›</span></a></li>`;
+      }).join("")}</ul></div>`;
+  } else if (t.buckets && t.buckets.length) {
+    sub = `<div class="fl-sect"><h4>Подтемы L2 <span class="muted">(бакеты бэклога)</span></h4>
+      <div class="l2grid">${t.buckets.map((b) => renderLevelBucket(b, byTheme)).join("")}</div>
+      <a class="foot-link" href="backlog.html?theme=${encodeURIComponent(t.buckets[0])}">все итерации темы в бэклоге →</a></div>`;
+  } else {
+    sub = `<p class="muted pn__todo">${esc(t.note || "Нет итераций в бэклоге [*]")}</p>`;
+  }
+  return `<div class="pn">
+    <div class="pn__head">
+      <span class="pn__kind">Тема L1</span>
+      <h2 class="pn__title">${esc(t.name)}</h2>
+      <span class="pn__cnt">${cnt}</span>
+    </div>
+    <p class="pn__about">${esc(t.about)}</p>
+    <div class="ltags">${tags}</div>
+    ${t.full ? renderFull(t.full) : `<p class="muted pn__todo">Полное описание этой темы ещё не перенесено из источника [*].</p>`}
+    ${sub}
+  </div>`;
+}
+// Правая панель — подтема L2 (полная карточка + задачи / ссылка в бэклог).
+function panelL2(t, l, byTheme) {
+  const meta = [l.stage, l.hyp].filter(Boolean).join(" · ");
+  const off = l.q2 === false ? `<span class="ltag" style="margin-left:8px">Won't Q2</span>` : "";
+  const linkTheme = l.countFrom || l.backlogTheme;
+  let footer = "";
+  if (l.tasks && l.tasks.length) footer = renderTasksBlock(l, t.buckets && t.buckets[0]);
+  else if (linkTheme) footer = `<div class="fl-sect"><a class="foot-link" href="backlog.html?theme=${encodeURIComponent(linkTheme)}">итерации подтемы в бэклоге →</a></div>`;
+  return `<div class="pn">
+    <div class="pn__crumb"><a data-sel="t:${esc(t.name)}">‹ ${esc(t.name)}</a></div>
+    <div class="pn__head">
+      <span class="pn__kind">Подтема L2</span>
+      <h2 class="pn__title">${esc(l.name)}</h2>${off}
+      <span class="pn__cnt">${l2countStr(l, byTheme, true)}</span>
+    </div>
+    ${meta ? `<div class="ltags"><span class="ltag h">${esc(meta)}</span></div>` : ""}
+    ${l.note ? `<p class="l2note">${esc(l.note)}</p>` : ""}
+    ${renderFull(l.full)}
+    ${footer}
+  </div>`;
+}
+// Левая навигация — ветка с темами и (для редакторских) вложенными подтемами.
+function railBranch(b, byTheme, idx, sel) {
+  const themes = b.themes.map((t) => {
+    const tid = "t:" + t.name;
+    const cnt = (t.buckets && t.buckets.length) ? themeCount(t, byTheme) : "[*]";
+    const subs = (t.editorialL2 && t.editorialL2.length)
+      ? `<ul class="rail-l2">${t.editorialL2.map((l, i) => {
+          const lid = "l:" + t.name + ":" + i;
+          return `<li><a class="rail-sub${sel === lid ? " is-on" : ""}" data-sel="${esc(lid)}">
+            <span>${esc(l.name)}</span><span class="rail-c">${l2countStr(l, byTheme, false)}</span></a></li>`;
+        }).join("")}</ul>` : "";
+    return `<li>
+      <a class="rail-theme ${levelsRoleCls(t.role)}${sel === tid ? " is-on" : ""}" data-sel="${esc(tid)}">
+        <span class="rail-name">${esc(t.name)}</span><span class="rail-c">${cnt}</span></a>
+      ${subs}</li>`;
+  }).join("");
+  return `<details class="rail-branch" open>
+    <summary><span class="rail-bnum">Ветка ${idx}</span> <span class="rail-bname">${esc(b.name)}</span></summary>
+    <ul class="rail-themes">${themes}</ul></details>`;
+}
 async function mountLevels() {
   const host = document.querySelector("[data-levels]");
   if (!host) return;
   host.innerHTML = `<div class="loading">Загрузка карты уровней…</div>`;
-  let data;
-  try { data = await loadJSON("data/tree.json"); }
-  catch (e) { host.innerHTML = `<div class="error">${esc(e.message)}</div>`; return; }
+  let levels, tree;
+  try {
+    [levels, tree] = await Promise.all([loadJSON("data/levels.json"), loadJSON("data/tree.json")]);
+  } catch (e) { host.innerHTML = `<div class="error">${esc(e.message)}</div>`; return; }
 
-  const tree = data.tree || [];
-  host.innerHTML = `
-    <div class="tree-controls">
-      <div class="seg" role="group" aria-label="Режим отображения дерева">
-        <button type="button" class="seg__btn is-active" data-mode="brief" aria-pressed="true">Кратко</button>
-        <button type="button" class="seg__btn" data-mode="detail" aria-pressed="false">Подробно</button>
-      </div>
-      <button type="button" class="btn" data-expand>Развернуть всё</button>
-      <button type="button" class="btn" data-collapse>Свернуть всё</button>
-      <span class="result-meta">${data.themes} тем · ${data.count} итераций</span>
-    </div>
-    <div class="tree-body" data-tree-body>${tree.map(renderTheme).join("")}</div>`;
-
-  const bodyEl = host.querySelector("[data-tree-body]");
-  host.querySelectorAll("[data-mode]").forEach((b) => {
-    b.addEventListener("click", () => {
-      host.querySelectorAll("[data-mode]").forEach((x) => {
-        const on = x === b;
-        x.classList.toggle("is-active", on);
-        x.setAttribute("aria-pressed", on ? "true" : "false");
-      });
-      const detail = b.dataset.mode === "detail";
-      bodyEl.classList.toggle("is-detailed", detail);
-      bodyEl.querySelectorAll("details.tnode--l2").forEach((d) => (d.open = detail));
-    });
+  const byTheme = {};
+  LEVELS_L2IDX = {};
+  (tree.tree || []).forEach((t) => {
+    byTheme[t.theme] = t;
+    (t.level2 || []).forEach((l) => { LEVELS_L2IDX[l.name] = l.count; });
   });
-  host.querySelector("[data-expand]").addEventListener("click",
-    () => bodyEl.querySelectorAll("details").forEach((d) => (d.open = true)));
-  host.querySelector("[data-collapse]").addEventListener("click",
-    () => bodyEl.querySelectorAll("details.tnode--l2").forEach((d) => (d.open = false)));
+
+  // бакеты бэклога без темы L1 — отдельная псевдо-ветка «Вне карты», ничего не прячем
+  const mapped = new Set();
+  levels.branches.forEach((b) => b.themes.forEach((t) => (t.buckets || []).forEach((x) => mapped.add(x))));
+  const orphans = (tree.tree || []).filter((t) => !mapped.has(t.theme));
+  const orphanBranch = orphans.length ? {
+    name: "Вне карты [*]", stage: "бакеты бэклога без темы L1",
+    themes: orphans.map((o) => ({ name: o.theme, role: "", about:
+      "Бакет бэклога ещё не разнесён по темам уровня 1 — требует редакторского решения.",
+      mechanism: "—", subgoal: "—", bigjob: "—", hyp: "—", buckets: [o.theme] })),
+  } : null;
+  const branches = orphanBranch ? levels.branches.concat([orphanBranch]) : levels.branches;
+
+  const findTheme = (name) => {
+    for (const b of branches) { const t = b.themes.find((x) => x.name === name); if (t) return t; }
+    return null;
+  };
+
+  let sel = "t:" + levels.branches[0].themes[0].name;
+  const params = new URLSearchParams(location.search);
+  if (params.get("sel")) sel = params.get("sel");
+
+  host.innerHTML = `
+    <div class="lv2">
+      <aside class="lv2__rail" data-rail aria-label="Навигация по темам"></aside>
+      <div class="lv2__panel" data-panel></div>
+    </div>`;
+  const railEl = host.querySelector("[data-rail]");
+  const panelEl = host.querySelector("[data-panel]");
+
+  function renderRail() {
+    railEl.innerHTML = branches.map((b, i) =>
+      railBranch(b, byTheme, b === orphanBranch ? "—" : i + 1, sel)).join("");
+  }
+  function renderPanel() {
+    let html;
+    if (sel.startsWith("l:")) {
+      const rest = sel.slice(2), i = rest.lastIndexOf(":");
+      const t = findTheme(rest.slice(0, i)), l = t && t.editorialL2 && t.editorialL2[+rest.slice(i + 1)];
+      html = l ? panelL2(t, l, byTheme) : `<p class="error">Подтема не найдена</p>`;
+    } else {
+      const t = findTheme(sel.slice(2));
+      html = t ? panelTheme(t, byTheme) : `<p class="error">Тема не найдена</p>`;
+    }
+    panelEl.innerHTML = html;
+    panelEl.scrollTop = 0;
+  }
+  host.addEventListener("click", (e) => {
+    const a = e.target.closest("[data-sel]");
+    if (!a) return;
+    e.preventDefault();
+    sel = a.getAttribute("data-sel");
+    renderRail();
+    renderPanel();
+  });
+  renderRail();
+  renderPanel();
 }
 
 // ===================== Агентства. Цифры (agencies.html) =====================
@@ -645,6 +859,18 @@ async function mountAgencies() {
       </div>`;
   }
 
+  // Отображение сегментов партнёрской базы по-русски (данные остаются как в источнике).
+  const SEG_RU = {
+    "Strategist (ядро)": "Опорные (ядро)",
+    "Growth leader": "Лидеры роста",
+    "Stable": "Устойчивые",
+    "Riser": "Растущие",
+    "Riser (новичок)": "Растущие (новичок)",
+    "Stagnating/Declining": "Замедляющиеся/Уходящие",
+    "Declining": "Уходящие",
+  };
+  const segRu = (v) => SEG_RU[v] || v;
+
   if (tblHost) {
     const segs = [...new Set(ags.map((a) => a.segment).filter(Boolean))];
     const bands = [...new Set(ags.map((a) => a.band).filter(Boolean))];
@@ -656,7 +882,7 @@ async function mountAgencies() {
       return list.map((a) => `
         <tr>
           <td class="title">${esc(a.name)}</td>
-          <td class="muted">${esc(a.segment ?? "—")}</td>
+          <td class="muted">${a.segment ? esc(segRu(a.segment)) : "—"}</td>
           <td class="muted">${esc(a.band ?? "—")}</td>
           <td class="num">${fmtNum(a.may)}</td>
           <td class="num">${fmtPct(a.sharePct)}</td>
@@ -665,11 +891,11 @@ async function mountAgencies() {
           <td class="num">${fmtNum(a.l6m)}</td>
         </tr>`).join("");
     };
-    const sel = (key, label, opts) =>
-      `<select class="ctl" data-ag="${key}" aria-label="${esc(label)}"><option value="">${esc(label)}: все</option>${opts.map((o) => `<option value="${esc(o)}">${esc(o)}</option>`).join("")}</select>`;
+    const sel = (key, label, opts, labelFn) =>
+      `<select class="ctl" data-ag="${key}" aria-label="${esc(label)}"><option value="">${esc(label)}: все</option>${opts.map((o) => `<option value="${esc(o)}">${esc(labelFn ? labelFn(o) : o)}</option>`).join("")}</select>`;
 
     tblHost.innerHTML = `
-      <div class="toolbar">${sel("seg", "Сегмент", segs)}${sel("band", "Концентрация", bands)}</div>
+      <div class="toolbar">${sel("seg", "Сегмент", segs, segRu)}${sel("band", "Концентрация", bands)}</div>
       <div class="table-wrap">
         <table class="backlog">
           <thead><tr>
@@ -900,8 +1126,9 @@ async function mountMetrics() {
       ? `<div class="m-base"><span class="m-base__h">baseline 2026-05</span> ${esc(m.baseline)}</div>`
       : `<div class="m-base m-base--need">baseline нужен</div>`;
     const note = m.note ? `<div class="m-note">${esc(m.note)}</div>` : "";
+    const mid = String(m.code).toLowerCase().replace(/[^a-zа-я0-9]+/gi, "-").replace(/^-|-$/g, "");
     return `
-      <article class="m-card ${m.type === "active" ? "is-act" : "is-tgt"}">
+      <article id="m-${mid}" class="m-card ${m.type === "active" ? "is-act" : "is-tgt"}">
         <div class="m-card__top">
           <span class="m-dir ${m.direction === "↑" ? "up" : "down"}">${esc(m.direction)}</span>
           <span class="m-code">${esc(m.code)}</span>
@@ -942,6 +1169,12 @@ async function mountMetrics() {
     </div>
     <section class="m-group"><h2>Ведущие метрики по блокам <span class="m-h-note">(зеркало Impact в скоринге)</span></h2><div class="lead-wrap">${leadHTML}</div></section>
     ${body}`;
+
+  // Доскролл к метрике, если пришли по ссылке вида metrics.html#m-<код> (карточки рендерятся асинхронно).
+  if (location.hash) {
+    const el = document.getElementById(location.hash.slice(1));
+    if (el) { el.scrollIntoView({ block: "center" }); el.classList.add("is-target"); }
+  }
 }
 
 // ===================== Легенды (legend.html) =====================
@@ -966,6 +1199,13 @@ async function mountLegend() {
   host.innerHTML = `
     <nav class="leg-toc" aria-label="Разделы легенды">${toc}</nav>
     <div class="leg-body">${body}</div>`;
+
+  // JSON грузится асинхронно — браузер уже не доскроллит к входящему #якорю сам.
+  const hash = decodeURIComponent(location.hash.slice(1));
+  if (hash) {
+    const el = document.getElementById(hash);
+    if (el) el.scrollIntoView({ block: "start" });
+  }
 }
 
 // JTBD-дерево (tree.html) — раскрыть/свернуть все Big-блоки
@@ -980,6 +1220,7 @@ function mountJtbd() {
 
 document.addEventListener("DOMContentLoaded", () => {
   mountHeader();
+  mountFooter();
   mountBacklog();
   mountMust();
   mountLevels();

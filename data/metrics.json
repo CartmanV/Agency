@@ -44,6 +44,6 @@
       "baseline": null, "note": "Q3-кандидат на подъём приоритета: 18% lost-rate сильных клиентов = прямое падение revenue агентства и комиссии Ракеты." },
     { "code": "Operations per consultant", "name": "Операций на консультанта", "type": "target", "stage": "4", "block": "Вне Q2 · этап 4", "subgoal": "5 · масштаб без роста штата", "hypothesis": "H4.2 (cross H4.1)", "direction": "↑", "leading": false,
       "measures": "Операций на одного консультанта за период (productivity).",
-      "baseline": "L6M по 13 агентствам, допущение 10 консультантов/агентство: IBC ≈ 2343, ATH ≈ 511, Global Air ≈ 322, Aeroglobus ≈ 130, M-tier ≈ 80–90, Risers/новички ≈ 10–60. Реальный штат XL-tier не подтверждён." }
+      "baseline": "L6M по 13 агентствам, допущение 10 консультантов/агентство: IBC ≈ 2343, ATH ≈ 511, Global Air ≈ 322, Aeroglobus ≈ 130, M-tier ≈ 80–90, Растущие/новички ≈ 10–60. Реальный штат XL-tier не подтверждён." }
   ]
 }

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0A1F16" />
+  <title>Сейчас в работе — направление «Агентства»</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Manrope:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">К содержанию</a>
+  <div data-header></div>
+
+  <div class="crumbs"><a href="index.html">Направление</a> <span>›</span> Сейчас в работе</div>
+
+  <main id="main">
+    <!-- ГЕРОЙ -->
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Срез разработки · v1, 2026-06-05</p>
+        <h1>Что сейчас <span class="accent">в работе</span></h1>
+        <p class="sub">
+          Витрина для руководителей и всех, кто смотрит на направление: что прямо
+          сейчас делается по «Агентствам». Не бэклог и не план, а живой срез
+          «в работе на этой неделе» — тема, проблема, сценарии, статус подзадач.
+          Обновляется по мере прогресса.
+        </p>
+      </div>
+      <aside class="hero-goal">
+        <div class="num">1</div>
+        <div class="cap">активная тема</div>
+        <div class="sub2">Оффлайн-услуги ЖД и Авиа · этап 2 «Снимать нагрузку»</div>
+      </aside>
+    </section>
+
+    <!-- ТЕМА -->
+    <section class="section">
+      <p class="eyebrow">Сейчас в работе</p>
+      <h2>Оффлайн-услуги ЖД и Авиа <span style="color:var(--gold)">(Оффлайн 4.0)</span></h2>
+      <div class="scheme-sub" style="margin-bottom:8px">
+        <a class="chip stage" href="lestnica.html">этап 2 · блок 2A</a>
+        <a class="chip" href="tree.html" style="color:var(--copper)">механизм: Оффлайн 4.0</a>
+        <a class="chip" href="legend.html#subgoals" style="color:var(--copper)">подцель 1 «Освободить время консультанта»</a>
+        <a class="chip" href="backlog.html?q=H2.1" style="color:var(--copper)">гипотеза H2.1</a>
+      </div>
+      <p class="section-note">Вторичные привязки: подцель 4 «Дать агентству больше зарабатывать»; гипотеза H3.4 (выпавший оффлайн = потеря маржи и некорректная проводка).</p>
+    </section>
+
+    <!-- ПРОБЛЕМА -->
+    <section class="section">
+      <p class="eyebrow">Проблема</p>
+      <h2>Почему это в работе</h2>
+      <div class="pains" style="grid-template-columns:1fr 1fr">
+        <div class="pain"><p>По оффлайн-услугам информации недостаточно, она неструктурирована и отличается от онлайн-данных → текущих данных не хватает для корректной проводки билетов в 1С клиента.</p><span class="pain-tag pain-tag--q2">Данные</span></div>
+        <div class="pain"><p>Дублирование работы агента → растёт вероятность ошибок и затраты времени → агентство недозарабатывает на оффлайн-услугах.</p><span class="pain-tag pain-tag--q2">Трудозатраты</span></div>
+      </div>
+
+      <h3 style="font-family:var(--f-display);font-size:19px;margin:24px 0 10px">Подтверждение</h3>
+      <ul style="margin:0;padding-left:18px;line-height:1.85;color:var(--cream-soft)">
+        <li>Доля оффлайна <strong>23–33%</strong> у ключевых агентств.</li>
+        <li>UX-исследования: оффлайн-услуги сильно отстают от онлайна по структуре, API и удобству проведения.</li>
+        <li>Обратная связь: агенты IBC дублируют работу — при множестве сегментов создают несколько оффлайн-услуг авиа, заводят услугу в Ракете и в Дельте дважды.</li>
+      </ul>
+
+      <h3 style="font-family:var(--f-display);font-size:19px;margin:24px 0 10px">Зачем это нужно</h3>
+      <ul style="margin:0;padding-left:18px;line-height:1.85;color:var(--cream-soft)">
+        <li>Агентства получают от клиентов запрос на полную авторизацию работы с услугами.</li>
+        <li>Ракета должна стать инструментом, который полностью обслуживает клиента по всем услугам.</li>
+        <li>Работа агента с оффлайн-услугой должна приносить доход — это рычаг привлечения новых агентств (цель «+20»).</li>
+      </ul>
+    </section>
+
+    <!-- СЦЕНАРИИ -->
+    <section class="section">
+      <p class="eyebrow">Сценарии (As-will)</p>
+      <h2>Как это будет работать</h2>
+      <div class="accent-grid">
+        <div class="accent-card is-bet1">
+          <div class="k">1 · клиент + агент</div>
+          <h3>Клиент заводит, агент дозаполняет</h3>
+          <p>Клиент создаёт оффлайн-услугу, заполняет что знает → агент дозаполняет
+          данные через редактирование → данные уходят в 1С клиента, билеты
+          проводятся автоматически, без бухгалтера клиента.</p>
+        </div>
+        <div class="accent-card is-bet2">
+          <div class="k">2 · агент</div>
+          <h3>Агент заводит услугу</h3>
+          <p>Агент создаёт оффлайн-услугу → услуга создаётся, путешественник видит
+          полные данные в своей командировке → данные уходят в системы
+          клиента / агентства.</p>
+        </div>
+        <div class="accent-card is-nsm">
+          <div class="k">3 · внешняя система</div>
+          <h3>Заведение из внешней системы</h3>
+          <p>Агент создаёт оффлайн-услугу в своей системе (Дельта, CRM) → услуга
+          полностью заполняется по API.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- СТАТУС ПОДЗАДАЧ -->
+    <section class="section">
+      <p class="eyebrow">Статус подзадач</p>
+      <h2>Где что находится</h2>
+      <div style="overflow-x:auto">
+      <table class="backlog">
+        <thead><tr><th>#</th><th>Подзадача</th><th>Статус</th></tr></thead>
+        <tbody>
+          <tr><td class="num">1</td><td class="title">Единый модуль создания и редактирования услуги</td><td><span class="badge badge--ok">✅ Сделано</span></td></tr>
+          <tr><td class="num">2</td><td class="title">Новая форма с новыми полями для ЖД-услуги: создание, редактирование, отображение на странице заказа</td><td><span class="badge badge--review">🔄 Тестирование</span></td></tr>
+          <tr><td class="num">3</td><td class="title">API-методы для ЖД-услуги</td><td><span class="badge">⏳ В очереди</span></td></tr>
+          <tr><td class="num">4</td><td class="title">Новая форма с новыми полями для Авиа-услуги: создание, редактирование, отображение на странице заказа</td><td><span class="badge">⏳ В очереди</span></td></tr>
+          <tr><td class="num">5</td><td class="title">API-методы для Авиа-услуги</td><td><span class="badge">⏳ В очереди</span></td></tr>
+          <tr><td class="num">6</td><td class="title">Доработка блока с ценой на странице заказа для работы со сборами</td><td><span class="badge">⏳ В очереди</span></td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p class="pain-legend" style="margin-top:14px">
+        <span class="badge badge--ok">✅ Сделано</span> в проде / принято ·
+        <span class="badge badge--review">🔄 В работе</span> разработка / тестирование ·
+        <span class="badge">⏳ В очереди</span> ждёт разработки.
+      </p>
+    </section>
+
+    <!-- СВЯЗИ -->
+    <section class="section">
+      <p class="eyebrow">Куда дальше</p>
+      <h2>Связанные разрезы</h2>
+      <div class="pcards">
+        <a class="pcard" href="backlog.html?q=H2.1">
+          <div class="pc-k">Детали</div>
+          <h3>Бэклог</h3>
+          <p>Полные карточки тем оффлайн-услуг со скорингом (Итерация 1).</p>
+        </a>
+        <a class="pcard" href="lestnica.html">
+          <div class="pc-k">Стратегия</div>
+          <h3>Лестница ценности</h3>
+          <p>Этап 2 «Снимать нагрузку», механизм Оффлайн 4.0.</p>
+        </a>
+        <a class="pcard" href="tree.html">
+          <div class="pc-k">JTBD</div>
+          <h3>Дерево работ</h3>
+          <p>«Не терять деньги» (руководитель) + «не косячить» (консультант).</p>
+        </a>
+        <a class="pcard" href="agencies.html">
+          <div class="pc-k">Цифры</div>
+          <h3>Агентства. Цифры</h3>
+          <p>Доля оффлайна по сегментам, концентрация на IBC.</p>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <div data-footer></div>
+
+  <script src="assets/app.js"></script>
+</body>
+</html>

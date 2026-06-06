@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#0A1F16" />
-  <title>Карта уровней L1/L2 — направление «Агентства»</title>
+  <title>Структура работ — направление «Агентства»</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Manrope:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -14,24 +14,24 @@
   <a class="skip-link" href="#main">К содержанию</a>
   <div data-header></div>
 
-  <div class="crumbs"><a href="index.html">Направление</a> <span>›</span> Карта уровней L1/L2</div>
+  <div class="crumbs"><a href="index.html">Направление</a> <span>›</span> Структура работ</div>
 
   <main id="main">
-    <h1>Карта уровней итераций (L1 / L2)</h1>
+    <h1>Структура работ направления: темы и подтемы</h1>
     <p class="lede">
-      Оглавление работ направления: темы уровня 1 → подтемы уровня 2 → итерации.
-      Это структурная ось бэклога (Тема → Уровень 2 → Итерация). JTBD-разрез —
-      на странице <a href="tree.html">Дерево работ</a>. Клик по итерации открывает
-      её в <a href="backlog.html">Бэклоге</a>.
+      Оглавление работ направления по иерархии: <b>3 ветки → 7 тем уровня&nbsp;1 →
+      подтемы&nbsp;L2 → итерации&nbsp;L3</b>. Тема L1 — стратегический механизм,
+      а не бакет таблицы бэклога; зонтичные темы собираются из нескольких бакетов.
+      Выберите тему или подтему в списке слева — справа
+      откроется полное описание; задачи L2 ведут в <a href="backlog.html">Единый
+      бэклог</a>. JTBD-разрез — на странице <a href="tree.html">Дерево работ</a>.
+      <span class="muted">[*] — редакторское допущение по сборке.</span>
     </p>
 
     <div data-levels></div>
   </main>
 
-  <footer class="site-footer">
-    Данные: <code>data/tree.json</code> ← <code>python3 build/build.py</code> (из единого бэклога).
-    Редакторские описания тем L1 (из «Темы уровня 1v2.md») — следующим шагом.
-  </footer>
+  <div data-footer></div>
 
   <script src="assets/app.js"></script>
 </body>
