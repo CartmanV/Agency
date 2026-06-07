@@ -1909,6 +1909,65 @@ async function mountDashboards() {
   }
 }
 
+// Путеводитель по сайту (vision.html) — из data/guide.json. Назначение каждой
+// страницы + «как читать» + маршруты чтения. Числа НЕ хардкодим — только смысл.
+const GUIDE_SRC = {
+  auto: { label: "авто", title: "числа собираются из таблиц скриптом build.py" },
+  hand: { label: "вручную", title: "автор ведёт вручную" },
+  edit: { label: "текст", title: "редакторский текст прямо в странице" },
+};
+async function mountGuide() {
+  const gHost = document.querySelector("[data-guide]");
+  const rHost = document.querySelector("[data-guide-routes]");
+  if (!gHost && !rHost) return;
+  let d;
+  try { d = await loadJSON("data/guide.json"); }
+  catch (e) {
+    [gHost, rHost].forEach((h) => { if (h) h.innerHTML = `<div class="error">${esc(e.message)}</div>`; });
+    return;
+  }
+
+  if (gHost) {
+    gHost.innerHTML = `<div class="guide">${(d.groups || []).map((g) => {
+      const rows = (g.pages || []).map((p) => {
+        if (p.srcKind === "self") {
+          return `<div class="guide__row guide__row--here">
+            <div class="guide__rtop"><span class="guide__name">${esc(p.name)}</span><span class="guide__here">вы здесь</span></div>
+            <div class="guide__read">${esc(p.read)}</div>
+          </div>`;
+        }
+        const s = GUIDE_SRC[p.srcKind];
+        const tag = s ? `<span class="guide__src guide__src--${esc(p.srcKind)}" title="${esc(s.title)}">${esc(s.label)}</span>` : "";
+        return `<a class="guide__row" href="${esc(p.href)}">
+          <div class="guide__rtop"><span class="guide__name">${esc(p.name)}</span>${tag}</div>
+          <div class="guide__q"><b>Отвечает:</b> ${esc(p.q)}</div>
+          <div class="guide__read">${esc(p.read)}</div>
+        </a>`;
+      }).join("");
+      return `<section class="guide__grp">
+        <div class="guide__ghead">
+          <span class="guide__glabel">${esc(g.label)}</span>
+          <span class="guide__gtag">${esc(g.tagline)}</span>
+        </div>
+        <div class="guide__rows">${rows}</div>
+      </section>`;
+    }).join("")}</div>`;
+  }
+
+  if (rHost) {
+    rHost.innerHTML = `<div class="routes">${(d.routes || []).map((r) => {
+      const steps = (r.steps || []).map((s, i) =>
+        `<a class="route__step" href="${esc(s.href)}"><span class="route__n">${i + 1}</span>${esc(s.label)}</a>`
+      ).join('<span class="route__arr">→</span>');
+      return `<div class="route">
+        <div class="route__goal">${esc(r.goal)}</div>
+        ${r.note ? `<div class="route__note">${esc(r.note)}</div>` : ""}
+        <div class="route__steps">${steps}</div>
+      </div>`;
+    }).join("")}</div>`;
+  }
+}
+
 // «Сейчас в работе» — отдельный блок под саммари (данные из exec.json → now)
 async function mountNow() {
   const host = document.querySelector("[data-now]");
@@ -1956,4 +2015,5 @@ document.addEventListener("DOMContentLoaded", () => {
   mountExec();
   mountNow();
   mountDashboards();
+  mountGuide();
 });
