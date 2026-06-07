@@ -285,7 +285,10 @@ def build_agencies():
         return int(round(n)) if n is not None else None
 
     nsm_total = None
-    nsm_sheet = next((s for s in wb.sheetnames if "клиент" in s.lower()), None)
+    cl_name2id = {}   # короткое имя из «Клиенты (NSM)» (IBC, ATH…) → id — для клиентских помесячных листов
+    nsm_sheet = next((s for s in wb.sheetnames
+                      if "клиент" in s.lower() and "(nsm)" in s.lower()), None) \
+        or next((s for s in wb.sheetnames if "клиент" in s.lower() and "помесяч" not in s.lower()), None)
     if nsm_sheet:
         by_id = {a["id"]: a for a in agencies}
         for r in wb[nsm_sheet].iter_rows(min_row=2, values_only=True):
@@ -304,31 +307,56 @@ def build_agencies():
                     "new": cl["clNew"], "lost": cl["clLost"], "net": cl["clNet"],
                 }
                 continue
-            rec_cl = by_id.get(clean(r[0]))
+            aid = clean(r[0])
+            if aid is not None:
+                cl_name2id[cname] = aid
+            rec_cl = by_id.get(aid)
             if rec_cl:
                 rec_cl.update(cl)
 
-    # --- лист «Помесячно L13M»: ряд операций по месяцам (13 точек) на агентство + ИТОГО ---
-    # Для графика динамики (area по ИТОГО) и спарклайнов в таблице. Сопоставляем по имени.
-    monthly = None
-    mon_sheet = next((s for s in wb.sheetnames if "помесячно" in s.lower()), None)
-    if mon_sheet:
-        mrows = list(wb[mon_sheet].iter_rows(values_only=True))
-        months = [clean(x) for x in mrows[0][1:] if clean(x)]
-        name2id = {a["name"]: a["id"] for a in agencies}
-        by_id_mon, mon_total = {}, None
-        for r in mrows[1:]:
+    # --- помесячные ряды по месяцам (для графиков динамики и спарклайнов) ---
+    # Только колонки вида «MM.YYYY» (служебные «Δ …» отбрасываем).
+    def parse_monthly(sheet_name, resolve):
+        rows_m = list(wb[sheet_name].iter_rows(values_only=True))
+        hdr = [clean(x) for x in rows_m[0][1:]]
+        keep = [i for i, h in enumerate(hdr) if h and re.match(r"^\d{2}\.\d{4}$", str(h))]
+        months_m = [hdr[i] for i in keep]
+        by_id_m, total_m = {}, None
+        for r in rows_m[1:]:
             nm = clean(r[0])
             if not nm:
                 continue
-            series = [to_int(v) for v in r[1:1 + len(months)]]
+            series = [to_int(r[1 + i]) for i in keep]
             if str(nm).startswith("ИТОГО"):
-                mon_total = series
+                total_m = series
                 continue
-            aid = name2id.get(nm)
+            aid = resolve(nm)
             if aid is not None:
-                by_id_mon[str(aid)] = series
-        monthly = {"months": months, "total": mon_total, "byId": by_id_mon}
+                by_id_m[str(aid)] = series
+        return {"months": months_m, "total": total_m, "byId": by_id_m}
+
+    # Операции: лист «Помесячно L13M» (13 точек), имена полные → id агентства.
+    name2id_full = {a["name"]: a["id"] for a in agencies}
+    mon_ops_sheet = next((s for s in wb.sheetnames if "помесячно l13m" in s.lower()), None)
+    monthly = parse_monthly(mon_ops_sheet, name2id_full.get) if mon_ops_sheet else None
+
+    # Клиенты: лист «Клиенты помесячно L12M» (12 точек). Короткие имена расходятся между листами
+    # («KazTour» vs «KazTour Corporate»…) — сопоставляем по точной карте, затем по подстроке.
+    def resolve_client_id(nm):
+        if nm in cl_name2id:
+            return cl_name2id[nm]
+        low = str(nm).lower()
+        for a in agencies:
+            full = str(a["name"]).lower()
+            if low in full or full in low:
+                return a["id"]
+        for k, v in cl_name2id.items():
+            kl = str(k).lower()
+            if low in kl or kl in low:
+                return v
+        return None
+    mon_cl_sheet = next((s for s in wb.sheetnames if "клиент" in s.lower() and "помесяч" in s.lower()), None)
+    monthly_clients = parse_monthly(mon_cl_sheet, resolve_client_id) if mon_cl_sheet else None
 
     shares = sorted((a["sharePct"] or 0) for a in agencies)[::-1]
     top3 = round(sum(shares[:3]), 4)
@@ -347,6 +375,7 @@ def build_agencies():
         "concentration": {"top3": top3, "top5": top5},
         "nsm": nsm_total,
         "monthly": monthly,
+        "monthlyClients": monthly_clients,
         "agencies": agencies,
     }
 

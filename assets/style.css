@@ -728,6 +728,7 @@ a.chip.branch:hover { border-color: var(--copper); color: var(--cream); text-dec
 .ag-chart .ch-ylab, .ag-chart .ch-xlab { fill: var(--cream-dim); font-family: var(--f-mono); font-size: 10px; }
 .ag-chart .ch-dot { stroke: var(--bg); stroke-width: 1.5; }
 .ag-chart .ch-mark { font-family: var(--f-mono); font-size: 11px; font-weight: 600; }
+.ag-chart .ch-leg { fill: var(--cream-soft); font-family: var(--f-mono); font-size: 11px; }
 .ag-chart .mk-peak { fill: var(--gold); } .ag-chart .ch-dot.mk-peak { fill: var(--gold); }
 .ag-chart .mk-low { fill: var(--pink); } .ag-chart .ch-dot.mk-low { fill: var(--pink); }
 .ag-chart .mk-last { fill: var(--emerald); } .ag-chart .ch-dot.mk-last { fill: var(--emerald); }
