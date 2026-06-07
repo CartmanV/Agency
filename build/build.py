@@ -277,6 +277,59 @@ def build_agencies():
         rec["id"] = clean(r[0])
         agencies.append(rec)
 
+    # --- лист «Клиенты (NSM)»: число активных клиентов на агентство — прокси North Star Metric ---
+    # Колонки: ID · Агентство · Активных L6M · Активных (посл. мес.) · Клиентов 3 мес. назад ·
+    #          Клиентов сейчас · Новые · Ушедшие · Чистая дельта (NSM). Сливаем по id в агентство.
+    def to_int(v):
+        n = num(v)
+        return int(round(n)) if n is not None else None
+
+    nsm_total = None
+    nsm_sheet = next((s for s in wb.sheetnames if "клиент" in s.lower()), None)
+    if nsm_sheet:
+        by_id = {a["id"]: a for a in agencies}
+        for r in wb[nsm_sheet].iter_rows(min_row=2, values_only=True):
+            cname = clean(r[1]) if len(r) > 1 else None
+            if not cname:
+                continue
+            cl = {
+                "clL6m": to_int(r[2]), "clActiveMo": to_int(r[3]),
+                "clAgo": to_int(r[4]), "clNow": to_int(r[5]),
+                "clNew": to_int(r[6]), "clLost": to_int(r[7]), "clNet": to_int(r[8]),
+            }
+            if str(cname).startswith("ИТОГО"):
+                nsm_total = {
+                    "l6m": cl["clL6m"], "activeMo": cl["clActiveMo"],
+                    "ago": cl["clAgo"], "now": cl["clNow"],
+                    "new": cl["clNew"], "lost": cl["clLost"], "net": cl["clNet"],
+                }
+                continue
+            rec_cl = by_id.get(clean(r[0]))
+            if rec_cl:
+                rec_cl.update(cl)
+
+    # --- лист «Помесячно L13M»: ряд операций по месяцам (13 точек) на агентство + ИТОГО ---
+    # Для графика динамики (area по ИТОГО) и спарклайнов в таблице. Сопоставляем по имени.
+    monthly = None
+    mon_sheet = next((s for s in wb.sheetnames if "помесячно" in s.lower()), None)
+    if mon_sheet:
+        mrows = list(wb[mon_sheet].iter_rows(values_only=True))
+        months = [clean(x) for x in mrows[0][1:] if clean(x)]
+        name2id = {a["name"]: a["id"] for a in agencies}
+        by_id_mon, mon_total = {}, None
+        for r in mrows[1:]:
+            nm = clean(r[0])
+            if not nm:
+                continue
+            series = [to_int(v) for v in r[1:1 + len(months)]]
+            if str(nm).startswith("ИТОГО"):
+                mon_total = series
+                continue
+            aid = name2id.get(nm)
+            if aid is not None:
+                by_id_mon[str(aid)] = series
+        monthly = {"months": months, "total": mon_total, "byId": by_id_mon}
+
     shares = sorted((a["sharePct"] or 0) for a in agencies)[::-1]
     top3 = round(sum(shares[:3]), 4)
     top5 = round(sum(shares[:5]), 4)
@@ -292,6 +345,8 @@ def build_agencies():
         "source": src.name, "cut": "31.05.2026", "metric": "операции (ops)",
         "note": note, "total": total,
         "concentration": {"top3": top3, "top5": top5},
+        "nsm": nsm_total,
+        "monthly": monthly,
         "agencies": agencies,
     }
 

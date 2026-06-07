@@ -902,6 +902,80 @@ function pctCell(x) {
   const sign = x > 0 ? "+" : "";
   return `<span class="delta ${cls}">${sign}${(x * 100).toFixed(1)}%</span>`;
 }
+// Целочисленная дельта (например, чистая дельта клиентов +4 / −1).
+function intDelta(n) {
+  if (n == null) return `<span class="muted">—</span>`;
+  const cls = n > 0 ? "pos" : n < 0 ? "neg" : "zero";
+  const sign = n > 0 ? "+" : "";
+  return `<span class="delta ${cls}">${sign}${RU_NUM.format(n)}</span>`;
+}
+
+// --- Графики динамики операций (чистый SVG, без библиотек) ---
+const RU_MON = ["янв", "фев", "мар", "апр", "май", "июн", "июл", "авг", "сен", "окт", "ноя", "дек"];
+function monLabel(s) {                          // "05.2025" → "май·25"
+  if (!s) return "";
+  const [m, y] = String(s).split(".");
+  return (RU_MON[(+m) - 1] || m) + "·" + String(y).slice(2);
+}
+function fmtK(n) {                              // 43587 → "43,6к", 920 → "920"
+  if (n == null) return "—";
+  return n >= 1000 ? (n / 1000).toFixed(1).replace(".", ",") + "к" : RU_NUM.format(n);
+}
+
+// Мини-линия динамики для строки таблицы (цвет = направление: вверх emerald / вниз pink).
+function sparkline(series, w = 88, h = 26) {
+  const vals = (series || []).filter((v) => v != null);
+  if (vals.length < 2) return `<span class="muted">—</span>`;
+  const min = Math.min(...vals), max = Math.max(...vals), span = (max - min) || 1;
+  const n = series.length, pad = 2;
+  const pts = series.map((v, i) => [pad + (i / (n - 1)) * (w - 2 * pad),
+    (h - pad) - ((v - min) / span) * (h - 2 * pad)]);
+  const d = pts.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" ");
+  const first = series.find((v) => v != null), last = [...series].reverse().find((v) => v != null);
+  const dir = last > first ? "up" : last < first ? "down" : "flat";
+  const lp = pts[n - 1];
+  return `<svg class="spark spark--${dir}" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true">
+    <path d="${d}" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+    <circle cx="${lp[0].toFixed(1)}" cy="${lp[1].toFixed(1)}" r="2" fill="currentColor"/></svg>`;
+}
+
+// Главный area-график общего объёма операций по месяцам.
+function areaChart(months, values) {
+  const v = (values || []).filter((x) => x != null);
+  if (v.length < 2) return "";
+  const W = 760, H = 240, pL = 46, pR = 14, pT = 18, pB = 30;
+  const iw = W - pL - pR, ih = H - pT - pB, n = values.length;
+  const lo = Math.floor(Math.min(...v) / 5000) * 5000;
+  const hi = Math.ceil(Math.max(...v) / 5000) * 5000;
+  const span = (hi - lo) || 1;
+  const X = (i) => pL + (i / (n - 1)) * iw;
+  const Y = (val) => pT + ih - ((val - lo) / span) * ih;
+  const pts = values.map((val, i) => [X(i), Y(val)]);
+  const line = pts.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" ");
+  const base = (pT + ih).toFixed(1);
+  const area = `M${pts[0][0].toFixed(1)} ${base} ` + pts.map((p) => "L" + p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" ") + ` L${pts[n - 1][0].toFixed(1)} ${base} Z`;
+  let grid = "";
+  for (let g = lo; g <= hi; g += 5000) {
+    const y = Y(g).toFixed(1);
+    grid += `<line x1="${pL}" y1="${y}" x2="${W - pR}" y2="${y}" class="ch-grid"/>`
+      + `<text x="${pL - 8}" y="${(+y + 3).toFixed(1)}" class="ch-ylab" text-anchor="end">${g / 1000}к</text>`;
+  }
+  // Якорь по краям, чтобы крайние подписи не обрезались о границу SVG.
+  const anc = (x) => (x <= pL + 22 ? "start" : x >= W - pR - 22 ? "end" : "middle");
+  let xlab = "";
+  months.forEach((m, i) => { if (i % 2 === 0 || i === n - 1) xlab += `<text x="${X(i).toFixed(1)}" y="${H - 9}" class="ch-xlab" text-anchor="${anc(X(i))}">${monLabel(m)}</text>`; });
+  const yref = Y(values[0]).toFixed(1);
+  const ref = `<line x1="${pL}" y1="${yref}" x2="${W - pR}" y2="${yref}" class="ch-ref"/>`;
+  const iMax = values.indexOf(Math.max(...v)), iMin = values.indexOf(Math.min(...v));
+  const mk = (i, cls) => { const [x, y] = pts[i]; return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.2" class="ch-dot ${cls}"/>`
+    + `<text x="${x.toFixed(1)}" y="${(y - 9).toFixed(1)}" class="ch-mark ${cls}" text-anchor="${anc(x)}">${fmtK(values[i])}</text>`; };
+  return `<svg class="ag-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Операции по месяцам, ${months[0]}–${months[n - 1]}">
+    <defs><linearGradient id="agArea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="var(--emerald)" stop-opacity="0.30"/>
+      <stop offset="1" stop-color="var(--emerald)" stop-opacity="0.02"/></linearGradient></defs>
+    ${grid}${ref}<path d="${area}" fill="url(#agArea)"/><path d="${line}" class="ch-line"/>
+    ${mk(iMax, "mk-peak")}${mk(iMin, "mk-low")}${mk(n - 1, "mk-last")}${xlab}</svg>`;
+}
 
 async function mountAgencies() {
   const sumHost = document.querySelector("[data-ag-summary]");
@@ -914,21 +988,82 @@ async function mountAgencies() {
   const ags = data.agencies || [];
   const t = data.total || {};
   const c = data.concentration || {};
+  const nsm = data.nsm || {};
+  const mon = data.monthly || null;
+
+  // Лидер базы (ядро) против остальных — для сплит-полос «IBC ↔ все».
+  const lead = ags.reduce((a, b) => ((b.may || 0) > (a.may || 0) ? b : a), ags[0] || {});
+  const leadName = /IBC/i.test(lead.name || "") ? "IBC" : (lead.name || "лидер");
+  const others = Math.max(ags.length - 1, 0);
+  const opsTotal = t.may || ags.reduce((s, a) => s + (a.may || 0), 0);
+  const clTotal = nsm.now || ags.reduce((s, a) => s + (a.clNow || 0), 0);
+  const opsLeadPct = opsTotal ? (lead.may || 0) / opsTotal : 0;
+  const clLeadPct = clTotal ? (lead.clNow || 0) / clTotal : 0;
+  const opcLead = lead.clNow ? Math.round((lead.may || 0) / lead.clNow) : null;
+  const opcRest = (clTotal - (lead.clNow || 0)) ? Math.round((opsTotal - (lead.may || 0)) / (clTotal - (lead.clNow || 0))) : null;
+  const clUp = ags.filter((a) => (a.clNet || 0) > 0).length;
+  const clDown = ags.filter((a) => (a.clNet || 0) < 0).length;
 
   if (sumHost) {
+    const splitBar = (leadPct, leadTxt, restTxt) => `
+      <div class="split-bar">
+        <span class="seg seg-ibc" style="flex:${(leadPct * 100).toFixed(1)}">${leadTxt}</span>
+        <span class="seg seg-rest" style="flex:${((1 - leadPct) * 100).toFixed(1)}">${restTxt}</span>
+      </div>`;
     sumHost.innerHTML = `
-      <div class="ag-plates">
-        <div class="ag-plate"><div class="v">${t.count ?? ags.length}</div><div class="l">активных агентств</div><div class="s">есть операции в L3M (мар–май'26)</div></div>
-        <div class="ag-plate"><div class="v">${fmtNum(t.may)}</div><div class="l">операций · май'26</div><div class="s">апрель ${fmtNum(t.apr)} · ${pctCell(t.momPct)} MoM</div></div>
-        <div class="ag-plate"><div class="v">${fmtPct(c.top3, 0)}</div><div class="l">концентрация ТОП-3</div><div class="s">ТОП-5 ${fmtPct(c.top5, 0)} — высокая хрупкость базы</div></div>
-        <div class="ag-plate ag-plate--accent"><div class="v">+20</div><div class="l">цель 2026 (KR-2)</div><div class="s">чистая дельта: привлечено − отток</div></div>
+      <div class="ag-strip">
+        <div class="ag-stat"><div class="v">${t.count ?? ags.length}</div><div class="l">агентств</div><div class="s">активных в мае</div></div>
+        <div class="ag-stat"><div class="v">${fmtNum(nsm.now)}</div><div class="l">клиентов · NSM</div><div class="s">главная метрика</div></div>
+        <div class="ag-stat ag-stat--win"><div class="v">+${fmtNum(nsm.net)}</div><div class="l">клиентов / 6 мес.</div><div class="s">${fmtNum(nsm.new)} пришло − ${fmtNum(nsm.lost)} ушло</div></div>
+        <div class="ag-stat"><div class="v">${fmtNum(t.may)}</div><div class="l">операций · май</div><div class="s">${pctCell(t.momPct)} к апрелю</div></div>
+        <div class="ag-stat"><div class="v">${fmtPct(c.top3, 0)}</div><div class="l">у ТОП-3</div><div class="s">концентрация базы</div></div>
+        <div class="ag-stat ag-stat--goal"><div class="v">+20</div><div class="l">цель · агентств</div><div class="s">стратегия 2026 (KR-2)</div></div>
       </div>
       <div class="conc-wrap">
         <div class="conc-bar" role="img" aria-label="Концентрация: ТОП-3 ${fmtPct(c.top3,0)}, ТОП-5 ${fmtPct(c.top5,0)}">
           ${ags.slice(0, 5).map((a, i) => `<span class="conc-seg s${i}" style="flex:${(a.sharePct || 0) * 100}" title="${esc(a.name)} · ${fmtPct(a.sharePct)}"></span>`).join("")}
           <span class="conc-seg rest" style="flex:${(1 - (ags.slice(0, 5).reduce((s, a) => s + (a.sharePct || 0), 0))) * 100}" title="остальные"></span>
         </div>
-        <div class="conc-cap">Топ-3 агентства = ${fmtPct(c.top3, 0)} всех операций. Потеря одного крупного обваливает метрику направления — отсюда метка «Концентрация» в бэклоге.</div>
+        <div class="conc-cap">Полоса выше — доли пяти крупнейших агентств и «хвоста» по операциям. ТОП-5 = ${fmtPct(c.top5, 0)} операций, ТОП-3 = ${fmtPct(c.top3, 0)}.</div>
+      </div>
+      <div class="split">
+        <div class="split-row">
+          <div class="lbl">Операции (май): ${esc(leadName)} ↔ остальные ${others}</div>
+          ${splitBar(opsLeadPct, `${esc(leadName)} ${fmtPct(opsLeadPct, 0)}`, `остальные ${others} — ${fmtPct(1 - opsLeadPct, 0)}`)}
+        </div>
+        <div class="split-row">
+          <div class="lbl">Клиенты сейчас: ${esc(leadName)} ↔ остальные ${others}</div>
+          ${splitBar(clLeadPct, `${esc(leadName)} ${fmtPct(clLeadPct, 0)}`, `остальные ${others} — ${fmtPct(1 - clLeadPct, 0)}`)}
+        </div>
+        <div class="conc-cap"><b>${esc(leadName)} даёт ${fmtPct(opsLeadPct, 0)} операций, но лишь ${fmtPct(clLeadPct, 0)} клиентов</b> — клиенты ядра крупнее: ≈${fmtNum(opcLead)} операций на клиента против ${fmtNum(opcRest)} у остальных. Потеря ядра обрушит метрику направления.</div>
+      </div>`;
+  }
+
+  // Клиенты агентств — North Star Metric: краткая методическая подпись (цифры — в стат-стрипе).
+  const nsmHost = document.querySelector("[data-ag-nsm]");
+  if (nsmHost && nsm.now != null) {
+    nsmHost.innerHTML = `
+      <div class="conc-cap" style="margin-top:0">
+        За полгода (дек.25–май'26) активны <b>${fmtNum(nsm.l6m)}</b> клиентов, в мае — <b>${fmtNum(nsm.activeMo)}</b>.
+        Чистая дельта <b>+${fmtNum(nsm.net)}</b>: база выросла у <b>${clUp}</b> из ${ags.length} агентств, сократилась у ${clDown}.
+        «Активный» = есть факт поездок (а не логин в Ракете); новые и ушедшие считаем на окнах по 3 месяца — мар–май'26 против сен–ноя'25.
+      </div>`;
+  }
+
+  // Динамика операций по месяцам — главный area-график (ИТОГО, 13 мес.).
+  const trendHost = document.querySelector("[data-ag-trend]");
+  if (trendHost && mon && mon.total && mon.total.filter((x) => x != null).length > 1) {
+    const tv = mon.total, mm = mon.months;
+    const vv = tv.filter((x) => x != null);
+    const iMax = tv.indexOf(Math.max(...vv)), iMin = tv.indexOf(Math.min(...vv));
+    const yoy = tv[0] ? tv[tv.length - 1] / tv[0] - 1 : null;
+    // 1 знак после запятой (общий fmtPct округляет до целых — здесь нужна точность).
+    const yoyTxt = yoy == null ? "—" : (yoy > 0 ? "+" : "") + (yoy * 100).toFixed(1).replace(".", ",") + "%";
+    trendHost.innerHTML = areaChart(mm, tv) + `
+      <div class="conc-cap">
+        Пик — ${monLabel(mm[iMax])} (${fmtK(tv[iMax])}), дно — ${monLabel(mm[iMin])} (${fmtK(tv[iMin])}).
+        Год к году почти ровно: ${monLabel(mm[0])} ${fmtK(tv[0])} → ${monLabel(mm[mm.length - 1])} ${fmtK(tv[tv.length - 1])}
+        (${yoyTxt}). Пунктир — уровень ${monLabel(mm[0])}: спад последнего месяца сезонный, не обвал.
       </div>`;
   }
 
@@ -951,7 +1086,7 @@ async function mountAgencies() {
 
     const rows = () => {
       const list = ags.filter((a) => (!state.seg || a.segment === state.seg) && (!state.band || a.band === state.band));
-      if (!list.length) return `<tr><td colspan="8" class="muted" style="padding:20px">Ничего не найдено.</td></tr>`;
+      if (!list.length) return `<tr><td colspan="11" class="muted" style="padding:20px">Ничего не найдено.</td></tr>`;
       return list.map((a) => `
         <tr>
           <td class="title">${esc(a.name)}</td>
@@ -962,6 +1097,9 @@ async function mountAgencies() {
           <td class="num">${pctCell(a.momPct)}</td>
           <td class="num">${pctCell(a.yoyPct)}</td>
           <td class="num">${fmtNum(a.l6m)}</td>
+          <td class="spark-cell">${sparkline(mon && mon.byId ? mon.byId[a.id] : null)}</td>
+          <td class="num">${fmtNum(a.clNow)}</td>
+          <td class="num">${intDelta(a.clNet)}</td>
         </tr>`).join("");
     };
     const sel = (key, label, opts, labelFn) =>
@@ -973,7 +1111,12 @@ async function mountAgencies() {
         <table class="backlog">
           <thead><tr>
             <th>Агентство</th><th>Сегмент</th><th>Концентрация</th>
-            <th>Май'26</th><th>Доля</th><th>MoM</th><th>YoY</th><th>L6M ср.</th>
+            <th>Операций, май</th><th>Доля операций</th>
+            <th><abbr title="Операции мая'26 к апрелю'26">За месяц</abbr></th>
+            <th><abbr title="Операции мая'26 к маю'25">За год</abbr></th>
+            <th><abbr title="Среднее число операций в месяц за последние 6 месяцев">Ср. за 6 мес.</abbr></th>
+            <th><abbr title="Операции по месяцам за 13 месяцев (май'25 – май'26)">Динамика</abbr></th>
+            <th>Клиентов сейчас</th><th>Δ клиентов за полгода</th>
           </tr></thead>
           <tbody>${rows()}</tbody>
         </table>
