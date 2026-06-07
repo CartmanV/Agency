@@ -1684,14 +1684,9 @@ async function mountNow() {
     </a>`;
 }
 
-// JTBD-дерево (tree.html) — раскрыть/свернуть все Big-блоки
+// JTBD-дерево (tree.html) — глоссарий по узлам/листьям
 function mountJtbd() {
-  const exp = document.querySelector("[data-jtbd-expand]");
-  const col = document.querySelector("[data-jtbd-collapse]");
-  if (!exp && !col) return;
-  const bigs = () => document.querySelectorAll("details.big");
-  if (exp) exp.addEventListener("click", () => bigs().forEach((d) => (d.open = true)));
-  if (col) col.addEventListener("click", () => bigs().forEach((d) => (d.open = false)));
+  if (!document.querySelector(".tree-cols")) return;
   glossifyDOM(document.getElementById("main"));
 }
 
