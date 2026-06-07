@@ -1001,6 +1001,16 @@ a.fl-task:hover { color: var(--pink-soft); }
 /* ===================== Концепции ценности (concepts.html) ===================== */
 .cn-intro { color: var(--cream-soft); font-size: 1.02rem; line-height: 1.65; max-width: 70ch; margin: 0 0 22px; }
 
+/* обзор «с высоты» над карточками */
+.cn-over { margin: 0 0 26px; padding: 18px 20px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+.cn-over__h { font: 500 .72rem/1 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--cream-dim); margin-bottom: 14px; }
+.cn-over__grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.cn-over__item { display: flex; align-items: center; gap: 11px; padding: 11px 13px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); text-decoration: none; transition: border-color .15s, transform .15s; }
+.cn-over__item:hover { border-color: var(--line-soft); transform: translateY(-1px); text-decoration: none; }
+.cn-over__n { flex: none; width: 26px; height: 26px; display: grid; place-items: center; font: 600 .95rem/1 var(--f-display); color: var(--copper); border: 1px solid var(--line-soft); border-radius: 7px; }
+.cn-over__txt { flex: 1; color: var(--cream-soft); font-size: .9rem; line-height: 1.35; }
+@media (max-width: 680px) { .cn-over__grid { grid-template-columns: 1fr; } }
+
 /* три проекции — карточки-линзы (общие для concepts и матрицы в vision) */
 .vm-lenses { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 0 0 26px; }
 .vm-lens {

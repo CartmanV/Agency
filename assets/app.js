@@ -1296,13 +1296,27 @@ async function mountLegend() {
 
 // ===================== Концепции ценности (concepts.html + матрица в vision) =====================
 const Q2_BADGE = {
-  focus:   ["q2-focus", "Фокус Q2"],
-  partial: ["q2-part",  "Частично в Q2"],
-  out:     ["q2-out",   "Вне Q2"],
+  focus:   ["q2-focus", "сейчас в фокусе"],
+  partial: ["q2-part",  "частично сейчас"],
+  out:     ["q2-out",   "позже"],
 };
 function q2Badge(kind) {
   const b = Q2_BADGE[kind] || Q2_BADGE.out;
   return `<span class="cn-q2 ${b[0]}">${b[1]}</span>`;
+}
+function conceptsOverviewHTML(concepts) {
+  if (!concepts.length) return "";
+  const items = concepts.map((c) => `
+    <a class="cn-over__item" href="#c${esc(c.n)}">
+      <span class="cn-over__n">${esc(c.n)}</span>
+      <span class="cn-over__txt">${esc(c.short || c.title)}</span>
+      ${q2Badge(c.q2)}
+    </a>`).join("");
+  return `
+    <div class="cn-over">
+      <div class="cn-over__h">Коротко — 4 концепции и что в фокусе сейчас</div>
+      <div class="cn-over__grid">${items}</div>
+    </div>`;
 }
 function conceptCardHTML(c) {
   const mechs = (c.mechanisms || []).map((m) => {
@@ -1325,15 +1339,15 @@ function conceptCardHTML(c) {
         ${q2Badge(c.q2)}
       </div>
       <dl class="cncard__meta">
-        <div><dt>Этапы лестницы</dt><dd>${gloss(esc(c.stages))}</dd></div>
+        <div><dt>Этапы</dt><dd>${gloss(esc(c.stages))}</dd></div>
         <div><dt>Подцели</dt><dd>${esc(c.subgoals)}</dd></div>
         <div><dt>Чья работа</dt><dd>${esc(c.role)}</dd></div>
-        <div><dt>Первичный адресат</dt><dd>${esc(c.addressee)}</dd></div>
+        <div><dt>Для кого в первую очередь</dt><dd>${esc(c.addressee)}</dd></div>
       </dl>
-      <p class="cncard__idea"><b>Ключевая идея.</b> ${gloss(esc(c.idea))}</p>
-      ${c.q2Note ? `<p class="cncard__q2note">⚠ Граница Q2. ${gloss(esc(c.q2Note))}</p>` : ""}
-      <div class="cn-mechs"><div class="cn-mechs__h">Механизмы</div>${mechs}</div>
-      <p class="cncard__effect"><b>Ожидаемый эффект.</b> ${gloss(esc(c.effect))}</p>
+      <p class="cncard__idea"><b>Главная мысль.</b> ${gloss(esc(c.idea))}</p>
+      ${c.q2Note ? `<p class="cncard__q2note">⚠ Что берём сейчас, что нет. ${gloss(esc(c.q2Note))}</p>` : ""}
+      <div class="cn-mechs"><div class="cn-mechs__h">Из чего состоит</div>${mechs}</div>
+      <p class="cncard__effect"><b>Что это даст.</b> ${gloss(esc(c.effect))}</p>
     </article>`;
 }
 function valueMatrixHTML(data) {
@@ -1399,6 +1413,7 @@ async function mountConcepts() {
   if (cardsHost) {
     cardsHost.innerHTML = `
       <p class="cn-intro">${esc(data.intro || "")}</p>
+      ${conceptsOverviewHTML(data.concepts || [])}
       <div class="cncards">${(data.concepts || []).map(conceptCardHTML).join("")}</div>
       <p class="result-meta" style="margin-top:18px">источник: ${esc(data.source)} v${esc(data.version)}</p>`;
     if (location.hash) {
@@ -1414,7 +1429,7 @@ const PROJ = {
   lestnica: { kicker: "Проекция · Зачем и когда", name: "Лестница ценности",
     q: "в каком порядке создаём ценность", read: "5 этапов; фокус 2026 — этапы 1–2" },
   concepts: { kicker: "Проекция · Что строим", name: "Концепции ценности",
-    q: "какие продуктовые блоки строим и в каком порядке", read: "4 концепции; бейдж Q2 = что в фокусе квартала" },
+    q: "что именно строим для агентств и в каком порядке", read: "4 концепции; бейдж справа — над чем работаем сейчас" },
   tree: { kicker: "Проекция · Чья работа", name: "Дерево работ (JTBD)",
     q: "чью работу и на каком уровне абстракции закрываем", read: "Big → Medium → Small по ролям" },
   levels: { kicker: "Реестр работ", name: "Каталог задач",
