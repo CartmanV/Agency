@@ -1354,6 +1354,12 @@ abbr.gloss:hover, abbr.assume-mark:hover { border-bottom-color: var(--copper); }
 .ex-progress__bar { height: 8px; border-radius: 999px; background: var(--bg-2); margin: 10px 0 8px; overflow: hidden; }
 .ex-progress__fill { height: 100%; background: linear-gradient(90deg, var(--emerald), var(--copper)); border-radius: 999px; transition: width .4s ease; }
 .ex-progress__sub { color: var(--muted); font-size: .82rem; }
+.ex-facts { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+.ex-fact { flex: 1 1 180px; display: flex; flex-direction: column; gap: 2px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,255,255,.02); transition: border-color .15s, transform .15s; }
+a.ex-fact:hover { border-color: var(--copper); transform: translateY(-1px); text-decoration: none; }
+.ex-fact b { font-family: var(--f-mono); font-size: 1.25rem; font-weight: 700; color: var(--cream); line-height: 1.1; }
+.ex-fact__vs { color: var(--cream-dim); font-weight: 500; font-size: .95rem; }
+.ex-fact > span { color: var(--muted); font-size: .76rem; }
 
 .ex-section { margin: 22px 0 0; }
 .ex-section__h {

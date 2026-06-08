@@ -1837,6 +1837,21 @@ async function mountExec() {
   const pct = Math.min(100, Math.round((d.progress.done / d.progress.goal) * 100));
   const remaining = d.progress.goal - d.progress.done;
 
+  // Цифры клиентской базы — живьём из agencies.json (не дублируем в exec.json).
+  let factsBlock = "";
+  try {
+    const ag = await loadJSON("data/agencies.json");
+    const ags = ag.agencies || [];
+    const clients = (ag.nsm && ag.nsm.now) || null;
+    const lead = ags.reduce((m, a) => ((a.may || 0) > (m.may || 0) ? a : m), ags[0] || {});
+    const totalMay = ags.reduce((s, a) => s + (a.may || 0), 0);
+    const leadPct = totalMay ? Math.round((lead.may || 0) / totalMay * 100) : null;
+    const facts = [];
+    if (clients != null) facts.push(`<a class="ex-fact" href="agencies.html"><b>${fmtInt(clients)}</b><span>активных клиентов · NSM</span></a>`);
+    if (leadPct != null) facts.push(`<a class="ex-fact" href="agencies.html#nsm"><b>IBC ${leadPct}% <span class="ex-fact__vs">/ остальные ${100 - leadPct}%</span></b><span>доля операций · ${ags.length} агентств</span></a>`);
+    if (facts.length) factsBlock = `<div class="ex-facts">${facts.join("")}</div>`;
+  } catch (e) { /* agencies.json необязателен — без строки фактов */ }
+
   const bc = (d.businessCase || []).map((x, i, a) => `
     <span class="bc-step">
       <span class="bc-k">${esc(x.k)}</span>
@@ -1886,6 +1901,7 @@ async function mountExec() {
         </div>
         <div class="ex-progress__bar"><div class="ex-progress__fill" style="width:${pct}%"></div></div>
         <div class="ex-progress__sub">осталось привлечь: ${remaining} · период: ${esc(d.progress.period)}</div>
+        ${factsBlock}
       </div>
 
       <div class="ex-section">
