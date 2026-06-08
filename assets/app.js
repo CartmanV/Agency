@@ -4,8 +4,9 @@
 const NAV = [
   { href: "index.html",    label: "Направление", group: "Обзор" },
   { href: "now.html",      label: "Сейчас в работе", group: "Обзор" },
+  { href: "q3.html",       label: "Планы Q3", group: "Обзор" },
   { href: "vision.html",   label: "Видение", group: "Обзор" },
-  { href: "lestnica.html", label: "Лестница", group: "Проекции" },
+  { href: "lestnica.html", label: "Путь", group: "Проекции" },
   { href: "concepts.html", label: "Концепции", group: "Проекции" },
   { href: "tree.html",     label: "Дерево (JTBD)", group: "Проекции" },
   { href: "levels.html",   label: "Каталог задач", group: "Работа" },
@@ -104,18 +105,34 @@ function stageTag(s, label) {
 // ---- Инлайн-расшифровка жаргона (Р6): оборачивает термины в <abbr> с пояснением. ----
 // На вход — УЖЕ экранированный текст (без своих тегов). Один проход, без вложенности.
 const GLOSS_TERMS = [
-  ["TTFO", "Time To First Order — время до первой закрытой услуги новым агентством"],
+  ["TTFO", "время до первой закрытой услуги новым агентством"],
   ["T-op", "трудозатраты на операцию (время консультанта)"],
-  ["T-wait", "время ожидания: очередь, саппорт, согласования"],
+  ["T-wait", "время ожидания: очередь, поддержка, согласования"],
   ["OPEX", "операционные расходы агентства"],
-  ["NSM", "North Star Metric — главная метрика направления"],
+  ["NSM", "главная метрика направления (North Star)"],
   ["Q2", "2-й квартал 2026 — текущий фокус направления"],
+  // Английские метрики из этапов пути — раскрываем простым языком (раньше шли без тултипа).
+  ["Adoption-in-AA", "доля новых агентств, реально перешедших работать в Агентскую админку"],
+  ["Parity gap", "разрыв в функциях: чего в Ракете ещё нет против привычных инструментов"],
+  ["Self-service share", "доля операций, которые делают сами, без обращения в поддержку"],
+  ["Support-ratio", "сколько обращений в поддержку Ракеты приходится на объём операций"],
+  ["Rework rate", "доля переделок — операций, которые пришлось делать заново"],
+  ["Incidents-per-services", "число сбоев на объём оказанных услуг"],
+  ["Blocker-time", "время, когда работа стоит из-за блокера"],
+  ["SLA hit rate", "доля обращений, закрытых в обещанный срок"],
+  ["Time-to-cash", "время от оказанной услуги до денег на счёте агентства"],
+  ["Hidden-work", "скрытая ручная работа, не видимая в системе"],
+  ["Steps-per-task", "сколько шагов уходит на одну задачу"],
+  ["Operations per consultant", "сколько операций обслуживает один консультант"],
+  ["adoption", "приживаемость: реально ли команда начала пользоваться продуктом"],
+  ["паритет", "паритет функций: в Ракете есть всё, к чему команда привыкла"],
+  ["GDS", "глобальная система бронирования (Amadeus, Sabre и т.п.)"],
 ];
 function gloss(s) {
   if (!s) return s;
   let out = String(s)
     .replace(/\b(H\d+(?:\.\d+){1,2})\b/g,
-      `<abbr class="gloss" title="проверяемая гипотеза ценности — раскрыта в Лестнице и Легендах">$1</abbr>`)
+      `<abbr class="gloss" title="проверяемая гипотеза ценности — раскрыта в «Пути агентства» и Легендах">$1</abbr>`)
     .replace(/\b(E\.\d)\b/g,
       `<abbr class="gloss" title="находка анализа дерева работ — см. Дерево (JTBD)">$1</abbr>`);
   for (const [t, def] of GLOSS_TERMS) {
@@ -709,6 +726,33 @@ function themeCount(t, byTheme) {
 }
 // Индекс L2-узлов бэклога по имени (заполняется в mountLevels) — для живого счётчика подтем.
 let LEVELS_L2IDX = {};
+// Карта «код гипотезы → текст» (заполняется в mountLevels из ladder.json) — чтобы в карточке
+// справа показывать формулировку гипотезы, а не голый код (H2.4 → её текст).
+let HYP_TEXT = {};
+// Разворачивает строку кодов («H2.2 + H2.3», «H2.2–H2.5», «H5.x») в список {code, text}.
+function hypList(codeStr) {
+  if (!codeStr) return [];
+  const out = [], seen = new Set();
+  const add = (c) => {
+    c = c.trim(); if (!c || seen.has(c)) return; seen.add(c);
+    out.push({ code: c, text: HYP_TEXT[c] || null });
+  };
+  String(codeStr).split(/[+,]/).forEach((part) => {
+    part = part.trim();
+    const r = part.match(/^H(\d+)\.(\d+)\s*[–-]\s*(?:H\d+\.)?(\d+)$/);
+    if (r && +r[2] <= +r[3]) { for (let n = +r[2]; n <= +r[3]; n++) add(`H${r[1]}.${n}`); }
+    else add(part);
+  });
+  return out;
+}
+// Блок «Гипотеза» для правого сайдбара: код + формулировка (или «уточняется», если текста нет).
+function hypBlock(codeStr) {
+  const items = hypList(codeStr);
+  if (!items.length) return "";
+  return `<div class="pn-aside__hyp"><div class="pn-aside__hk">Гипотеза</div>
+    ${items.map((it) => `<p class="hyp-line"><b>${esc(it.code)}</b>${it.text
+      ? " — " + esc(it.text) : `<span class="muted"> — формулировка уточняется</span>`}</p>`).join("")}</div>`;
+}
 // Счётчик подтемы: живой из бакета-темы или из L2-узла (countFrom) либо предварительный [*] либо «—».
 function l2count(l, byTheme) {
   if (l.countFrom && byTheme[l.countFrom]) return { n: byTheme[l.countFrom].count, star: false };
@@ -734,14 +778,37 @@ function renderTasksBlock(l, bucketTheme) {
       ${bucketTheme ? `<a class="foot-link" href="backlog.html?theme=${encodeURIComponent(bucketTheme)}">все итерации темы в бэклоге →</a>` : ""}
     </div>`;
 }
+// Правая панель — стартовый обзор: все ветки и темы карточками (без падения внутрь темы).
+function panelOverview(branches, byTheme, orphanBranch) {
+  return `<div class="pn-over">
+    <h2 class="pn-over__h">Все темы направления</h2>
+    <p class="pn-over__lede">Три ветки, семь тем. Выберите тему — справа откроется её описание и задачи.</p>
+    ${branches.map((b, i) => `
+      <section class="ov-branch">
+        <div class="ov-branch__h">
+          <span class="rail-bnum">Ветка ${b === orphanBranch ? "—" : i + 1}</span>
+          ${esc(b.name)}${b.stage ? `<span class="ov-branch__s">${esc(b.stage)}</span>` : ""}
+        </div>
+        <div class="ov-grid">${b.themes.map((t) => {
+          const cnt = (t.buckets && t.buckets.length) ? themeCount(t, byTheme) : "—";
+          const nL2 = (t.editorialL2 && t.editorialL2.length) || 0;
+          return `<a class="ov-card ${levelsRoleCls(t.role)}" href="${selHref("t:" + t.name)}" data-sel="t:${esc(t.name)}">
+            <div class="ov-card__top"><span class="ov-card__n">${esc(t.name)}</span>
+              <span class="ov-card__c" title="задач в бэклоге">${cnt}</span></div>
+            <p class="ov-card__a">${esc(t.about || "")}</p>
+            ${nL2 ? `<span class="ov-card__sub">${nL2}&nbsp;подтем →</span>` : ""}
+          </a>`;
+        }).join("")}</div>
+      </section>`).join("")}
+  </div>`;
+}
 // Правая панель — тема L1 (полное описание + список подтем).
 function panelTheme(t, byTheme) {
-  const cnt = (t.buckets && t.buckets.length) ? String(themeCount(t, byTheme)) : ASSUME;
+  const cntBig = (t.buckets && t.buckets.length) ? String(themeCount(t, byTheme)) : "—";
   const tags = [
     `<span class="ltag">Механизм · ${esc(t.mechanism)}</span>`,
     `<span class="ltag">${esc(t.subgoal)}</span>`,
     `<span class="ltag big">${esc(t.bigjob)}</span>`,
-    `<span class="ltag h">${esc(t.hyp)}</span>`,
   ].join("");
   let sub;
   if (t.editorialL2 && t.editorialL2.length) {
@@ -751,7 +818,8 @@ function panelTheme(t, byTheme) {
         const off = l.q2 === false ? `<span class="pn-sub__off">Won't Q2</span>` : "";
         const st = l.stage ? stageTag(l.stage) : "";
         const hyp = l.hyp ? `<span class="pn-sub__hyp">${esc(l.hyp)}</span>` : "";
-        return `<li><a class="pn-sub" data-sel="l:${esc(t.name)}:${i}">
+        const lid = "l:" + t.name + ":" + i;
+        return `<li><a class="pn-sub" href="${selHref(lid)}" data-sel="${esc(lid)}">
           <span class="pn-sub__n">${esc(l.name)}${off}</span>
           <span class="pn-sub__m">${st}${hyp}</span>
           <span class="pn-sub__c">${l2countStr(l, byTheme, true)} ›</span></a></li>`;
@@ -763,40 +831,54 @@ function panelTheme(t, byTheme) {
   } else {
     sub = `<p class="muted pn__todo">${t.note ? esc(t.note) : "Нет итераций в бэклоге " + ASSUME}</p>`;
   }
-  return `<div class="pn">
+  const backlogLink = (t.buckets && t.buckets.length)
+    ? `<a href="backlog.html?theme=${encodeURIComponent(t.buckets[0])}">Все задачи в Бэклоге →</a>` : "";
+  const aside = `<aside class="pn-aside"><div class="pn-aside__card">
+      <div class="pn-aside__cnt"><span class="n">${cntBig}</span><span class="l">задач в бэклоге</span></div>
+      <div class="ltags ltags--col">${tags}</div>
+      ${hypBlock(t.hyp)}
+      <div class="pn-aside__links">${backlogLink}
+        <a href="tree.html">Кто и зачем — Дерево (JTBD) →</a></div>
+    </div></aside>`;
+  return `<div class="pn-layout"><div class="pn">
     <div class="pn__head">
       <span class="pn__kind">Тема L1</span>
       <h2 class="pn__title">${esc(t.name)}</h2>
-      <span class="pn__cnt">${cnt}</span>
     </div>
     <p class="pn__about">${esc(t.about)}</p>
-    <div class="ltags">${tags}</div>
     ${t.full ? renderFull(t.full) : `<p class="muted pn__todo">Полное описание этой темы ещё не перенесено из источника ${ASSUME}.</p>`}
     ${sub}
-  </div>`;
+  </div>${aside}</div>`;
 }
 // Правая панель — подтема L2 (полная карточка + задачи / ссылка в бэклог).
 function panelL2(t, l, byTheme) {
-  const off = l.q2 === false ? `<span class="ltag" style="margin-left:8px">Won't Q2</span>` : "";
+  const off = l.q2 === false ? `<span class="ltag">Won't Q2</span>` : "";
   const linkTheme = l.countFrom || l.backlogTheme;
-  let footer = "";
-  if (l.tasks && l.tasks.length) footer = renderTasksBlock(l, t.buckets && t.buckets[0]);
-  else if (linkTheme) footer = `<div class="fl-sect"><a class="foot-link" href="backlog.html?theme=${encodeURIComponent(linkTheme)}">итерации подтемы в бэклоге →</a></div>`;
+  const bodyFooter = (l.tasks && l.tasks.length) ? renderTasksBlock(l, t.buckets && t.buckets[0]) : "";
   const stageChip = l.stage ? stageTag(l.stage) : "";
-  const hypChip = l.hyp ? `<span class="ltag h">${esc(l.hyp)}</span>` : "";
-  return `<div class="pn">
-    <div class="pn__crumb"><a data-sel="t:${esc(t.name)}">‹ ${esc(t.name)}</a></div>
+  const chips = stageChip + off;
+  const asideLink = linkTheme
+    ? `<a href="backlog.html?theme=${encodeURIComponent(linkTheme)}">Итерации подтемы в Бэклоге →</a>` : "";
+  const aside = `<aside class="pn-aside"><div class="pn-aside__card">
+      <div class="pn-aside__cnt"><span class="n">${l2countStr(l, byTheme, true)}</span><span class="l">итераций</span></div>
+      ${chips ? `<div class="ltags ltags--col">${chips}</div>` : ""}
+      ${hypBlock(l.hyp)}
+      <div class="pn-aside__links">${asideLink}
+        <a href="tree.html">Кто и зачем — Дерево (JTBD) →</a></div>
+    </div></aside>`;
+  return `<div class="pn-layout"><div class="pn">
+    <div class="pn__crumb"><a href="${selHref("t:" + t.name)}" data-sel="t:${esc(t.name)}">‹ ${esc(t.name)}</a></div>
     <div class="pn__head">
       <span class="pn__kind">Подтема L2</span>
-      <h2 class="pn__title">${esc(l.name)}</h2>${off}
-      <span class="pn__cnt">${l2countStr(l, byTheme, true)}</span>
+      <h2 class="pn__title">${esc(l.name)}</h2>
     </div>
-    ${(stageChip || hypChip) ? `<div class="ltags">${stageChip}${hypChip}</div>` : ""}
     ${l.note ? `<p class="l2note">${esc(l.note)}</p>` : ""}
     ${renderFull(l.full)}
-    ${footer}
-  </div>`;
+    ${bodyFooter}
+  </div>${aside}</div>`;
 }
+// Ссылка-состояние для пунктов навигации (даёт клавиатуру, «Назад», открытие в новой вкладке).
+function selHref(sel) { return "?sel=" + encodeURIComponent(sel); }
 // Левая навигация — ветка с темами и (для редакторских) вложенными подтемами.
 function railBranch(b, byTheme, idx, sel) {
   const themes = b.themes.map((t) => {
@@ -805,12 +887,14 @@ function railBranch(b, byTheme, idx, sel) {
     const subs = (t.editorialL2 && t.editorialL2.length)
       ? `<ul class="rail-l2">${t.editorialL2.map((l, i) => {
           const lid = "l:" + t.name + ":" + i;
-          return `<li><a class="rail-sub${sel === lid ? " is-on" : ""}" data-sel="${esc(lid)}">
-            <span>${esc(l.name)}</span><span class="rail-c">${l2countStr(l, byTheme, false)}</span></a></li>`;
+          const on = sel === lid;
+          return `<li><a class="rail-sub${on ? " is-on" : ""}" href="${selHref(lid)}" data-sel="${esc(lid)}"${on ? ' aria-current="true"' : ""}>
+            <span>${esc(l.name)}</span><span class="rail-c" title="итераций в бэклоге">${l2countStr(l, byTheme, false)}</span></a></li>`;
         }).join("")}</ul>` : "";
+    const on = sel === tid;
     return `<li>
-      <a class="rail-theme ${levelsRoleCls(t.role)}${sel === tid ? " is-on" : ""}" data-sel="${esc(tid)}">
-        <span class="rail-name">${esc(t.name)}</span><span class="rail-c">${cnt}</span></a>
+      <a class="rail-theme ${levelsRoleCls(t.role)}${on ? " is-on" : ""}" href="${selHref(tid)}" data-sel="${esc(tid)}"${on ? ' aria-current="true"' : ""}>
+        <span class="rail-name">${esc(t.name)}</span><span class="rail-c" title="задач в бэклоге">${cnt}</span></a>
       ${subs}</li>`;
   }).join("");
   return `<details class="rail-branch" open>
@@ -821,10 +905,17 @@ async function mountLevels() {
   const host = document.querySelector("[data-levels]");
   if (!host) return;
   host.innerHTML = `<div class="loading">Загрузка карты уровней…</div>`;
-  let levels, tree;
+  let levels, tree, ladder = null;
   try {
     [levels, tree] = await Promise.all([loadJSON("data/levels.json"), loadJSON("data/tree.json")]);
   } catch (e) { host.innerHTML = `<div class="error">${esc(e.message)}</div>`; return; }
+  try { ladder = await loadJSON("data/ladder.json"); } catch (e) { /* тексты гипотез необязательны */ }
+  HYP_TEXT = {};
+  if (ladder && ladder.stages) ladder.stages.forEach((s) => {
+    const eat = (arr) => (arr || []).forEach((h) => { if (h.code) HYP_TEXT[h.code] = h.text; });
+    eat(s.hypotheses);
+    (s.blocks || []).forEach((bl) => eat(bl.hypotheses));
+  });
 
   const byTheme = {};
   LEVELS_L2IDX = {};
@@ -835,7 +926,10 @@ async function mountLevels() {
 
   // бакеты бэклога без темы L1 — отдельная псевдо-ветка «Вне карты», ничего не прячем
   const mapped = new Set();
-  levels.branches.forEach((b) => b.themes.forEach((t) => (t.buckets || []).forEach((x) => mapped.add(x))));
+  levels.branches.forEach((b) => b.themes.forEach((t) => {
+    (t.buckets || []).forEach((x) => mapped.add(x));
+    (t.editorialL2 || []).forEach((l) => { if (l.countFrom) mapped.add(l.countFrom); });
+  }));
   const orphans = (tree.tree || []).filter((t) => !mapped.has(t.theme));
   const orphanBranch = orphans.length ? {
     name: "Вне каталога", stage: "группы бэклога без темы уровня 1",
@@ -850,7 +944,7 @@ async function mountLevels() {
     return null;
   };
 
-  let sel = "t:" + levels.branches[0].themes[0].name;
+  let sel = "overview";
   const params = new URLSearchParams(location.search);
   if (params.get("sel")) sel = params.get("sel");
 
@@ -863,12 +957,15 @@ async function mountLevels() {
   const panelEl = host.querySelector("[data-panel]");
 
   function renderRail() {
-    railEl.innerHTML = branches.map((b, i) =>
+    const over = `<a class="rail-over${sel === "overview" ? " is-on" : ""}" href="${selHref("overview")}" data-sel="overview"${sel === "overview" ? ' aria-current="true"' : ""}>▤ Все темы (обзор)</a>`;
+    railEl.innerHTML = over + branches.map((b, i) =>
       railBranch(b, byTheme, b === orphanBranch ? "—" : i + 1, sel)).join("");
   }
   function renderPanel() {
     let html;
-    if (sel.startsWith("l:")) {
+    if (sel === "overview") {
+      html = panelOverview(branches, byTheme, orphanBranch);
+    } else if (sel.startsWith("l:")) {
       const rest = sel.slice(2), i = rest.lastIndexOf(":");
       const t = findTheme(rest.slice(0, i)), l = t && t.editorialL2 && t.editorialL2[+rest.slice(i + 1)];
       html = l ? panelL2(t, l, byTheme) : `<p class="error">Подтема не найдена</p>`;
@@ -878,18 +975,29 @@ async function mountLevels() {
     }
     panelEl.innerHTML = html;
     glossifyDOM(panelEl);
-    panelEl.scrollTop = 0;
+  }
+  function render() { renderRail(); renderPanel(); }
+  const defaultSel = () => "overview";
+  // Переход к теме/подтеме: рендер + (по клику) запись в URL + возврат взгляда к началу карточки.
+  function go(newSel, push) {
+    sel = newSel;
+    if (push) history.pushState({ sel }, "", selHref(sel));
+    render();
+    const top = host.getBoundingClientRect().top + window.scrollY - 12;
+    if (window.scrollY > top) window.scrollTo({ top, behavior: "auto" });
   }
   host.addEventListener("click", (e) => {
     const a = e.target.closest("[data-sel]");
     if (!a) return;
     e.preventDefault();
-    sel = a.getAttribute("data-sel");
-    renderRail();
-    renderPanel();
+    go(a.getAttribute("data-sel"), true);
   });
-  renderRail();
-  renderPanel();
+  // Кнопки «Назад/Вперёд» браузера и прямой заход по ?sel=.
+  window.addEventListener("popstate", () => {
+    sel = new URLSearchParams(location.search).get("sel") || defaultSel();
+    render();
+  });
+  render();
 }
 
 // ===================== Агентства. Цифры (agencies.html) =====================
@@ -1219,17 +1327,17 @@ async function mountAgencies() {
   }
 }
 
-// ===================== Лестница ценности (lestnica.html) =====================
+// ===================== Путь агентства в Ракете (lestnica.html) =====================
 async function mountLadder() {
   const host = document.querySelector("[data-ladder]");
   if (!host) return;
-  host.innerHTML = `<div class="loading">Загрузка лестницы…</div>`;
+  host.innerHTML = `<div class="loading">Загрузка…</div>`;
   let data;
   try { data = await loadJSON("data/ladder.json"); }
   catch (e) { host.innerHTML = `<div class="error">${esc(e.message)}</div>`; return; }
 
   const focusStages = new Set(["1", "2"]);
-  // Этап лестницы → концепция ценности (concepts.html). Концепции 1–2 — зонтики.
+  // Этап пути → концепция ценности (concepts.html). Концепции 1–2 — зонтики.
   const STAGE_CONCEPT = {
     "1": { anchor: "c0", label: "Концепция 0 · Не мешать" },
     "2": { anchor: "c1", label: "Концепции 1–2 · Постпродажное / Тормоза" },
@@ -1238,7 +1346,7 @@ async function mountLadder() {
     "5": { anchor: "c3", label: "Концепция 3 · контур B" },
   };
   const hChip = (h) => `<a class="lad-h" href="backlog.html?q=${encodeURIComponent(h.code)}" title="${esc(h.text)}">${esc(h.code)}</a>`;
-  const mChip = (m) => `<span class="lad-m">${esc(m)}</span>`;
+  const mChip = (m) => `<span class="lad-m">${gloss(esc(m))}</span>`;
 
   function block(b) {
     return `
@@ -1264,7 +1372,7 @@ async function mountLadder() {
       ? `<a class="lad-concept" href="concepts.html#${cn.anchor}" title="Что строим на этом этапе">${esc(cn.label)} →</a>`
       : "";
     return `
-      <details class="lad-stage${focus ? " is-focus" : ""}"${focus ? " open" : ""}>
+      <details class="lad-stage${focus ? " is-focus" : ""}" data-stage="${esc(s.n)}"${focus ? " open" : ""}>
         <summary class="lad-sum">
           <span class="lad-n">${esc(s.n)}</span>
           <span class="lad-name">${esc(s.name)}</span>
@@ -1426,21 +1534,13 @@ async function mountMetrics() {
   catch (e) { host.innerHTML = `<div class="error">${esc(e.message)}</div>`; return; }
 
   const metrics = data.metrics || [];
-  // порядок групп
-  const groups = [
-    ["1", "Этап 1 «Не мешать»"],
-    ["2A", "Этап 2A — трудозатраты консультанта"],
-    ["2B", "Этап 2B — операционные тормоза"],
-    ["3", "Вне фокуса Q2 — этапы 3–4"],
-    ["4", "Вне фокуса Q2 — этапы 3–4"],
-  ];
-  const seen = new Set();
+  // Внутри типа держим осмысленный порядок по этапу пути.
+  const stageOrder = { "1": 0, "2A": 1, "2B": 2, "3": 3, "4": 4, "5": 5 };
+  const byStage = (a, b) => (stageOrder[a.stage] ?? 9) - (stageOrder[b.stage] ?? 9);
+  const stageLabel = (s) => (s === "1" ? "этап 1" : `этап ${esc(s)}`);
 
   function card(m) {
     const dirGood = `хорошо ${esc(m.direction)}`;
-    const typeBadge = m.type === "active"
-      ? `<span class="m-type m-type--act">активная</span>`
-      : `<span class="m-type m-type--tgt">целевая</span>`;
     const lead = m.leading ? `<span class="m-lead">ведущая</span>` : "";
     const base = m.baseline
       ? `<div class="m-base"><span class="m-base__h">baseline 2026-05</span> ${esc(m.baseline)}</div>`
@@ -1452,7 +1552,7 @@ async function mountMetrics() {
         <div class="m-card__top">
           <span class="m-dir ${m.direction === "↑" ? "up" : "down"}">${esc(m.direction)}</span>
           <span class="m-code">${esc(m.code)}</span>
-          ${typeBadge}${lead}
+          <span class="m-stage">${stageLabel(m.stage)}</span>${lead}
         </div>
         <div class="m-name">${esc(m.name)}</div>
         <p class="m-measures">${esc(m.measures)}</p>
@@ -1466,29 +1566,41 @@ async function mountMetrics() {
       </article>`;
   }
 
-  let body = "";
-  for (const [key, title] of groups) {
-    if (seen.has(title)) continue;
-    seen.add(title);
-    const inGroup = metrics.filter((m) => (title.includes("3–4") ? (m.stage === "3" || m.stage === "4") : m.stage === key));
-    if (!inGroup.length) continue;
-    body += `<section class="m-group"><h2>${esc(title)}</h2><div class="m-grid">${inGroup.map(card).join("")}</div></section>`;
-  }
+  const active = metrics.filter((m) => m.type === "active").sort(byStage);
+  const target = metrics.filter((m) => m.type === "target").sort(byStage);
+
+  // Основное визуальное разделение — Целевые и Активные.
+  const primary = `
+    <section class="m-group m-group--primary m-group--tgt">
+      <h2>Целевые <span class="m-h-cnt">${target.length}</span></h2>
+      <p class="m-group__sub">Куда хотим прийти. Влияем косвенно — показывают, сдвигается ли цель направления.</p>
+      <div class="m-grid">${target.map(card).join("")}</div>
+    </section>
+    <section class="m-group m-group--primary m-group--act">
+      <h2>Активные <span class="m-h-cnt">${active.length}</span></h2>
+      <p class="m-group__sub">На них влияем прямо и планируем считать в Q2. По каждой — одна ведущая метрика.</p>
+      <div class="m-grid">${active.map(card).join("")}</div>
+    </section>`;
 
   const leadHTML = Object.entries(data.leading || {}).map(([blk, arr]) =>
     `<div class="lead-row"><span class="lead-blk">${esc(blk)}</span> ${arr.map((x) => `<span class="lead-chip">${esc(x)}</span>`).join(" ")}</div>`).join("");
 
+  // Остальное — для информации, без яркого выделения.
+  const secondary = `
+    <section class="m-group m-group--info">
+      <h2>Ведущие метрики по блокам <span class="m-h-note">(зеркало Impact в скоринге)</span></h2>
+      <div class="lead-wrap">${leadHTML}</div>
+    </section>`;
+
   host.innerHTML = `
     <div class="m-intro">
       <div class="stats">
-        <div class="stat"><div class="v">9</div><div class="l">активных</div></div>
-        <div class="stat"><div class="v">6</div><div class="l">целевых</div></div>
-        <div class="stat"><div class="v">v${esc(data.version || "")}</div><div class="l">${esc(data.date || "")}</div></div>
+        <div class="stat"><div class="v">${target.length}</div><div class="l">целевых</div></div>
+        <div class="stat"><div class="v">${active.length}</div><div class="l">активных</div></div>
       </div>
-      <p class="lede">${esc(data.intro || "")}</p>
     </div>
-    <section class="m-group"><h2>Ведущие метрики по блокам <span class="m-h-note">(зеркало Impact в скоринге)</span></h2><div class="lead-wrap">${leadHTML}</div></section>
-    ${body}`;
+    ${primary}
+    ${secondary}`;
 
   // Доскролл к метрике, если пришли по ссылке вида metrics.html#m-<код> (карточки рендерятся асинхронно).
   if (location.hash) {
@@ -1621,7 +1733,7 @@ function valueMatrixHTML(data) {
     <div class="table-wrap">
       <table class="vmatrix">
         <thead><tr>
-          <th>Этап (Лестница)</th><th>Подцель</th><th>Концепция</th>
+          <th>Этап (Путь агентства)</th><th>Подцель</th><th>Концепция</th>
           <th>Механизмы (что строим)</th><th>Чья работа (Дерево)</th><th>Фокус</th>
         </tr></thead>
         <tbody>${rows}</tbody>
@@ -1660,7 +1772,7 @@ async function mountConcepts() {
 // ===================== Единая шапка проекции (projbar на 4 страницах) =====================
 // 3 проекции одного направления + 1 реестр. Снимает «почему здесь 4 одинаковых дерева».
 const PROJ = {
-  lestnica: { kicker: "Проекция · Зачем и когда", name: "Лестница ценности",
+  lestnica: { kicker: "Проекция · Зачем и когда", name: "Путь агентства в Ракете",
     q: "в каком порядке создаём ценность", read: "5 этапов; фокус 2026 — этапы 1–2" },
   concepts: { kicker: "Проекция · Что строим", name: "Концепции ценности",
     q: "что именно строим для агентств и в каком порядке", read: "4 концепции; бейдж справа — над чем работаем сейчас" },
@@ -1670,7 +1782,7 @@ const PROJ = {
     q: "где лежат конкретные задачи бэклога", read: "3 ветки → 7 тем → подтемы → итерации" },
 };
 const PROJ_SIBS = [
-  { key: "lestnica", href: "lestnica.html", label: "Лестница" },
+  { key: "lestnica", href: "lestnica.html", label: "Путь" },
   { key: "concepts", href: "concepts.html", label: "Концепции" },
   { key: "tree",     href: "tree.html",     label: "Дерево (JTBD)" },
   { key: "levels",   href: "levels.html",   label: "Каталог задач" },
@@ -1840,7 +1952,7 @@ async function mountDashboards() {
         </div>
         ${dlinks([
           { href: "vision.html", label: "Видение" },
-          { href: "lestnica.html", label: "Лестница" },
+          { href: "lestnica.html", label: "Путь" },
           { href: "concepts.html", label: "Концепции" },
           { href: "tree.html", label: "Дерево" },
         ])}

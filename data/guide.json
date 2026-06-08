@@ -35,7 +35,7 @@
       "pages": [
         {
           "href": "lestnica.html",
-          "name": "Лестница ценности",
+          "name": "Путь агентства в Ракете",
           "q": "в каком порядке создаём ценность (зачем и когда)",
           "read": "5 этапов, фокус 2026 — этапы 1 и 2; гипотезы, критерии, метрики по каждому этапу",
           "srcKind": "hand"
@@ -137,7 +137,7 @@
       "note": "Если читаете впервые — идите по порядку.",
       "steps": [
         { "href": "vision.html#videnie", "label": "Видение" },
-        { "href": "lestnica.html", "label": "Лестница" },
+        { "href": "lestnica.html", "label": "Путь" },
         { "href": "concepts.html", "label": "Концепции" },
         { "href": "tree.html", "label": "Дерево" },
         { "href": "backlog.html", "label": "Бэклог" }
@@ -148,7 +148,7 @@
       "note": "Логика «зачем» и подтверждение рынком.",
       "steps": [
         { "href": "vision.html#videnie", "label": "Видение" },
-        { "href": "lestnica.html", "label": "Лестница" },
+        { "href": "lestnica.html", "label": "Путь" },
         { "href": "concepts.html", "label": "Концепции" },
         { "href": "rynok.html", "label": "Рынок" }
       ]

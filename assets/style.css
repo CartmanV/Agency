@@ -182,7 +182,7 @@ h3 { text-wrap: balance; }
 .accent-card h3 { font-family: var(--f-display); font-size: 21px; margin: 8px 0 10px; }
 .accent-card p { margin: 0; color: var(--cream-soft); font-size: 14px; }
 
-/* --- лестница ценности (в строку) --- */
+/* --- путь агентства (в строку) --- */
 .ladder { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
 @media (max-width: 820px) { .ladder { grid-template-columns: 1fr 1fr; } }
 .ladder-step {
@@ -758,6 +758,21 @@ table.backlog td.spark-cell { padding: 4px 8px; }
 .m-h-note { font-family: var(--f-mono); font-size: 11px; color: var(--cream-dim); text-transform: none; letter-spacing: 0; }
 .m-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; margin-top: 16px; }
 
+/* Основное разделение: Целевые и Активные — ярко. */
+.m-group--primary { margin-top: 34px; padding: 4px 0 4px 16px; border-left: 4px solid var(--line); }
+.m-group--primary.m-group--tgt { border-left-color: var(--copper); }
+.m-group--primary.m-group--act { border-left-color: var(--emerald); }
+.m-group--primary h2 { font-family: var(--f-display); font-size: 24px; border-bottom: none; padding-bottom: 0; display: flex; align-items: baseline; gap: 10px; }
+.m-group--primary.m-group--tgt h2 { color: var(--copper); }
+.m-group--primary.m-group--act h2 { color: var(--emerald); }
+.m-h-cnt { font-family: var(--f-mono); font-size: 13px; font-weight: 500; color: var(--cream-dim); }
+.m-group__sub { margin: 4px 0 0; font-size: 13.5px; color: var(--cream-soft); line-height: 1.5; max-width: 70ch; }
+.m-stage { font-family: var(--f-mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--cream-dim); border: 1px solid var(--line-soft); border-radius: 999px; padding: 2px 8px; }
+
+/* Остальное — для информации, приглушённо. */
+.m-group--info { margin-top: 40px; opacity: .72; }
+.m-group--info h2 { font-size: 15px; color: var(--cream-dim); }
+
 .m-card { border: 1px solid var(--line); border-radius: 12px; background: var(--panel); padding: 16px 18px; display: flex; flex-direction: column; }
 .m-card.is-act { border-top: 3px solid var(--emerald); }
 .m-card.is-tgt { border-top: 3px solid var(--copper-dk); }
@@ -859,20 +874,24 @@ a.pcard:hover { border-color: var(--copper); transform: translateY(-2px); text-d
 .vis-sect__body p { color: var(--cream-soft); max-width: 78ch; }
 .vis-sect__body ol, .vis-sect__body ul { color: var(--cream-soft); max-width: 78ch; padding-left: 22px; }
 
-/* ===================== Лестница ценности (lestnica.html) ===================== */
+/* ===================== Путь агентства в Ракете (lestnica.html) ===================== */
 .lad-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 14px 0 18px; }
 .lad-controls .result-meta { margin: 0; margin-left: auto; }
 .lad-stages { display: flex; flex-direction: column; gap: 12px; }
 .lad-stage { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); overflow: hidden; }
-.lad-stage.is-focus { border-color: var(--pink); }
+/* Канон цвета этапов: 1 = pink (вход/доверие), 2 = emerald (фокус), 3/4/5 = приглушённо. */
+.lad-stage[data-stage="1"].is-focus { border-color: var(--pink); }
+.lad-stage[data-stage="2"].is-focus { border-color: var(--emerald); }
 .lad-sum { list-style: none; cursor: pointer; display: grid; grid-template-columns: auto auto 1fr; gap: 6px 14px; align-items: baseline; padding: 16px 18px; }
 .lad-sum::-webkit-details-marker { display: none; }
 .lad-sum:hover { background: var(--panel-2); }
 .lad-sum:focus-visible { outline: 2px solid var(--copper); outline-offset: -2px; }
-.lad-n { font-family: var(--f-display); font-size: 30px; color: var(--copper); line-height: 1; font-variant-numeric: tabular-nums; }
-.lad-stage.is-focus .lad-n { color: var(--pink); }
+.lad-n { font-family: var(--f-display); font-size: 30px; color: var(--cream-dim); line-height: 1; font-variant-numeric: tabular-nums; }
+.lad-stage[data-stage="1"] .lad-n { color: var(--pink); }
+.lad-stage[data-stage="2"] .lad-n { color: var(--emerald); }
 .lad-name { font-family: var(--f-display); font-size: 21px; color: var(--cream); }
 .lad-focus { font-family: var(--f-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--pink); border: 1px solid var(--pink); border-radius: 999px; padding: 2px 8px; }
+.lad-stage[data-stage="2"] .lad-focus { color: var(--emerald); border-color: var(--emerald); }
 .lad-mean { grid-column: 1 / -1; font-size: 13.5px; color: var(--cream-dim); line-height: 1.5; }
 .lad-body { padding: 0 18px 18px; }
 
@@ -1036,11 +1055,56 @@ a.fl-task:hover { color: var(--pink-soft); }
 .pn-sub__m { font-family: var(--f-mono); font-size: 11px; color: var(--muted); }
 .pn-sub__c { font-family: var(--f-mono); font-size: 11.5px; color: var(--pink-soft); white-space: nowrap; }
 
+/* Двухколоночная панель: читаемая колонка (72ch) + правый sticky-сайдбар с мета-данными. */
+.pn-layout { display: grid; grid-template-columns: minmax(0, 72ch) minmax(220px, 300px); gap: 32px; align-items: start; }
+.pn-aside { position: sticky; top: 16px; }
+.pn-aside__card { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); padding: 16px; }
+.pn-aside__cnt { display: flex; align-items: baseline; gap: 8px; padding-bottom: 12px; margin-bottom: 12px; border-bottom: 1px solid var(--line); }
+.pn-aside__cnt .n { font-family: var(--f-display); font-size: 28px; font-weight: 700; color: var(--cream); }
+.pn-aside__cnt .l { font-size: 12px; color: var(--cream-dim); }
+.ltags--col { flex-direction: column; align-items: flex-start; gap: 8px; margin-bottom: 0; }
+.ltags--col .ltag { white-space: normal; line-height: 1.5; }
+.pn-aside__hyp { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+.pn-aside__hk { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
+.hyp-line { margin: 0 0 6px; font-size: 12.5px; line-height: 1.5; color: var(--cream-dim); }
+.hyp-line:last-child { margin-bottom: 0; }
+.hyp-line b { color: var(--gold); font-family: var(--f-mono); font-weight: 500; }
+.pn-aside__links { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+.pn-aside__links a { font-family: var(--f-mono); font-size: 12px; color: var(--pink-soft); text-decoration: none; }
+.pn-aside__links a:hover { text-decoration: underline; }
+
+/* Стартовый обзор — все ветки и темы карточками. */
+.rail-over { display: block; padding: 8px 9px; margin-bottom: 6px; border-radius: 8px; font-size: 13.5px; color: var(--cream-dim); text-decoration: none; border-left: 2px solid transparent; }
+.rail-over:hover { background: var(--bg-2); color: var(--cream); }
+.rail-over.is-on { background: var(--panel); color: var(--cream); border-left-color: var(--pink); }
+.pn-over__h { font-family: var(--f-display); font-size: 24px; font-weight: 700; margin: 0 0 4px; }
+.pn-over__lede { color: var(--cream-dim); font-size: 14px; margin: 0 0 22px; }
+.ov-branch { margin-bottom: 26px; }
+.ov-branch__h { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; font-family: var(--f-display); font-size: 17px; font-weight: 700; color: var(--cream); margin-bottom: 12px; }
+.ov-branch__s { font-family: var(--f-mono); font-size: 11px; color: var(--cream-dim); font-weight: 400; }
+.ov-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+.ov-card { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; border: 1px solid var(--line); border-left: 2px solid var(--line); border-radius: 12px; background: var(--bg-2); text-decoration: none; transition: border-color .15s, transform .15s; }
+.ov-card:hover { border-color: var(--line-soft); transform: translateY(-2px); }
+.ov-card.is-c { border-left-color: var(--blue); }
+.ov-card.is-r { border-left-color: var(--gold); }
+.ov-card__top { display: flex; align-items: baseline; gap: 10px; }
+.ov-card__n { flex: 1; min-width: 0; font-family: var(--f-display); font-size: 15px; font-weight: 600; color: var(--cream); }
+.ov-card__c { font-family: var(--f-mono); font-size: 12px; color: var(--cream); background: var(--bg); border: 1px solid var(--line); border-radius: 20px; padding: 2px 9px; white-space: nowrap; }
+.ov-card__a { margin: 0; font-size: 13px; color: var(--cream-dim); line-height: 1.5; }
+.ov-card__sub { font-family: var(--f-mono); font-size: 11px; color: var(--pink-soft); margin-top: auto; }
+
+@media (max-width: 1080px) {
+  .pn-layout { grid-template-columns: minmax(0, 1fr) 240px; gap: 22px; }
+}
+
 @media (max-width: 820px) {
   .lv2 { grid-template-columns: 1fr; gap: 14px; }
   .lv2__rail { position: static; max-height: none; border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; }
   .pn { max-width: none; }
   .pn-sub__m { display: none; }
+  .pn-layout { grid-template-columns: 1fr; gap: 18px; }
+  .pn-aside { position: static; }
+  .ltags--col { flex-direction: row; flex-wrap: wrap; }
 }
 
 /* ===================== Концепции ценности (concepts.html) ===================== */
@@ -1139,7 +1203,7 @@ a.fl-task:hover { color: var(--pink-soft); }
 .vm-q2.on { color: var(--bg); background: var(--emerald); padding: 3px 8px; border-radius: 999px; }
 .vm-note { color: var(--cream-dim); font-size: .85rem; line-height: 1.5; margin: 14px 0 0; }
 
-/* чип концепции в строках лестницы */
+/* чип концепции в строках пути */
 .lad-concept-row { margin: 0 0 14px; }
 .lad-concept {
   display: inline-block; font: 500 .8rem/1 var(--f-mono); color: var(--copper);
