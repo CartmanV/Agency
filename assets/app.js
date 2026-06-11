@@ -6,8 +6,7 @@ const NAV = [
   { href: "now.html",      label: "Сейчас в работе", group: "Обзор" },
   { href: "q3.html",       label: "Планы Q3", group: "Обзор" },
   { href: "vision.html",   label: "Видение", group: "Обзор" },
-  { href: "lestnica.html", label: "Путь", group: "Проекции" },
-  { href: "concepts.html", label: "Концепции", group: "Проекции" },
+  { href: "etapy.html",    label: "Этапы ценности", group: "Проекции" },
   { href: "tree.html",     label: "Дерево (JTBD)", group: "Проекции" },
   { href: "levels.html",   label: "Каталог задач", group: "Работа" },
   { href: "backlog.html",  label: "Бэклог", group: "Работа" },
@@ -1327,94 +1326,224 @@ async function mountAgencies() {
   }
 }
 
-// ===================== Путь агентства в Ракете (lestnica.html) =====================
-async function mountLadder() {
-  const host = document.querySelector("[data-ladder]");
+// ===================== Этапы ценности (etapy.html) =====================
+// Объединённая проекция: путь агентства (5 этапов) + концепции как слой над ними.
+async function mountEtapy() {
+  const host = document.querySelector("[data-etapy]");
   if (!host) return;
   host.innerHTML = `<div class="loading">Загрузка…</div>`;
   let data;
-  try { data = await loadJSON("data/ladder.json"); }
+  try { data = await loadJSON("data/etapy.json"); }
   catch (e) { host.innerHTML = `<div class="error">${esc(e.message)}</div>`; return; }
 
-  const focusStages = new Set(["1", "2"]);
-  // Этап пути → концепция ценности (concepts.html). Концепции 1–2 — зонтики.
-  const STAGE_CONCEPT = {
-    "1": { anchor: "c0", label: "Концепция 0 · Не мешать" },
-    "2": { anchor: "c1", label: "Концепции 1–2 · Постпродажное / Тормоза" },
-    "3": { anchor: "c2", label: "Концепция 2 · Баланс" },
-    "4": { anchor: "c3", label: "Концепция 3 · контур A" },
-    "5": { anchor: "c3", label: "Концепция 3 · контур B" },
-  };
-  const hChip = (h) => `<a class="lad-h" href="backlog.html?q=${encodeURIComponent(h.code)}" title="${esc(h.text)}">${esc(h.code)}</a>`;
-  const mChip = (m) => `<span class="lad-m">${gloss(esc(m))}</span>`;
+  const hLink = (code, title) => `<a class="e-hcode" href="backlog.html?q=${encodeURIComponent(code)}"${title ? ` title="${esc(title)}"` : ""}>${esc(code)}</a>`;
 
-  function block(b) {
-    return `
-      <div class="lad-block">
-        <div class="lad-block__sub">Подцель: ${esc(b.subgoal)}</div>
-        <div class="lad-block__label">${esc(b.label)}</div>
-        <div class="lad-grp"><span class="lad-grp__h">Гипотезы</span>
-          <ul class="lad-hyp">${b.hypotheses.map((h) => `<li>${hChip(h)} <span>${gloss(esc(h.text))}</span></li>`).join("")}</ul></div>
-        <div class="lad-grp"><span class="lad-grp__h">Критерии успешности</span>
-          <ul class="lad-crit">${b.criteria.map((c) => `<li>${gloss(esc(c))}</li>`).join("")}</ul></div>
-        <div class="lad-metrics">
-          ${b.metricsActive.length ? `<div><span class="lad-mh act">Активные</span> ${b.metricsActive.map(mChip).join(" ")}</div>` : ""}
-          ${b.metricsTarget.length ? `<div><span class="lad-mh tgt">Целевые</span> ${b.metricsTarget.map(mChip).join(" ")}</div>` : ""}
-        </div>
-        ${b.note ? `<p class="lad-note">${gloss(esc(b.note))}</p>` : ""}
-      </div>`;
-  }
+  // ——— Краткий обзор сверху ———
+  // Цвет номера этапа — единый канон сайта (1=pink, 2=emerald, 3–5=muted), просто опознавание этапа.
+  const stageChip = (n) => `<span class="stage-tag s-${n === "2" ? "2a" : n}">${esc(n)}</span>`;
+  const prismRows = (data.prism.rows || []).map((r) => `
+    <tr>
+      <td class="e-pr-n">${stageChip(r.stage)} ${esc(r.name)}</td>
+      <td>${gloss(esc(r.phase))}</td>
+      <td>${esc(r.question)}</td>
+    </tr>`).join("");
+  const prismCaveats = (data.prism.caveats || []).map((c) => `<li>${gloss(esc(c))}</li>`).join("");
+  const leadsItems = (data.leadsTo.items || []).map((x) => `<li>${gloss(esc(x))}</li>`).join("");
 
-  function stage(s) {
-    const focus = focusStages.has(s.n);
-    const cn = STAGE_CONCEPT[s.n];
-    const cnChip = cn
-      ? `<a class="lad-concept" href="concepts.html#${cn.anchor}" title="Что строим на этом этапе">${esc(cn.label)} →</a>`
-      : "";
+  const overview = `
+    <section class="e-over">
+      <h3 class="e-h3">5 этапов пути — коротко</h3>
+      <div class="table-wrap">
+        <table class="e-table e-prism">
+          <thead><tr><th>Этап</th><th>Где сейчас агентство</th><th>Что спрашивает у Ракеты</th></tr></thead>
+          <tbody>${prismRows}</tbody>
+        </table>
+      </div>
+      <ul class="e-caveat-list">${prismCaveats}</ul>
+
+      <details class="e-extra"><summary>Что внутри каждого этапа</summary>
+        <p class="e-flow-intro">Разверните любой этап ниже — структура одинаковая:</p>
+        <ul class="e-flow">
+          <li><b>Фаза агентства</b> — кто это и что у него болит.</li>
+          <li><b>Цель этапа</b> — что должно измениться.</li>
+          <li><b>Гипотезы</b> — предположения вида «если сделаем X, то изменится Y». Клик по гипотезе раскрывает, как мы это проверяем.</li>
+          <li><b>Задачи</b> — какие пункты бэклога этим занимаются.</li>
+          <li><b>Исследования</b> — что уже знаем и что ещё надо выяснить.</li>
+          <li><b>Метрики</b> — чем измеряем и когда считаем этап пройденным.</li>
+        </ul>
+      </details>
+
+      <details class="e-extra"><summary>Зачем это направление</summary>
+        <ul class="e-leads">${leadsItems}</ul>
+        ${data.leadsTo.note ? `<p class="e-note">${gloss(esc(data.leadsTo.note))}</p>` : ""}
+      </details>
+    </section>`;
+
+  // ——— Карточка гипотезы (раскрытие по клику) ———
+  function hypCard(h) {
+    const typeCls = h.candidate ? "is-cand" : (String(h.type).startsWith("ориент") ? "is-orient" : "is-feat");
+    const dec = h.decision ? `<span class="e-hyp__dec">${esc(h.decision)}</span>` : "";
+    const probs = (h.problem || []).map((p) => `<li>${gloss(esc(p))}</li>`).join("");
+    const row = (l, v) => v ? `<div class="e-hyp__row"><dt>${l}</dt><dd>${gloss(esc(v))}</dd></div>` : "";
     return `
-      <details class="lad-stage${focus ? " is-focus" : ""}" data-stage="${esc(s.n)}"${focus ? " open" : ""}>
-        <summary class="lad-sum">
-          <span class="lad-n">${esc(s.n)}</span>
-          <span class="lad-name">${esc(s.name)}</span>
-          ${focus ? `<span class="lad-focus">фокус 2026</span>` : ""}
-          <span class="lad-mean">${gloss(esc(s.meaning))}</span>
+      <details class="e-hyp ${typeCls}">
+        <summary class="e-hyp__sum">
+          ${hLink(h.code, h.title)}
+          <span class="e-hyp__title">${gloss(esc(h.title))}</span>
+          <span class="e-hyp__type">${esc(h.type)}</span>
+          ${h.candidate ? `<span class="e-hyp__cand">кандидат</span>` : ""}
         </summary>
-        <div class="lad-body">
-          ${cnChip ? `<div class="lad-concept-row">${cnChip}</div>` : ""}
-          ${s.blocks.map(block).join("")}
-          <dl class="lad-foot">
-            <div><dt>Что должна делать Ракета</dt><dd>${gloss(esc(s.doWhat))}</dd></div>
-            <div><dt>Результат для агентства</dt><dd>${gloss(esc(s.result))}</dd></div>
-            <div><dt>Цель этапа</dt><dd>${gloss(esc(s.goal))}</dd></div>
+        <div class="e-hyp__body">
+          ${(h.if || h.then) ? `<p class="e-hyp__ift"><b>Если</b> ${gloss(esc(h.if))} <b>то</b> ${gloss(esc(h.then))}</p>` : ""}
+          ${probs ? `<div class="e-hyp__prob"><span class="e-hyp__lh">Проблема</span><ul>${probs}</ul></div>` : ""}
+          <dl class="e-hyp__dl">
+            ${row("Цепочка", h.chain)}
+            ${row("Подтвердится, если", h.confirm)}
+            ${row("Не подтвердится, если", h.deny)}
+            ${row("Проверяем", h.check)}
+            ${row("Статус решения", h.decision)}
+            ${row("По исследованиям", h.research)}
           </dl>
+          ${h.note ? `<p class="e-hyp__note">${gloss(esc(h.note))}</p>` : ""}
         </div>
       </details>`;
   }
 
-  const subMap = (data.subgoalMap || []).map((s) =>
-    `<div class="sg-row"><span class="sg-n">${esc(s.n)}</span><span class="sg-name">${esc(s.name)}</span><span class="sg-stage">этап ${esc(s.stage)}</span></div>`).join("");
+  function hypotheses(s) {
+    if (s.hypGroups && s.hypGroups.length) {
+      return s.hypGroups.map((g) => {
+        const code = (g.label.match(/2[AB]/) || [""])[0];
+        const list = (s.hypotheses || []).filter((h) => (h.group || "") === code);
+        return `<div class="e-hgrp"><div class="e-hgrp__h">${esc(g.label)}</div>${list.map(hypCard).join("")}</div>`;
+      }).join("");
+    }
+    return (s.hypotheses || []).map(hypCard).join("");
+  }
 
-  host.innerHTML = `
-    <p class="lede" style="margin-bottom:8px">${esc(data.focus || "")}</p>
-    <div class="lad-controls">
-      <button type="button" class="btn" data-lad-expand>Раскрыть все</button>
-      <button type="button" class="btn" data-lad-collapse>Свернуть все</button>
-      <span class="result-meta">источник: ${esc(data.source)} v${esc(data.version)}</span>
-    </div>
-    <div class="lad-stages">${data.stages.map(stage).join("")}</div>
+  // ——— Таблицы задач / исследований ———
+  function tasksTable(s) {
+    if (!(s.tasks || []).length) return "";
+    const hasStatus = s.tasks.some((t) => t.status);
+    const head = `<tr><th>Тема</th><th>Ключевые итерации</th><th>Гипотеза</th>${hasStatus ? "<th>Статус</th>" : ""}</tr>`;
+    const rows = s.tasks.map((t) => `<tr>
+      <td>${esc(t.theme)}</td><td>${gloss(esc(t.iters))}</td><td>${esc(t.hyp || "—")}</td>
+      ${hasStatus ? `<td>${esc(t.status || "")}</td>` : ""}</tr>`).join("");
+    return `
+      <div class="e-sub"><span class="e-sub__h">Задачи (проверяют гипотезы) · срез бэклога v8</span>
+        <div class="table-wrap"><table class="e-table">${`<thead>${head}</thead>`}<tbody>${rows}</tbody></table></div>
+        ${s.tasksNote ? `<p class="e-note">${esc(s.tasksNote)}</p>` : ""}
+      </div>`;
+  }
 
-    <h2>7 подцелей → этап</h2>
-    <div class="sg-map">${subMap}</div>
+  function research(s) {
+    const done = (s.researchDone || []).map((r) => `<tr><td>${esc(r.src)}</td><td>${gloss(esc(r.note))}</td></tr>`).join("");
+    const todo = (s.researchTodo || []).map((r) => `<tr><td>${gloss(esc(r.unclear))}</td><td>${esc(r.how)}</td><td><span class="e-rstat">${esc(r.status)}</span></td></tr>`).join("");
+    if (!done && !todo) return "";
+    return `
+      <div class="e-sub"><span class="e-sub__h">Исследования</span>
+        ${done ? `<div class="table-wrap"><table class="e-table"><thead><tr><th>Сделано — что знаем</th><th>Вывод</th></tr></thead><tbody>${done}</tbody></table></div>` : ""}
+        ${todo ? `<div class="table-wrap"><table class="e-table"><thead><tr><th>Что неясно</th><th>Чем закрыть</th><th>Статус</th></tr></thead><tbody>${todo}</tbody></table></div>` : ""}
+      </div>`;
+  }
 
-    <h2>Методологическая оговорка</h2>
-    <div class="lad-caveat">
-      <div class="lad-caveat__h">${esc(data.caveat.title)}</div>
-      <p>${esc(data.caveat.text)}</p>
+  const mChip = (m) => `<span class="lad-m">${gloss(esc(m))}</span>`;
+  function metrics(s) {
+    const a = (s.metricsActive || []).length ? `<div><span class="lad-mh act">Активные</span> ${s.metricsActive.map(mChip).join(" ")}</div>` : "";
+    const t = (s.metricsTarget || []).length ? `<div><span class="lad-mh tgt">Целевые</span> ${s.metricsTarget.map(mChip).join(" ")}</div>` : "";
+    return `
+      <div class="e-sub"><span class="e-sub__h">Метрики и критерий перехода</span>
+        ${s.metricsNote ? `<p class="e-muted">${gloss(esc(s.metricsNote))}</p>` : ""}
+        <div class="lad-metrics">${a}${t}</div>
+        ${s.criterion ? `<p class="e-crit">${gloss(esc(s.criterion))}</p>` : ""}
+      </div>`;
+  }
+
+  function stage(s) {
+    const subs = (s.subgoals || []).map((x) => `<li>${gloss(esc(x))}</li>`).join("");
+    const mechs = (s.mechanisms || []).length
+      ? `<div class="e-sub"><span class="e-sub__h">Механизмы (для рассказа стейкхолдерам)</span><ol class="e-mechs">${s.mechanisms.map((m) => `<li>${gloss(esc(m))}</li>`).join("")}</ol></div>`
+      : "";
+    return `
+      <details class="e-stage" id="stage-${esc(s.n)}" data-stage="${esc(s.n)}">
+        <summary class="e-stage__sum">
+          <span class="e-stage__n">${esc(s.n)}</span>
+          <span class="e-stage__name">${esc(s.name)}</span>
+          <span class="e-stage__mean">${gloss(esc(s.meaning))}</span>
+        </summary>
+        <div class="e-stage__body">
+          <div class="e-sub"><span class="e-sub__h">Фаза жизни агентства</span><p>${gloss(esc(s.phase))}</p></div>
+          <div class="e-sub"><span class="e-sub__h">Цель этапа</span><p>${gloss(esc(s.goal))}</p>
+            ${s.keyIdea ? `<p class="e-note">${gloss(esc(s.keyIdea))}</p>` : ""}</div>
+          <div class="e-sub"><span class="e-sub__h">Подцели этапа</span><ul>${subs}</ul></div>
+          <div class="e-sub"><span class="e-sub__h">Гипотезы</span>${hypotheses(s)}
+            ${s.hypBundle ? `<p class="e-note">${gloss(esc(s.hypBundle))}</p>` : ""}
+            ${s.removedCandidate ? `<p class="e-note e-note--del">${gloss(esc(s.removedCandidate))}</p>` : ""}</div>
+          ${mechs}
+          ${tasksTable(s)}
+          ${research(s)}
+          ${metrics(s)}
+        </div>
+      </details>`;
+  }
+
+  // ——— Сквозной слой ———
+  const cl = data.crossLayer || {};
+  const churn = cl.churn ? `
+    <details class="e-hyp is-orient">
+      <summary class="e-hyp__sum">${hLink(cl.churn.code, cl.churn.title)}
+        <span class="e-hyp__title">${gloss(esc(cl.churn.title))}</span>
+        <span class="e-hyp__type">${esc(cl.churn.type)}</span></summary>
+      <div class="e-hyp__body">
+        <p class="e-hyp__ift"><b>Если</b> ${gloss(esc(cl.churn.if))} <b>то</b> ${gloss(esc(cl.churn.then))}</p>
+        <dl class="e-hyp__dl">
+          <div class="e-hyp__row"><dt>Проблема</dt><dd>${gloss(esc(cl.churn.problem))}</dd></div>
+          <div class="e-hyp__row"><dt>Цепочка</dt><dd>${gloss(esc(cl.churn.chain))}</dd></div>
+          <div class="e-hyp__row"><dt>Проверяем</dt><dd>${gloss(esc(cl.churn.check))}</dd></div>
+          <div class="e-hyp__row"><dt>Статус решения</dt><dd>${esc(cl.churn.decision)}</dd></div>
+        </dl>
+      </div>
+    </details>` : "";
+  const rmap = (cl.researchMap || []).map((r) => `<tr><td>${esc(r.study)}</td><td><span class="e-rstat">${esc(r.status)}</span></td><td>${esc(r.stages)}</td></tr>`).join("");
+  const crossLayer = `
+    <h2 class="e-h2">${esc(cl.title || "Сквозной слой")}</h2>
+    ${churn}
+    ${cl.i0 ? `<p class="e-i0">${gloss(esc(cl.i0))}</p>` : ""}
+    <div class="e-sub"><span class="e-sub__h">Сводная карта исследований → этапы</span>
+      <div class="table-wrap"><table class="e-table"><thead><tr><th>Исследование</th><th>Статус</th><th>Какие этапы кормит</th></tr></thead><tbody>${rmap}</tbody></table></div>
     </div>`;
 
-  const all = () => host.querySelectorAll("details.lad-stage");
-  host.querySelector("[data-lad-expand]").addEventListener("click", () => all().forEach((d) => (d.open = true)));
-  host.querySelector("[data-lad-collapse]").addEventListener("click", () => all().forEach((d) => (d.open = false)));
+  const caveats = (data.caveats || []).map((c) => `
+    <div class="lad-caveat"><div class="lad-caveat__h">${esc(c.title)}</div><p>${gloss(esc(c.text))}</p></div>`).join("");
+  const openQ = (data.openQuestions || []).map((q) => `<li>${gloss(esc(q))}</li>`).join("");
+
+  host.innerHTML = `
+    ${overview}
+    <div class="lad-controls">
+      <button type="button" class="btn" data-e-expand>Раскрыть все этапы</button>
+      <button type="button" class="btn" data-e-collapse>Свернуть все</button>
+      <span class="result-meta">источник: ${esc(data.source)} v${esc(data.version)}</span>
+    </div>
+    <div class="e-stages">${(data.stages || []).map(stage).join("")}</div>
+    ${crossLayer}
+    <h2 class="e-h2">Методологические оговорки</h2>
+    ${caveats}
+    <h2 class="e-h2">Открытые вопросы (на валидацию)</h2>
+    <ol class="e-openq">${openQ}</ol>`;
+
+  const all = () => host.querySelectorAll("details.e-stage");
+  host.querySelector("[data-e-expand]").addEventListener("click", () => all().forEach((d) => (d.open = true)));
+  host.querySelector("[data-e-collapse]").addEventListener("click", () => all().forEach((d) => (d.open = false)));
+
+  // Доскролл к этапу/концепции, если пришли по ссылке etapy.html#stage-2 / #c1 и т.п.
+  if (location.hash) {
+    const el = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+    if (el) {
+      const det = el.closest("details");
+      if (det) det.open = true;
+      el.scrollIntoView({ block: "start" });
+      el.classList.add("is-target");
+    }
+  }
 }
 
 // ===================== Исследования (research.html) =====================
@@ -1640,7 +1769,8 @@ async function mountLegend() {
   }
 }
 
-// ===================== Концепции ценности (concepts.html + матрица в vision) =====================
+// ===================== Карта соответствия (матрица в vision.html#karta) =====================
+// Данные — из concepts.json (matrix/lenses/registry). Карточки концепций переехали в etapy.html.
 const Q2_BADGE = {
   focus:   ["q2-focus", "сейчас в фокусе"],
   partial: ["q2-part",  "частично сейчас"],
@@ -1650,61 +1780,15 @@ function q2Badge(kind) {
   const b = Q2_BADGE[kind] || Q2_BADGE.out;
   return `<span class="cn-q2 ${b[0]}">${b[1]}</span>`;
 }
-function conceptsOverviewHTML(concepts) {
-  if (!concepts.length) return "";
-  const items = concepts.map((c) => `
-    <a class="cn-over__item" href="#c${esc(c.n)}">
-      <span class="cn-over__n">${esc(c.n)}</span>
-      <span class="cn-over__txt">${esc(c.short || c.title)}</span>
-      ${q2Badge(c.q2)}
-    </a>`).join("");
-  return `
-    <div class="cn-over">
-      <div class="cn-over__h">Коротко — 4 концепции и что в фокусе сейчас</div>
-      <div class="cn-over__grid">${items}</div>
-    </div>`;
-}
-function conceptCardHTML(c) {
-  const mechs = (c.mechanisms || []).map((m) => {
-    const metrics = (m.metrics || []).length
-      ? `<span class="cn-mech__metrics">${m.metrics.map((x) => `<span class="cn-m">${esc(x)}</span>`).join(" ")}</span>` : "";
-    const link = m.backlogTheme
-      ? `<a class="cn-mech__link" href="backlog.html?theme=${encodeURIComponent(m.backlogTheme)}">в Бэклоге →</a>` : "";
-    return `
-      <div class="cn-mech">
-        <div class="cn-mech__h"><span class="cn-mech__name">${gloss(esc(m.name))}</span>${link}</div>
-        <p class="cn-mech__desc">${gloss(esc(m.desc))}</p>
-        ${metrics}
-      </div>`;
-  }).join("");
-  return `
-    <article class="cncard" id="c${esc(c.n)}">
-      <div class="cncard__top">
-        <span class="cncard__n">${esc(c.n)}</span>
-        <h2 class="cncard__title">${esc(c.title)}</h2>
-        ${q2Badge(c.q2)}
-      </div>
-      <dl class="cncard__meta">
-        <div><dt>Этапы</dt><dd>${gloss(esc(c.stages))}</dd></div>
-        <div><dt>Подцели</dt><dd>${esc(c.subgoals)}</dd></div>
-        <div><dt>Чья работа</dt><dd>${esc(c.role)}</dd></div>
-        <div><dt>Для кого в первую очередь</dt><dd>${esc(c.addressee)}</dd></div>
-      </dl>
-      <p class="cncard__idea"><b>Главная мысль.</b> ${gloss(esc(c.idea))}</p>
-      ${c.q2Note ? `<p class="cncard__q2note">⚠ Что берём сейчас, что нет. ${gloss(esc(c.q2Note))}</p>` : ""}
-      <div class="cn-mechs"><div class="cn-mechs__h">Из чего состоит</div>${mechs}</div>
-      <p class="cncard__effect"><b>Что это даст.</b> ${gloss(esc(c.effect))}</p>
-    </article>`;
-}
 function valueMatrixHTML(data) {
   const rows = (data.matrix || []).map((r) => {
     const mech = (r.mechanisms || []).map((m) => `<span class="vm-m">${esc(m)}</span>`).join(" ");
     const q2 = r.q2 ? `<span class="vm-q2 on">Q2</span>` : `<span class="vm-q2">—</span>`;
     return `
       <tr class="vm-row${r.q2 ? " is-q2" : ""}">
-        <td class="vm-stage"><a href="lestnica.html"><span class="vm-sn" data-stage="${esc(r.stage)}">${esc(r.stage)}</span> ${esc(r.stageName)}</a></td>
+        <td class="vm-stage"><a href="etapy.html#stage-${esc(String(r.stage).replace(/[^0-9]/g, ""))}"><span class="vm-sn" data-stage="${esc(r.stage)}">${esc(r.stage)}</span> ${esc(r.stageName)}</a></td>
         <td class="vm-sub">${esc(r.subgoals)}</td>
-        <td class="vm-concept"><a href="concepts.html#c${esc(String(r.concept).replace(/[^0-9].*$/, "").trim() || r.concept)}"><b>${esc(r.concept)}</b> · ${esc(r.conceptName)}</a></td>
+        <td class="vm-concept"><a href="etapy.html#c${esc(String(r.concept).replace(/[^0-9].*$/, "").trim() || r.concept)}"><b>${esc(r.concept)}</b> · ${esc(r.conceptName)}</a></td>
         <td class="vm-mech">${mech}</td>
         <td class="vm-role"><a href="tree.html"><span class="vm-dot ${esc(r.roleColor)}"></span>${esc(r.role)}</a></td>
         <td class="vm-foc">${q2}</td>
@@ -1723,7 +1807,7 @@ function valueMatrixHTML(data) {
     </a>`).join("");
   return `
     <div class="vm-block">
-      <div class="vm-block__h">3 проекции — взгляды на одно направление</div>
+      <div class="vm-block__h">2 проекции — взгляды на одно направление</div>
       <div class="vm-lenses">${lenses}</div>
     </div>
     ${registry ? `<div class="vm-block">
@@ -1740,52 +1824,34 @@ function valueMatrixHTML(data) {
       </table>
     </div>
     <p class="vm-note">Концепции 1 и 2 — зонтики: они покрывают несколько этапов, поэтому
-    встречаются в разных строках. Подробно каждая концепция — в
-    <a href="concepts.html">Концепциях</a>.</p>`;
+    встречаются в разных строках. Подробно этапы и гипотезы — на странице
+    <a href="etapy.html">«Этапы ценности»</a>.</p>`;
 }
+// Рендерит только «Карту соответствия» в vision.html#karta. Карточки концепций переехали в etapy.html.
 async function mountConcepts() {
-  const cardsHost = document.querySelector("[data-concepts]");
   const matrixHost = document.querySelector("[data-value-matrix]");
-  if (!cardsHost && !matrixHost) return;
+  if (!matrixHost) return;
   let data;
   try { data = await loadJSON("data/concepts.json"); }
-  catch (e) {
-    const msg = `<div class="error">${esc(e.message)}</div>`;
-    if (cardsHost) cardsHost.innerHTML = msg;
-    if (matrixHost) matrixHost.innerHTML = msg;
-    return;
-  }
-  if (matrixHost) matrixHost.innerHTML = valueMatrixHTML(data);
-  if (cardsHost) {
-    cardsHost.innerHTML = `
-      <p class="cn-intro">${esc(data.intro || "")}</p>
-      ${conceptsOverviewHTML(data.concepts || [])}
-      <div class="cncards">${(data.concepts || []).map(conceptCardHTML).join("")}</div>
-      <p class="result-meta" style="margin-top:18px">источник: ${esc(data.source)} v${esc(data.version)}</p>`;
-    if (location.hash) {
-      const el = document.getElementById(decodeURIComponent(location.hash.slice(1)));
-      if (el) { el.scrollIntoView({ block: "start" }); el.classList.add("is-target"); }
-    }
-  }
+  catch (e) { matrixHost.innerHTML = `<div class="error">${esc(e.message)}</div>`; return; }
+  matrixHost.innerHTML = valueMatrixHTML(data);
 }
 
-// ===================== Единая шапка проекции (projbar на 4 страницах) =====================
-// 3 проекции одного направления + 1 реестр. Снимает «почему здесь 4 одинаковых дерева».
+// ===================== Единая шапка проекции (projbar) =====================
+// 2 проекции одного направления + 1 реестр. Снимает «почему здесь похожие деревья».
 const PROJ = {
-  lestnica: { kicker: "Проекция · Зачем и когда", name: "Путь агентства в Ракете",
-    q: "в каком порядке создаём ценность", read: "5 этапов; фокус 2026 — этапы 1–2" },
-  concepts: { kicker: "Проекция · Что строим", name: "Концепции ценности",
-    q: "что именно строим для агентств и в каком порядке", read: "4 концепции; бейдж справа — над чем работаем сейчас" },
+  etapy: { kicker: "Проекция · Зачем, когда и что строим", name: "Этапы ценности",
+    q: "в каком порядке создаём ценность и что именно строим",
+    read: "5 этапов с гипотезами и метриками; концепции — слой над этапами; фокус 2026 — этапы 1–2" },
   tree: { kicker: "Проекция · Чья работа", name: "Дерево работ (JTBD)",
     q: "чью работу и на каком уровне абстракции закрываем", read: "Big → Medium → Small по ролям" },
   levels: { kicker: "Реестр работ", name: "Каталог задач",
     q: "где лежат конкретные задачи бэклога", read: "3 ветки → 7 тем → подтемы → итерации" },
 };
 const PROJ_SIBS = [
-  { key: "lestnica", href: "lestnica.html", label: "Путь" },
-  { key: "concepts", href: "concepts.html", label: "Концепции" },
-  { key: "tree",     href: "tree.html",     label: "Дерево (JTBD)" },
-  { key: "levels",   href: "levels.html",   label: "Каталог задач" },
+  { key: "etapy",  href: "etapy.html",  label: "Этапы ценности" },
+  { key: "tree",   href: "tree.html",   label: "Дерево (JTBD)" },
+  { key: "levels", href: "levels.html", label: "Каталог задач" },
 ];
 function mountProjbar() {
   const host = document.querySelector("[data-projbar]");
@@ -1953,7 +2019,7 @@ async function mountDashboards() {
   if (proj) {
     proj.innerHTML = `
       <div class="dash dash--proj">
-        <p class="dash__lead">Одно направление с трёх сторон плюс портал-обзор. Каждая проекция отвечает на свой вопрос.</p>
+        <p class="dash__lead">Одно направление с двух сторон плюс портал-обзор. Каждая проекция отвечает на свой вопрос.</p>
         <div class="dash__stats">
           ${dstat("+" + (P.goal ?? "—"), "цель: новых агентств", "emerald")}
           ${dstat(P.stages ?? "—", "этапов · фокус " + esc(P.stagesFocus || ""), "emerald")}
@@ -1968,8 +2034,7 @@ async function mountDashboards() {
         </div>
         ${dlinks([
           { href: "vision.html", label: "Видение" },
-          { href: "lestnica.html", label: "Путь" },
-          { href: "concepts.html", label: "Концепции" },
+          { href: "etapy.html", label: "Этапы ценности" },
           { href: "tree.html", label: "Дерево" },
         ])}
       </div>`;
@@ -2137,7 +2202,7 @@ document.addEventListener("DOMContentLoaded", () => {
   mountAgencies();
   mountMetrics();
   mountResearch();
-  mountLadder();
+  mountEtapy();
   mountConcepts();
   mountProjbar();
   mountExec();
