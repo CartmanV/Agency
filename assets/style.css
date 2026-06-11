@@ -694,7 +694,8 @@ a.chip.branch:hover { border-color: var(--copper); color: var(--cream); text-dec
 .ag-chart .ch-leg { fill: var(--cream-soft); font-family: var(--f-mono); font-size: 11px; }
 .ag-chart .stb-lead { fill: var(--emerald); }
 .ag-chart .stb-rest { fill: var(--gold); fill-opacity: .5; }
-.ag-chart .stb-pct { fill: var(--cream-soft); font-family: var(--f-mono); font-size: 10px; font-weight: 600; }
+.ag-chart .stb-tot { fill: var(--cream-soft); font-family: var(--f-mono); font-size: 10px; font-weight: 600; }
+.ag-chart .stb-pct { fill: var(--cream-dim); font-family: var(--f-mono); font-size: 9.5px; }
 
 .spark { display: block; color: var(--cream-dim); }
 .spark--up { color: var(--emerald); }

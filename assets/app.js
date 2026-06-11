@@ -1062,7 +1062,7 @@ function stackedBars(months, lead, total, opts = {}) {
   if (v.length < 2) return "";
   const fmtVal = opts.fmtVal || fmtK;
   const fmtAxis = opts.fmtAxis || ((g) => g / 1000 + "к");
-  const W = 760, H = 264, pL = 46, pR = 14, pT = 26, pB = 50;
+  const W = 760, H = 276, pL = 46, pR = 14, pT = 38, pB = 50;
   const iw = W - pL - pR, ih = H - pT - pB, n = total.length;
   const step = opts.step || niceStep(Math.max(...v));
   const hi = Math.ceil(Math.max(...v) / step) * step;
@@ -1084,11 +1084,12 @@ function stackedBars(months, lead, total, opts = {}) {
     bars += `<rect x="${x}" y="${yT.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(yL - yT, 0).toFixed(1)}" class="stb-rest"><title>${monLabel(m)} · ${esc(opts.restName || "остальные")}: ${fmtVal(tot - ld)}</title></rect>`
       + `<rect x="${x}" y="${yL.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(y0 - yL, 0).toFixed(1)}" class="stb-lead"><title>${monLabel(m)} · ${esc(opts.leadName || "лидер")}: ${fmtVal(ld)}</title></rect>`;
     const cx = (+x + bw / 2).toFixed(1);
-    labs += `<text x="${cx}" y="${(yT - 6).toFixed(1)}" class="stb-pct" text-anchor="middle">${Math.round(100 * ld / tot)}%</text>`;
+    labs += `<text x="${cx}" y="${(yT - 17).toFixed(1)}" class="stb-tot" text-anchor="middle">${fmtVal(tot)}</text>`
+      + `<text x="${cx}" y="${(yT - 6).toFixed(1)}" class="stb-pct" text-anchor="middle">${Math.round(100 * ld / tot)}%</text>`;
     if (i % 2 === 0 || i === n - 1) labs += `<text x="${cx}" y="${H - 30}" class="ch-xlab" text-anchor="middle">${monLabel(m)}</text>`;
   });
   const legend = `<g transform="translate(${pL}, ${H - 7})">
-    <rect x="0" y="-9" width="12" height="9" class="stb-lead"/><text x="18" y="0" class="ch-leg">${esc(opts.leadName || "лидер")} · % над столбиком = его доля</text>
+    <rect x="0" y="-9" width="12" height="9" class="stb-lead"/><text x="18" y="0" class="ch-leg">${esc(opts.leadName || "лидер")} · над столбиком: итог месяца и доля ${esc(opts.leadName || "лидера")}</text>
     <rect x="320" y="-9" width="12" height="9" class="stb-rest"/><text x="338" y="0" class="ch-leg">${esc(opts.restName || "остальные")}</text></g>`;
   return `<svg class="ag-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(opts.ariaLabel || "По месяцам: лидер и остальные")}">
     ${grid}${bars}${labs}${legend}</svg>`;
