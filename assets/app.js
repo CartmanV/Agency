@@ -1200,35 +1200,6 @@ async function mountAgencies() {
       </div>`;
   }
 
-  // NSM в разрезе агентств: полоса «клиентов сейчас» + спарклайн 12 мес. + движение базы за полгода.
-  const byagHost = document.querySelector("[data-ag-nsm-byag]");
-  if (byagHost && ags.length) {
-    const list = [...ags].sort((a, b) => (b.clNow || 0) - (a.clNow || 0));
-    const maxCl = Math.max(...list.map((a) => a.clNow || 0)) || 1;
-    const up = list.filter((a) => (a.clNet || 0) > 0).sort((a, b) => b.clNet - a.clNet);
-    const dn = list.filter((a) => (a.clNet || 0) < 0).sort((a, b) => a.clNet - b.clNet);
-    byagHost.innerHTML = `
-      <div class="nsm-byag">
-        <div class="nsm-row nsm-row--head">
-          <span>Агентство</span><span>Клиентов сейчас</span><span class="nsm-spark">12 мес.</span><span>Полгода: пришло − ушло = Δ</span>
-        </div>
-        ${list.map((a) => `
-        <div class="nsm-row">
-          <span class="nsm-name" title="${esc(a.name)}">${esc(a.name)}</span>
-          <span class="nsm-bar"><span class="tr"><i class="${a.id === lead.id ? "is-lead" : ""}" style="width:${(100 * (a.clNow || 0) / maxCl).toFixed(1)}%"></i></span><b>${fmtNum(a.clNow)}</b></span>
-          <span class="nsm-spark">${sparkline(monCl && monCl.byId ? monCl.byId[a.id] : null, 72, 22)}</span>
-          <span class="nsm-delta"><span class="muted">+${fmtNum(a.clNew)} −${fmtNum(a.clLost)} =</span> ${intDelta(a.clNet)}</span>
-        </div>`).join("")}
-      </div>
-      <div class="conc-cap">
-        Отсортировано по числу клиентов. Чистый рост базы дают
-        ${up.slice(0, 2).map((a) => `${esc(a.name)} (${intDelta(a.clNet)})`).join(" и ")},
-        сильнее всех теряет ${dn.length ? `${esc(dn[0].name)} (${intDelta(dn[0].clNet)})` : "—"}.
-        Итог направления ${intDelta(nsm.net)} при вкладе ${esc(leadName)} ${intDelta(lead.clNet)} —
-        метрику двигают середняки и новички, а не ядро.
-      </div>`;
-  }
-
   // Отображение сегментов партнёрской базы по-русски (данные остаются как в источнике).
   const SEG_RU = {
     "Strategist (ядро)": "Опорные (ядро)",
