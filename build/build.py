@@ -388,6 +388,63 @@ def find_work_xlsx(needle):
     return None
 
 
+# --- нормализация доказательной базы (ТЗ 13) -----------------------------
+# Единый словарь этапов. Любое значение в research/etapy/sootv обязано быть отсюда.
+STAGE_VOCAB = ["1", "2A", "2B", "3", "4", "5", "клиент", "вне этапов"]
+
+# Осознанные gap'ы H-кодов (преамбула Синтеза v2.1): гипотезы, под которые
+# находок ещё нет намеренно, — линтер не считает их ошибкой, помечает «ожидаемо».
+GAP_HCODES = {"H1.5", "H2.1-доп", "H3.1a", "H3.1b", "H3.5-канд", "H4.3-канд"}
+
+
+def parse_stages(raw):
+    """Строка этапа реестра → (массив этапов из словаря, флаг роли|None).
+    "1/2B"→["1","2B"]; "3-4"→["3","4"]; "клиент/конс"→(["клиент"],"клиент/конс");
+    "—"/пусто→["вне этапов"]."""
+    if raw is None or str(raw).strip() in ("—", ""):
+        return ["вне этапов"], None
+    s = str(raw).strip()
+    role = None
+    if "конс" in s:                       # «клиент/конс» — клиентский этап, но роль = консультант
+        role = "клиент/конс"
+        s = re.sub(r"/?\s*конс\.?", "", s).strip(" /")
+    parts = [p.strip() for p in re.split(r"[/\-]", s) if p.strip()]
+    return (parts or ["вне этапов"]), role
+
+
+def parse_hcodes(raw):
+    """Строка H-кодов реестра → массив. "H1.3/H2.3"→["H1.3","H2.3"];
+    "H2.4 (частично)"→["H2.4"]; "—"/«— (…)»→[]."""
+    if raw is None or str(raw).strip().startswith("—"):
+        return []
+    codes, seen = [], set()
+    for c in re.findall(r"H\d+\.\d+[a-zа-я]?", str(raw)):
+        if c not in seen:
+            seen.add(c); codes.append(c)
+    return codes
+
+
+def parse_block(raw):
+    """Колонка «Источник» → код блока синтеза. "Синтез A"→"A"; "Блок1 …"→"1";
+    "Синтез C / Блок4"→"C"; "Синтез / Боли-статус"→"—"."""
+    if raw is None:
+        return "—"
+    s = str(raw).strip()
+    m = re.match(r"Синтез\s+([A-ZА-Я])\b", s)
+    if m:
+        return m.group(1)
+    m = re.match(r"Блок\s*(\d+)", s)
+    if m:
+        return m.group(1)
+    return "—"
+
+
+def research_anchor(fid):
+    """Канон якоря находки: "A1"→"f-a1"; "4.2"→"f-4-2"; "7.1"→"f-7-1"."""
+    s = re.sub(r"[./\\]+", "-", str(fid).strip().lower())
+    return "f-" + s
+
+
 def build_research():
     """Реестр исследований (90 строк) → research.json. Имена людей обезличиваем."""
     src = find_work_xlsx("реестр исследован")
@@ -413,15 +470,103 @@ def build_research():
         # обезличиваем: убираем скобки с именами людей
         reach = re.sub(r"\s*\([^)]*\)", "", str(reach_raw)).strip(" ·,")
         agencies = [a.strip() for a in re.split(r"[,/+]| и ", reach) if a.strip() and a.strip() != "—"]
+        stage_raw, src_raw = cell(r, "Этап"), cell(r, "Источник")
+        stages, stage_role = parse_stages(stage_raw)
         findings.append({
             "id": fid, "theme": cell(r, "Тема"), "finding": finding,
             "role": cell(r, "Роль"), "reach": reach or None, "reachCount": len(agencies),
             "hypStatus": cell(r, "Статус гипотезы"), "qty": cell(r, "Кол. данные"),
-            "stage": cell(r, "Этап"), "mechanism": cell(r, "Механизм"),
+            "stage": stage_raw, "mechanism": cell(r, "Механизм"),
             "hCode": cell(r, "H"), "jtbd": cell(r, "JTBD (кратко)"),
-            "status": cell(r, "Статус"), "src": cell(r, "Источник"),
+            "status": cell(r, "Статус"), "src": src_raw,
+            # --- нормализованные поля (ТЗ 13) ---
+            "anchor": research_anchor(fid) if fid else None,
+            "stages": stages, "stageRole": stage_role,
+            "hCodes": parse_hcodes(cell(r, "H")),
+            "block": parse_block(src_raw),
         })
+
+    # --- валидация уникальности якорей ---
+    anchors, dup = {}, []
+    for f in findings:
+        a = f.get("anchor")
+        if a is None:
+            continue
+        if a in anchors:
+            dup.append(f"{a} (id {anchors[a]!r} и {f['id']!r})")
+        anchors[a] = f["id"]
+    if dup:
+        print(f"⚠ Реестр: неуникальные якоря находок ({len(dup)}): " + "; ".join(dup))
+
     return {"source": src.name, "count": len(findings), "findings": findings}
+
+
+def lint_links(research):
+    """Линтер связей доказательной базы (ТЗ 13, п.3). Не валит сборку —
+    печатает расхождения: стратегический документ должен видеть свои дыры."""
+    print("\n── Линтер связей ──")
+    etapy_path = DATA_DIR / "etapy.json"
+    if not etapy_path.exists():
+        print("  etapy.json не найден — пропуск проверки H-кодов и ссылок.")
+        return
+    etapy = json.loads(etapy_path.read_text(encoding="utf-8"))
+    findings = (research or {}).get("findings", [])
+
+    def base(code):
+        """H-код к базовому виду для сверки: «H3.5-канд»→«H3.5», «H3.1a»→«H3.1»."""
+        m = re.match(r"(H\d+\.\d+)", str(code))
+        return m.group(1) if m else None
+
+    # покрытие гипотез находками
+    research_bases = {base(c) for f in findings for c in f.get("hCodes", []) if base(c)}
+    missing, gaps = [], []
+    for st in etapy.get("stages", []):
+        for h in st.get("hypotheses", []):
+            code = h.get("code")
+            b = base(code)
+            if b is None:                              # H-Супервизор и т.п. — без номера
+                continue
+            if b in research_bases:
+                continue
+            if h.get("candidate") or code in GAP_HCODES or "канд" in str(code) or "доп" in str(code):
+                gaps.append(code)
+            else:
+                missing.append(code)
+    if missing:
+        print(f"  ⚠ H-коды без находки в реестре ({len(missing)}): {', '.join(missing)}")
+    if gaps:
+        print(f"  · осознанные gap (ожидаемо, {len(gaps)}): {', '.join(gaps)}")
+    if not missing:
+        print("  ✓ все «боевые» H-коды этапов имеют находку (или числятся в gap)")
+
+    # ссылки research:<id> / planned:<id> из etapy.json (появятся в ТЗ 15/17)
+    ids = {f["id"] for f in findings if f.get("id")}
+    blob = json.dumps(etapy, ensure_ascii=False)
+    bad_ref = sorted({m for m in re.findall(r"research:([^\"\s,\]]+)", blob) if m not in ids})
+    if bad_ref:
+        print(f"  ⚠ ссылки research:<id> на несуществующие находки: {', '.join(bad_ref)}")
+    planned_path = DATA_DIR / "planned.json"
+    planned_ids = set()
+    if planned_path.exists():
+        pj = json.loads(planned_path.read_text(encoding="utf-8"))
+        planned_ids = {x.get("id") for x in pj.get("items", pj.get("planned", []))}
+    bad_pl = sorted({m for m in re.findall(r"planned:([^\"\s,\]]+)", blob)
+                     if m not in planned_ids})
+    if bad_pl:
+        where = "planned.json" if planned_path.exists() else "planned.json (нет файла)"
+        print(f"  ⚠ ссылки planned:<id> вне {where}: {', '.join(bad_pl)}")
+
+    # словарь этапов: research.stages из единого словаря
+    bad_stage = sorted({s for f in findings for s in f.get("stages", [])
+                        if s not in STAGE_VOCAB})
+    if bad_stage:
+        print(f"  ⚠ этапы вне словаря {STAGE_VOCAB}: {', '.join(bad_stage)}")
+
+    # находки «вне этапов» — для дозаполнения Владом в xlsx
+    outside = [f["id"] for f in findings if f.get("stages") == ["вне этапов"]]
+    if outside:
+        print(f"  · находок «вне этапов» ({len(outside)}), этап дозаполнит Влад в реестре:")
+        print("    " + ", ".join(outside))
 
 
 def build_home(items, agencies, research):
@@ -553,6 +698,7 @@ def main():
         r_out = DATA_DIR / "research.json"
         r_out.write_text(json.dumps(research, ensure_ascii=False, indent=2), encoding="utf-8")
         print(f"Исследования: {research['count']} находок → {r_out.relative_to(SITE_DIR)}")
+        lint_links(research)
 
     # home.json — сводка дашбордов главной
     home = build_home(items, agencies, research)

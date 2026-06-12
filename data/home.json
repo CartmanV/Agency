@@ -16,17 +16,17 @@
     ]
   },
   "work": {
-    "total": 214,
+    "total": 216,
     "moscow": {
       "Must": 5,
-      "Should": 124,
-      "Could": 69,
-      "Won't": 16
+      "Should": 85,
+      "Could": 48,
+      "Won't": 78
     },
-    "scored": 192,
-    "unscored": 22,
-    "topTitle": "Документы: массовое скачивание + ФИО в названии",
-    "topFinal": 82,
+    "scored": 199,
+    "unscored": 17,
+    "topTitle": "Обмен авиа (полный + вторичный)",
+    "topFinal": 85,
     "themes": [
       {
         "name": "Агентская админка",
@@ -50,11 +50,11 @@
       },
       {
         "name": "Онлайн-услуги",
-        "count": 16
+        "count": 17
       },
       {
         "name": "Единый чат",
-        "count": 10
+        "count": 11
       }
     ],
     "mustCount": 5

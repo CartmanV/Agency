@@ -1,5 +1,5 @@
 {
-  "source": "Единый бэклог направления Агентства v7 (2026-06-06, Impact A+B).xlsx",
+  "source": "Единый бэклог направления Агентства v9 (2026-06-12, пересчёт по Каталогу задач).xlsx",
   "sections": [
     {
       "id": "about",
@@ -55,7 +55,7 @@
     },
     {
       "id": "stages",
-      "title": "ЭТАП — зачем делаем сейчас (путь агентства в Ракете)",
+      "title": "ЭТАП — зачем делаем сейчас (лестница ценности)",
       "items": [
         {
           "id": "stages--1-ne-meshat",
@@ -347,8 +347,14 @@
     {
       "id": "b-1-poputnyy-7-offlayn-uslugi-dostavka-2-24-68-72-93-110-116-152-b-1-vstrechnyy-6-1-standartnyy-onlayn-poisk-118-119-123-ostalnye-b-0-pv-mult-ne-trogali-predohranitel-rynok-tolko-v-impact-formuly-rice-final-zameneny-na-literaly-peresortirovka-moscowfinal",
       "title": "B=+1 (попутный, §7): оффлайн-услуги-доставка #2,24,68,72,93,110,116,152. B=−1 (встречный, §6.1): стандартный онлайн-поиск #118,119,123. Остальные B=0. PV Mult не трогали (предохранитель: рынок только в Impact). Формулы RICE/Final заменены на литералы; пересортировка MoSCoW→Final.",
-      "items": []
+      "items": [
+        {
+          "id": "b-1-poputnyy-7-offlayn-uslugi-dostavka-2-24-68-72-93-110-116-152-b-1-vstrechnyy-6-1-standartnyy-onlayn-poisk-118-119-123-ostalnye-b-0-pv-mult-ne-trogali-predohranitel-rynok-tolko-v-impact-formuly-rice-final-zameneny-na-literaly-peresortirovka-moscowfinal--v9-2026-06-12",
+          "term": "v9 (2026-06-12)",
+          "def": "Пересчёт по «Каталогу задач»: Сервис для клиента → этап 4 (v2.1) и Won t по 12.6; Предложения 2.0 → этап 5/Won t; +L3.1.Д (новая); L3.3.С1–С7 и Ф-stream-строки помечены «нет в каталоге»; Заказы A4/B2/C10 → этап 1 (H1.3), остальные H2.4; гипотезы/подцели/механизмы обновлены по карточкам; RICE/Final пересчитаны, сортировка MoSCoW→Final."
+        }
+      ]
     }
   ],
-  "count": 57
+  "count": 58
 }
