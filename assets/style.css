@@ -1363,6 +1363,12 @@ abbr.gloss:hover, abbr.assume-mark:hover { border-bottom-color: var(--copper); }
 }
 .nav__glabel:first-child { border-left: none; margin-left: 0; padding-left: 0; }
 @media (max-width: 980px) { .nav__glabel { display: none; } }
+/* Метки NAV: полная на десктопе, короткая в компактном режиме (NAV из 15 пунктов, ТЗ 19) */
+.nl-short { display: none; }
+@media (max-width: 980px) {
+  .nl-full { display: none; }
+  .nl-short { display: inline; }
+}
 
 /* ===================== Start here (Р7) ===================== */
 .sh-list { list-style: none; padding: 0; margin: 14px 0 0; display: flex; flex-direction: column; gap: 10px; }
@@ -1764,6 +1770,36 @@ a.ev-chip:hover { text-decoration: none; filter: brightness(1.15); }
 /* «Проверить»/«Противоречиво» бейджи-ссылки на план (перестают быть тупиком) */
 a.badge { text-decoration: none; }
 a.badge:hover { filter: brightness(1.12); text-decoration: none; }
+
+/* ===================== Индикатор силы доказательной базы (ТЗ 19) ===================== */
+.evm { font-family: var(--f-mono); font-size: 11px; display: inline-flex; gap: 6px; white-space: nowrap; }
+.evm-ok { color: var(--emerald); }
+.evm-part { color: var(--gold); }
+.evm-warn { color: var(--pink); }
+.evm-plan { color: var(--blue, #6BA8E6); }
+.evm-none { color: var(--muted); }
+.evm-strip { border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; margin: 18px 0; background: var(--panel); }
+.evm-strip__h { font: 500 .76rem/1 var(--f-mono); text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin-bottom: 10px; }
+.evm-cells { display: flex; flex-wrap: wrap; gap: 8px; }
+.evm-cell { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid var(--line-soft); border-radius: 8px; text-decoration: none; color: var(--cream); background: var(--bg); }
+.evm-cell:hover { border-color: var(--copper-dk); text-decoration: none; }
+.evm-note { font-size: 13px; color: var(--cream-soft); line-height: 1.55; margin: 12px 0 0; }
+.evm-legend { font-family: var(--f-mono); font-size: 10.5px; color: var(--muted); margin: 8px 0 0; }
+.evm-legend a { color: var(--copper); }
+
+/* Строка-факт доказательной базы в Executive Summary */
+.ev-meterline { font-size: 13.5px; line-height: 1.7; color: var(--cream-soft); border-top: 1px solid var(--line); margin: 14px 0 0; padding: 12px 0 0; }
+.ev-meterline__k { font-family: var(--f-mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--copper); margin-right: 6px; }
+.ev-meterline b { color: var(--cream); }
+.ev-meterline a { color: var(--copper); margin-left: 10px; white-space: nowrap; }
+
+/* Секция «Статусы доказательств» в Легендах */
+.lg-evstatus { margin: 36px 0 0; }
+.lg-evstatus h2 { font: 600 1.15rem/1.3 var(--f-display); margin: 0 0 10px; }
+.lg-evstatus.is-target h2, .lg-evstatus:target h2 { color: var(--copper); }
+.lg-evrows { display: grid; gap: 8px; margin-top: 12px; }
+.lg-evrow { display: flex; gap: 12px; align-items: baseline; font-size: 13.5px; line-height: 1.5; color: var(--cream-soft); }
+.lg-evrow .ev-chip { flex-shrink: 0; min-width: 116px; justify-content: center; }
 /* Ссылки «Доказательная база этапа → / Все находки этапа →» в шапке этапа */
 .e-evlink { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 0 0 14px; font-family: var(--f-mono); font-size: 12px; }
 .e-hyp.is-target > .e-hyp__sum { box-shadow: inset 0 0 0 2px var(--pink); border-radius: 8px; }

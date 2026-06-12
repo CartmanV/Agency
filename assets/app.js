@@ -12,8 +12,8 @@ const NAV = [
   { href: "backlog.html",  label: "Бэклог", group: "Работа" },
   { href: "must.html",     label: "Must", group: "Работа" },
   { href: "research.html", label: "Исследования", group: "Данные" },
-  { href: "sootvetstvie.html", label: "Доказательная база", group: "Данные" },
-  { href: "planned.html", label: "План исследований", group: "Данные" },
+  { href: "sootvetstvie.html", label: "Доказательная база", short: "Доказательства", group: "Данные" },
+  { href: "planned.html", label: "План исследований", short: "План ресёрча", group: "Данные" },
   { href: "agencies.html", label: "Агентства", group: "Данные" },
   { href: "rynok.html",    label: "Рынок", group: "Данные" },
   { href: "metrics.html",  label: "Метрики", group: "Данные" },
@@ -52,7 +52,10 @@ function mountHeader() {
                  style="opacity:.4;cursor:not-allowed">${n.label}</span>`;
     }
     const active = n.href === cur ? " is-active" : "";
-    return sep + `<a class="${active.trim()}" href="${n.href}">${n.label}</a>`;
+    const label = n.short
+      ? `<span class="nl-full">${esc(n.label)}</span><span class="nl-short">${esc(n.short)}</span>`
+      : esc(n.label);
+    return sep + `<a class="${active.trim()}" href="${n.href}"${n.short ? ` title="${esc(n.label)}"` : ""}>${label}</a>`;
   }).join("");
   host.innerHTML = `
     <header class="site-header">
@@ -1330,6 +1333,48 @@ async function mountAgencies() {
 
 // ===================== Этапы ценности (etapy.html) =====================
 // Объединённая проекция: путь агентства (5 этапов) + концепции как слой над ними.
+// Строка-факт о доказательной базе для Executive Summary (ТЗ 19). Считается из etapy.json
+// + planned.json тем же принципом, что индикатор на «Этапах». exec.json не трогаем.
+async function mountEvidenceLine() {
+  const host = document.querySelector("[data-evmeter]");
+  if (!host) return;
+  let etapy, planned;
+  try {
+    [etapy, planned] = await Promise.all([loadJSON("data/etapy.json"), loadJSON("data/planned.json")]);
+  } catch (e) { return; }                      // не блокируем главную, если данных нет
+  const rank = (s) => {
+    const t = String(s || "").toLowerCase();
+    if (t.startsWith("подтв") || t.startsWith("✅") || t.startsWith("закры")) return 4;
+    if (t.startsWith("частич")) return 3;
+    if (t.startsWith("план") || t.includes("в план")) return 2;
+    return 1;
+  };
+  let total = 0, confirmed = 0, conflicts = 0;
+  for (const s of (etapy.stages || [])) {
+    for (const h of (s.hypotheses || [])) {
+      total++;
+      let best = 0, conf = false;
+      for (const e of (h.evidence || [])) {
+        if (String(e.status || "").toLowerCase().includes("конфл")) { conf = true; continue; }
+        best = Math.max(best, rank(e.status));
+      }
+      if (best === 4) confirmed++;
+      if (conf) conflicts++;
+    }
+  }
+  const items = (planned.items || []);
+  const inPlan = items.filter((x) => String(x.status || "").startsWith("в плане")).length;
+  host.innerHTML = `
+    <p class="ev-meterline">
+      <span class="ev-meterline__k">Доказательная база</span>
+      <b>${confirmed} из ${total}</b> гипотез подтверждены интервью ·
+      <b>${conflicts}</b> открытых конфликтов ·
+      план Q3: <b>${inPlan} из ${items.length}</b> исследований заведено.
+      <a href="sootvetstvie.html">Доказательная база →</a>
+      <a href="planned.html">План исследований →</a>
+    </p>`;
+}
+
 async function mountEtapy() {
   const host = document.querySelector("[data-etapy]");
   if (!host) return;
@@ -1364,9 +1409,49 @@ async function mountEtapy() {
     return `<div class="e-hyp__ev"><span class="e-hyp__evh">Доказательства</span><div class="e-hyp__evchips">${chips}</div></div>`;
   }
 
+  // ——— Индикатор силы доказательной базы (ТЗ 19): агрегат статусов evidence, новых данных нет ———
+  const statusRank = (s) => {
+    const t = String(s || "").toLowerCase();
+    if (t.startsWith("подтв") || t.startsWith("✅") || t.startsWith("закры")) return 4;
+    if (t.startsWith("частич")) return 3;
+    if (t.startsWith("план") || t.includes("в план")) return 2;
+    return 1;                                  // не проверялась / спорно / ∅
+  };
+  function hypMeter(h) {                        // статус гипотезы = «худший из лучших» + флаг конфликта
+    let best = 0, conflict = false;
+    for (const e of (h.evidence || [])) {
+      if (String(e.status || "").toLowerCase().includes("конфл")) { conflict = true; continue; }
+      best = Math.max(best, statusRank(e.status));
+    }
+    return { key: { 4: "ok", 3: "part", 2: "plan", 1: "none", 0: "none" }[best], conflict };
+  }
+  function stageMeter(s) {
+    const m = { ok: 0, part: 0, plan: 0, none: 0, conflict: 0 };
+    for (const h of (s.hypotheses || [])) { const r = hypMeter(h); m[r.key]++; if (r.conflict) m.conflict++; }
+    return m;
+  }
+  function meterSummary(m) {
+    const p = [];
+    if (m.ok) p.push(`<span class="evm-ok">✓${m.ok}</span>`);
+    if (m.part) p.push(`<span class="evm-part">~${m.part}</span>`);
+    if (m.conflict) p.push(`<span class="evm-warn">⚠${m.conflict}</span>`);
+    if (m.plan) p.push(`<span class="evm-plan">?${m.plan}</span>`);
+    if (m.none) p.push(`<span class="evm-none">∅${m.none}</span>`);
+    const title = `${m.ok} подтверждены интервью · ${m.part} частично · ${m.conflict} с конфликтом · ${m.plan} в плане · ${m.none} не проверялись`;
+    return `<span class="evm" title="${esc(title)}">${p.join(" ")}</span>`;
+  }
+
   // ——— Краткий обзор сверху ———
   // Цвет номера этапа — единый канон сайта (1=pink, 2=emerald, 3–5=muted), просто опознавание этапа.
   const stageChip = (n) => `<span class="stage-tag s-${n === "2" ? "2a" : n}">${esc(n)}</span>`;
+  const heatStrip = `
+    <div class="evm-strip">
+      <div class="evm-strip__h">На чём стоит стратегия — сила доказательной базы по этапам</div>
+      <div class="evm-cells">${(data.stages || []).map((s) =>
+        `<a class="evm-cell" href="#stage-${esc(s.n)}" title="этап ${esc(s.n)}: ${esc(s.name)}">${stageChip(s.n)} ${meterSummary(stageMeter(s))}</a>`).join("")}</div>
+      ${data.meterNote ? `<p class="evm-note">${gloss(esc(data.meterNote))}</p>` : ""}
+      <p class="evm-legend">✓ подтв. интервью · ~ частично · ⚠ конфликт · ? в плане · ∅ не проверялась — <a href="legend.html#ev-status">как читать</a></p>
+    </div>`;
   const prismRows = (data.prism.rows || []).map((r) => `
     <tr>
       <td class="e-pr-n">${stageChip(r.stage)} ${esc(r.name)}</td>
@@ -1386,6 +1471,7 @@ async function mountEtapy() {
         </table>
       </div>
       <ul class="e-caveat-list">${prismCaveats}</ul>
+      ${heatStrip}
 
       <details class="e-extra"><summary>Что внутри каждого этапа</summary>
         <p class="e-flow-intro">Разверните любой этап ниже — структура одинаковая:</p>
@@ -1499,6 +1585,7 @@ async function mountEtapy() {
           <span class="e-stage__n">${esc(s.n)}</span>
           <span class="e-stage__name">${esc(s.name)}</span>
           <span class="e-stage__mean">${gloss(esc(s.meaning))}</span>
+          ${meterSummary(stageMeter(s))}
         </summary>
         <div class="e-stage__body">
           ${s.sootv ? `<div class="e-evlink"><a href="sootvetstvie.html#${esc(s.sootv)}">Доказательная база этапа →</a> <a href="research.html?stage=${esc(s.n === "2" ? "2A,2B" : s.n)}">Все находки этапа →</a></div>` : ""}
@@ -2611,6 +2698,7 @@ document.addEventListener("DOMContentLoaded", () => {
   mountResearch();
   mountSootv();
   mountPlanned();
+  mountEvidenceLine();
   mountEtapy();
   mountConcepts();
   mountProjbar();
