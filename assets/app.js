@@ -13,6 +13,7 @@ const NAV = [
   { href: "must.html",     label: "Must", group: "Работа" },
   { href: "research.html", label: "Исследования", group: "Данные" },
   { href: "sootvetstvie.html", label: "Доказательная база", group: "Данные" },
+  { href: "planned.html", label: "План исследований", group: "Данные" },
   { href: "agencies.html", label: "Агентства", group: "Данные" },
   { href: "rynok.html",    label: "Рынок", group: "Данные" },
   { href: "metrics.html",  label: "Метрики", group: "Данные" },
@@ -1923,6 +1924,104 @@ async function mountSootv() {
   }
 }
 
+// ===================== План исследований (planned.html) =====================
+async function mountPlanned() {
+  const host = document.querySelector("[data-planned]");
+  if (!host) return;
+  host.innerHTML = `<div class="loading">Загрузка плана исследований…</div>`;
+  let data;
+  try { data = await loadJSON("data/planned.json"); }
+  catch (e) { host.innerHTML = `<div class="error">${esc(e.message)}</div>`; return; }
+
+  const items = data.items || [];
+  // Статус → чип-канон (ТЗ 14): «в плане» = ? (blue), «не заведено» = ∅ (muted).
+  const statusChip = (s) => {
+    const t = String(s || "").toLowerCase();
+    const cls = t.startsWith("в плане") ? "ev-plan" : "ev-muted";
+    const sign = t.startsWith("в плане") ? "?" : "∅";
+    return `<span class="ev-chip ${cls}">${sign} ${esc(s)}</span>`;
+  };
+  // Гипотеза-чип: H-коды → бэклог; прочие разблокировки (KR-2, NSM…) — простой чип.
+  const unlockChip = (u) => /^H[\d-]/.test(u)
+    ? `<a class="rf-chip rf-h" href="backlog.html?q=${encodeURIComponent(u)}">${esc(u)}</a>`
+    : `<span class="rf-chip">${esc(u)}</span>`;
+  // Этап → ссылка на «Этапы»; «4–5»→две ссылки; «все»→без якоря.
+  const stageLink = (s) => {
+    const m = String(s).match(/\d+/);
+    return m ? `<a class="pl-stage" href="etapy.html#stage-${m[0]}">этап ${esc(s)}</a>` : `<span class="pl-stage">${esc(s)}</span>`;
+  };
+
+  // ---- сводная таблица-карта ----
+  const mapRows = items.map((it) => `
+    <tr id="${esc(it.id)}-row">
+      <td><a href="#${esc(it.id)}"><b>${esc(it.code)}</b> ${esc(it.title)}</a></td>
+      <td>${statusChip(it.status)}</td>
+      <td>${(it.stages || []).map(stageLink).join(" ")}</td>
+      <td>${(it.unlocks || []).map(unlockChip).join(" ")}</td>
+    </tr>`).join("");
+
+  // ---- карточки ----
+  const card = (it) => {
+    const owned = !String(it.owner || "").toLowerCase().startsWith("нет вла");
+    const dl = (l, v) => v ? `<div class="pl-row"><dt>${esc(l)}</dt><dd>${esc(v)}</dd></div>` : "";
+    return `
+      <details class="pl-card" id="${esc(it.id)}">
+        <summary class="pl-sum">
+          <span class="pl-code">${esc(it.code)}</span>
+          <span class="pl-title">${esc(it.title)}</span>
+          <span class="pl-chips">${statusChip(it.status)}${owned ? "" : `<span class="pl-noowner">нет владельца</span>`}</span>
+        </summary>
+        <div class="pl-body">
+          <p class="pl-q">${esc(it.question)}</p>
+          <div class="pl-unlocks"><span class="pl-unlocks__h">разблокирует:</span> ${(it.unlocks || []).map(unlockChip).join(" ")} ${(it.stages || []).map(stageLink).join(" ")}</div>
+          <dl>
+            ${dl("Метод", it.method)}${dl("Материал", it.material)}${dl("Кто/где", it.audience)}
+            ${dl("Владелец", it.owner)}${dl("Срок", it.term)}${dl("Что изменится по результату", it.effect)}
+            ${dl("Документ-источник", it.srcDoc)}
+          </dl>
+        </div>
+      </details>`;
+  };
+
+  // ---- акцент-блок «не заведено / нет владельца» ----
+  const unstaffed = items.filter((it) => String(it.status).startsWith("не заведено"));
+  const unstaffedHTML = unstaffed.map((it) =>
+    `<li><a href="#${esc(it.id)}"><b>${esc(it.code)}</b> ${esc(it.title)}</a> — без проверки висит ${(it.unlocks || []).filter((u) => /^H[\d-]/.test(u)).map((u) => esc(u)).join(", ") || "—"}</li>`).join("");
+
+  host.innerHTML = `
+    <p class="pl-rule">${esc(data.rule || "")}</p>
+    <div class="pl-precond"><span class="pl-precond__k">предусловие</span> ${esc(data.precondition || "")}</div>
+
+    <section class="pl-map">
+      <h2>Сводная карта</h2>
+      <div class="sv-tablewrap"><table class="sv-table">
+        <thead><tr><th>Исследование</th><th>Статус</th><th>Кормит этапы</th><th>Разблокирует</th></tr></thead>
+        <tbody>${mapRows}</tbody>
+      </table></div>
+    </section>
+
+    <section class="pl-unstaffed">
+      <h2>Не заведено / нет владельца <span class="sv-cnt">${unstaffed.length} из ${items.length}</span></h2>
+      <p class="muted">Аналог анализа дыр, но для знаний: пока исследование не заведено, эти гипотезы висят без проверки.</p>
+      <ul class="pl-unstaffed__list">${unstaffedHTML}</ul>
+    </section>
+
+    <section class="pl-cards">
+      <h2>Карточки исследований</h2>
+      ${items.map(card).join("")}
+    </section>`;
+
+  // Доскролл к карточке: planned.html#g2 (с Рынка/Этапов/Доказательной базы)
+  if (location.hash) {
+    const el = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+    if (el) {
+      if (el.tagName === "DETAILS") el.open = true;
+      el.scrollIntoView({ block: "start" });
+      el.classList.add("is-target");
+    }
+  }
+}
+
 // ===================== Метрики (metrics.html) =====================
 async function mountMetrics() {
   const host = document.querySelector("[data-metrics]");
@@ -2473,6 +2572,7 @@ document.addEventListener("DOMContentLoaded", () => {
   mountMetrics();
   mountResearch();
   mountSootv();
+  mountPlanned();
   mountEtapy();
   mountConcepts();
   mountProjbar();
