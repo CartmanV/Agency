@@ -1556,6 +1556,30 @@ function hypStatusClass(s) {
   return "neu";
 }
 
+// Канон «чип-доказательство» (.ev-chip) — единый язык статуса доказательства для ТЗ 14–18.
+// Сводит статусы гипотез реестра и бейджи рынка к одной системе (не плодим третью).
+function evChip(status) {
+  const t = String(status || "").toLowerCase();
+  if (t.startsWith("закрыто") || t.startsWith("✅")) return { cls: "ev-closed", sign: "✅" };
+  if (t.startsWith("подтв")) return { cls: "ev-ok", sign: "✓" };
+  if (t.startsWith("частично")) return { cls: "ev-part", sign: "~" };
+  if (t.startsWith("конкур") || t.startsWith("спорн") || t.includes("конфликт")) return { cls: "ev-warn", sign: "⚠" };
+  if (t.startsWith("план") || t.includes("заплан")) return { cls: "ev-plan", sign: "?" };
+  if (t.startsWith("гипотеза") || t.startsWith("идея") || t.startsWith("данные") || t.includes("не пров")) return { cls: "ev-muted", sign: "∅" };
+  return { cls: "ev-muted", sign: "·" };
+}
+
+// Канон якоря находки (зеркало research_anchor в build.py): «A1»→«f-a1», «4.2»→«f-4-2».
+function findingAnchor(id) {
+  return "f-" + String(id).trim().toLowerCase().replace(/[./\\]+/g, "-");
+}
+
+// Этап находки → якорь на странице «Этапы» (этапы 2A/2B ведут на общий #stage-2).
+function stageAnchor(s) {
+  const m = String(s).match(/\d+/);
+  return m ? "stage-" + m[0] : null;
+}
+
 async function mountResearch() {
   const host = document.querySelector("[data-research]");
   if (!host) return;
@@ -1566,25 +1590,57 @@ async function mountResearch() {
 
   const all = data.findings || [];
   const state = { groupBy: "theme", filters: {} };
-  const FF = [["theme", "Тема"], ["role", "Роль"], ["stage", "Этап"], ["mechanism", "Механизм"], ["hCode", "Гипотеза"], ["hypStatus", "Статус гипотезы"]];
+  // Этап и Гипотеза работают по массивам stages[]/hCodes[]; Блок синтеза — новый словарь-навигация.
+  const FF = [["theme", "Тема"], ["role", "Роль"], ["block", "Блок синтеза"], ["stage", "Этап"], ["mechanism", "Механизм"], ["hCode", "Гипотеза"], ["hypStatus", "Статус гипотезы"]];
+
+  // Значения находки по полю фильтра (массивные поля разворачиваются поэлементно).
+  const fieldVals = (f, field) => {
+    if (field === "stage") return (f.stages && f.stages.length) ? f.stages : ["вне этапов"];
+    if (field === "hCode") return (f.hCodes && f.hCodes.length) ? f.hCodes : ["—"];
+    if (field === "block") return [f.block || "—"];
+    return [f[field] || "—"];
+  };
+  const matches = (f, field, v) => {
+    if (!v) return true;
+    const have = fieldVals(f, field);
+    return v.split(",").some((w) => have.includes(w));   // ?stage=2A,2B — пересечение
+  };
 
   const optsFor = (field) => {
     const c = new Map();
-    all.forEach((x) => { const v = x[field] || "—"; c.set(v, (c.get(v) || 0) + 1); });
+    all.forEach((x) => fieldVals(x, field).forEach((v) => c.set(v, (c.get(v) || 0) + 1)));
     return [...c.entries()].sort((a, b) => b[1] - a[1]);
   };
 
   function findingHTML(f) {
+    const stageChips = (f.stages || []).filter((s) => s !== "вне этапов")
+      .map((s) => `<span class="rf-chip">этап ${esc(s)}</span>`).join("");
+    const ev = f.hypStatus ? evChip(f.hypStatus) : null;
     const chips = [
       f.role ? `<span class="rf-chip">${esc(f.role)}</span>` : "",
       f.reachCount ? `<span class="rf-chip" title="подтв. агентств">👥 ${esc(f.reachCount)}</span>` : "",
-      f.hCode ? `<span class="rf-chip rf-h">${esc(f.hCode)}</span>` : "",
-      f.stage && f.stage !== "—" ? `<span class="rf-chip">этап ${esc(f.stage)}</span>` : "",
-      f.hypStatus ? `<span class="rf-stat ${hypStatusClass(f.hypStatus)}">${esc(f.hypStatus)}</span>` : "",
+      (f.hCodes || []).map((h) => `<span class="rf-chip rf-h">${esc(h)}</span>`).join(""),
+      f.block && f.block !== "—" ? `<span class="rf-chip" title="блок синтеза">блок ${esc(f.block)}</span>` : "",
+      stageChips,
+      ev ? `<span class="ev-chip ${ev.cls}">${ev.sign} ${esc(f.hypStatus)}</span>` : "",
     ].join("");
     const row = (l, v) => v && v !== "—" ? `<div class="rf-row"><dt>${esc(l)}</dt><dd>${esc(v)}</dd></div>` : "";
+
+    // Обратные ссылки «находка → этап стратегии» (этапы 2A/2B → общий #stage-2, без дублей).
+    const seen = new Set();
+    const stageLinks = (f.stages || []).map((s) => {
+      const a = stageAnchor(s);
+      if (!a) return "";                                   // «клиент»/«вне этапов» — без якоря этапа
+      const key = a + "|" + s;
+      if (seen.has(key)) return ""; seen.add(key);
+      return `<a class="rf-link" href="etapy.html#${a}">работает на этап ${esc(s)} →</a>`;
+    }).join("");
+    const hLinks = (f.hCodes || []).map((h) =>
+      `<a class="rf-link" href="backlog.html?q=${encodeURIComponent(h)}">итерации по ${esc(h)} →</a>`).join("");
+    // TODO (ТЗ 16): «строка в Доказательной базе →» — ссылка на sootvetstvie.html по коду боли.
+
     return `
-      <details class="rf">
+      <details class="rf" id="${esc(f.anchor || findingAnchor(f.id || ""))}">
         <summary class="rf-sum">
           <span class="rf-id">${esc(f.id || "")}</span>
           <span class="rf-text">${esc(f.finding || "—")}</span>
@@ -1594,16 +1650,13 @@ async function mountResearch() {
           ${row("Кол. данные", f.qty)}${row("JTBD", f.jtbd)}${row("Reach (агентства)", f.reach)}
           ${row("Механизм", f.mechanism)}${row("Статус", f.status)}${row("Источник", f.src)}
         </dl>
-        ${f.hCode ? `<a class="rf-link" href="backlog.html?q=${encodeURIComponent(f.hCode)}">итерации по ${esc(f.hCode)} →</a>` : ""}
+        <div class="rf-links">${hLinks}${stageLinks}</div>
         </div>
       </details>`;
   }
 
   function render() {
-    const list = all.filter((f) => FF.every(([field]) => {
-      const v = state.filters[field];
-      return !v || (f[field] || "—") === v;
-    }));
+    const list = all.filter((f) => FF.every(([field]) => matches(f, field, state.filters[field])));
 
     const map = new Map();
     list.forEach((f) => { const k = f[state.groupBy] || "—"; (map.get(k) || map.set(k, []).get(k)).push(f); });
@@ -1623,13 +1676,19 @@ async function mountResearch() {
     `<select class="ctl" data-rf="${field}" aria-label="${esc(label)}"><option value="">${esc(label)}: все</option>${optsFor(field).map(([v, c]) => `<option value="${esc(v)}">${esc(v)} (${c})</option>`).join("")}</select>`).join("");
 
   const confirmed = all.filter((f) => hypStatusClass(f.hypStatus) === "ok").length;
-  const left = all.filter((f) => String(f.status || "").includes("Осталось")).length;
+  const noStage = all.filter((f) => !f.stages || !f.stages.length || (f.stages.length === 1 && f.stages[0] === "вне этапов")).length;
 
   host.innerHTML = `
+    <p class="rf-howto">
+      У каждой находки есть <b>ID</b> (напр. <code>A1</code>, <code>4.2</code>) — на неё можно сослаться
+      прямой ссылкой <code>research.html#f-a1</code> или <code>?id=A1</code>. Эти ссылки используются
+      на странице «Этапы ценности» и в «Доказательной базе»: каждая находка знает, какой этап стратегии она кормит.
+    </p>
     <div class="stats">
       <div class="stat"><div class="v">${all.length}</div><div class="l">находок</div></div>
       <div class="stat"><div class="v">${confirmed}</div><div class="l">подтв./закрыто</div></div>
       <div class="stat"><div class="v">${new Set(all.map((x) => x.theme).filter(Boolean)).size}</div><div class="l">тем</div></div>
+      <div class="stat"><div class="v">${noStage}</div><div class="l">без этапа</div></div>
     </div>
     <div class="toolbar">
       <div class="seg" role="group" aria-label="Группировка">
@@ -1650,7 +1709,34 @@ async function mountResearch() {
   host.querySelector("[data-rreset]").addEventListener("click", () => {
     state.filters = {}; host.querySelectorAll("[data-rf]").forEach((s) => (s.value = "")); render();
   });
+
+  // --- Deep-link фильтр этапа: ?stage=2A,2B (алиас ?stage=2 → 2A,2B) ---
+  const params = new URLSearchParams(location.search);
+  const stageParam = params.get("stage");
+  if (stageParam) {
+    const want = stageParam.split(",").map((s) => s.trim())
+      .flatMap((s) => (s === "2" ? ["2A", "2B"] : [s]));
+    state.filters.stage = want.join(",");
+    const sel = host.querySelector('[data-rf="stage"]');
+    if (sel && want.length === 1) sel.value = want[0];   // одиночный — отражаем в селекте
+  }
+
   render();
+
+  // --- Deep-link к находке: research.html#f-a1 или ?id=A1 ---
+  const idParam = params.get("id");
+  const targetAnchor = idParam ? findingAnchor(idParam)
+    : (location.hash.startsWith("#f-") ? decodeURIComponent(location.hash.slice(1)) : null);
+  if (targetAnchor) {
+    const el = host.querySelector("#" + (window.CSS && CSS.escape ? CSS.escape(targetAnchor) : targetAnchor));
+    if (el) {
+      for (let p = el; p && p !== host; p = p.parentElement) {
+        if (p.tagName === "DETAILS") p.open = true;
+      }
+      el.scrollIntoView({ block: "center" });
+      el.classList.add("is-target");
+    }
+  }
 }
 
 // ===================== Метрики (metrics.html) =====================

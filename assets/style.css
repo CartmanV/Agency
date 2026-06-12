@@ -811,7 +811,22 @@ table.backlog td.spark-cell { padding: 4px 8px; }
 .rf-row { display: flex; gap: 10px; padding: 4px 0; border-bottom: 1px solid var(--line); }
 .rf-row dt { font-family: var(--f-mono); font-size: 11px; color: var(--cream-dim); min-width: 130px; flex-shrink: 0; }
 .rf-row dd { margin: 0; color: var(--cream-soft); font-size: 13px; }
-.rf-link { font-family: var(--f-mono); font-size: 11.5px; display: inline-block; margin-top: 10px; }
+.rf-links { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 10px; }
+.rf-link { font-family: var(--f-mono); font-size: 11.5px; display: inline-block; margin-top: 0; }
+.rf-howto { color: var(--cream-dim); font-size: 13px; line-height: 1.55; border-left: 2px solid var(--line-soft); padding-left: 12px; margin: 0 0 18px; }
+.rf-howto code { font-family: var(--f-mono); font-size: 12px; color: var(--copper); }
+/* Якорь находки: подсветка при приходе по research.html#f-a1 / ?id=A1 */
+.rf.is-target, .rf:target { background: var(--pink-dim); border-radius: 8px; box-shadow: 0 0 0 2px var(--pink); }
+
+/* ===================== Канон «чип-доказательство» (.ev-chip, ТЗ 14–18) ===================== */
+/* Единый язык статуса доказательства: подтв./частично/конфликт/не проверялась/закрыто/в плане. */
+.ev-chip { font-family: var(--f-mono); font-size: 10px; padding: 2px 8px; border-radius: 999px; border: 1px solid; white-space: nowrap; display: inline-flex; gap: 4px; align-items: center; }
+.ev-chip.ev-ok     { color: var(--emerald); border-color: var(--emerald); }
+.ev-chip.ev-part   { color: var(--gold); border-color: var(--copper-dk); }
+.ev-chip.ev-warn   { color: var(--pink); border-color: var(--pink); background: var(--pink-dim); }
+.ev-chip.ev-muted  { color: var(--cream-dim); border-color: var(--line-soft); border-style: dashed; }
+.ev-chip.ev-closed { color: var(--emerald); border-color: var(--line-soft); opacity: .72; }
+.ev-chip.ev-plan   { color: var(--blue, #6FA8FF); border-color: var(--blue, #6FA8FF); }
 
 /* ===================== Видение-портал (vision.html) ===================== */
 .portal-nsm { border: 1px solid var(--pink); background: var(--panel); border-radius: 10px; padding: 12px 16px; margin: 18px 0 0; }
