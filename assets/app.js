@@ -12,6 +12,7 @@ const NAV = [
   { href: "backlog.html",  label: "Бэклог", group: "Работа" },
   { href: "must.html",     label: "Must", group: "Работа" },
   { href: "research.html", label: "Исследования", group: "Данные" },
+  { href: "sootvetstvie.html", label: "Доказательная база", group: "Данные" },
   { href: "agencies.html", label: "Агентства", group: "Данные" },
   { href: "rynok.html",    label: "Рынок", group: "Данные" },
   { href: "metrics.html",  label: "Метрики", group: "Данные" },
@@ -1739,6 +1740,189 @@ async function mountResearch() {
   }
 }
 
+// ===================== Доказательная база (sootvetstvie.html) =====================
+function moscowClass(m) {
+  const t = String(m || "").toLowerCase();
+  if (t.startsWith("must")) return "mo-must";
+  if (t.startsWith("should")) return "mo-should";
+  if (t.startsWith("could")) return "mo-could";
+  if (t.startsWith("won")) return "mo-wont";
+  return "mo-neu";
+}
+// Код метрики из фразы матрицы «↓ Parity gap» → слаг для metrics.html#m-<slug> (как в mountMetrics).
+function metricSlug(phrase) {
+  return String(phrase).replace(/[↑↓~]/g, "").trim().toLowerCase().replace(/[^a-zа-я0-9]+/gi, "-").replace(/^-|-$/g, "");
+}
+// Код этапа из строки матрицы: «2A Сокращение…»→«2A», «1/2»→«1/2», «3 Сохранять…»→«3».
+function sootvStageCode(s) {
+  const m = String(s || "").match(/^[0-9]+[AB]?(?:\/[0-9]+)?/);
+  return m ? m[0] : "—";
+}
+
+async function mountSootv() {
+  const host = document.querySelector("[data-sootv]");
+  if (!host) return;
+  host.innerHTML = `<div class="loading">Загрузка доказательной базы…</div>`;
+  let data, ex;
+  try {
+    [data, ex] = await Promise.all([loadJSON("data/sootv.json"), loadJSON("data/sootv_extra.json")]);
+  } catch (e) { host.innerHTML = `<div class="error">${esc(e.message)}</div>`; return; }
+
+  const rows = data.rows || [];
+  const state = { filters: {} };
+  const FF = [["stageCode", "Этап"], ["hyp", "Гипотеза"], ["moscow", "MoSCoW"], ["hypStatus", "Статус гипотезы"], ["mechanism", "Механизм"], ["status", "Статус"]];
+
+  const fieldVals = (r, field) => {
+    if (field === "stageCode") return [sootvStageCode(r.stage)];
+    if (field === "hyp") return (r.hyps && r.hyps.length) ? r.hyps : ["—"];
+    return [r[field] || "—"];
+  };
+  const matches = (r, field, v) => !v || fieldVals(r, field).some((x) => v.split(",").includes(x));
+  const optsFor = (field) => {
+    const c = new Map();
+    rows.forEach((r) => fieldVals(r, field).forEach((v) => c.set(v, (c.get(v) || 0) + 1)));
+    return [...c.entries()].sort((a, b) => b[1] - a[1]);
+  };
+
+  const backlogQ = (q) => `backlog.html?q=${encodeURIComponent(q)}`;
+  const hypChip = (h) => `<a class="rf-chip rf-h" href="${backlogQ(h)}">${esc(h)}</a>`;
+
+  // ---- 1. Как читать (сворачиваемо) ----
+  const hr = ex.howToRead || {};
+  const statusRows = (hr.statuses || []).map((s) =>
+    `<div class="sv-stdef"><span class="ev-chip ${evChip(s.key).cls}">${s.sign || evChip(s.key).sign} ${esc(s.key)}</span><span>${esc(s.def)}</span></div>`).join("");
+  const howTo = `
+    <details class="sv-howto">
+      <summary>Как читать этот документ</summary>
+      <div class="sv-howto__body">
+        <p>${esc(hr.intro || "")}</p>
+        <p class="sv-rule">${esc(hr.rule || "")}</p>
+        <div class="sv-stdefs">${statusRows}</div>
+        <p class="muted">${esc(hr.painCodes || "")}</p>
+        <p class="muted">${esc(hr.moscow || "")} ${esc(hr.reach || "")}</p>
+      </div>
+    </details>`;
+
+  // ---- 2. Сводная карта ----
+  const sm = ex.summary || {};
+  const smRows = (sm.rows || []).map((r) => {
+    const sc = sootvStageCode(r.stage);
+    const anch = sc.match(/\d+/) ? `etapy.html#stage-${sc.match(/\d+/)[0]}` : "etapy.html";
+    return `<tr>
+      <td><a href="${anch}">${esc(r.stage)}</a></td>
+      <td>${(r.hyps || []).map(hypChip).join(" ")}</td>
+      <td>${esc(r.painBlocks)}</td>
+      <td>${esc(r.mechanisms)}</td>
+      <td class="muted">${esc(r.files)}</td>
+    </tr>`;
+  }).join("");
+  const summaryHTML = `
+    <section class="sv-summary">
+      <h2>Сводная карта</h2>
+      <div class="sv-tablewrap"><table class="sv-table sv-map">
+        <thead><tr><th>Этап</th><th>Гипотезы</th><th>Ключевые блоки боли</th><th>Механизмы</th><th>Файлы итераций</th></tr></thead>
+        <tbody>${smRows}</tbody>
+      </table></div>
+      <p class="sv-concl"><b>Смысловой вывод.</b> ${esc(sm.conclusion || "")}</p>
+      <p class="sv-concl muted">${esc(sm.opportunityNote || "")}</p>
+    </section>`;
+
+  // ---- 3. Строка матрицы ----
+  function matrixRow(r) {
+    const painCell = r.painAnchor
+      ? `<a href="research.html#${esc(r.painAnchor)}" title="открыть находку в реестре">${esc(r.painCode)}</a>`
+      : esc(r.painCode || "—");
+    const ev = r.hypStatus ? evChip(r.hypStatus) : null;
+    const metrics = [...(r.metricsActive || []), ...(r.metricsTarget || [])]
+      .map((mm) => `<a class="sv-mchip" href="metrics.html#m-${metricSlug(mm)}">${esc(mm)}</a>`).join(" ");
+    return `<tr>
+      <td class="sv-pain">${painCell}</td>
+      <td>${esc(r.pain || "—")}${r.quote ? `<div class="sv-quote">${esc(r.quote)}</div>` : ""}</td>
+      <td>${r.iter ? `<a href="${backlogQ(r.iter)}">${esc(r.iter)}</a>` : "—"}</td>
+      <td>${metrics || "—"}</td>
+      <td>${r.moscow ? `<span class="mo-badge ${moscowClass(r.moscow)}">${esc(r.moscow)}</span>` : "—"}</td>
+      <td>${ev ? `<span class="ev-chip ${ev.cls}" title="статус гипотезы">${ev.sign}</span>` : ""}${r.conflict ? `<span class="sv-warn" title="${esc(r.conflict)}">⚠</span>` : ""}</td>
+    </tr>`;
+  }
+
+  // ---- по этапам ----
+  const exStage = (n) => (ex.stages || []).find((s) => s.stageN === n) || {};
+  function stageSection(n) {
+    const st = exStage(n);
+    const open = (n === "1" || n === "2") ? "open" : "";
+    const gaps = (st.gaps || []).map((g) => `
+      <div class="sv-gap">
+        <div class="sv-gap__t">${esc(g.title)}</div>
+        <div class="sv-gap__x">${esc(g.text)} ${(g.links || []).map((l) => `<a href="${esc(l.href)}">${esc(l.label)} →</a>`).join(" ")}</div>
+      </div>`).join("");
+    return `
+      <details class="sv-stage" id="stage-${esc(n)}" ${open}>
+        <summary class="sv-stage__sum"><span class="stage-tag s-${n.toLowerCase()}">этап ${esc(n)}</span></summary>
+        <div class="sv-stage__body">
+          ${st.logic ? `<p class="sv-logic"><b>Логика ценности.</b> ${esc(st.logic)}</p>` : ""}
+          <div class="sv-tablewrap"><table class="sv-table sv-matrix" data-stage-table="${esc(n)}">
+            <thead><tr><th>Код боли</th><th>Суть + цитата</th><th>Итерация</th><th>Метрики</th><th>MoSCoW</th><th>⚑</th></tr></thead>
+            <tbody data-stage-rows="${esc(n)}"></tbody>
+          </table></div>
+          ${gaps ? `<div class="sv-gaps"><div class="sv-gaps__h">Анализ дыр (gap-анализ)</div>${gaps}</div>` : ""}
+        </div>
+      </details>`;
+  }
+
+  // ---- конфликты + что дальше ----
+  const conflicts = (ex.conflicts || []).map((c) => `
+    <div class="sv-conf">
+      <div class="sv-conf__h"><span class="sv-conf__n">${esc(c.n)}</span> ${esc(c.title)} <span class="ev-chip ${c.status === "решён" ? "ev-ok" : "ev-warn"}">${c.status === "решён" ? "✓ решён" : "⚠ открыт"}</span></div>
+      <div class="sv-conf__x">${esc(c.text)}</div>
+      <div class="sv-conf__m"><span>затрагивает: ${esc(c.blocks)}</span><span>решит: ${esc(c.resolves)}</span></div>
+    </div>`).join("");
+  const next = (ex.next || []).map((x) => `<li>${esc(x.text)} ${(x.links || []).map((l) => `<a href="${esc(l.href)}">${esc(l.label)} →</a>`).join(" ")}</li>`).join("");
+
+  const selects = FF.map(([field, label]) =>
+    `<select class="ctl" data-sf="${field}" aria-label="${esc(label)}"><option value="">${esc(label)}: все</option>${optsFor(field).map(([v, c]) => `<option value="${esc(v)}">${esc(v)} (${c})</option>`).join("")}</select>`).join("");
+
+  const stagesOrder = ["1", "2", "3", "4", "5"];
+  host.innerHTML = `
+    ${howTo}
+    ${summaryHTML}
+    <div class="toolbar sv-toolbar">${selects}<button type="button" class="ctl ctl--reset" data-sreset>Сбросить</button></div>
+    <div class="result-meta" data-smeta aria-live="polite"></div>
+    <section class="sv-stages">${stagesOrder.map(stageSection).join("")}</section>
+    <section class="sv-conflicts">
+      <h2>Конфликты и открытые вопросы <span class="sv-cnt">${(ex.conflicts || []).length}</span></h2>
+      <p class="muted">Слой честности документа — не прячем. Каждый конфликт: суть, что затрагивает, кто/что решит.</p>
+      ${conflicts}
+    </section>
+    <section class="sv-next">
+      <h2>Что дальше</h2>
+      <ol class="sv-nextlist">${next}</ol>
+    </section>`;
+
+  function render() {
+    const list = rows.filter((r) => FF.every(([field]) => matches(r, field, state.filters[field])));
+    let shown = 0;
+    stagesOrder.forEach((n) => {
+      const sub = list.filter((r) => r.stageNum === n);
+      shown += sub.length;
+      const tb = host.querySelector(`[data-stage-rows="${n}"]`);
+      if (tb) tb.innerHTML = sub.map(matrixRow).join("") || `<tr><td colspan="6" class="muted">по фильтру строк нет</td></tr>`;
+    });
+    host.querySelector("[data-smeta]").textContent = `Показано ${shown} из ${rows.length} строк`;
+  }
+
+  host.querySelectorAll("[data-sf]").forEach((s) => s.addEventListener("change", (e) => { state.filters[e.target.dataset.sf] = e.target.value; render(); }));
+  host.querySelector("[data-sreset]").addEventListener("click", () => {
+    state.filters = {}; host.querySelectorAll("[data-sf]").forEach((s) => (s.value = "")); render();
+  });
+  render();
+
+  // Доскролл к этапу: sootvetstvie.html#stage-2 (со страницы «Этапы», ТЗ 15)
+  if (location.hash.startsWith("#stage-")) {
+    const el = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+    if (el) { el.open = true; el.scrollIntoView({ block: "start" }); el.classList.add("is-target"); }
+  }
+}
+
 // ===================== Метрики (metrics.html) =====================
 async function mountMetrics() {
   const host = document.querySelector("[data-metrics]");
@@ -2288,6 +2472,7 @@ document.addEventListener("DOMContentLoaded", () => {
   mountAgencies();
   mountMetrics();
   mountResearch();
+  mountSootv();
   mountEtapy();
   mountConcepts();
   mountProjbar();

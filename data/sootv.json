@@ -1,0 +1,2019 @@
+{
+  "source": "Соответствие исследований и логики ценности.xlsx",
+  "version": "1.2 (2026-06-12)",
+  "count": 77,
+  "painMatched": 52,
+  "rows": [
+    {
+      "stage": "1 Не мешать",
+      "stageNum": "1",
+      "block": "—",
+      "hyps": [
+        "H1.1",
+        "H1.2",
+        "H1.3"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "M-блок/паритет",
+      "painAnchor": null,
+      "pain": "Медленный авиапоиск, фильтры не покрывают сценарии → уход в чужой OBT",
+      "quote": "«ищу в АА, вижу пустоту → открываю чужой OBT»",
+      "mechanism": "—",
+      "iter": "L3.1.А Авиа-поиск и UX",
+      "artifact": "Онлайн — уровень 3 итерации.md",
+      "metricsActive": [
+        "↓ Parity gap",
+        "↑ Adoption-in-AA"
+      ],
+      "metricsTarget": [
+        "↓ Hidden-work"
+      ],
+      "moscow": "Should",
+      "reach": "PM",
+      "status": "осталось",
+      "conflict": null
+    },
+    {
+      "stage": "1 Не мешать",
+      "stageNum": "1",
+      "block": "—",
+      "hyps": [
+        "H1.2",
+        "H1.3"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "ЖД-схемы",
+      "painAnchor": null,
+      "pain": "Схема вагона не подгружается → эскалация в саппорт за выбором места",
+      "quote": "«схема не подгружается или некорректна → пишу в саппорт»",
+      "mechanism": "—",
+      "iter": "L3.1.Б ЖД-схемы вагонов",
+      "artifact": "Онлайн — уровень 3 итерации.md",
+      "metricsActive": [
+        "↓ Parity gap",
+        "↓ Support-ratio"
+      ],
+      "metricsTarget": [
+        "↓ Hidden-work"
+      ],
+      "moscow": "Should",
+      "reach": "PM",
+      "status": "осталось",
+      "conflict": "Красный флаг: резать на фундамент/рисование"
+    },
+    {
+      "stage": "1 Не мешать",
+      "stageNum": "1",
+      "block": "—",
+      "hyps": [
+        "H1.1",
+        "H1.3"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "ЖД-тарифы",
+      "painAnchor": null,
+      "pain": "Детские/льготные/составные тарифы падают с ошибками",
+      "quote": "«ребёнок <5 лет на невозвратном → ошибка»",
+      "mechanism": "—",
+      "iter": "L3.1.В ЖД-баги тарифов",
+      "artifact": "Онлайн — уровень 3 итерации.md",
+      "metricsActive": [
+        "↓ Parity gap",
+        "↓ Support-ratio"
+      ],
+      "metricsTarget": [
+        "↓ Rework rate"
+      ],
+      "moscow": "Should",
+      "reach": "PM",
+      "status": "осталось",
+      "conflict": null
+    },
+    {
+      "stage": "1 Не мешать",
+      "stageNum": "1",
+      "block": "—",
+      "hyps": [
+        "H1.1",
+        "H1.2"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "Отели-паритет",
+      "painAnchor": null,
+      "pain": "Нет фильтра по названию, фото номеров → уход в чужой OBT",
+      "quote": "«фильтр по названию есть в чужом OBT»",
+      "mechanism": "—",
+      "iter": "L3.1.Г Отели UX",
+      "artifact": "Онлайн — уровень 3 итерации.md",
+      "metricsActive": [
+        "↓ Parity gap",
+        "↑ Adoption-in-AA"
+      ],
+      "metricsTarget": [
+        "↓ Hidden-work"
+      ],
+      "moscow": "Could",
+      "reach": "PM",
+      "status": "осталось",
+      "conflict": null
+    },
+    {
+      "stage": "1 Не мешать",
+      "stageNum": "1",
+      "block": "—",
+      "hyps": [
+        "H1.1",
+        "H1.2"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "Comfort Booking",
+      "painAnchor": null,
+      "pain": "Новый поставщик интегрирован частично (корп.тарифы, аннуляции)",
+      "quote": "—",
+      "mechanism": "—",
+      "iter": "L3.1.Д Comfort Booking",
+      "artifact": "Онлайн — уровень 3 итерации.md",
+      "metricsActive": [
+        "↓ Parity gap"
+      ],
+      "metricsTarget": [
+        "—"
+      ],
+      "moscow": "Could",
+      "reach": "PM",
+      "status": "осталось",
+      "conflict": "Зависит от подтверждения объёма"
+    },
+    {
+      "stage": "1 Не мешать",
+      "stageNum": "1",
+      "block": "—",
+      "hyps": [
+        "H1.2"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "E3",
+      "painAnchor": "f-e3",
+      "pain": "Визуальный шум на странице заказа",
+      "quote": "«общий вид услуг сливается в массу, в глазах рябит»",
+      "mechanism": "—",
+      "iter": "Редизайн страницы заказа [вне Q2] → gap",
+      "artifact": "Заказы/01 Скелет уровня 3.md",
+      "metricsActive": [
+        "↓ когнитивная нагрузка"
+      ],
+      "metricsTarget": [
+        "↓ Steps-per-task"
+      ],
+      "moscow": "Could → Q3",
+      "reach": "Reach 2 (FS Travel, Аэроглобус)",
+      "status": "осталось",
+      "conflict": "GAP: вытащить точечную задачу из редизайна"
+    },
+    {
+      "stage": "1 Не мешать",
+      "stageNum": "1",
+      "block": "—",
+      "hyps": [
+        "H1.3"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "H1",
+      "painAnchor": "f-h1",
+      "pain": "Уведомления не фиксируются в истории",
+      "quote": "«потом сложно доказать клиенту, что предупреждали»",
+      "mechanism": "—",
+      "iter": "Z-C C7/C11; Админка H",
+      "artifact": "Заказы/01 Скелет; Агентская админка/01 Скелет",
+      "metricsActive": [
+        "↓ Support-ratio",
+        "↓ Incidents"
+      ],
+      "metricsTarget": [
+        "—"
+      ],
+      "moscow": "Should",
+      "reach": "Reach 1 (Аэроглобус)",
+      "status": "осталось",
+      "conflict": null
+    },
+    {
+      "stage": "1 Не мешать",
+      "stageNum": "1",
+      "block": "—",
+      "hyps": [
+        "H1.3"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "H2",
+      "painAnchor": "f-h2",
+      "pain": "Об изменениях — только аккаунт-менеджер vs неудобный ТГ",
+      "quote": "«удобно у АМ, можно задать вопрос; ТГ-канал неудобен»",
+      "mechanism": "—",
+      "iter": "Админка G4 Новости / G1 уведомления",
+      "artifact": "Агентская админка/01 Скелет уровня 3.md",
+      "metricsActive": [
+        "↓ Support-ratio"
+      ],
+      "metricsTarget": [
+        "—"
+      ],
+      "moscow": "Could",
+      "reach": "Reach 1 (Аэроглобус)",
+      "status": "осталось",
+      "conflict": "Частично пересекается с E7 (этап 2B)"
+    },
+    {
+      "stage": "1 Не мешать",
+      "stageNum": "1",
+      "block": "—",
+      "hyps": [
+        "H1.2"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "I2",
+      "painAnchor": "f-i2",
+      "pain": "Сложно определить, к какому клиенту относится обращающийся",
+      "quote": "—",
+      "mechanism": "—",
+      "iter": "Админка E6 (32550); Z-C C10",
+      "artifact": "Агентская админка/01 Скелет; Заказы/01 Скелет",
+      "metricsActive": [
+        "↓ T-op"
+      ],
+      "metricsTarget": [
+        "—"
+      ],
+      "moscow": "Could",
+      "reach": "Reach 1 (часть консов)",
+      "status": "осталось",
+      "conflict": "У части агентств не воспроизводится (Аэроглобус)"
+    },
+    {
+      "stage": "1 Не мешать",
+      "stageNum": "1",
+      "block": "—",
+      "hyps": [
+        "H1.1"
+      ],
+      "hypStatus": "подтв. (спрос) + ⚠️",
+      "painCode": "6.1-6.3",
+      "painAnchor": null,
+      "pain": "МП как полноценное рабочее место агента/супервайзера",
+      "quote": "≈30% времени на мобильных; 20-30% вне офиса",
+      "mechanism": "—",
+      "iter": "Админка I3 адаптив + Z-C mobile → частичный gap",
+      "artifact": "Агентская админка/01 Скелет; Заказы/01 Скелет",
+      "metricsActive": [
+        "↓ TTFO (proxy)"
+      ],
+      "metricsTarget": [
+        "—"
+      ],
+      "moscow": "Should",
+      "reach": "PM",
+      "status": "осталось",
+      "conflict": "Зависит от блоков 1+2 (конфликт №4)"
+    },
+    {
+      "stage": "1 Не мешать",
+      "stageNum": "1",
+      "block": "—",
+      "hyps": [
+        "H1.2 (паритет)"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "migration",
+      "painAnchor": null,
+      "pain": "Авторизация, ограничения авиа, ЧБ, профайлы, суточные, новости — из Планеты в АА",
+      "quote": "—",
+      "mechanism": "—",
+      "iter": "Админка A3/A6,B3,C1/C2,E1/E6,F1/F3,G4,I4,J1",
+      "artifact": "Агентская админка/01 Скелет уровня 3.md",
+      "metricsActive": [
+        "↓ Parity gap",
+        "↑ Adoption-in-AA"
+      ],
+      "metricsTarget": [
+        "—"
+      ],
+      "moscow": "Could",
+      "reach": "PM",
+      "status": "осталось",
+      "conflict": "Паритет × редко = Could"
+    },
+    {
+      "stage": "1 Не мешать",
+      "stageNum": "1",
+      "block": "—",
+      "hyps": [
+        "H1.4"
+      ],
+      "hypStatus": "подтв. косвенно (E.5)",
+      "painCode": "Долг доверия (E.5)",
+      "painAnchor": null,
+      "pain": "Один сбой → «в терминале надёжнее», не пользуется даже существующим функционалом",
+      "quote": "—",
+      "mechanism": "—",
+      "iter": "Сквозная работа надёжности/прозрачности/обратимости (не одна итерация)",
+      "artifact": "Дерево работ E.5/D.1",
+      "metricsActive": [
+        "↑ Adoption-in-AA при закрытом Parity gap",
+        "↓ Incidents",
+        "↓ Rework rate"
+      ],
+      "metricsTarget": [
+        "—"
+      ],
+      "moscow": "Must (сквозное)",
+      "reach": "PM",
+      "status": "осталось",
+      "conflict": "Доверие-гейт без владельца-итерации; диагностика — Parity gap закрыт, Adoption низкий"
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2A",
+      "hyps": [
+        "H2.1"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "C1",
+      "painAnchor": "f-c1",
+      "pain": "Нет «создать запрос на услугу из выдачи» (есть у SmartWay)",
+      "quote": "«в Ракете нужно идти и оформлять оффлайн вручную»",
+      "mechanism": "Оффлайн 4.0",
+      "iter": "Ф3 И1 Кнопка «Запросить услугу»",
+      "artifact": "Оффлайн 4.0/Единый бэклог задач оффлайн.md",
+      "metricsActive": [
+        "↓ T-op",
+        "↑ Self-service share"
+      ],
+      "metricsTarget": [
+        "↓ Steps-per-task"
+      ],
+      "moscow": "Should",
+      "reach": "PM (Discovery)",
+      "status": "осталось",
+      "conflict": "Дешёвый паритет с SmartWay"
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2A",
+      "hyps": [
+        "H2.1"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "C2",
+      "painAnchor": "f-c2",
+      "pain": "Оффлайн-услуга не связана с системой поставщика",
+      "quote": "«вводить № заказа у поставщика, чтоб Ракета подтягивала данные»",
+      "mechanism": "Мидофис",
+      "iter": "Ф2 И5 Синхрон с ЛК поставщика",
+      "artifact": "Оффлайн 4.0/Единый бэклог задач оффлайн.md",
+      "metricsActive": [
+        "↓ T-op"
+      ],
+      "metricsTarget": [
+        "↓ Hidden-work"
+      ],
+      "moscow": "Won't (Q2)",
+      "reach": "PM",
+      "status": "осталось",
+      "conflict": "Мостик к мидофису, Q3-кандидат"
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2A",
+      "hyps": [
+        "H2.1"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "C3",
+      "painAnchor": "f-c3",
+      "pain": "Несколько путешественников в одной оффлайн-услуге нельзя",
+      "quote": "—",
+      "mechanism": "Оффлайн 4.0",
+      "iter": "Ф2 И2 Групповые / Ф1 И10 мульти-билет",
+      "artifact": "Оффлайн 4.0/Единый бэклог задач оффлайн.md",
+      "metricsActive": [
+        "↓ T-op"
+      ],
+      "metricsTarget": [
+        "↓ Steps-per-task"
+      ],
+      "moscow": "Should",
+      "reach": "Reach 1 (Аэроглобус)",
+      "status": "осталось",
+      "conflict": null
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2A",
+      "hyps": [
+        "H2.1"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "C5",
+      "painAnchor": "f-c5",
+      "pain": "Справки о перелёте спрятаны, нет самообслуживания",
+      "quote": "«вообще не видят кнопки»; нужны единичные справки",
+      "mechanism": "Сервис для клиента",
+      "iter": "И1.2 Реестр справок; Z-C C1a (29876)",
+      "artifact": "Сервис для клиента/уровень 3.md; Заказы/01 Скелет",
+      "metricsActive": [
+        "↑ Self-service share",
+        "↓ T-op"
+      ],
+      "metricsTarget": [
+        "↓ Hidden-work"
+      ],
+      "moscow": "Should",
+      "reach": "Reach 1 (Corp Travel)",
+      "status": "осталось",
+      "conflict": null
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2A",
+      "hyps": [
+        "H2.6",
+        "H2.1"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "7.1",
+      "painAnchor": "f-7-1",
+      "pain": "Ручной обмен (нет интеграции с поставщиком)",
+      "quote": "«хочу быстрее передоговориться с мин. transaction cost»",
+      "mechanism": "Сервис+Рабочее место",
+      "iter": "L3.2.Б2 Обмен авиа",
+      "artifact": "Онлайн — уровень 3 итерации.md",
+      "metricsActive": [
+        "↓ T-op",
+        "↓ T-wait",
+        "↓ Support-ratio"
+      ],
+      "metricsTarget": [
+        "↑ Operations per consultant"
+      ],
+      "moscow": "Must",
+      "reach": "PM",
+      "status": "осталось",
+      "conflict": null
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2A",
+      "hyps": [
+        "H2.6"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "7.2",
+      "painAnchor": "f-7-2",
+      "pain": "Напоминание о связанных услугах при обмене",
+      "quote": "«подсказать, что проживание/трансфер придётся аннулировать»",
+      "mechanism": "Сервис+Рабочее место",
+      "iter": "L3.2.Б2 Обмен авиа",
+      "artifact": "Онлайн — уровень 3 итерации.md",
+      "metricsActive": [
+        "↓ Rework rate"
+      ],
+      "metricsTarget": [
+        "—"
+      ],
+      "moscow": "Should",
+      "reach": "PM",
+      "status": "осталось",
+      "conflict": null
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2A",
+      "hyps": [
+        "H2.6"
+      ],
+      "hypStatus": "частично (discovery)",
+      "painCode": "7.3",
+      "painAnchor": "f-7-3",
+      "pain": "Риск «угона билета», цену обмена не отдать достоверно",
+      "quote": "«нельзя забронировать билет до обмена в терминале»",
+      "mechanism": "Сервис+Рабочее место",
+      "iter": "L3.2.Б2/Б3 (Confidence ≤5)",
+      "artifact": "Онлайн — уровень 3 итерации.md",
+      "metricsActive": [
+        "—"
+      ],
+      "metricsTarget": [
+        "—"
+      ],
+      "moscow": "Should",
+      "reach": "PM",
+      "status": "осталось",
+      "conflict": "Discovery; конфликт №5 (восприятие обмена)"
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2A",
+      "hyps": [
+        "H1.2",
+        "H2.1"
+      ],
+      "hypStatus": "подтв. (4/5+)",
+      "painCode": "4.1",
+      "painAnchor": "f-4-1",
+      "pain": "Привязка билета к ФИО в групповых заказах",
+      "quote": "«Открываю каждый файл» (Татьяна, ATH)",
+      "mechanism": "Оффлайн 4.0",
+      "iter": "Z-C C4 (28034); Ф1 И10",
+      "artifact": "Заказы/01 Скелет; Оффлайн 4.0/Единый бэклог",
+      "metricsActive": [
+        "↓ T-op",
+        "↓ Rework rate"
+      ],
+      "metricsTarget": [
+        "↓ Hidden-work"
+      ],
+      "moscow": "Must",
+      "reach": "Reach 7 агентств",
+      "status": "осталось",
+      "conflict": "Главная боль документов"
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2A",
+      "hyps": [
+        "H1.2"
+      ],
+      "hypStatus": "подтв. полностью",
+      "painCode": "4.2",
+      "painAnchor": "f-4-2",
+      "pain": "Цветовые маркеры статусов билета",
+      "quote": "«Можно отправить клиенту неверный файл» (Татьяна)",
+      "mechanism": "Оффлайн 4.0",
+      "iter": "Z-C C1a/C1h статусы услуги",
+      "artifact": "Заказы/01 Скелет уровня 3.md",
+      "metricsActive": [
+        "↓ Incidents",
+        "↓ Rework rate"
+      ],
+      "metricsTarget": [
+        "—"
+      ],
+      "moscow": "Must",
+      "reach": "Reach 7 агентств",
+      "status": "осталось",
+      "conflict": null
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2A",
+      "hyps": [
+        "H1.2",
+        "H2.1"
+      ],
+      "hypStatus": "частично",
+      "painCode": "4.3",
+      "painAnchor": "f-4-3",
+      "pain": "Документы разбросаны по вкладкам, нужно единое окно",
+      "quote": "единое окно — 5-10 раз/день",
+      "mechanism": "Оффлайн 4.0",
+      "iter": "Z-C C4 Документы заказа",
+      "artifact": "Заказы/01 Скелет уровня 3.md",
+      "metricsActive": [
+        "↓ Steps-per-task",
+        "↓ T-op"
+      ],
+      "metricsTarget": [
+        "—"
+      ],
+      "moscow": "Should",
+      "reach": "Reach 7 агентств",
+      "status": "осталось",
+      "conflict": "Фильтрация по типам — частичный gap"
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2A",
+      "hyps": [
+        "H2.1"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "4.5",
+      "painAnchor": "f-4-5",
+      "pain": "Нет массовой выгрузки (ZIP), нужно еженедельно",
+      "quote": "«Нельзя выгрузить всё одним кликом» (KPMG)",
+      "mechanism": "Сервис для клиента",
+      "iter": "И1.1 Скачать всё архивом; Z-C C4 (28309)",
+      "artifact": "Сервис для клиента/уровень 3; Заказы/01 Скелет",
+      "metricsActive": [
+        "↑ Self-service share",
+        "↓ T-op"
+      ],
+      "metricsTarget": [
+        "↓ Steps-per-task"
+      ],
+      "moscow": "Should",
+      "reach": "Reach 1 (KPMG)",
+      "status": "осталось",
+      "conflict": null
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2A",
+      "hyps": [
+        "H2.1"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "4.7",
+      "painAnchor": "f-4-7",
+      "pain": "Оффлайн (багаж/места) не синхронизируется → дубли",
+      "quote": "цена в Ракете не обновляется при докупке",
+      "mechanism": "Оффлайн 4.0",
+      "iter": "Ф1 И1-И4; Ф1 И7 дубль",
+      "artifact": "Оффлайн 4.0/Единый бэклог задач оффлайн.md",
+      "metricsActive": [
+        "↓ Rework rate",
+        "↓ Hidden-work"
+      ],
+      "metricsTarget": [
+        "—"
+      ],
+      "moscow": "Should",
+      "reach": "Reach 3 (Global Air, ATH, KPMG)",
+      "status": "осталось",
+      "conflict": null
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2A",
+      "hyps": [
+        "H2.1"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "4.8",
+      "painAnchor": null,
+      "pain": "Справки делаются вручную через 1С, нужен PDF в 1 клик",
+      "quote": "«сейчас делаем вручную» (Ирина)",
+      "mechanism": "Сервис для клиента",
+      "iter": "И1.2 Реестр справок",
+      "artifact": "Сервис для клиента/уровень 3.md",
+      "metricsActive": [
+        "↓ T-op"
+      ],
+      "metricsTarget": [
+        "—"
+      ],
+      "moscow": "Should",
+      "reach": "Reach 1 (Corp Travel)",
+      "status": "осталось",
+      "conflict": null
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2A",
+      "hyps": [
+        "H2.6"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "B1",
+      "painAnchor": "f-b1",
+      "pain": "Ручное дробление заказа на N путешественников",
+      "quote": "«прошу клиента разделить заказ»",
+      "mechanism": "Рабочее место",
+      "iter": "Z-C C8 (12890) → частичный gap",
+      "artifact": "Заказы/01 Скелет уровня 3.md",
+      "metricsActive": [
+        "↓ T-op"
+      ],
+      "metricsTarget": [
+        "↓ Steps-per-task"
+      ],
+      "moscow": "Should",
+      "reach": "Reach 1 (IBC)",
+      "status": "осталось",
+      "conflict": "GAP: групповое оформление без дробления"
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2A",
+      "hyps": [
+        "H2.6"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "B2",
+      "painAnchor": "f-b2",
+      "pain": "Порядок услуг важен на странице заказа, не в корзине",
+      "quote": "«авиа/ЖД первыми — билеты быстро раскупаются»",
+      "mechanism": "Рабочее место",
+      "iter": "GAP (нет итерации)",
+      "artifact": "—",
+      "metricsActive": [
+        "↓ Steps-per-task"
+      ],
+      "metricsTarget": [
+        "—"
+      ],
+      "moscow": "Could",
+      "reach": "Reach 1 (IBC)",
+      "status": "осталось",
+      "conflict": "GAP"
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2A",
+      "hyps": [
+        "H2.1"
+      ],
+      "hypStatus": "подтв. (цифры!)",
+      "painCode": "3.1",
+      "painAnchor": "f-3-1",
+      "pain": "Контекстные подсказки в чате (возврат/багаж/обмен)",
+      "quote": "авиачаты: возвраты 79%, багаж 60%, обмены 22%",
+      "mechanism": "Сервис для клиента",
+      "iter": "GAP (новая); частично L3.1.А (34817)",
+      "artifact": "Онлайн — уровень 3 итерации.md",
+      "metricsActive": [
+        "↑ Self-service share"
+      ],
+      "metricsTarget": [
+        "↓ T-op"
+      ],
+      "moscow": "Should",
+      "reach": "данные аналитики 2025",
+      "status": "осталось",
+      "conflict": "GAP: единственный блок с твёрдыми цифрами"
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2A",
+      "hyps": [
+        "H2.1"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "E1",
+      "painAnchor": "f-e1",
+      "pain": "ЮЛ путешественника спрятано (нужно для 1С)",
+      "quote": "«нужно проваливаться в профайл и листать вниз» (FS Travel)",
+      "mechanism": "Мидофис",
+      "iter": "Z-A A3 (29078); Z-C C9 (28037)",
+      "artifact": "Заказы/01 Скелет уровня 3.md",
+      "metricsActive": [
+        "↓ T-op"
+      ],
+      "metricsTarget": [
+        "↓ Hidden-work"
+      ],
+      "moscow": "Should",
+      "reach": "Reach 1 (FS Travel)",
+      "status": "осталось",
+      "conflict": "Мостик к мидофису (1С)"
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2A",
+      "hyps": [
+        "H2.6"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "A-поток",
+      "painAnchor": null,
+      "pain": "Вторичные операции авиа: возврат/обмен/частичные/статусы",
+      "quote": "эскалация в саппорт → T-wait часы/дни",
+      "mechanism": "Сервис+Рабочее место",
+      "iter": "L3.2.Б1 возврат, Б2 обмен, Б3 частичные, Б4 ретрив, Б5 ЖД",
+      "artifact": "Онлайн — уровень 3 итерации.md",
+      "metricsActive": [
+        "↓ T-op",
+        "↓ T-wait",
+        "↓ Support-ratio"
+      ],
+      "metricsTarget": [
+        "↑ Operations per consultant"
+      ],
+      "moscow": "Must (Б1)",
+      "reach": "PM",
+      "status": "осталось",
+      "conflict": "Адресат: Strategists IBC/ATH"
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2A",
+      "hyps": [
+        "H2.1"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "Сервис",
+      "painAnchor": null,
+      "pain": "Справки/статусы/правки/срезы переносятся на клиента — унос операции (✗ 12.4)",
+      "quote": "—",
+      "mechanism": "Сервис для клиента",
+      "iter": "И1.*-И6.* (36 итераций)",
+      "artifact": "Сервис для клиента/уровень 3.md",
+      "metricsActive": [
+        "↑ Self-service share",
+        "↓ T-op"
+      ],
+      "metricsTarget": [
+        "↓ Steps-per-task"
+      ],
+      "moscow": "Should",
+      "reach": "топ-5 / Strategists+Growth",
+      "status": "осталось",
+      "conflict": "✗ 12.4: унос операции к клиенту — минус PV без realignment мотивации (находка E.6)"
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2B",
+      "hyps": [
+        "H2.3",
+        "H1.3"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "A1",
+      "painAnchor": "f-a1",
+      "pain": "Срыв ТЛ из-за затянутой авторизации, узнаёт постфактум",
+      "quote": "«чел, который авторизует, в командировке» (IBC)",
+      "mechanism": "Рабочее место",
+      "iter": "Z-C C6 авторизация и статусы",
+      "artifact": "Заказы/01 Скелет уровня 3.md",
+      "metricsActive": [
+        "↓ T-wait",
+        "↓ Support-ratio"
+      ],
+      "metricsTarget": [
+        "↓ Blocker-time"
+      ],
+      "moscow": "Must",
+      "reach": "Reach 1 (IBC)",
+      "status": "осталось",
+      "conflict": null
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2B",
+      "hyps": [
+        "H2.3"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "A2",
+      "painAnchor": "f-a2",
+      "pain": "Цикл пересоздания при срыве ТЛ (ручная петля)",
+      "quote": "—",
+      "mechanism": "Рабочее место + Сервис",
+      "iter": "Z-C C6; И5.2 уведомление об аннуляции",
+      "artifact": "Заказы/01 Скелет; Сервис для клиента/уровень 3",
+      "metricsActive": [
+        "↓ Rework rate",
+        "↓ T-op"
+      ],
+      "metricsTarget": [
+        "—"
+      ],
+      "moscow": "Should",
+      "reach": "Reach 1 (IBC)",
+      "status": "осталось",
+      "conflict": null
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2B",
+      "hyps": [
+        "H2.3",
+        "H1.2"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "A4",
+      "painAnchor": "f-a4",
+      "pain": "Аннуляция — чёрный ящик, жмут «Запрос аннуляции» по разу",
+      "quote": "«жмут по несколько раз, непонятно почему не аннулируется»",
+      "mechanism": "Рабочее место",
+      "iter": "Z-C C6; L3.2.Б1 (35851 «Отменить»)",
+      "artifact": "Заказы/01 Скелет; Онлайн — уровень 3",
+      "metricsActive": [
+        "↓ Incidents",
+        "↓ Support-ratio"
+      ],
+      "metricsTarget": [
+        "—"
+      ],
+      "moscow": "Must",
+      "reach": "Reach 1+",
+      "status": "осталось",
+      "conflict": null
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2B",
+      "hyps": [
+        "H2.3"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "A5",
+      "painAnchor": "f-a5",
+      "pain": "Статус «В обработке» не считывается, клиенты звонят",
+      "quote": "«почему услуга в обработке? — а её надо выписать»",
+      "mechanism": "Рабочее место",
+      "iter": "Z-C C6 (24523 «ожидаем поставщика»)",
+      "artifact": "Заказы/01 Скелет уровня 3.md",
+      "metricsActive": [
+        "↓ Support-ratio",
+        "↑ SLA hit"
+      ],
+      "metricsTarget": [
+        "—"
+      ],
+      "moscow": "Should",
+      "reach": "Reach 1+",
+      "status": "осталось",
+      "conflict": null
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2B",
+      "hyps": [
+        "H2.2"
+      ],
+      "hypStatus": "подтв. дословно",
+      "painCode": "D1",
+      "painAnchor": "f-d1",
+      "pain": "Денежные настройки (такса ХТ, туркоды, 3D) — только ТП Ракеты",
+      "quote": "«хотелось бы делать самим… все связаны с деньгами» (Бурмистрова)",
+      "mechanism": "Рабочее место",
+      "iter": "Админка A Финансы; B Услуги/оплата",
+      "artifact": "Агентская админка/01 Скелет уровня 3.md",
+      "metricsActive": [
+        "↓ Support-ratio",
+        "↑ Self-service share"
+      ],
+      "metricsTarget": [
+        "—"
+      ],
+      "moscow": "Should",
+      "reach": "Growth leaders (Аэроглобус)",
+      "status": "осталось",
+      "conflict": "+ к PV по 12.4 (автономия)"
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2B",
+      "hyps": [
+        "H2.2"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "5.1",
+      "painAnchor": "f-5-1",
+      "pain": "ЧБ-списки авиакомпаний — только в Планете",
+      "quote": "хотят селф-сервис в АА по контракту",
+      "mechanism": "Рабочее место",
+      "iter": "Админка D Чёрные/белые списки",
+      "artifact": "Агентская админка/01 Скелет уровня 3.md",
+      "metricsActive": [
+        "↓ Support-ratio"
+      ],
+      "metricsTarget": [
+        "—"
+      ],
+      "moscow": "Should",
+      "reach": "FS Travel, Аэроглобус",
+      "status": "осталось",
+      "conflict": "Кейс миграции из Планеты (конфликт №1)"
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2B",
+      "hyps": [
+        "H2.2"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "5.2",
+      "painAnchor": "f-5-2",
+      "pain": "Взаимоисключение Ч/Б, уровни привязки",
+      "quote": "контракт/поставщик/политика клиента",
+      "mechanism": "Рабочее место",
+      "iter": "Админка D1 стратегия + представление",
+      "artifact": "Агентская админка/01 Скелет уровня 3.md",
+      "metricsActive": [
+        "↓ Rework rate"
+      ],
+      "metricsTarget": [
+        "—"
+      ],
+      "moscow": "Should",
+      "reach": "PM",
+      "status": "осталось",
+      "conflict": null
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2B",
+      "hyps": [
+        "H2.2"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "5.3",
+      "painAnchor": "f-5-3",
+      "pain": "Массовые операции и пресеты (100+ клиентов)",
+      "quote": "нужны фильтры, поиск, группировка",
+      "mechanism": "Рабочее место",
+      "iter": "Админка D3 массовые операции",
+      "artifact": "Агентская админка/01 Скелет уровня 3.md",
+      "metricsActive": [
+        "↓ T-op"
+      ],
+      "metricsTarget": [
+        "—"
+      ],
+      "moscow": "Could",
+      "reach": "PM",
+      "status": "осталось",
+      "conflict": null
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2B",
+      "hyps": [
+        "H2.2"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "5.4",
+      "painAnchor": "f-5-4",
+      "pain": "Полная история изменений с причиной",
+      "quote": "кто/когда/что + причина (письмо/тикет)",
+      "mechanism": "Рабочее место",
+      "iter": "Админка H История + D",
+      "artifact": "Агентская админка/01 Скелет уровня 3.md",
+      "metricsActive": [
+        "↓ Incidents"
+      ],
+      "metricsTarget": [
+        "—"
+      ],
+      "moscow": "Could",
+      "reach": "PM",
+      "status": "осталось",
+      "conflict": null
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2B",
+      "hyps": [
+        "H2.3"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "F3",
+      "painAnchor": "f-f3",
+      "pain": "Комментарии: уведомление не ведёт к услуге, нельзя редактировать",
+      "quote": "—",
+      "mechanism": "Рабочее место",
+      "iter": "Z-C C11 (10319), C7 история",
+      "artifact": "Заказы/01 Скелет уровня 3.md",
+      "metricsActive": [
+        "↓ T-op"
+      ],
+      "metricsTarget": [
+        "—"
+      ],
+      "moscow": "Could",
+      "reach": "PM",
+      "status": "осталось",
+      "conflict": null
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2B",
+      "hyps": [
+        "H2.5",
+        "H2.3"
+      ],
+      "hypStatus": "подтв. (50+/день)",
+      "painCode": "1.1",
+      "painAnchor": "f-1-1",
+      "pain": "Ручная пересылка писем из общего чата",
+      "quote": "до 50+ запросов/день на агентство",
+      "mechanism": "Рабочее место",
+      "iter": "E1 Раздел «Чаты»",
+      "artifact": "Единый чат/Единый чат — уровень 3.md",
+      "metricsActive": [
+        "↓ T-op",
+        "↓ T-wait"
+      ],
+      "metricsTarget": [
+        "↓ Blocker-time"
+      ],
+      "moscow": "Must",
+      "reach": "4-5 агентств",
+      "status": "осталось",
+      "conflict": null
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2B",
+      "hyps": [
+        "H2.5"
+      ],
+      "hypStatus": "подтв. (40%)",
+      "painCode": "1.2",
+      "painAnchor": "f-1-2",
+      "pain": "Нет привязки обращения к услуге",
+      "quote": "до 40% времени на маршрутизацию",
+      "mechanism": "Рабочее место + Сервис",
+      "iter": "E6 правая панель; E8 метки",
+      "artifact": "Единый чат/Единый чат — уровень 3.md",
+      "metricsActive": [
+        "↓ T-op",
+        "↓ Hidden-work"
+      ],
+      "metricsTarget": [
+        "↓ Steps-per-task"
+      ],
+      "moscow": "Must",
+      "reach": "4-5 агентств",
+      "status": "осталось",
+      "conflict": null
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2B",
+      "hyps": [
+        "H2.5"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "1.3",
+      "painAnchor": "f-1-3",
+      "pain": "Нет единого инбокса со сквозной историей и статусами",
+      "quote": "Новое / В работе / Решено",
+      "mechanism": "Рабочее место",
+      "iter": "E1 + E2 поиск/фильтры",
+      "artifact": "Единый чат/Единый чат — уровень 3.md",
+      "metricsActive": [
+        "↓ T-op"
+      ],
+      "metricsTarget": [
+        "↓ T-wait"
+      ],
+      "moscow": "Must",
+      "reach": "4-5 агентств",
+      "status": "осталось",
+      "conflict": null
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2B",
+      "hyps": [
+        "H2.5"
+      ],
+      "hypStatus": "частично",
+      "painCode": "1.4",
+      "painAnchor": "f-1-4",
+      "pain": "Нет автоматической маршрутизации (тип/время → 24/7)",
+      "quote": "авиа → авиаотдел; нерабочее время → 24/7",
+      "mechanism": "Рабочее место",
+      "iter": "E3 вкладки → частичный gap",
+      "artifact": "Единый чат/Единый чат — уровень 3.md",
+      "metricsActive": [
+        "↓ T-wait"
+      ],
+      "metricsTarget": [
+        "—"
+      ],
+      "moscow": "Should",
+      "reach": "4-5 агентств",
+      "status": "осталось",
+      "conflict": "GAP: маршрутизация по времени/типу"
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2B",
+      "hyps": [
+        "H2.5"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "1.5",
+      "painAnchor": "f-1-5",
+      "pain": "Нельзя назначить нескольких ответственных за услугу",
+      "quote": "только один email",
+      "mechanism": "Рабочее место",
+      "iter": "GAP (нет итерации)",
+      "artifact": "—",
+      "metricsActive": [
+        "↓ Incidents"
+      ],
+      "metricsTarget": [
+        "—"
+      ],
+      "moscow": "Could",
+      "reach": "KazTour, Corp Travel",
+      "status": "осталось",
+      "conflict": "GAP"
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2B",
+      "hyps": [
+        "H2.5"
+      ],
+      "hypStatus": "подтв. (50-60%)",
+      "painCode": "1.6",
+      "painAnchor": "f-1-6",
+      "pain": "Нет шаблонов ответов",
+      "quote": "50-60% обращений повторяющиеся",
+      "mechanism": "Рабочее место",
+      "iter": "Ф2 И4 шаблоны (частично) → частичный gap",
+      "artifact": "Оффлайн 4.0/Единый бэклог задач оффлайн.md",
+      "metricsActive": [
+        "↓ T-op"
+      ],
+      "metricsTarget": [
+        "—"
+      ],
+      "moscow": "Should",
+      "reach": "PM",
+      "status": "осталось",
+      "conflict": "GAP: шаблоны в чате"
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2B",
+      "hyps": [
+        "H2.3"
+      ],
+      "hypStatus": "подтв. (макет)",
+      "painCode": "2.1-2.5",
+      "painAnchor": null,
+      "pain": "Архитектура единого чата (раздел, вкладки, уведомления)",
+      "quote": "push + почта с warning «ответьте в Ракете»",
+      "mechanism": "Рабочее место",
+      "iter": "E1-E7 (весь блок)",
+      "artifact": "Единый чат/Единый чат — уровень 3.md",
+      "metricsActive": [
+        "↓ T-op",
+        "↑ Self-service"
+      ],
+      "metricsTarget": [
+        "↓ Blocker-time"
+      ],
+      "moscow": "Must→Should",
+      "reach": "KPMG, Santo+KazTour",
+      "status": "осталось",
+      "conflict": "Риск Талеб 12.1: не взлетает без E7+мобайл"
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2B",
+      "hyps": [
+        "H2.3"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "E4",
+      "painAnchor": "f-e4",
+      "pain": "Поставщик и номер услуги спрятаны (сверка с ЛК)",
+      "quote": "—",
+      "mechanism": "Рабочее место",
+      "iter": "Z-C C1a (18461), C9 (28037)",
+      "artifact": "Заказы/01 Скелет уровня 3.md",
+      "metricsActive": [
+        "↓ T-op"
+      ],
+      "metricsTarget": [
+        "—"
+      ],
+      "moscow": "Could",
+      "reach": "Reach 1 (Аэроглобус)",
+      "status": "осталось",
+      "conflict": null
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2B",
+      "hyps": [
+        "H2.3"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "E5",
+      "painAnchor": "f-e5",
+      "pain": "Статус «Аннулирована» не разбит на два",
+      "quote": "человек аннулировал / не подтвердили бронь",
+      "mechanism": "Рабочее место",
+      "iter": "Z-C C6/C1a (17315)",
+      "artifact": "Заказы/01 Скелет уровня 3.md",
+      "metricsActive": [
+        "↓ Incidents"
+      ],
+      "metricsTarget": [
+        "—"
+      ],
+      "moscow": "Could",
+      "reach": "PM",
+      "status": "осталось",
+      "conflict": null
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2B",
+      "hyps": [
+        "H2.3 (через Big job супервизора)"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "Супервизор: дашборд SLA",
+      "painAnchor": null,
+      "pain": "Риск-SLA и балансировка нагрузки команды не видны",
+      "quote": "—",
+      "mechanism": "Рабочее место агентства",
+      "iter": "Дашборд SLA / загрузка",
+      "artifact": "Рабочее место агентства — уровень 2",
+      "metricsActive": [
+        "↓ T-wait"
+      ],
+      "metricsTarget": [
+        "↑ SLA hit агентства"
+      ],
+      "moscow": "Should",
+      "reach": "PM",
+      "status": "осталось",
+      "conflict": "Находка E.1: обслуживается через подцель 2 косвенно"
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2B",
+      "hyps": [
+        "H2.3"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "Супервизор: история кейса",
+      "painAnchor": null,
+      "pain": "При эскалации к руководству клиента нет полной истории в один клик",
+      "quote": "—",
+      "mechanism": "Заказы",
+      "iter": "Z-C История заказа",
+      "artifact": "Заказы — уровень 3",
+      "metricsActive": [
+        "↓ T-op",
+        "↓ Incidents"
+      ],
+      "metricsTarget": [
+        "—"
+      ],
+      "moscow": "Should",
+      "reach": "PM",
+      "status": "осталось",
+      "conflict": "Находка E.1"
+    },
+    {
+      "stage": "2 Снимать нагрузку",
+      "stageNum": "2",
+      "block": "2B",
+      "hyps": [
+        "H2.3"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "Супервизор: отчёт ошибок",
+      "painAnchor": null,
+      "pain": "Повторы/переработки по типам услуг не агрегируются за период",
+      "quote": "—",
+      "mechanism": "Рабочее место агентства",
+      "iter": "Отчёт по источникам ошибок",
+      "artifact": "Рабочее место агентства — уровень 2",
+      "metricsActive": [
+        "↓ Rework rate"
+      ],
+      "metricsTarget": [
+        "—"
+      ],
+      "moscow": "Could",
+      "reach": "PM",
+      "status": "осталось",
+      "conflict": "Находка E.1"
+    },
+    {
+      "stage": "3 Сохранять экономику",
+      "stageNum": "3",
+      "block": "—",
+      "hyps": [
+        "H3.1a"
+      ],
+      "hypStatus": "подтв. (косвенно)",
+      "painCode": "C4",
+      "painAnchor": "f-c4",
+      "pain": "Сбор за обмен/возврат не учитывается → «баланс некорректный»",
+      "quote": "«данные по балансу некорректные» (Аэроглобус)",
+      "mechanism": "Баланс",
+      "iter": "Баланс [Won't]; Ф1 И8 сборы (частично)",
+      "artifact": "Агентская админка/K; Оффлайн 4.0/Единый бэклог",
+      "metricsActive": [
+        "↓ потеря маржи"
+      ],
+      "metricsTarget": [
+        "↓ Time-to-cash"
+      ],
+      "moscow": "Won't (Q2)",
+      "reach": "Reach 1 (Аэроглобус)",
+      "status": "осталось",
+      "conflict": "Этап 3, вне Q2"
+    },
+    {
+      "stage": "3 Сохранять экономику",
+      "stageNum": "3",
+      "block": "—",
+      "hyps": [
+        "H3.1a"
+      ],
+      "hypStatus": "подтв.",
+      "painCode": "4.7",
+      "painAnchor": "f-4-7",
+      "pain": "Оффлайн не синхронизируется, цена не обновляется при докупке",
+      "quote": "—",
+      "mechanism": "Оффлайн 4.0",
+      "iter": "Ф1 И1-И4 модель услуги",
+      "artifact": "Оффлайн 4.0/Единый бэклог задач оффлайн.md",
+      "metricsActive": [
+        "↓ Hidden-work"
+      ],
+      "metricsTarget": [
+        "—"
+      ],
+      "moscow": "Should (как 2A)",
+      "reach": "Reach 3",
+      "status": "осталось",
+      "conflict": null
+    },
+    {
+      "stage": "3 Сохранять экономику",
+      "stageNum": "3",
+      "block": "—",
+      "hyps": [
+        "H3.4"
+      ],
+      "hypStatus": "подтв. (CSV)",
+      "painCode": "H3.4-поток",
+      "painAnchor": null,
+      "pain": "Услуги оформляются ВНЕ Ракеты (ЛК поставщика, GDS, почта)",
+      "quote": "ATH 6.4%, KazTour 4.7%, Космос 4.3% оффлайна",
+      "mechanism": "Оффлайн 4.0",
+      "iter": "Ф3 И1 Запрос на услугу (бывш. Ф4)",
+      "artifact": "Оффлайн 4.0/Единый бэклог задач оффлайн.md",
+      "metricsActive": [
+        "↑ Total services per agency (на согл.)"
+      ],
+      "metricsTarget": [
+        "↓ Time-to-cash"
+      ],
+      "moscow": "Should",
+      "reach": "PM (Discovery)",
+      "status": "осталось",
+      "conflict": "Метрика не согласована (откр. вопрос #8)"
+    },
+    {
+      "stage": "3 Сохранять экономику",
+      "stageNum": "3",
+      "block": "—",
+      "hyps": [
+        "H3.2 (втор. H4.1)"
+      ],
+      "hypStatus": "не проверялась",
+      "painCode": "И1.3",
+      "painAnchor": null,
+      "pain": "Справки бесплатны, не отражены в финмодели",
+      "quote": "—",
+      "mechanism": "Сервис для клиента",
+      "iter": "И1.3 Сборы для справок",
+      "artifact": "Сервис для клиента/уровень 3.md",
+      "metricsActive": [
+        "↓ Time-to-cash"
+      ],
+      "metricsTarget": [
+        "—"
+      ],
+      "moscow": "Could",
+      "reach": "PM",
+      "status": "осталось",
+      "conflict": "Нужен customer dev у Strategists"
+    },
+    {
+      "stage": "3 Сохранять экономику",
+      "stageNum": "3",
+      "block": "—",
+      "hyps": [
+        "H3.x"
+      ],
+      "hypStatus": "сигнал",
+      "painCode": "J1",
+      "painAnchor": "f-j1",
+      "pain": "CSV в 1С как замена интеграции; отчёт по командировкам",
+      "quote": "грузят CSV в 1С (KPMG)",
+      "mechanism": "Мидофис",
+      "iter": "J Отчётность [вне Q2]",
+      "artifact": "Синтез (блок J)",
+      "metricsActive": [
+        "—"
+      ],
+      "metricsTarget": [
+        "—"
+      ],
+      "moscow": "Won't (Q2)",
+      "reach": "Reach 1 (KPMG)",
+      "status": "осталось",
+      "conflict": null
+    },
+    {
+      "stage": "3 Сохранять экономику",
+      "stageNum": "3",
+      "block": "—",
+      "hyps": [
+        "H3.x"
+      ],
+      "hypStatus": "сигнал",
+      "painCode": "J2",
+      "painAnchor": "f-j2",
+      "pain": "Один отель называется по-разному → не схлопывается",
+      "quote": "—",
+      "mechanism": "Мидофис",
+      "iter": "[вне Q2]",
+      "artifact": "Синтез (блок J)",
+      "metricsActive": [
+        "—"
+      ],
+      "metricsTarget": [
+        "—"
+      ],
+      "moscow": "Won't (Q2)",
+      "reach": "Reach 1 (KPMG)",
+      "status": "осталось",
+      "conflict": null
+    },
+    {
+      "stage": "4 Увеличить маржу",
+      "stageNum": "4",
+      "block": "—",
+      "hyps": [
+        "H4.1"
+      ],
+      "hypStatus": "подтв. через D1",
+      "painCode": "D1→маржа",
+      "painAnchor": null,
+      "pain": "Денежные настройки как рычаг маржи (гибкие сборы)",
+      "quote": "—",
+      "mechanism": "Рабочее место",
+      "iter": "Админка A Финансы",
+      "artifact": "Агентская админка/01 Скелет уровня 3.md",
+      "metricsActive": [
+        "↑ Operations per consultant"
+      ],
+      "metricsTarget": [
+        "—"
+      ],
+      "moscow": "вне фокуса Q2",
+      "reach": "Growth leaders",
+      "status": "осталось",
+      "conflict": "Двойная привязка: 2B + 4"
+    },
+    {
+      "stage": "4 Увеличить маржу",
+      "stageNum": "4",
+      "block": "—",
+      "hyps": [
+        "H4.2"
+      ],
+      "hypStatus": "частично",
+      "painCode": "редакт.клиентом",
+      "painAnchor": null,
+      "pain": "Редактирование услуг клиентом (селф-сервис)",
+      "quote": "—",
+      "mechanism": "Сервис для клиента",
+      "iter": "И3.1-И3.3",
+      "artifact": "Сервис для клиента/уровень 3.md",
+      "metricsActive": [
+        "↑ Self-service share"
+      ],
+      "metricsTarget": [
+        "↑ Operations per consultant"
+      ],
+      "moscow": "вне фокуса Q2",
+      "reach": "Strategists+Growth",
+      "status": "осталось",
+      "conflict": null
+    },
+    {
+      "stage": "5 Новые деньги",
+      "stageNum": "5",
+      "block": "—",
+      "hyps": [
+        "H5.1-H5.3"
+      ],
+      "hypStatus": "не подтв. интервью",
+      "painCode": "платные модули",
+      "painAnchor": null,
+      "pain": "Платные справки / модули поверх",
+      "quote": "—",
+      "mechanism": "Рабочее место",
+      "iter": "И1.3; Предложения 2.0 [Won't]",
+      "artifact": "Сервис для клиента; Предложения 2.0/01 Скелет",
+      "metricsActive": [
+        "—"
+      ],
+      "metricsTarget": [
+        "—"
+      ],
+      "moscow": "Won't (Q2)",
+      "reach": "Strategists IBC/ATH",
+      "status": "осталось",
+      "conflict": "H5 из value ladder, не из интервью"
+    },
+    {
+      "stage": "1/2",
+      "stageNum": "1",
+      "block": "—",
+      "hyps": [
+        "—"
+      ],
+      "hypStatus": "✅ закрыто",
+      "painCode": "A3",
+      "painAnchor": "f-a3",
+      "pain": "Баг отображения ТЛ при бронировании далеко вперёд",
+      "quote": null,
+      "mechanism": "—",
+      "iter": "—",
+      "artifact": "Синтез (блок A)",
+      "metricsActive": [],
+      "metricsTarget": [],
+      "moscow": "—",
+      "reach": "—",
+      "status": "сделано",
+      "conflict": "⚠️ перепроверить vs новые находки"
+    },
+    {
+      "stage": "1/2",
+      "stageNum": "1",
+      "block": "—",
+      "hyps": [
+        "—"
+      ],
+      "hypStatus": "✅ закрыто",
+      "painCode": "A6",
+      "painAnchor": "f-a6",
+      "pain": "Кнопка «Запрос аннуляции» спрятана",
+      "quote": null,
+      "mechanism": "—",
+      "iter": "—",
+      "artifact": "Синтез (блок A)",
+      "metricsActive": [],
+      "metricsTarget": [],
+      "moscow": "—",
+      "reach": "—",
+      "status": "сделано",
+      "conflict": null
+    },
+    {
+      "stage": "1/2",
+      "stageNum": "1",
+      "block": "—",
+      "hyps": [
+        "—"
+      ],
+      "hypStatus": "✅ закрыто",
+      "painCode": "E2",
+      "painAnchor": "f-e2",
+      "pain": "Нет фильтров по дате создания / номеру услуги-билета",
+      "quote": null,
+      "mechanism": "—",
+      "iter": "—",
+      "artifact": "Синтез (блок E)",
+      "metricsActive": [],
+      "metricsTarget": [],
+      "moscow": "—",
+      "reach": "—",
+      "status": "сделано",
+      "conflict": null
+    },
+    {
+      "stage": "1/2",
+      "stageNum": "1",
+      "block": "—",
+      "hyps": [
+        "—"
+      ],
+      "hypStatus": "✅ закрыто",
+      "painCode": "F1",
+      "painAnchor": "f-f1",
+      "pain": "При редактировании отеля не пишется, что изменено",
+      "quote": null,
+      "mechanism": "—",
+      "iter": "—",
+      "artifact": "Синтез (блок F)",
+      "metricsActive": [],
+      "metricsTarget": [],
+      "moscow": "—",
+      "reach": "—",
+      "status": "сделано",
+      "conflict": "⚠️ конфликт №3: vs 4.6"
+    },
+    {
+      "stage": "1/2",
+      "stageNum": "1",
+      "block": "—",
+      "hyps": [
+        "—"
+      ],
+      "hypStatus": "✅ закрыто",
+      "painCode": "F2",
+      "painAnchor": "f-f2",
+      "pain": "По действиям Ракеты не встаёт ФИО деятеля",
+      "quote": null,
+      "mechanism": "—",
+      "iter": "—",
+      "artifact": "Синтез (блок F)",
+      "metricsActive": [],
+      "metricsTarget": [],
+      "moscow": "—",
+      "reach": "—",
+      "status": "сделано",
+      "conflict": "⚠️ конфликт №3"
+    },
+    {
+      "stage": "1/2",
+      "stageNum": "1",
+      "block": "—",
+      "hyps": [
+        "—"
+      ],
+      "hypStatus": "✅ закрыто",
+      "painCode": "G1",
+      "painAnchor": "f-g1",
+      "pain": "В чат нельзя прикрепить файл/скриншот",
+      "quote": null,
+      "mechanism": "—",
+      "iter": "—",
+      "artifact": "Синтез (блок G)",
+      "metricsActive": [],
+      "metricsTarget": [],
+      "moscow": "—",
+      "reach": "—",
+      "status": "сделано",
+      "conflict": "⚠️ конфликт №3: vs 1.x"
+    },
+    {
+      "stage": "1/2",
+      "stageNum": "1",
+      "block": "—",
+      "hyps": [
+        "—"
+      ],
+      "hypStatus": "✅ закрыто",
+      "painCode": "G2",
+      "painAnchor": "f-g2",
+      "pain": "Окно чата при формировании альтернативы узкое",
+      "quote": null,
+      "mechanism": "—",
+      "iter": "—",
+      "artifact": "Синтез (блок G)",
+      "metricsActive": [],
+      "metricsTarget": [],
+      "moscow": "—",
+      "reach": "—",
+      "status": "сделано",
+      "conflict": null
+    },
+    {
+      "stage": "1/2",
+      "stageNum": "1",
+      "block": "—",
+      "hyps": [
+        "—"
+      ],
+      "hypStatus": "✅ закрыто",
+      "painCode": "I1",
+      "painAnchor": "f-i1",
+      "pain": "Нет выпадающего списка клиентов (настройка 124)",
+      "quote": null,
+      "mechanism": "—",
+      "iter": "—",
+      "artifact": "Синтез (блок I)",
+      "metricsActive": [],
+      "metricsTarget": [],
+      "moscow": "—",
+      "reach": "—",
+      "status": "сделано",
+      "conflict": null
+    },
+    {
+      "stage": "1 Не мешать",
+      "stageNum": "1",
+      "block": "2A онбординг",
+      "hyps": [
+        "H1.5"
+      ],
+      "hypStatus": "подтв. косвенно (кейс)",
+      "painCode": "Онбординг агентства",
+      "painAnchor": null,
+      "pain": "Тяжёлый онбординг тормозит запуск: барьер в агентстве как организации (перенос данных, обучение, передача внедрение→саппорт), не в интерфейсе консультанта (H1.2)",
+      "quote": "Симпл Флайт −41.5% ops MoM, май 2026",
+      "mechanism": "Процесс подключения (не продукт)",
+      "iter": "GAP — процесс+сервис, не итерация",
+      "artifact": "Свод по агентствам 2026-05.xlsx",
+      "metricsActive": [
+        "↑ доля активированных (на согл.)"
+      ],
+      "metricsTarget": [
+        "TTFO"
+      ],
+      "moscow": "—",
+      "reach": "новички",
+      "status": "GAP",
+      "conflict": "Семейство барьер входа: H1.2 конс → H1.5 агентство → H4.3-канд клиент"
+    },
+    {
+      "stage": "2A Сокращение трудозатрат",
+      "stageNum": "2",
+      "block": "2A",
+      "hyps": [
+        "H2.1-доп"
+      ],
+      "hypStatus": "подтв. косвенно",
+      "painCode": "C оффлайн",
+      "painAnchor": null,
+      "pain": "Полные данные радуют клиента: пока услугу не занесли в Ракету — у клиента неполная статистика",
+      "quote": "блок C; мостик к H2.1 и H3.4",
+      "mechanism": "Оффлайн 4.0",
+      "iter": "Ф3 И1 Запросить услугу (вторично)",
+      "artifact": "Оффлайн 4.0/карточки",
+      "metricsActive": [
+        "↑ Self-service share"
+      ],
+      "metricsTarget": [
+        "—"
+      ],
+      "moscow": "Should",
+      "reach": "—",
+      "status": null,
+      "conflict": "Дом гипотезы — этап 3, виден уже в Q2"
+    },
+    {
+      "stage": "3 Сохранять экономику",
+      "stageNum": "3",
+      "block": "3",
+      "hyps": [
+        "H3.1b"
+      ],
+      "hypStatus": "разводится в discovery H3.2",
+      "painCode": "C4",
+      "painAnchor": "f-c4",
+      "pain": "Деньги доходят, но дорого администрировать (ручной труд на сбор) → это 2A, метрика T-op, не потеря маржи",
+      "quote": "блок C4 (Аэроглобус)",
+      "mechanism": "Оффлайн 4.0 / 2A",
+      "iter": "—",
+      "artifact": "—",
+      "metricsActive": [
+        "↓ T-op"
+      ],
+      "metricsTarget": [
+        "—"
+      ],
+      "moscow": "—",
+      "reach": "—",
+      "status": "⚠️",
+      "conflict": "Механизм перенесён в 2A; разделить с H3.1a в discovery"
+    },
+    {
+      "stage": "3 Сохранять экономику",
+      "stageNum": "3",
+      "block": "3",
+      "hyps": [
+        "H3.5-канд"
+      ],
+      "hypStatus": "кандидат; критерий фейла первым",
+      "painCode": "Рынок (сборы)",
+      "painAnchor": null,
+      "pain": "Фиксированный сбор обесценивается ценовым ростом рынка (защита, в отличие от H4.1 рост)",
+      "quote": "Сводка_рынок_БТ_2026.xlsx",
+      "mechanism": "Мидофис/Финансы",
+      "iter": "GAP — discovery, не итерация",
+      "artifact": "Метабаза (выгрузка сборов)",
+      "metricsActive": [
+        "↓ потеря маржи"
+      ],
+      "metricsTarget": [
+        "Time-to-cash"
+      ],
+      "moscow": "Won't (Q2)",
+      "reach": "—",
+      "status": "⚠️",
+      "conflict": "Спросить: уже индексируете сбор? если да — отклоняем"
+    },
+    {
+      "stage": "4 Увеличить маржу",
+      "stageNum": "4",
+      "block": "4",
+      "hyps": [
+        "H4.3-канд"
+      ],
+      "hypStatus": "кандидат — сначала discovery",
+      "painCode": "Перевод оффлайн-клиента",
+      "painAnchor": null,
+      "pain": "Перевод оффлайн-клиента в Ракету тормозит воспринимаемая стоимость старта (рук-ль: upfront; конс: нагрузка обучения)",
+      "quote": "Global Air 3277 ops / 4 клиента",
+      "mechanism": "Сервис для клиента / Программа перевода",
+      "iter": "GAP — discovery у KAM+рук-ли",
+      "artifact": "Свод по агентствам 2026-05.xlsx",
+      "metricsActive": [
+        "↑ Operations per consultant"
+      ],
+      "metricsTarget": [
+        "—"
+      ],
+      "moscow": "Won't (Q2)",
+      "reach": "новички/Risers",
+      "status": "GAP",
+      "conflict": "Двигает подцель 5 + предусловие H4.2; перетолкование отклонённой H3.6"
+    },
+    {
+      "stage": "2A Сокращение трудозатрат",
+      "stageNum": "2",
+      "block": "2A",
+      "hyps": [
+        "H2.4"
+      ],
+      "hypStatus": "частично (нужен пилот)",
+      "painCode": "4.3",
+      "painAnchor": "f-4-3",
+      "pain": "Навигационный налог: документы/окна разбросаны, нужно единое окно — второй источник T-op",
+      "quote": "блок E3, блок 1 (инбокс), блок 2",
+      "mechanism": "Сервис для клиента / Заказы",
+      "iter": "Z-C C4 Документы заказа",
+      "artifact": "Заказы/01 Скелет уровня 3.md",
+      "metricsActive": [
+        "↓ T-op"
+      ],
+      "metricsTarget": [
+        "Steps-per-task"
+      ],
+      "moscow": "Should",
+      "reach": "—",
+      "status": null,
+      "conflict": "Единый чат в роли «время консультанта»; H2.5 — та же фича в роли «разрыв канала»"
+    },
+    {
+      "stage": "3 Сохранять экономику",
+      "stageNum": "3",
+      "block": "3",
+      "hyps": [
+        "H3.3"
+      ],
+      "hypStatus": "не проверялась",
+      "painCode": "—",
+      "painAnchor": null,
+      "pain": "Клиент платит быстрее, видя баланс сам",
+      "quote": "— (гипотеза из value ladder)",
+      "mechanism": "Баланс",
+      "iter": "Баланс [реализован]",
+      "artifact": "—",
+      "metricsActive": [
+        "↓ Time-to-cash"
+      ],
+      "metricsTarget": [
+        "—"
+      ],
+      "moscow": "Won't (Q2)",
+      "reach": "—",
+      "status": "⚠️",
+      "conflict": "Нужен discovery: подтвердить, что задержка денег про прозрачность баланса"
+    }
+  ]
+}

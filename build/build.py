@@ -501,7 +501,7 @@ def build_research():
     return {"source": src.name, "count": len(findings), "findings": findings}
 
 
-def lint_links(research):
+def lint_links(research, sootv=None):
     """Линтер связей доказательной базы (ТЗ 13, п.3). Не валит сборку —
     печатает расхождения: стратегический документ должен видеть свои дыры."""
     print("\n── Линтер связей ──")
@@ -562,11 +562,80 @@ def lint_links(research):
     if bad_stage:
         print(f"  ⚠ этапы вне словаря {STAGE_VOCAB}: {', '.join(bad_stage)}")
 
+    # словарь этапов в матрице соответствия (sootv): stageNum из единого словаря
+    if sootv:
+        bad_sn = sorted({r.get("stageNum") for r in sootv.get("rows", [])
+                         if r.get("stageNum") not in STAGE_VOCAB})
+        if bad_sn:
+            print(f"  ⚠ sootv: stageNum вне словаря: {', '.join(bad_sn)}")
+        unmatched = sootv["count"] - sootv.get("painMatched", 0)
+        print(f"  · sootv: кодов боли без находки в реестре {unmatched} из {sootv['count']} "
+              f"(описательные коды вроде «M-блок/паритет» — ожидаемо)")
+
     # находки «вне этапов» — для дозаполнения Владом в xlsx
     outside = [f["id"] for f in findings if f.get("stages") == ["вне этапов"]]
     if outside:
         print(f"  · находок «вне этапов» ({len(outside)}), этап дозаполнит Влад в реестре:")
         print("    " + ", ".join(outside))
+
+
+def build_sootv(research):
+    """Матрица соответствия (этап→гипотеза→боль→итерация→метрика) → sootv.json (ТЗ 16).
+    Цитаты с названиями агентств оставляем; имена людей в реестре уже обезличены.
+    painCode мапится на якорь реестра, где находка существует."""
+    src = find_work_xlsx("соответствие исследован")
+    if not src or "Матрица" not in openpyxl.load_workbook(src, read_only=True).sheetnames:
+        return None
+    wb = openpyxl.load_workbook(src, data_only=True, read_only=True)
+    ws = wb["Матрица"]
+    rows = list(ws.iter_rows(values_only=True))
+    hdr = [clean(c) or "" for c in rows[0]]
+    idx = {h: i for i, h in enumerate(hdr)}
+
+    def cell(r, name):
+        i = idx.get(name)
+        return clean(r[i]) if i is not None and i < len(r) else None
+
+    version = None
+    if "Легенда" in wb.sheetnames:
+        for r in wb["Легенда"].iter_rows(values_only=True):
+            if r and r[0] and str(r[0]).strip().lower() == "версия":
+                version = clean(r[1]); break
+
+    def stage_main(raw):                       # «2A Сокращение…»→«2»; «1/2»→«1»
+        m = re.match(r"\d+", str(raw or ""))
+        return m.group(0) if m else "—"
+
+    def split_plus(raw):                       # «H1.1+H1.2»→["H1.1","H1.2"]
+        return [p.strip() for p in str(raw or "").split("+") if p.strip()] if raw else []
+
+    def split_metrics(raw):                    # «↓ Parity gap; ↑ Adoption»→[…]
+        return [p.strip() for p in re.split(r"[;·]", str(raw or "")) if p.strip()] if raw else []
+
+    rids = {f["id"] for f in (research or {}).get("findings", []) if f.get("id")}
+    rows_out, matched = [], 0
+    for r in rows[1:]:
+        if not any(r):
+            continue
+        pain_code = cell(r, "Код боли")
+        anchor = research_anchor(pain_code) if pain_code in rids else None
+        if anchor:
+            matched += 1
+        rows_out.append({
+            "stage": cell(r, "Этап"), "stageNum": stage_main(cell(r, "Этап")),
+            "block": cell(r, "Блок"), "hyps": split_plus(cell(r, "Гипотеза")),
+            "hypStatus": cell(r, "Статус гипотезы"),
+            "painCode": pain_code, "painAnchor": anchor,
+            "pain": cell(r, "Суть боли"), "quote": cell(r, "Цитата / данные"),
+            "mechanism": cell(r, "Механизм"), "iter": cell(r, "Итерация-кандидат"),
+            "artifact": cell(r, "Артефакт (файл)"),
+            "metricsActive": split_metrics(cell(r, "Активная метрика")),
+            "metricsTarget": split_metrics(cell(r, "Целевая метрика")),
+            "moscow": cell(r, "MoSCoW-ориентир"), "reach": cell(r, "Reach-сигнал"),
+            "status": cell(r, "Статус"), "conflict": cell(r, "Конфликт / примечание"),
+        })
+    return {"source": src.name, "version": version, "count": len(rows_out),
+            "painMatched": matched, "rows": rows_out}
 
 
 def build_home(items, agencies, research):
@@ -698,7 +767,17 @@ def main():
         r_out = DATA_DIR / "research.json"
         r_out.write_text(json.dumps(research, ensure_ascii=False, indent=2), encoding="utf-8")
         print(f"Исследования: {research['count']} находок → {r_out.relative_to(SITE_DIR)}")
-        lint_links(research)
+
+    # sootv.json — матрица соответствия (доказательная база, ТЗ 16)
+    sootv = build_sootv(research)
+    if sootv:
+        s_out = DATA_DIR / "sootv.json"
+        s_out.write_text(json.dumps(sootv, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(f"Соответствие: {sootv['count']} строк матрицы · кодов боли с находкой "
+              f"{sootv['painMatched']} → {s_out.relative_to(SITE_DIR)}")
+
+    if research:
+        lint_links(research, sootv)
 
     # home.json — сводка дашбордов главной
     home = build_home(items, agencies, research)
