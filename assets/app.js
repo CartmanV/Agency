@@ -1340,6 +1340,30 @@ async function mountEtapy() {
 
   const hLink = (code, title) => `<a class="e-hcode" href="backlog.html?q=${encodeURIComponent(code)}"${title ? ` title="${esc(title)}"` : ""}>${esc(code)}</a>`;
 
+  // Якорь карточки гипотезы для прямых/обратных ссылок: «H1.1»→«h1-1», «H2.1-доп»→«h2-1-доп».
+  const hypId = (code) => "h" + String(code).replace(/^H/i, "").toLowerCase().replace(/[.\s]+/g, "-").replace(/^-|-$/g, "");
+
+  // Чип-доказательство (ТЗ 15): kind → цель ссылки; статус → знак/цвет канона .ev-chip (ТЗ 14).
+  const EV_HREF = {
+    research: (r) => `research.html#${findingAnchor(r)}`,
+    sootv: (r) => `sootvetstvie.html#${r}`,
+    planned: (r) => `planned.html#${r}`,
+    agencies: (r) => `agencies.html#${r}`,
+    rynok: (r) => `rynok.html#${r}`,
+  };
+  function evidenceChips(arr) {
+    if (!(arr || []).length) return "";
+    const chips = arr.map((e) => {
+      const c = evChip(e.status);
+      const body = `${c.sign} ${esc(e.label)}`;
+      if (e.kind === "doc" || !EV_HREF[e.kind]) {
+        return `<span class="ev-chip ${c.cls}" title="источник без отдельной страницы">${body}</span>`;
+      }
+      return `<a class="ev-chip ${c.cls}" href="${EV_HREF[e.kind](e.ref)}">${body}</a>`;
+    }).join(" ");
+    return `<div class="e-hyp__ev"><span class="e-hyp__evh">Доказательства</span><div class="e-hyp__evchips">${chips}</div></div>`;
+  }
+
   // ——— Краткий обзор сверху ———
   // Цвет номера этапа — единый канон сайта (1=pink, 2=emerald, 3–5=muted), просто опознавание этапа.
   const stageChip = (n) => `<span class="stage-tag s-${n === "2" ? "2a" : n}">${esc(n)}</span>`;
@@ -1388,7 +1412,7 @@ async function mountEtapy() {
     const probs = (h.problem || []).map((p) => `<li>${gloss(esc(p))}</li>`).join("");
     const row = (l, v) => v ? `<div class="e-hyp__row"><dt>${l}</dt><dd>${gloss(esc(v))}</dd></div>` : "";
     return `
-      <details class="e-hyp ${typeCls}">
+      <details class="e-hyp ${typeCls}" id="${hypId(h.code)}">
         <summary class="e-hyp__sum">
           ${hLink(h.code, h.title)}
           <span class="e-hyp__title">${gloss(esc(h.title))}</span>
@@ -1398,13 +1422,14 @@ async function mountEtapy() {
         <div class="e-hyp__body">
           ${(h.if || h.then) ? `<p class="e-hyp__ift"><b>Если</b> ${gloss(esc(h.if))} <b>то</b> ${gloss(esc(h.then))}</p>` : ""}
           ${probs ? `<div class="e-hyp__prob"><span class="e-hyp__lh">Проблема</span><ul>${probs}</ul></div>` : ""}
+          ${evidenceChips(h.evidence)}
           <dl class="e-hyp__dl">
             ${row("Цепочка", h.chain)}
             ${row("Подтвердится, если", h.confirm)}
             ${row("Не подтвердится, если", h.deny)}
             ${row("Проверяем", h.check)}
             ${row("Статус решения", h.decision)}
-            ${row("По исследованиям", h.research)}
+            ${row("По исследованиям (пояснение)", h.research)}
           </dl>
           ${h.note ? `<p class="e-hyp__note">${gloss(esc(h.note))}</p>` : ""}
         </div>
@@ -1439,7 +1464,10 @@ async function mountEtapy() {
 
   function research(s) {
     const done = (s.researchDone || []).map((r) => `<tr><td>${esc(r.src)}</td><td>${gloss(esc(r.note))}</td></tr>`).join("");
-    const todo = (s.researchTodo || []).map((r) => `<tr><td>${gloss(esc(r.unclear))}</td><td>${esc(r.how)}</td><td><span class="e-rstat">${esc(r.status)}</span></td></tr>`).join("");
+    const todo = (s.researchTodo || []).map((r) => {
+      const how = r.planned ? `<a href="planned.html#${esc(r.planned)}">${esc(r.how)} →</a>` : esc(r.how);
+      return `<tr><td>${gloss(esc(r.unclear))}</td><td>${how}</td><td><span class="e-rstat">${esc(r.status)}</span></td></tr>`;
+    }).join("");
     if (!done && !todo) return "";
     return `
       <div class="e-sub"><span class="e-sub__h">Исследования</span>
@@ -1473,6 +1501,7 @@ async function mountEtapy() {
           <span class="e-stage__mean">${gloss(esc(s.meaning))}</span>
         </summary>
         <div class="e-stage__body">
+          ${s.sootv ? `<div class="e-evlink"><a href="sootvetstvie.html#${esc(s.sootv)}">Доказательная база этапа →</a> <a href="research.html?stage=${esc(s.n === "2" ? "2A,2B" : s.n)}">Все находки этапа →</a></div>` : ""}
           <div class="e-sub"><span class="e-sub__h">Фаза жизни агентства</span><p>${gloss(esc(s.phase))}</p></div>
           <div class="e-sub"><span class="e-sub__h">Цель этапа</span><p>${gloss(esc(s.goal))}</p>
             ${s.keyIdea ? `<p class="e-note">${gloss(esc(s.keyIdea))}</p>` : ""}</div>
@@ -1503,14 +1532,19 @@ async function mountEtapy() {
           <div class="e-hyp__row"><dt>Проверяем</dt><dd>${gloss(esc(cl.churn.check))}</dd></div>
           <div class="e-hyp__row"><dt>Статус решения</dt><dd>${esc(cl.churn.decision)}</dd></div>
         </dl>
+        ${evidenceChips(cl.churn.evidence)}
       </div>
     </details>` : "";
-  const rmap = (cl.researchMap || []).map((r) => `<tr><td>${esc(r.study)}</td><td><span class="e-rstat">${esc(r.status)}</span></td><td>${esc(r.stages)}</td></tr>`).join("");
+  const rmap = (cl.researchMap || []).map((r) => {
+    const study = r.href ? `<a href="${esc(r.href)}">${esc(r.study)}</a>` : esc(r.study);
+    return `<tr><td>${study}</td><td><span class="e-rstat">${esc(r.status)}</span></td><td>${esc(r.stages)}</td></tr>`;
+  }).join("");
   const crossLayer = `
     <h2 class="e-h2">${esc(cl.title || "Сквозной слой")}</h2>
     ${churn}
     ${cl.i0 ? `<p class="e-i0">${gloss(esc(cl.i0))}</p>` : ""}
     <div class="e-sub"><span class="e-sub__h">Сводная карта исследований → этапы</span>
+      <p class="e-muted">Полная карта планируемых замеров со статусами и владельцами → <a href="planned.html">План исследований</a>.</p>
       <div class="table-wrap"><table class="e-table"><thead><tr><th>Исследование</th><th>Статус</th><th>Какие этапы кормит</th></tr></thead><tbody>${rmap}</tbody></table></div>
     </div>`;
 
@@ -1872,7 +1906,7 @@ async function mountSootv() {
 
   // ---- конфликты + что дальше ----
   const conflicts = (ex.conflicts || []).map((c) => `
-    <div class="sv-conf">
+    <div class="sv-conf" id="conflict-${esc(c.n)}">
       <div class="sv-conf__h"><span class="sv-conf__n">${esc(c.n)}</span> ${esc(c.title)} <span class="ev-chip ${c.status === "решён" ? "ev-ok" : "ev-warn"}">${c.status === "решён" ? "✓ решён" : "⚠ открыт"}</span></div>
       <div class="sv-conf__x">${esc(c.text)}</div>
       <div class="sv-conf__m"><span>затрагивает: ${esc(c.blocks)}</span><span>решит: ${esc(c.resolves)}</span></div>
@@ -1917,10 +1951,14 @@ async function mountSootv() {
   });
   render();
 
-  // Доскролл к этапу: sootvetstvie.html#stage-2 (со страницы «Этапы», ТЗ 15)
-  if (location.hash.startsWith("#stage-")) {
+  // Доскролл к этапу (#stage-N) или карточке конфликта (#conflict-N) — ссылки из «Этапов» (ТЗ 15)
+  if (location.hash.startsWith("#stage-") || location.hash.startsWith("#conflict-")) {
     const el = document.getElementById(decodeURIComponent(location.hash.slice(1)));
-    if (el) { el.open = true; el.scrollIntoView({ block: "start" }); el.classList.add("is-target"); }
+    if (el) {
+      if (el.tagName === "DETAILS") el.open = true;
+      el.scrollIntoView({ block: "start" });
+      el.classList.add("is-target");
+    }
   }
 }
 

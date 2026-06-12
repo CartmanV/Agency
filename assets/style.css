@@ -879,6 +879,7 @@ table.backlog td.spark-cell { padding: 4px 8px; }
 .sv-conflicts { margin: 32px 0 0; }
 .sv-cnt { font-size: .8rem; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 1px 9px; margin-left: 6px; font-family: var(--f-mono); }
 .sv-conf { border: 1px solid var(--line); border-left: 3px solid var(--pink); border-radius: 8px; padding: 12px 14px; margin: 10px 0; background: var(--panel); }
+.sv-conf.is-target, .sv-conf:target { box-shadow: 0 0 0 2px var(--pink); }
 .sv-conf__h { font-weight: 600; font-size: 13.5px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .sv-conf__n { color: var(--pink); font-family: var(--f-mono); }
 .sv-conf__x { font-size: 13px; line-height: 1.55; color: var(--cream-soft); margin: 6px 0; }
@@ -1749,6 +1750,16 @@ a.guide__row:hover { border-color: var(--copper); transform: translateY(-2px); t
 .e-hyp__row dt { font-family: var(--f-mono); font-size: 11px; color: var(--cream-dim); min-width: 168px; flex-shrink: 0; }
 .e-hyp__row dd { margin: 0; font-size: 13px; color: var(--cream-soft); line-height: 1.5; }
 .e-hyp__note { font-size: 12.5px; color: var(--cream-dim); background: var(--panel); border-radius: 8px; padding: 9px 11px; margin: 10px 0 0; line-height: 1.5; }
+
+/* Чипы-доказательства у гипотезы (ТЗ 15) */
+.e-hyp__ev { margin: 0 0 12px; }
+.e-hyp__evh { display: block; font: 500 .72rem/1 var(--f-mono); text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin-bottom: 6px; }
+.e-hyp__evchips { display: flex; flex-wrap: wrap; gap: 6px; }
+a.ev-chip { text-decoration: none; }
+a.ev-chip:hover { text-decoration: none; filter: brightness(1.15); }
+/* Ссылки «Доказательная база этапа → / Все находки этапа →» в шапке этапа */
+.e-evlink { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 0 0 14px; font-family: var(--f-mono); font-size: 12px; }
+.e-hyp.is-target > .e-hyp__sum { box-shadow: inset 0 0 0 2px var(--pink); border-radius: 8px; }
 
 .e-rstat { font-family: var(--f-mono); font-size: 11px; color: var(--cream-dim); border: 1px solid var(--line-soft); border-radius: 999px; padding: 2px 8px; white-space: nowrap; }
 .e-i0 { font-size: 13.5px; color: var(--cream-soft); border-left: 2px solid var(--gold); padding-left: 14px; margin: 10px 0; line-height: 1.6; }
