@@ -556,6 +556,31 @@ def lint_links(research, sootv=None):
         where = "planned.json" if planned_path.exists() else "planned.json (нет файла)"
         print(f"  ⚠ ссылки planned:<id> вне {where}: {', '.join(bad_pl)}")
 
+    # связи-доказательства гипотез (ТЗ 15): evidence[].ref и researchTodo[].planned
+    def iter_hyps():
+        for st in etapy.get("stages", []):
+            yield from st.get("hypotheses", [])
+        if etapy.get("crossLayer", {}).get("churn"):
+            yield etapy["crossLayer"]["churn"]
+    ev_bad_r, ev_bad_p, todo_bad_p = set(), set(), set()
+    for h in iter_hyps():
+        for e in h.get("evidence", []):
+            if e.get("kind") == "research" and e.get("ref") not in ids:
+                ev_bad_r.add(e.get("ref"))
+            if e.get("kind") == "planned" and e.get("ref") not in planned_ids:
+                ev_bad_p.add(e.get("ref"))
+    for st in etapy.get("stages", []):
+        for t in st.get("researchTodo", []):
+            if t.get("planned") and t["planned"] not in planned_ids:
+                todo_bad_p.add(t["planned"])
+    if ev_bad_r:
+        print(f"  ⚠ evidence kind=research на несуществующие находки: {', '.join(sorted(ev_bad_r))}")
+    if ev_bad_p or todo_bad_p:
+        print(f"  ⚠ evidence/researchTodo kind=planned вне planned.json: {', '.join(sorted(ev_bad_p | todo_bad_p))}")
+    if not (ev_bad_r or ev_bad_p or todo_bad_p):
+        n_ev = sum(len(h.get("evidence", [])) for h in iter_hyps())
+        print(f"  ✓ связи-доказательства этапов: {n_ev} чипов, битых research:/planned: ссылок нет")
+
     # словарь этапов: research.stages из единого словаря
     bad_stage = sorted({s for f in findings for s in f.get("stages", [])
                         if s not in STAGE_VOCAB})
