@@ -12,7 +12,7 @@
   --cream:       #F2EAD3;
   --cream-soft:  #D6C9A6;
   --cream-dim:   #9FB3A4;
-  --muted:       #7E9384;   /* приглушённый — числа/служебные подписи */
+  --muted:       #879A8C;   /* приглушённый — числа/служебные подписи; AA-запас для ≤12px (5.1:1 на panel, ТЗ 05) */
   --copper:      #E2B355;   /* золото — ссылки/вторичный акцент */
   --copper-dk:   #C99537;
   --gold:        #E2B355;
@@ -95,6 +95,23 @@ a, button, select, input, [role="button"] { touch-action: manipulation; }
 }
 .nav a:hover { background: var(--panel-2); color: var(--cream); text-decoration: none; }
 .nav a.is-active { color: var(--cream); background: var(--panel-2); }
+
+/* Глобальный поиск в шапке (ТЗ 08) */
+.gsearch { position: relative; margin-left: auto; flex: 0 1 260px; min-width: 150px; }
+.gsearch__input { width: 100%; font-size: 12.5px; padding: 7px 10px; }
+.gsearch__results {
+  position: absolute; right: 0; left: 0; top: calc(100% + 6px); z-index: 50;
+  max-height: 60vh; overflow-y: auto;
+  background: var(--panel); border: 1px solid var(--line-soft); border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(0,0,0,.45); padding: 6px;
+}
+.gsearch__item { display: block; padding: 8px 10px; border-radius: 7px; text-decoration: none; }
+.gsearch__item:hover, .gsearch__item.is-active { background: var(--panel-2); }
+.gsearch__row { display: flex; align-items: baseline; gap: 8px; }
+.gsearch__kind { font-family: var(--f-mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--copper); flex-shrink: 0; }
+.gsearch__t { color: var(--cream); font-size: 13px; }
+.gsearch__s { display: block; color: var(--cream-dim); font-size: 11.5px; margin-top: 2px; line-height: 1.35; }
+@media (max-width: 720px) { .gsearch { flex-basis: 100%; margin-left: 0; order: 3; } }
 
 /* компактная шапка на узких экранах: 13 пунктов меню упаковываются плотнее */
 @media (max-width: 720px) {
@@ -280,11 +297,25 @@ table.backlog td.muted { color: var(--cream-dim); }
   padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line-soft);
   color: var(--cream-soft); white-space: nowrap;
 }
-.badge--must  { color: var(--pink); border-color: var(--pink); background: var(--pink-dim); }
-.badge--should{ color: var(--copper); border-color: var(--copper-dk); }
-.badge--could, .badge--wont { color: var(--cream-dim); }
+/* Статус готовности/находки: канон — .badge--ok (=ev-ok) / .badge--review (=ev-part). */
 .badge--ok     { color: var(--emerald); border-color: var(--emerald); }
-.badge--review { color: var(--copper); border-color: var(--copper-dk); }
+.badge--review { color: var(--gold); border-color: var(--copper-dk); } /* выровнено на ev-part (gold) */
+
+/* --- ПРИОРИТЕТ (MoSCoW) — отдельная ось, НЕ достоверность. Канон: .prio--*.
+   Легаси .badge--must/should/could/wont и .mo-badge.mo-* сведены к нему как алиасы.
+   Достоверность/готовность — это .ev-chip (см. секцию «Канон чип-доказательство»). --- */
+.prio--must, .badge--must, .mo-badge.mo-must {
+  color: var(--pink); border-color: var(--pink); background: var(--pink-dim);
+}
+.prio--should, .badge--should, .mo-badge.mo-should {
+  color: var(--gold); border-color: var(--copper-dk);
+}
+.prio--could, .badge--could, .mo-badge.mo-could {
+  color: var(--cream-dim); border-color: var(--line-soft);
+}
+.prio--wont, .badge--wont, .mo-badge.mo-wont {
+  color: var(--muted); border-color: var(--line-soft); border-style: dashed;
+}
 
 /* --- тулбар: поиск + фильтры + сортировка --- */
 .toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 6px; align-items: center; }
@@ -310,8 +341,11 @@ table.backlog th .th-sort:hover { color: var(--cream); }
 table.backlog th .th-sort:focus-visible { outline: 2px solid var(--copper); outline-offset: 2px; }
 table.backlog th[aria-sort] .th-sort { color: var(--copper); }
 
-.loading, .error { font-family: var(--f-mono); color: var(--cream-dim); padding: 24px 0; }
+.loading, .error, .empty { font-family: var(--f-mono); color: var(--cream-dim); padding: 24px 0; }
 .error { color: var(--pink-soft); }
+/* Пустая выборка (0 строк после фильтра) — отдельное состояние, не ошибка (ТЗ 09). */
+.empty { text-align: center; }
+.empty__hint { display: block; margin-top: 6px; font-size: 12px; color: var(--muted); }
 
 footer.site-footer {
   max-width: var(--maxw); margin: 0 auto; padding: 24px;
@@ -355,9 +389,11 @@ body::before {
 .mcard__chev { color: var(--cream-dim); margin-left: auto; transition: transform .18s; }
 .mcard.is-open .mcard__chev { transform: rotate(90deg); }
 
+/* УСТАРЕЛО (2026-06-13): вердикт ProductV, в текущей разметке не используется.
+   Для новых мест — статус через .ev-chip (канон). Оставлено как алиас на переходный период. */
 .vbadge { font-family: var(--f-mono); font-size: 11px; padding: 2px 9px; border-radius: 999px; border: 1px solid; white-space: nowrap; }
 .vbadge.is-proceed { color: var(--emerald); border-color: var(--emerald); }
-.vbadge.is-rework  { color: var(--copper); border-color: var(--copper-dk); }
+.vbadge.is-rework  { color: var(--gold); border-color: var(--copper-dk); }
 
 .mcard__body { padding: 4px 18px 20px; border-top: 1px solid var(--line); }
 
@@ -602,6 +638,11 @@ a.leaf-br:hover { border-color: var(--copper); color: var(--cream); text-decorat
 /* чипы (используются также в now/vision/rynok) */
 .chip { font-family: var(--f-mono); font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; padding: 3px 9px; border: 1px solid var(--line-soft); border-radius: 999px; color: var(--cream-dim); }
 .chip.stage { border-color: var(--copper-dk); color: var(--copper); }
+/* Цвет чипа — модификатором, не инлайном (ТЗ 06). */
+.chip--copper  { border-color: var(--copper-dk); color: var(--copper); }
+.chip--gold    { border-color: var(--copper-dk); color: var(--gold); }
+.chip--emerald { border-color: var(--emerald); color: var(--emerald); }
+.chip--pink    { border-color: var(--pink); color: var(--pink); }
 a.chip.branch { background: rgba(226,179,85,.10); border-color: rgba(226,179,85,.35); color: var(--copper); }
 a.chip.branch:hover { border-color: var(--copper); color: var(--cream); text-decoration: none; }
 .assume { display: inline-block; font-family: var(--f-mono); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--pink-soft); margin-left: 8px; }
@@ -770,6 +811,10 @@ table.backlog td.spark-cell { padding: 4px 8px; }
 .m-base__h { font-family: var(--f-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--gold); display: block; margin-bottom: 3px; }
 .m-base--need { color: var(--cream-dim); font-family: var(--f-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; background: transparent; border: 1px dashed var(--line-soft); }
 .m-note { font-size: 12px; color: var(--pink-soft); margin-top: 8px; line-height: 1.45; }
+/* План vs факт после релиза (ТЗ 09): фактическая дельта + статус гипотезы каноном .ev-chip. */
+.m-fact { font-size: 12.5px; color: var(--cream); background: var(--panel-2); border-radius: 8px; padding: 9px 11px; line-height: 1.5; margin-top: 8px; border-left: 2px solid var(--emerald); }
+.m-fact__h { font-family: var(--f-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--emerald); display: block; margin-bottom: 3px; }
+.m-fact .ev-chip { margin-left: 6px; }
 .m-link { font-family: var(--f-mono); font-size: 11.5px; margin-top: auto; padding-top: 12px; }
 
 .lead-wrap { display: grid; gap: 8px; margin-top: 14px; }
@@ -800,6 +845,9 @@ table.backlog td.spark-cell { padding: 4px 8px; }
 .rf-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .rf-chip { font-family: var(--f-mono); font-size: 10px; color: var(--cream-dim); border: 1px solid var(--line-soft); border-radius: 999px; padding: 2px 8px; white-space: nowrap; }
 .rf-chip.rf-h { color: var(--copper); border-color: var(--copper-dk); }
+/* УСТАРЕЛО (2026-06-13): статус находки, в текущей разметке не используется.
+   Соответствие канону .ev-chip: ok→ev-ok · part→ev-part · comp→ev-warn · open/neu→ev-muted.
+   Для новых мест используем .ev-chip. Оставлено как алиас на переходный период. */
 .rf-stat { font-family: var(--f-mono); font-size: 10px; padding: 2px 8px; border-radius: 999px; border: 1px solid; white-space: nowrap; }
 .rf-stat.ok { color: var(--emerald); border-color: var(--emerald); }
 .rf-stat.part { color: var(--gold); border-color: var(--copper-dk); }
@@ -854,11 +902,9 @@ table.backlog td.spark-cell { padding: 4px 8px; }
 .sv-mchip { display: inline-block; font-family: var(--f-mono); font-size: 10.5px; border: 1px solid var(--line-soft); border-radius: 999px; padding: 1px 7px; margin: 1px 2px 1px 0; white-space: nowrap; }
 .sv-warn { color: var(--pink); margin-left: 4px; cursor: help; }
 
+/* .mo-badge — форма (прямоугольный бейдж приоритета). Цвета mo-must/should/could/wont —
+   из канона .prio--* (см. секцию «бейджи»). Здесь только базовая форма и нейтраль. */
 .mo-badge { font-family: var(--f-mono); font-size: 10px; padding: 2px 7px; border-radius: 5px; border: 1px solid; white-space: nowrap; }
-.mo-badge.mo-must   { color: var(--pink); border-color: var(--pink); background: var(--pink-dim); }
-.mo-badge.mo-should { color: var(--gold); border-color: var(--copper-dk); }
-.mo-badge.mo-could  { color: var(--cream-dim); border-color: var(--line-soft); }
-.mo-badge.mo-wont   { color: var(--muted); border-color: var(--line-soft); border-style: dashed; }
 .mo-badge.mo-neu    { color: var(--muted); border-color: var(--line-soft); }
 
 .sv-toolbar { margin: 0 0 8px; }

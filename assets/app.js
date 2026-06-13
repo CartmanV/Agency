@@ -61,8 +61,69 @@ function mountHeader() {
       <div class="site-header__inner">
         <a class="brand" href="index.html">Направление <b>«Агентства»</b></a>
         <nav class="nav">${links}</nav>
+        <div class="gsearch" data-gsearch>
+          <input type="search" class="gsearch__input ctl" data-gsearch-input autocomplete="off"
+                 spellcheck="false" aria-label="Поиск по сайту"
+                 placeholder="Поиск по сайту…  (/ или ⌘K)" />
+          <div class="gsearch__results" data-gsearch-results role="listbox" hidden></div>
+        </div>
       </div>
     </header>`;
+  mountGlobalSearch();
+}
+
+// Глобальный поиск по сайту (ТЗ 08): один индекс data/search.json по находкам/метрикам/
+// легендам/темам. Индекс грузится лениво при первом фокусе. Клавиши: / и ⌘/Ctrl-K — фокус.
+function mountGlobalSearch() {
+  const box = document.querySelector("[data-gsearch]");
+  if (!box) return;
+  const input = box.querySelector("[data-gsearch-input]");
+  const results = box.querySelector("[data-gsearch-results]");
+  let index = null, loaded = false, active = -1;
+
+  async function ensureIndex() {
+    if (loaded) return;
+    loaded = true;
+    try { const d = await loadJSON("data/search.json"); index = d.index || []; }
+    catch (e) { index = []; }
+  }
+  function render(q) {
+    const query = q.trim().toLowerCase();
+    if (!query) { results.hidden = true; results.innerHTML = ""; active = -1; return; }
+    const hits = (index || []).filter((r) =>
+      (`${r.title} ${r.snippet} ${r.kind}`).toLowerCase().includes(query)).slice(0, 30);
+    active = -1;
+    results.innerHTML = hits.length
+      ? hits.map((r, i) =>
+          `<a class="gsearch__item" role="option" data-i="${i}" href="${esc(r.href)}">
+             <span class="gsearch__row"><span class="gsearch__kind">${esc(r.kind)}</span>
+             <span class="gsearch__t">${esc(r.title)}</span></span>
+             ${r.snippet ? `<span class="gsearch__s">${esc(r.snippet)}</span>` : ""}</a>`).join("")
+      : `<div class="empty" style="padding:16px">Ничего не найдено</div>`;
+    results.hidden = false;
+  }
+  const opts = () => [...results.querySelectorAll(".gsearch__item")];
+  const setActive = (i) => {
+    const o = opts(); if (!o.length) return;
+    active = (i + o.length) % o.length;
+    o.forEach((el, k) => el.classList.toggle("is-active", k === active));
+    o[active].scrollIntoView({ block: "nearest" });
+  };
+
+  input.addEventListener("focus", ensureIndex);
+  input.addEventListener("input", async (e) => { await ensureIndex(); render(e.target.value); });
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") { input.value = ""; render(""); input.blur(); }
+    else if (e.key === "ArrowDown") { e.preventDefault(); setActive(active + 1); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); setActive(active - 1); }
+    else if (e.key === "Enter") { const o = opts(); if (active >= 0 && o[active]) location.href = o[active].getAttribute("href"); }
+  });
+  document.addEventListener("click", (e) => { if (!box.contains(e.target)) results.hidden = true; });
+  document.addEventListener("keydown", (e) => {
+    const tag = (document.activeElement && document.activeElement.tagName) || "";
+    if ((e.key === "k" || e.key === "K") && (e.metaKey || e.ctrlKey)) { e.preventDefault(); input.focus(); }
+    else if (e.key === "/" && document.activeElement !== input && !/^(INPUT|TEXTAREA|SELECT)$/.test(tag)) { e.preventDefault(); input.focus(); }
+  });
 }
 
 async function loadJSON(path) {
@@ -218,6 +279,7 @@ const FILTER_FIELDS = [
 
 const SEARCH_FIELDS = ["title", "jobStory", "iteration", "id", "gitlabId", "quote", "rationale", "agencies", "hypothesis", "activeMetrics", "targetMetrics"];
 const COLS_STORAGE = "agency-backlog-cols-v1";
+const FILTERS_STORAGE = "agency-backlog-filters-v1";   // память поиска/фильтров/сортировки (ТЗ 07)
 
 function hCodeOf(s) {
   const m = /^\s*(H\d+(?:\.\d+)*)/.exec(String(s || ""));
@@ -359,7 +421,7 @@ async function mountBacklog() {
   function rowsHTML(items) {
     const cols = visCols();
     const span = cols.length + 1;
-    if (!items.length) return `<tr><td colspan="${span}" class="muted" style="padding:24px">Ничего не найдено — измени фильтры или поиск.</td></tr>`;
+    if (!items.length) return `<tr><td colspan="${span}"><div class="empty">Ничего не найдено<span class="empty__hint">Измени или сбрось фильтры и поиск.</span></div></td></tr>`;
     return items.map((it) => {
       const open = state.expanded.has(it.id);
       const exp = `<td class="b-exp-cell"><button type="button" class="b-exp" data-exp="${esc(it.id)}" aria-expanded="${open}" aria-label="Раскрыть карточку">${open ? "▾" : "▸"}</button></td>`;
@@ -411,6 +473,31 @@ async function mountBacklog() {
     const activeF = Object.values(state.filters).filter(Boolean).length;
     host.querySelector("[data-meta]").textContent = `Показано ${items.length} из ${all.length}`
       + (activeF || q ? ` · фильтров: ${activeF}${q ? " + поиск" : ""}` : "");
+    saveFilters();
+  }
+
+  // Память поиска/фильтров/сортировки между визитами (ТЗ 07). Колонки — отдельно (COLS_STORAGE).
+  function saveFilters() {
+    try {
+      localStorage.setItem(FILTERS_STORAGE, JSON.stringify({ q: state.q, filters: state.filters, sort: state.sort }));
+    } catch (e) { /* ignore */ }
+  }
+  function restoreFilters() {
+    let s = null;
+    try { const raw = localStorage.getItem(FILTERS_STORAGE); if (raw) s = JSON.parse(raw); } catch (e) { /* ignore */ }
+    if (!s) return;
+    if (typeof s.q === "string" && s.q) {
+      state.q = s.q;
+      const si = host.querySelector("[data-search]"); if (si) si.value = s.q;
+    }
+    if (s.filters && typeof s.filters === "object") {
+      Object.entries(s.filters).forEach(([field, v]) => {
+        if (!v) return;
+        const sel = host.querySelector(`[data-filter="${field}"]`);
+        if (sel && [...sel.options].some((o) => o.value === v)) { sel.value = v; state.filters[field] = v; }
+      });
+    }
+    if (s.sort && s.sort.key) state.sort = { key: s.sort.key, dir: s.sort.dir === "desc" ? "desc" : "asc" };
   }
 
   function bindSort() {
@@ -460,8 +547,10 @@ async function mountBacklog() {
   });
   host.querySelector("[data-reset]").addEventListener("click", () => {
     state.q = ""; state.filters = {};
+    state.sort = { key: "moscow", dir: "asc" };
     host.querySelector("[data-search]").value = "";
     host.querySelectorAll("[data-filter]").forEach((s) => (s.value = ""));
+    try { localStorage.removeItem(FILTERS_STORAGE); } catch (e) { /* ignore */ }
     history.replaceState(null, "", location.pathname);
     apply();
   });
@@ -479,6 +568,11 @@ async function mountBacklog() {
   // deep-link: ?q=… и/или фильтры (?theme=&stage=&moscow=&gate=&hCode=&concentration=&…)
   const params = new URLSearchParams(location.search);
   const qp = params.get("q");
+
+  // Память (ТЗ 07): без параметров в URL — восстанавливаем сохранённое. Если в URL есть
+  // хоть один параметр (поделились ссылкой) — она побеждает, сохранённое игнорируем.
+  const hasURLState = qp != null || filterDefs.some(({ field }) => params.get(field) != null);
+  if (!hasURLState) restoreFilters();
   if (qp) { state.q = qp; host.querySelector("[data-search]").value = qp; }
   filterDefs.forEach(({ field }) => {
     const v = params.get(field);
@@ -1156,7 +1250,7 @@ async function mountAgencies() {
 
     const rows = () => {
       const list = ags.filter((a) => (!state.seg || a.segment === state.seg) && (!state.band || a.band === state.band));
-      if (!list.length) return `<tr><td colspan="11" class="muted" style="padding:20px">Ничего не найдено.</td></tr>`;
+      if (!list.length) return `<tr><td colspan="11"><div class="empty">Ничего не найдено<span class="empty__hint">Измени или сбрось фильтры.</span></div></td></tr>`;
       return list.map((a) => `
         <tr>
           <td class="title">${esc(a.name)}</td>
@@ -1550,13 +1644,15 @@ function hypStatusClass(s) {
 // Сводит статусы гипотез реестра и бейджи рынка к одной системе (не плодим третью).
 function evChip(status) {
   const t = String(status || "").toLowerCase();
-  if (t.startsWith("закрыто") || t.startsWith("✅")) return { cls: "ev-closed", sign: "✅" };
-  if (t.startsWith("подтв")) return { cls: "ev-ok", sign: "✓" };
-  if (t.startsWith("частично")) return { cls: "ev-part", sign: "~" };
-  if (t.startsWith("конкур") || t.startsWith("спорн") || t.includes("конфликт")) return { cls: "ev-warn", sign: "⚠" };
-  if (t.startsWith("план") || t.includes("заплан")) return { cls: "ev-plan", sign: "?" };
-  if (t.startsWith("гипотеза") || t.startsWith("идея") || t.startsWith("данные") || t.includes("не пров")) return { cls: "ev-muted", sign: "∅" };
-  return { cls: "ev-muted", sign: "·" };
+  // label — словесная расшифровка статуса для aria-label (ТЗ 04: статус не только цветом/знаком).
+  if (t.startsWith("закрыто") || t.startsWith("✅")) return { cls: "ev-closed", sign: "✅", label: "закрыто" };
+  if (t.startsWith("подтв")) return { cls: "ev-ok", sign: "✓", label: "подтверждено" };
+  if (t.startsWith("частично")) return { cls: "ev-part", sign: "~", label: "частично" };
+  if (t.startsWith("опров")) return { cls: "ev-warn", sign: "⚠", label: "опровергнута" };
+  if (t.startsWith("конкур") || t.startsWith("спорн") || t.includes("конфликт")) return { cls: "ev-warn", sign: "⚠", label: "конфликт" };
+  if (t.startsWith("план") || t.includes("заплан")) return { cls: "ev-plan", sign: "?", label: "в плане" };
+  if (t.startsWith("гипотеза") || t.startsWith("идея") || t.startsWith("данные") || t.includes("не пров")) return { cls: "ev-muted", sign: "∅", label: "не проверялась" };
+  return { cls: "ev-muted", sign: "·", label: "статус не задан" };
 }
 
 // Канон якоря находки (зеркало research_anchor в build.py): «A1»→«f-a1», «4.2»→«f-4-2».
@@ -1656,7 +1752,7 @@ async function mountResearch() {
       <details class="rg" open>
         <summary class="rg-sum"><span class="rg-name">${esc(name)}</span><span class="rg-count">${arr.length}</span></summary>
         <div class="rg-body">${arr.map(findingHTML).join("")}</div>
-      </details>`).join("") || `<div class="muted" style="padding:20px">Ничего не найдено.</div>`;
+      </details>`).join("") || `<div class="empty">Ничего не найдено<span class="empty__hint">Измени или сбрось фильтры.</span></div>`;
 
     host.querySelector("[data-rg]").innerHTML = groupsHTML;
     host.querySelector("[data-rmeta]").textContent = `Показано ${list.length} из ${all.length}`;
@@ -1830,7 +1926,7 @@ async function mountSootv() {
       <td>${r.iter ? `<a href="${backlogQ(r.iter)}">${esc(r.iter)}</a>` : "—"}</td>
       <td>${metrics || "—"}</td>
       <td>${r.moscow ? `<span class="mo-badge ${moscowClass(r.moscow)}">${esc(r.moscow)}</span>` : "—"}</td>
-      <td>${ev ? `<span class="ev-chip ${ev.cls}" title="статус гипотезы">${ev.sign}</span>` : ""}${r.conflict ? `<span class="sv-warn" title="${esc(r.conflict)}">⚠</span>` : ""}</td>
+      <td>${ev ? `<span class="ev-chip ${ev.cls}" title="статус гипотезы: ${esc(ev.label)}" aria-label="статус гипотезы: ${esc(ev.label)}">${ev.sign}</span>` : ""}${r.conflict ? `<span class="sv-warn" role="img" aria-label="конфликт" title="${esc(r.conflict)}">⚠</span>` : ""}</td>
     </tr>`;
   }
 
@@ -2036,6 +2132,13 @@ async function mountMetrics() {
       ? `<div class="m-base"><span class="m-base__h">baseline 2026-05</span> ${esc(m.baseline)}</div>`
       : `<div class="m-base m-base--need">baseline нужен</div>`;
     const note = m.note ? `<div class="m-note">${esc(m.note)}</div>` : "";
+    // План vs факт (ТЗ 09): дельта после релиза + статус гипотезы каноном .ev-chip.
+    let fact = "";
+    if (m.factDelta) {
+      const ev = m.factStatus ? evChip(m.factStatus) : null;
+      const chip = ev ? ` <span class="ev-chip ${ev.cls}" aria-label="гипотеза ${esc(ev.label)}">${ev.sign} ${esc(ev.label)}</span>` : "";
+      fact = `<div class="m-fact"><span class="m-fact__h">факт${m.checkedAt ? ` · ${esc(m.checkedAt)}` : ""}</span>${esc(m.factDelta)}${chip}</div>`;
+    }
     const mid = String(m.code).toLowerCase().replace(/[^a-zа-я0-9]+/gi, "-").replace(/^-|-$/g, "");
     return `
       <article id="m-${mid}" class="m-card ${m.type === "active" ? "is-act" : "is-tgt"}">
@@ -2051,7 +2154,7 @@ async function mountMetrics() {
           <span>подцель ${esc(m.subgoal)}</span>
           <span>${esc(m.hypothesis)}</span>
         </div>
-        ${base}${note}
+        ${base}${fact}${note}
         <a class="m-link" href="backlog.html?q=${encodeURIComponent(m.code)}">итерации с метрикой →</a>
       </article>`;
   }

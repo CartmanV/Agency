@@ -40,6 +40,29 @@
         <div class="lg-evrow"><span class="ev-chip ev-plan">? в плане</span><span>Замер запланирован — ссылка ведёт в План исследований: что именно разблокирует.</span></div>
         <div class="lg-evrow"><span class="ev-chip ev-closed">✅ закрыто</span><span>Боль уже устранена, в работу не берём.</span></div>
       </div>
+
+      <h3 style="margin-top:24px">Две разные оси — не путать</h3>
+      <p class="lede" style="font-size:14px">
+        <b>Достоверность</b> (есть ли опора под утверждением) — это чипы выше (<code>.ev-chip</code>).
+        <b>Приоритет</b> (берём ли в работу: MoSCoW) — отдельная система:
+        <span class="badge prio--must">Must</span>
+        <span class="badge prio--should">Should</span>
+        <span class="badge prio--could">Could</span>
+        <span class="badge prio--wont">Won't</span>.
+        Цвет приоритета не означает достоверность.
+      </p>
+
+      <h3 style="margin-top:24px">Старые обозначения → канон</h3>
+      <p class="lede" style="font-size:14px">
+        На переходный период встречаются прежние классы. Соответствие новому канону:
+      </p>
+      <div class="lg-evrows">
+        <div class="lg-evrow"><code>badge--ok</code> · <code>rf-stat.ok</code><span>= <b>подтверждено</b> (ev-ok, ✓ emerald)</span></div>
+        <div class="lg-evrow"><code>badge--review</code> · <code>rf-stat.part</code><span>= <b>частично</b> (ev-part, ~ gold)</span></div>
+        <div class="lg-evrow"><code>rf-stat.comp</code><span>= <b>конфликт/конкуренция</b> (ev-warn, ⚠ pink)</span></div>
+        <div class="lg-evrow"><code>rf-stat.open</code> · <code>rf-stat.neu</code><span>= <b>не проверялась</b> (ev-muted, ∅)</span></div>
+        <div class="lg-evrow"><code>mo-badge.mo-*</code> · <code>badge--must/should/…</code><span>= приоритет, теперь <code>prio--*</code></span></div>
+      </div>
     </section>
 
     <p class="lede" style="margin-top:32px;font-size:14px;color:var(--cream-dim)">

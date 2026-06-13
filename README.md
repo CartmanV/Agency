@@ -7,11 +7,29 @@
 
 ## Запуск
 ```bash
-pip3 install openpyxl markdown   # один раз
-python3 build/build.py           # ../*v6*.xlsx → data/backlog.json
-python3 -m http.server           # → http://localhost:8000
+pip3 install -r requirements.txt   # один раз (только openpyxl)
+python3 build/build.py             # ../*бэклог*vN*.xlsx → data/*.json
+python3 -m http.server             # → http://localhost:8000
 ```
 Открывать через http (не `file://`), иначе fetch JSON блокируется браузером.
+
+## Сборка данных (build/build.py)
+Скрипт читает исходники из **родительской папки** `../` (`My work/`) — они не лежат
+в репозитории (приватные имена агентств и цифры). Источники:
+- самый свежий `*бэклог направления*vN.xlsx` (по версии `vN`) → бэклог, легенда, дерево;
+- `Свод по агентствам *.xlsx` → agencies.json;
+- `Реестр исследований *.xlsx` → research.json;
+- `Соответствие исследований *.xlsx` → sootv.json.
+
+Перезаписываемые (автогенерируемые) файлы `data/`:
+`backlog · agencies · concepts · etapy · exec · home · ladder · legend · metrics ·
+planned · research · sootv · tree` (`.json`).
+
+Авторские (ведутся руками, build.py их **не трогает**):
+`guide.json · levels.json · sootv_extra.json` (+ `now`/`exec` обновляются вручную).
+
+> Если исходных xlsx нет рядом (`../`), `build.py` завершится с подсказкой, какой файл
+> не найден — это ожидаемо вне рабочей машины; собранные `data/*.json` уже в репо.
 
 ## Структура
 ```

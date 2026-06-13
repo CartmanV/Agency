@@ -17,6 +17,7 @@ import re
 import sys
 import unicodedata
 from pathlib import Path
+from urllib.parse import quote
 
 try:
     import openpyxl
@@ -747,6 +748,82 @@ def build_home(items, agencies, research):
     }
 
 
+def metric_anchor(code):
+    """Зеркало slug метрики из app.js: «TTFO»→«m-ttfo», «T-op»→«m-t-op»."""
+    s = re.sub(r"[^0-9a-zа-яё]+", "-", str(code).lower(), flags=re.I).strip("-")
+    return "m-" + s
+
+
+def _snippet(text, limit=140):
+    t = " ".join(str(text or "").split())
+    return t[: limit - 1] + "…" if len(t) > limit else t
+
+
+def build_search(items, research, tree):
+    """Лёгкий индекс для глобального поиска (ТЗ 08): находки · метрики · легенды · темы.
+    Агентства не индексируем (приватные имена/выручка). Формат: {title, page, href, snippet, kind}."""
+    idx = []
+
+    # Темы направления (из дерева) → карта уровней
+    for t in (tree or []):
+        theme = t.get("theme")
+        if not theme:
+            continue
+        idx.append({
+            "title": theme, "page": "Темы", "kind": "тема",
+            "href": f"levels.html?theme={quote(theme)}",
+            "snippet": _snippet(f"{t.get('count', 0)} итераций, Must {t.get('mustCount', 0)}"),
+        })
+
+    # Находки исследований → research.html#f-<id>
+    for f in ((research or {}).get("findings") or []):
+        fid = f.get("id")
+        if not fid:
+            continue
+        idx.append({
+            "title": f"{fid} · {_snippet(f.get('finding'), 60)}", "page": "Исследования", "kind": "находка",
+            "href": f"research.html#{research_anchor(fid)}",
+            "snippet": _snippet(f.get("finding")),
+        })
+
+    # Метрики → metrics.html#m-<code>
+    metrics = _load_data_json("metrics.json", {})
+    for m in (metrics.get("metrics") or []):
+        code = m.get("code")
+        if not code:
+            continue
+        idx.append({
+            "title": f"{code} — {m.get('name', '')}".strip(" —"), "page": "Метрики", "kind": "метрика",
+            "href": f"metrics.html#{metric_anchor(code)}",
+            "snippet": _snippet(m.get("measures")),
+        })
+
+    # Легенда (определения) → legend.html#<section.id>
+    legend = _load_data_json("legend.json", {})
+    for sec in (legend.get("sections") or []):
+        sid = sec.get("id")
+        for it in (sec.get("items") or []):
+            term = it.get("term")
+            if not term:
+                continue
+            anchor = it.get("id") or sid
+            idx.append({
+                "title": term, "page": "Легенды", "kind": "термин",
+                "href": f"legend.html#{anchor}" if anchor else "legend.html",
+                "snippet": _snippet(it.get("def")),
+            })
+
+    return idx
+
+
+def _load_data_json(name, default):
+    p = DATA_DIR / name
+    try:
+        return json.loads(p.read_text(encoding="utf-8"))
+    except Exception:
+        return default
+
+
 def main():
     items, errors = build_backlog()
     DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -810,6 +887,12 @@ def main():
     home_out.write_text(json.dumps(home, ensure_ascii=False, indent=2), encoding="utf-8")
     w, dd = home["work"], home["data"]
     print(f"Главная: бэклог {w['total']} (Must {w['mustCount']}) · агентства {dd['agenciesActive']} · находки {dd['researchTotal']} → {home_out.relative_to(SITE_DIR)}")
+
+    # search.json — лёгкий индекс глобального поиска (ТЗ 08)
+    search = build_search(items, research, tree)
+    search_out = DATA_DIR / "search.json"
+    search_out.write_text(json.dumps({"count": len(search), "index": search}, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"Поиск: индекс {len(search)} записей → {search_out.relative_to(SITE_DIR)}")
 
     must = sum(1 for x in items if x.get("moscow") == "Must")
     print(f"  Must: {must}  ·  с Final Score: {sum(1 for x in items if x['finalScore'] is not None)}")
