@@ -1443,7 +1443,7 @@ async function mountEtapy() {
   }
 
   // ——— Краткий обзор сверху ———
-  // Цвет номера этапа — единый канон сайта (1=pink, 2=emerald, 3–5=muted), просто опознавание этапа.
+  // Цвет этапа — категориальный канон v4 (1=cat-1, 2=cat-3, 3–5=muted), просто опознавание этапа.
   const stageChip = (n) => `<span class="stage-tag s-${n === "2" ? "2a" : n}">${esc(n)}</span>`;
   const heatStrip = `
     <div class="evm-strip">
@@ -1586,7 +1586,7 @@ async function mountEtapy() {
           <span class="e-stage__n">${esc(s.n)}</span>
           <span class="e-stage__name">${esc(s.name)}</span>
           <span class="e-stage__mean">${gloss(esc(s.meaning))}</span>
-          ${meterSummary(stageMeter(s))}
+          <span class="e-stage__meter"><span class="e-stage__meterh">доказательная база:</span> ${meterSummary(stageMeter(s))}</span>
         </summary>
         <div class="e-stage__body">
           ${s.sootv ? `<div class="e-evlink"><a href="sootvetstvie.html#${esc(s.sootv)}">Доказательная база этапа →</a> <a href="research.html?stage=${esc(s.n === "2" ? "2A,2B" : s.n)}">Все находки этапа →</a></div>` : ""}

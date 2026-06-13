@@ -1759,15 +1759,18 @@ a.guide__row:hover { border-color: var(--copper); transform: translateY(-2px); t
 .e-h2 { font-family: var(--f-display); font-size: 22px; color: var(--cream); margin: 34px 0 12px; }
 .e-h3 { font-family: var(--f-display); font-size: 17px; color: var(--cream); margin: 22px 0 6px; }
 .e-muted { font-size: 13px; color: var(--cream-dim); margin: 0 0 8px; max-width: 90ch; line-height: 1.55; }
-.e-note { font-size: 12.5px; color: var(--pink-soft); background: var(--pink-dim); border-radius: 8px; padding: 9px 11px; margin: 10px 0 0; line-height: 1.5; }
-.e-note--del { color: var(--cream-dim); background: var(--panel-2); }
+/* v4: заметка — спокойная (золотая полоса = «на заметку»), не розовый-«внимание» */
+.e-note { font-size: 13px; color: var(--cream-soft); background: var(--panel-2); border-left: 2px solid var(--gold); border-radius: 8px; padding: 9px 12px; margin: 10px 0 0; line-height: 1.55; }
+.e-note--del { color: var(--cream-dim); border-left-color: var(--line-soft); }
 
 /* Блок «общая информация» */
 .e-over { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); padding: 6px 20px 22px; margin: 0 0 22px; }
 .e-over__h { font-family: var(--f-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--gold); margin: 16px 0 4px; }
-.e-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.e-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
 .e-table th { text-align: left; padding: 8px 11px; border-bottom: 1px solid var(--line); font-family: var(--f-mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em; color: var(--cream-dim); white-space: nowrap; }
-.e-table td { padding: 8px 11px; border-bottom: 1px solid var(--line); color: var(--cream-soft); line-height: 1.5; vertical-align: top; }
+.e-table td { padding: 9px 11px; border-bottom: 1px solid var(--line); color: var(--cream-soft); line-height: 1.55; vertical-align: top; }
+/* v4: зебра фоном для отслеживания строк (без вертикальных линий) */
+.e-table tbody tr:nth-child(even) td { background: rgba(255,255,255,.018); }
 .e-table tr:last-child td { border-bottom: none; }
 .e-prism .e-pr-n { white-space: nowrap; color: var(--cream); font-weight: 600; }
 .e-caveat-list { margin: 12px 0 0; padding-left: 20px; font-size: 13px; color: var(--cream-soft); line-height: 1.55; }
@@ -1802,12 +1805,14 @@ a.guide__row:hover { border-color: var(--copper); transform: translateY(-2px); t
 .e-stage[data-stage="2"] .e-stage__n { color: var(--cat-3); }
 .e-stage__name { font-family: var(--f-display); font-size: 21px; color: var(--cream); }
 .e-stage__con { font-family: var(--f-mono); font-size: 11px; color: var(--gold); text-align: right; }
-.e-stage__mean { grid-column: 1 / -1; font-size: 13.5px; color: var(--cream-dim); line-height: 1.5; }
+.e-stage__mean { grid-column: 1 / -1; font-size: 14px; color: var(--cream-soft); line-height: 1.55; }
+.e-stage__meter { grid-column: 1 / -1; display: inline-flex; align-items: center; gap: 8px; margin-top: 2px; }
+.e-stage__meterh { font-family: var(--f-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
 .e-stage__body { padding: 0 18px 18px; }
-.e-sub { border-top: 1px solid var(--line); padding-top: 12px; margin-top: 12px; }
-.e-sub__h { font-family: var(--f-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--cream-dim); display: block; margin-bottom: 6px; }
-.e-sub p { margin: 0 0 6px; font-size: 13.5px; color: var(--cream-soft); line-height: 1.6; max-width: 92ch; }
-.e-sub ul, .e-sub ol { margin: 4px 0; padding-left: 20px; font-size: 13.5px; color: var(--cream-soft); line-height: 1.55; max-width: 92ch; }
+.e-sub { border-top: 1px solid var(--line); padding-top: 14px; margin-top: 16px; }
+.e-sub__h { font-family: var(--f-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--gold); display: block; margin-bottom: 8px; }
+.e-sub p { margin: 0 0 6px; font-size: 14px; color: var(--cream-soft); line-height: 1.6; max-width: 92ch; }
+.e-sub ul, .e-sub ol { margin: 4px 0; padding-left: 20px; font-size: 14px; color: var(--cream-soft); line-height: 1.6; max-width: 92ch; }
 .e-sub li { margin: 3px 0; }
 .e-mechs li { margin: 4px 0; }
 .e-crit { font-size: 13px; color: var(--cream); background: var(--panel-2); border-radius: 8px; padding: 10px 12px; margin: 8px 0 0; line-height: 1.55; }
@@ -1818,19 +1823,20 @@ a.guide__row:hover { border-color: var(--copper); transform: translateY(-2px); t
 
 /* Карточка гипотезы */
 .e-hyp { border: 1px solid var(--line); border-left: 3px solid var(--line-soft); border-radius: 10px; background: var(--panel-2); margin: 6px 0; overflow: hidden; }
-.e-hyp.is-feat { border-left-color: var(--emerald); }
-.e-hyp.is-orient { border-left-color: var(--blue); }
-.e-hyp.is-cand { border-left-color: var(--copper); border-left-style: dashed; }
+/* v4: тип гипотезы — подпись текстом (.e-hyp__type), не цветом. Полоса спокойная;
+   пунктир = «кандидат» (черновик) — единственный смысл пунктира. */
+.e-hyp.is-feat, .e-hyp.is-orient { border-left-color: var(--line-soft); }
+.e-hyp.is-cand { border-left-color: var(--gold); border-left-style: dashed; }
 .e-hyp__sum { list-style: none; cursor: pointer; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; padding: 10px 13px; }
 .e-hyp__sum::-webkit-details-marker { display: none; }
 .e-hyp__sum:hover { background: var(--panel); }
 .e-hyp__sum:focus-visible { outline: 2px solid var(--copper); outline-offset: -2px; }
 .e-hcode { font-family: var(--f-mono); font-size: 11px; color: var(--copper); border: 1px solid var(--copper-dk); border-radius: 6px; padding: 1px 7px; white-space: nowrap; }
-.e-hyp__title { color: var(--cream); font-size: 13.5px; font-weight: 600; flex: 1 1 240px; line-height: 1.4; }
+.e-hyp__title { color: var(--cream); font-size: 14px; font-weight: 600; flex: 1 1 240px; line-height: 1.4; }
 .e-hyp__type { font-family: var(--f-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .04em; color: var(--cream-dim); }
 .e-hyp__cand { font-family: var(--f-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .04em; color: var(--copper); border: 1px dashed var(--copper-dk); border-radius: 999px; padding: 1px 7px; }
 .e-hyp__body { padding: 0 13px 13px; }
-.e-hyp__ift { font-size: 13.5px; color: var(--cream-soft); line-height: 1.6; margin: 4px 0 8px; }
+.e-hyp__ift { font-size: 14px; color: var(--cream-soft); line-height: 1.6; margin: 4px 0 8px; }
 .e-hyp__ift b { color: var(--cream); }
 .e-hyp__prob { margin: 0 0 8px; }
 .e-hyp__lh { font-family: var(--f-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .05em; color: var(--cream-dim); }
@@ -1838,7 +1844,7 @@ a.guide__row:hover { border-color: var(--copper); transform: translateY(-2px); t
 .e-hyp__dl { display: grid; gap: 4px; margin: 0; }
 .e-hyp__row { display: flex; gap: 10px; }
 .e-hyp__row dt { font-family: var(--f-mono); font-size: 11px; color: var(--cream-dim); min-width: 168px; flex-shrink: 0; }
-.e-hyp__row dd { margin: 0; font-size: 13px; color: var(--cream-soft); line-height: 1.5; }
+.e-hyp__row dd { margin: 0; font-size: 13.5px; color: var(--cream-soft); line-height: 1.55; }
 .e-hyp__note { font-size: 12.5px; color: var(--cream-dim); background: var(--panel); border-radius: 8px; padding: 9px 11px; margin: 10px 0 0; line-height: 1.5; }
 
 /* Чипы-доказательства у гипотезы (ТЗ 15) */
