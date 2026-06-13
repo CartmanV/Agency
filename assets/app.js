@@ -10,7 +10,6 @@ const NAV = [
   { href: "tree.html",     label: "Дерево (JTBD)", group: "Проекции" },
   { href: "levels.html",   label: "Каталог задач", group: "Работа" },
   { href: "backlog.html",  label: "Бэклог", group: "Работа" },
-  { href: "must.html",     label: "Must", group: "Работа" },
   { href: "research.html", label: "Исследования", group: "Данные" },
   { href: "sootvetstvie.html", label: "Доказательная база", short: "Доказательства", group: "Данные" },
   { href: "planned.html", label: "План исследований", short: "План ресёрча", group: "Данные" },
@@ -489,138 +488,6 @@ async function mountBacklog() {
   });
 
   apply();
-}
-
-// ===================== Must — аккордеон карточек ProductV =====================
-function verdictClass(v) { return v === "Proceed" ? "is-proceed" : "is-rework"; }
-function deltaClass(d) {
-  const s = String(d).trim();
-  if (s.startsWith("+")) return "pos";
-  if (s.startsWith("−") || s.startsWith("-")) return "neg";
-  return "zero";
-}
-function riceStr(r) {
-  if (!r) return "—";
-  const e = r.e == null ? "—" : r.e;
-  return `${r.r}·${r.i}·${r.c}·${e}`;
-}
-function mList(arr, ordered) {
-  if (!arr || !arr.length) return "";
-  const tag = ordered ? "ol" : "ul";
-  return `<${tag} class="m-list">${arr.map((x) => `<li>${esc(x)}</li>`).join("")}</${tag}>`;
-}
-function mBlock(label, inner) {
-  if (!inner) return "";
-  return `<div class="m-sect"><div class="m-sect__h">${esc(label)}</div>${inner}</div>`;
-}
-
-function renderMustCard(c) {
-  const bodyId = `mc-${c.num}-body`;
-  const meta = [
-    ["Этап / Блок", c.stageBlock],
-    ["Механизм", c.mechanism],
-    ["Подцель", c.subgoal],
-    ["Уровень 2", c.level2],
-    ["GitLab", c.gitlab],
-    ["Статус", c.status],
-  ].filter(([, v]) => v)
-   .map(([k, v]) => `<div class="m-meta__row"><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("");
-
-  const pvRows = (c.productv || []).map((p) =>
-    `<tr>
-       <td class="pv-th">${esc(p.thinker)}</td>
-       <td class="pv-mod">${esc(p.modifier)}</td>
-       <td class="pv-delta ${deltaClass(p.delta)}">${esc(p.delta)}</td>
-       <td class="pv-basis">${esc(p.basis)}</td>
-     </tr>`).join("");
-
-  const scenario = c.scenario
-    ? `<div class="m-scn">
-         <div class="m-scn__col m-scn__as"><span class="t">As is</span><p>${esc(c.scenario.asIs)}</p></div>
-         <div class="m-scn__col m-scn__to"><span class="t">To be</span><p>${esc(c.scenario.toBe)}</p></div>
-       </div>` : "";
-
-  const finalStr = c.finalXlsx == null ? "—" : c.finalXlsx;
-
-  return `
-    <article class="mcard" data-verdict="${verdictClass(c.verdict)}">
-      <button type="button" class="mcard__head" aria-expanded="false" aria-controls="${bodyId}">
-        <span class="mcard__num">${c.num}</span>
-        <span class="mcard__title">${esc(c.title)}</span>
-        <span class="mcard__theme">${esc(c.theme)}</span>
-        <span class="vbadge ${verdictClass(c.verdict)}">${esc(c.verdict)}</span>
-        <span class="mcard__metrics">
-          <span title="Reach·Impact·Confidence·Effort">${riceStr(c.rice)}</span>
-          <span>Final ${finalStr}</span>
-          <span>PV ${Number(c.pvProductV).toFixed(2)}</span>
-        </span>
-        <span class="mcard__chev" aria-hidden="true">▸</span>
-      </button>
-      <div class="mcard__body" id="${bodyId}" hidden>
-        <dl class="m-meta">${meta}</dl>
-        ${mBlock("Гипотеза", `<p class="m-hyp">${esc(c.hypothesis)}</p>`)}
-        ${c.composition ? mBlock("Состав эпика", `<p>${esc(c.composition)}</p>`) : ""}
-        ${c.flag ? `<p class="m-flag">⚠ ${esc(c.flag)}</p>` : ""}
-        ${mBlock("Поток ролей", mList(c.roleFlow))}
-        ${mBlock("Проблема", mList(c.problem, true))}
-        ${mBlock("Результат", mList(c.result, true))}
-        ${mBlock("Влияние на цель", mList(c.impact))}
-        ${mBlock("Пользовательский сценарий", scenario)}
-        ${mBlock("Образ результата (энтелехия)", `<p class="m-ent">${esc(c.entelechy)}</p>`)}
-        ${c.tasks && c.tasks.length ? mBlock("Задачи", mList(c.tasks, true)) : ""}
-        ${mBlock("ProductV · пятикнижный фильтр", `
-          <div class="table-wrap">
-            <table class="productv">
-              <thead><tr><th>Мыслитель</th><th>Модиф.</th><th>Δ</th><th>Основание</th></tr></thead>
-              <tbody>${pvRows}</tbody>
-            </table>
-          </div>
-          <p class="m-pvsum">${esc(c.pvSum)}</p>`)}
-        ${mBlock("RICE — обоснование", `<p class="m-rice">${esc(c.riceRationale)}</p>`)}
-        <div class="m-verdict ${verdictClass(c.verdict)}">
-          <span class="vbadge ${verdictClass(c.verdict)}">${esc(c.verdict)}</span>
-          <p>${esc(c.verdictText)}</p>
-        </div>
-        <p class="m-src">Источники: ${esc(c.sources)}</p>
-      </div>
-    </article>`;
-}
-
-function setMustCard(btn, open) {
-  const body = document.getElementById(btn.getAttribute("aria-controls"));
-  btn.setAttribute("aria-expanded", open ? "true" : "false");
-  if (body) body.hidden = !open;
-  const card = btn.closest(".mcard");
-  if (card) card.classList.toggle("is-open", open);
-}
-
-async function mountMust() {
-  const host = document.querySelector("[data-must-cards]");
-  if (!host) return;
-  host.innerHTML = `<div class="loading">Загрузка Must-карточек…</div>`;
-  let data;
-  try { data = await loadJSON("data/must.json"); }
-  catch (e) { host.innerHTML = `<div class="error">${esc(e.message)}</div>`; return; }
-
-  const cards = (data.cards || []).slice()
-    .sort((a, b) => (b.finalXlsx ?? -1) - (a.finalXlsx ?? -1));
-
-  host.innerHTML = `
-    <p class="must-note">${esc(data.note || "")}</p>
-    <div class="must-controls">
-      <button type="button" class="btn" data-expand-all>Развернуть все</button>
-      <button type="button" class="btn" data-collapse-all>Свернуть все</button>
-      <span class="result-meta">Источник: ${esc(data.source || "")}</span>
-    </div>
-    <div class="mcards">${cards.map(renderMustCard).join("")}</div>`;
-
-  host.querySelectorAll(".mcard__head").forEach((btn) => {
-    btn.addEventListener("click", () => setMustCard(btn, btn.getAttribute("aria-expanded") !== "true"));
-  });
-  host.querySelector("[data-expand-all]").addEventListener("click",
-    () => host.querySelectorAll(".mcard__head").forEach((b) => setMustCard(b, true)));
-  host.querySelector("[data-collapse-all]").addEventListener("click",
-    () => host.querySelectorAll(".mcard__head").forEach((b) => setMustCard(b, false)));
 }
 
 // ===================== Дерево работ (tree.html) =====================
@@ -2274,9 +2141,26 @@ function q2Badge(kind) {
   const b = Q2_BADGE[kind] || Q2_BADGE.out;
   return `<span class="cn-q2 ${b[0]}">${b[1]}</span>`;
 }
-function valueMatrixHTML(data) {
+function valueMatrixHTML(data, l2idx) {
+  const mechCat = data.mechCatalog || {};
+  l2idx = l2idx || {};
+  // Ярлык механизма → ссылка в Каталог задач. Значение mechCatalog: строка (тема L1) или
+  // {theme, l2} (подтема L2 — индекс берём по имени из levels.json). Без привязки — текст.
+  const mechChip = (m) => {
+    const ent = mechCat[m];
+    if (!ent) return `<span class="vm-m">${esc(m)}</span>`;
+    const theme = typeof ent === "string" ? ent : ent.theme;
+    const l2 = typeof ent === "string" ? null : ent.l2;
+    let sel = "t:" + theme, tip = theme;
+    if (l2 && l2idx[theme] && l2idx[theme][l2] != null) {
+      sel = "l:" + theme + ":" + l2idx[theme][l2];
+      tip = theme + " › " + l2;
+    }
+    const href = "levels.html?sel=" + encodeURIComponent(sel);
+    return `<a class="vm-m vm-m--link" href="${esc(href)}" title="В Каталог задач: ${esc(tip)}">${esc(m)}</a>`;
+  };
   const rows = (data.matrix || []).map((r) => {
-    const mech = (r.mechanisms || []).map((m) => `<span class="vm-m">${esc(m)}</span>`).join(" ");
+    const mech = (r.mechanisms || []).map(mechChip).join(" ");
     const q2 = r.q2 ? `<span class="vm-q2 on">Q2</span>` : `<span class="vm-q2">—</span>`;
     return `
       <tr class="vm-row${r.q2 ? " is-q2" : ""}">
@@ -2328,7 +2212,18 @@ async function mountConcepts() {
   let data;
   try { data = await loadJSON("data/concepts.json"); }
   catch (e) { matrixHost.innerHTML = `<div class="error">${esc(e.message)}</div>`; return; }
-  matrixHost.innerHTML = valueMatrixHTML(data);
+  // Индекс L2-подтем Каталога по имени — чтобы ссылки на механизмы вели в подтему, а не зависели от порядка.
+  let l2idx = {};
+  try {
+    const lv = await loadJSON("data/levels.json");
+    (lv.branches || []).forEach((b) => (b.themes || []).forEach((t) => {
+      (t.editorialL2 || []).forEach((l, i) => {
+        if (!l2idx[t.name]) l2idx[t.name] = {};
+        if (l && l.name != null) l2idx[t.name][l.name] = i;
+      });
+    }));
+  } catch (e) { /* подтемы необязательны — ссылки упадут до уровня темы */ }
+  matrixHost.innerHTML = valueMatrixHTML(data, l2idx);
 }
 
 // ===================== Единая шапка проекции (projbar) =====================
@@ -2560,7 +2455,6 @@ async function mountDashboards() {
         ${dlinks([
           { href: "backlog.html", label: "Бэклог" },
           { href: "levels.html", label: "Каталог" },
-          { href: "must.html", label: "Must" },
         ])}
       </div>`;
   }
@@ -2679,6 +2573,28 @@ async function mountNow() {
     </a>`;
 }
 
+// vision.html — счётчики из бэклога, чтобы не хардкодить (число задач + «дыры в данных»).
+// Заполняет [data-bl-count] (всего задач) и [data-bl-holes] (без приоритета, по темам).
+async function mountVisionStats() {
+  const elCount = document.querySelector("[data-bl-count]");
+  const elHoles = document.querySelector("[data-bl-holes]");
+  if (!elCount && !elHoles) return;
+  let d;
+  try { d = await loadJSON("data/backlog.json"); }
+  catch (e) { return; }
+  const items = d.items || [];
+  const total = d.count || items.length;
+  if (elCount) elCount.textContent = total;
+  if (elHoles) {
+    const isHole = (it) => it.finalScore === null || it.finalScore === "" || it.finalScore === "—";
+    const holes = items.filter(isHole);
+    const byTheme = {};
+    holes.forEach((it) => { const t = it.theme || "—"; byTheme[t] = (byTheme[t] || 0) + 1; });
+    const parts = Object.entries(byTheme).sort((a, b) => b[1] - a[1]).map(([t, n]) => `${n} «${t}»`);
+    elHoles.textContent = `${holes.length} задач из ${total}` + (parts.length ? ` (${parts.join(" + ")})` : "");
+  }
+}
+
 // JTBD-дерево (tree.html) — глоссарий по узлам/листьям
 function mountJtbd() {
   if (!document.querySelector(".tree-cols")) return;
@@ -2689,7 +2605,6 @@ document.addEventListener("DOMContentLoaded", () => {
   mountHeader();
   mountFooter();
   mountBacklog();
-  mountMust();
   mountLevels();
   mountJtbd();
   mountLegend();
@@ -2706,4 +2621,5 @@ document.addEventListener("DOMContentLoaded", () => {
   mountNow();
   mountDashboards();
   mountGuide();
+  mountVisionStats();
 });

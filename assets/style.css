@@ -1277,6 +1277,8 @@ a.fl-task:hover { color: var(--pink-soft); }
 .vm-concept b { color: var(--copper); }
 .vm-mech { color: var(--cream-dim); }
 .vm-m { display: inline-block; font-size: .8rem; border: 1px solid var(--line); border-radius: 6px; padding: 2px 7px; margin: 2px 3px 2px 0; color: var(--cream-soft); }
+.vm-m--link { color: var(--copper); border-color: var(--copper); text-decoration: none; transition: background .12s ease; }
+.vm-m--link:hover { background: rgba(226,179,85,.10); }
 .vm-role { white-space: nowrap; color: var(--cream-soft); }
 .vm-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 7px; vertical-align: middle; }
 .vm-dot.blue { background: var(--blue); }
