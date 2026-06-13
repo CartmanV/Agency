@@ -584,11 +584,11 @@ table.backlog--full tbody tr.b-row:hover > td { background: var(--panel); }
   margin: 10px 0 4px; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel);
 }
 .colbox { font-family: var(--f-mono); font-size: 12px; color: var(--cream-soft); display: flex; gap: 7px; align-items: center; cursor: pointer; }
-.colbox input { accent-color: var(--pink); }
+.colbox input { accent-color: var(--gold); }
 
 /* раскрытая строка — полная карточка */
 tr.b-detailrow > td { background: var(--bg-2); padding: 0; }
-.b-card { padding: 16px 18px 18px 44px; border-left: 3px solid var(--pink); }
+.b-card { padding: 16px 18px 18px 44px; border-left: 3px solid var(--gold); }
 .bd-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 14px; margin-bottom: 8px; }
 .bd-title { font-family: var(--f-display); font-size: 17px; color: var(--cream); }
 .bd-path { font-family: var(--f-mono); font-size: 11px; color: var(--cream-dim); }
@@ -766,8 +766,8 @@ a.chip.branch:hover { border-color: var(--copper); color: var(--cream); text-dec
   letter-spacing: .04em; color: var(--cream-dim); margin-top: 5px; }
 .ag-stat .s { font-size: 11.5px; color: var(--cream-dim); margin-top: 3px; line-height: 1.35; }
 .ag-stat--win .v { color: var(--emerald); }                 /* достигнутый результат (факт) */
-.ag-stat--goal { background: var(--pink-dim); }             /* цель (намерение) */
-.ag-stat--goal .v { color: var(--pink); }
+.ag-stat--goal { background: rgba(226,179,85,.10); }        /* цель (намерение) → золото-акцент (v4) */
+.ag-stat--goal .v { color: var(--gold); }
 .ag-stat--goal .l::before { content: "◎ "; }
 @media (max-width: 820px) { .ag-stat { flex-basis: 45%; } }
 
@@ -838,7 +838,7 @@ table.backlog td.spark-cell { padding: 4px 8px; }
 .m-card { border: 1px solid var(--line); border-radius: 12px; background: var(--panel); padding: 16px 18px; display: flex; flex-direction: column; }
 .m-card.is-act { border-top: 3px solid var(--emerald); }
 .m-card.is-tgt { border-top: 3px solid var(--copper-dk); }
-.m-card.is-target, .m-card:target { outline: 2px solid var(--pink); outline-offset: 2px; }
+.m-card.is-target, .m-card:target { outline: 2px solid var(--gold); outline-offset: 2px; }
 .m-card__top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .m-dir { font-family: var(--f-mono); font-weight: 600; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; }
 .m-dir.down { color: var(--emerald); background: rgba(61,163,114,.14); }
@@ -908,7 +908,7 @@ table.backlog td.spark-cell { padding: 4px 8px; }
 .rf-howto { color: var(--cream-dim); font-size: 13px; line-height: 1.55; border-left: 2px solid var(--line-soft); padding-left: 12px; margin: 0 0 18px; }
 .rf-howto code { font-family: var(--f-mono); font-size: 12px; color: var(--copper); }
 /* Якорь находки: подсветка при приходе по research.html#f-a1 / ?id=A1 */
-.rf.is-target, .rf:target { background: var(--pink-dim); border-radius: 8px; box-shadow: 0 0 0 2px var(--pink); }
+.rf.is-target, .rf:target { background: rgba(226,179,85,.10); border-radius: 8px; box-shadow: 0 0 0 2px var(--gold); }
 
 /* ===================== Канон «чип-доказательство» (.ev-chip, ТЗ 14–18) ===================== */
 /* Единый язык статуса доказательства: подтв./частично/конфликт/не проверялась/закрыто/в плане. */
@@ -998,7 +998,7 @@ table.backlog td.spark-cell { padding: 4px 8px; }
 .pl-title { font-weight: 600; font-size: 14px; }
 .pl-chips { display: flex; gap: 6px; align-items: center; margin-left: auto; flex-wrap: wrap; }
 .pl-noowner { font-family: var(--f-mono); font-size: 10px; color: var(--pink); border: 1px dashed var(--pink); border-radius: 999px; padding: 1px 8px; }
-.pl-card.is-target { box-shadow: 0 0 0 2px var(--pink); }
+.pl-card.is-target { box-shadow: 0 0 0 2px var(--gold); }
 .pl-body { padding: 4px 14px 16px; }
 .pl-q { font-size: 14px; line-height: 1.55; color: var(--cream); margin: 8px 0 12px; }
 .pl-unlocks { font-size: 12.5px; margin: 0 0 12px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
@@ -1010,8 +1010,8 @@ table.backlog td.spark-cell { padding: 4px 8px; }
 .pl-row dd { margin: 0; color: var(--cream-soft); font-size: 13px; line-height: 1.5; }
 
 /* ===================== Видение-портал (vision.html) ===================== */
-.portal-nsm { border: 1px solid var(--pink); background: var(--panel); border-radius: 10px; padding: 12px 16px; margin: 18px 0 0; }
-.portal-nsm .k { font-family: var(--f-mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--pink); }
+.portal-nsm { border: 1px solid var(--gold); background: var(--panel); border-radius: 10px; padding: 12px 16px; margin: 18px 0 0; }
+.portal-nsm .k { font-family: var(--f-mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--gold); }
 .portal-nsm p { margin: 4px 0 0; color: var(--cream-soft); font-size: 14px; }
 
 .pcards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
@@ -1197,7 +1197,7 @@ a.fl-task:hover { color: var(--pink-soft); }
 .rail-theme:hover { background: var(--bg-2); color: var(--cream); }
 .rail-theme.is-c { border-left-color: var(--blue); }
 .rail-theme.is-r { border-left-color: var(--gold); }
-.rail-theme.is-on { background: var(--panel); color: var(--cream); border-left-color: var(--pink); }
+.rail-theme.is-on { background: var(--panel); color: var(--cream); border-left-color: var(--gold); }
 .rail-name { flex: 1; min-width: 0; }
 .rail-c { font-family: var(--f-mono); font-size: 11px; color: var(--muted); }
 .rail-l2 { list-style: none; margin: 1px 0 4px; padding: 0 0 0 12px; border-left: 1px solid var(--line); }
@@ -1249,7 +1249,7 @@ a.fl-task:hover { color: var(--pink-soft); }
 /* Стартовый обзор — все ветки и темы карточками. */
 .rail-over { display: block; padding: 8px 9px; margin-bottom: 6px; border-radius: 8px; font-size: 13.5px; color: var(--cream-dim); text-decoration: none; border-left: 2px solid transparent; }
 .rail-over:hover { background: var(--bg-2); color: var(--cream); }
-.rail-over.is-on { background: var(--panel); color: var(--cream); border-left-color: var(--pink); }
+.rail-over.is-on { background: var(--panel); color: var(--cream); border-left-color: var(--gold); }
 .pn-over__h { font-family: var(--f-display); font-size: 24px; font-weight: 700; margin: 0 0 4px; }
 .pn-over__lede { color: var(--cream-dim); font-size: 14px; margin: 0 0 22px; }
 .ov-branch { margin-bottom: 26px; }
@@ -1587,19 +1587,20 @@ a.ex-fact:hover { border-color: var(--copper); transform: translateY(-1px); text
 .risk-card__link { color: var(--copper); font-size: .82rem; font-family: var(--f-mono); }
 
 /* сейчас в работе — отдельный блок-карточка под саммари */
+/* v4: «Сейчас в работе» — активный/важный блок → золото (главный акцент), не розовый */
 .now-card {
   display: block; text-decoration: none; padding: 18px 20px;
-  border: 1px solid var(--pink);
-  border-radius: 14px; background: rgba(255,92,138,.06);
+  border: 1px solid var(--gold);
+  border-radius: 14px; background: rgba(226,179,85,.06);
   transition: border-color .15s, transform .15s;
 }
-.now-card:hover { transform: translateY(-2px); border-color: var(--pink); text-decoration: none; }
+.now-card:hover { transform: translateY(-2px); border-color: var(--gold-dk); text-decoration: none; }
 .now-card__head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-bottom: 8px; }
 .now-card__live {
   display: inline-flex; align-items: center; gap: 7px;
-  font: 600 .72rem/1 var(--f-mono); letter-spacing: .05em; text-transform: uppercase; color: var(--pink);
+  font: 600 .72rem/1 var(--f-mono); letter-spacing: .05em; text-transform: uppercase; color: var(--gold);
 }
-.now-card__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--pink); box-shadow: 0 0 0 3px rgba(255,92,138,.2); }
+.now-card__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 0 3px rgba(226,179,85,.2); }
 .now-card__k { font: 500 .82rem/1.3 var(--f-body); color: var(--cream-dim); }
 .now-card__title { font: 600 1.25rem/1.3 var(--f-display); color: var(--cream); margin: 2px 0 8px; }
 .now-card__what { color: var(--cream-soft); font-size: .92rem; line-height: 1.55; margin: 0 0 14px; max-width: 80ch; }
@@ -1725,7 +1726,7 @@ a.guide__row:hover { border-color: var(--copper); transform: translateY(-2px); t
 .guide__src--hand { color: var(--gold); border-color: rgba(226,179,85,.5); }
 .guide__src--edit { color: var(--blue); border-color: rgba(107,168,230,.5); }
 .guide__row--here { border-style: solid; border-color: var(--gold); background: transparent; }
-.guide__here { flex: none; font-family: var(--f-mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--pink); border: 1px solid var(--pink); border-radius: 999px; padding: 2px 7px; }
+.guide__here { flex: none; font-family: var(--f-mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--gold); border: 1px solid var(--gold); border-radius: 999px; padding: 2px 7px; }
 
 /* Маршруты чтения */
 .routes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -1885,7 +1886,7 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
 .lg-evrow .ev-chip { flex-shrink: 0; min-width: 116px; justify-content: center; }
 /* Ссылки «Доказательная база этапа → / Все находки этапа →» в шапке этапа */
 .e-evlink { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 0 0 14px; font-family: var(--f-mono); font-size: 12px; }
-.e-hyp.is-target > .e-hyp__sum { box-shadow: inset 0 0 0 2px var(--pink); border-radius: 8px; }
+.e-hyp.is-target > .e-hyp__sum { box-shadow: inset 0 0 0 2px var(--gold); border-radius: 8px; }
 
 .e-rstat { font-family: var(--f-mono); font-size: 11px; color: var(--cream-dim); border: 1px solid var(--line-soft); border-radius: 999px; padding: 2px 8px; white-space: nowrap; }
 .e-i0 { font-size: 13.5px; color: var(--cream-soft); border-left: 2px solid var(--gold); padding-left: 14px; margin: 10px 0; line-height: 1.6; }
