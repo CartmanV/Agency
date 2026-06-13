@@ -1147,7 +1147,8 @@ a.pcard:hover { border-color: var(--copper); transform: translateY(-2px); text-d
 .l1-full .tchev { display: inline-block; transition: transform .15s; }
 
 .l2list { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
-.l2node { border: 1px solid var(--line); border-radius: 10px; background: var(--bg-2); padding: 0 4px; }
+/* v4 (04): L2-узлы внутри L1-карточки отделяются заливкой --panel, без второй рамки */
+.l2node { border-radius: 10px; background: var(--panel); padding: 0 4px; }
 .l2node > .tsum { padding: 9px 8px; }
 .l2node .l2meta { font-family: var(--f-mono); font-size: 10.5px; color: var(--muted); margin-left: 8px; }
 .l2full { padding: 2px 10px 12px; }
@@ -1286,9 +1287,10 @@ a.fl-task:hover { color: var(--pink-soft); }
 .cn-over { margin: 0 0 26px; padding: 18px 20px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
 .cn-over__h { font: 500 .72rem/1 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--cream-dim); margin-bottom: 14px; }
 .cn-over__grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-.cn-over__item { display: flex; align-items: center; gap: 11px; padding: 11px 13px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); text-decoration: none; transition: border-color .15s, transform .15s; }
-.cn-over__item:hover { border-color: var(--line-soft); transform: translateY(-1px); text-decoration: none; }
-.cn-over__n { flex: none; width: 26px; height: 26px; display: grid; place-items: center; font: 600 .95rem/1 var(--f-display); color: var(--copper); border: 1px solid var(--line-soft); border-radius: 7px; }
+/* v4 (04): внутри .cn-over отделяем заливкой, а не второй рамкой */
+.cn-over__item { display: flex; align-items: center; gap: 11px; padding: 11px 13px; border-radius: 10px; background: var(--bg); text-decoration: none; transition: background .15s, transform .15s; }
+.cn-over__item:hover { background: var(--bg-2); transform: translateY(-1px); text-decoration: none; }
+.cn-over__n { flex: none; width: 26px; height: 26px; display: grid; place-items: center; font: 600 .95rem/1 var(--f-display); color: var(--copper); background: var(--panel-2); border-radius: 7px; }
 .cn-over__txt { flex: 1; color: var(--cream-soft); font-size: .9rem; line-height: 1.35; }
 @media (max-width: 680px) { .cn-over__grid { grid-template-columns: 1fr; } }
 
