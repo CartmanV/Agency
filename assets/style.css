@@ -1552,17 +1552,9 @@ a.ex-fact:hover { border-color: var(--copper); transform: translateY(-1px); text
 /* ставки */
 .bets { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
 .bet { padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: rgba(255,255,255,.02); }
-.bet__top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.bet__n { font: 600 .76rem/1 var(--f-mono); color: var(--copper); letter-spacing: .04em; text-transform: uppercase; }
-.bet__name { font: 600 1rem/1.3 var(--f-display); color: var(--cream); }
-.bet__status { display: flex; align-items: center; gap: 8px; margin: 8px 0; }
-.status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-.status-dot.status--ok   { background: var(--emerald); box-shadow: 0 0 0 3px rgba(61,163,114,.18); }
-.status-dot.status--prog { background: var(--copper);  box-shadow: 0 0 0 3px rgba(226,179,85,.18); }
-.status-dot.status--risk { background: var(--pink);    box-shadow: 0 0 0 3px rgba(255,92,138,.18); }
-.status-dot.status--idle { background: var(--muted);   box-shadow: 0 0 0 3px rgba(126,147,132,.18); }
-.status-lbl { font-size: .82rem; color: var(--cream-soft); }
-.bet__what { color: var(--cream-soft); font-size: .9rem; line-height: 1.5; margin: 4px 0 8px; }
+.bet__top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.bet__name { flex: 1 1 auto; font: 600 1.1rem/1.25 var(--f-display); color: var(--cream); }
+.bet__aim { color: var(--cream-dim); font-size: .85rem; line-height: 1.45; margin: 6px 0 10px; }
 .bet__metric { color: var(--cream-dim); font-size: .82rem; }
 .bet__mh { color: var(--muted); margin-right: 6px; font-family: var(--f-mono); font-size: .74rem; text-transform: uppercase; letter-spacing: .04em; }
 
@@ -1615,11 +1607,6 @@ a.ex-fact:hover { border-color: var(--copper); transform: translateY(-1px); text
 
 .dash__note { color: var(--cream-dim); font-size: .86rem; line-height: 1.5; margin: 16px 0 0; }
 .dash__note b { color: var(--cream); }
-.dot-leg { white-space: nowrap; }
-.dot-leg::before { content: "●"; margin-right: 4px; }
-.dot-leg--focus::before { color: var(--gold); }
-.dot-leg--part::before { color: var(--gold-dk); }
-.dot-leg--out::before { color: var(--muted); }
 
 /* мини-бар MoSCoW */
 .mbar { display: flex; height: 12px; border-radius: 999px; overflow: hidden; margin: 18px 0 8px; background: var(--bg-2); }
@@ -1641,6 +1628,33 @@ a.ex-fact:hover { border-color: var(--copper); transform: translateY(-1px); text
 .dash__links { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 18px 0 0; padding-top: 14px; border-top: 1px solid var(--line); }
 .dash__links a { color: var(--copper); font: 500 .85rem/1 var(--f-mono); }
 .dash__links a:hover { text-decoration: underline; }
+
+/* блок «два взгляда» (проекция proj) */
+/* ставки — кликабельные карточки .bet (стиль из Executive Summary) */
+a.bet { display: block; text-decoration: none; transition: border-color .15s, transform .15s; }
+a.bet:hover { border-color: var(--gold); transform: translateY(-1px); text-decoration: none; }
+.proj2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+.proj2-card { border-radius: 12px; background: rgba(255,255,255,.03); padding: 14px 16px; }
+.proj2-card__head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+.proj2-card__q { font: 600 .68rem/1 var(--f-mono); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.proj2-card__title { font: 600 1rem/1.2 var(--f-display); color: var(--cream); }
+.proj2-card__title:hover { color: var(--gold); text-decoration: none; }
+.proj2-card__chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.proj2-card__sub { color: var(--muted); font-size: .8rem; margin-top: 10px; }
+.proj-stage {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px 4px 4px; border-radius: 999px;
+  border: 1px solid var(--line); color: var(--cream-soft); font-size: .82rem;
+  transition: border-color .15s, color .15s;
+}
+.proj-stage:hover { border-color: var(--gold); color: var(--cream); text-decoration: none; }
+.proj-stage .stage-tag { padding: 2px 6px; }
+.proj-stage.is-focus { border-color: var(--gold); }
+.proj-stage.is-focus .proj-stage__n { color: var(--gold); }
+a.role-tag { transition: border-color .15s, color .15s; }
+a.role-tag:hover { border-color: var(--gold); color: var(--cream); text-decoration: none; }
+@media (max-width: 720px) {
+  .proj2 { grid-template-columns: 1fr; }
+}
 
 @media (max-width: 720px) {
   .dash__stats { grid-template-columns: 1fr 1fr; }
@@ -1845,10 +1859,6 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
 .evm-legend a { color: var(--copper); }
 
 /* Строка-факт доказательной базы в Executive Summary */
-.ev-meterline { font-size: 13.5px; line-height: 1.7; color: var(--cream-soft); border-top: 1px solid var(--line); margin: 14px 0 0; padding: 12px 0 0; }
-.ev-meterline__k { font-family: var(--f-mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--copper); margin-right: 6px; }
-.ev-meterline b { color: var(--cream); }
-.ev-meterline a { color: var(--copper); margin-left: 10px; white-space: nowrap; }
 
 /* Секция «Статусы доказательств» в Легендах */
 .lg-evstatus { margin: 36px 0 0; }

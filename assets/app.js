@@ -1334,47 +1334,6 @@ async function mountAgencies() {
 
 // ===================== Этапы ценности (etapy.html) =====================
 // Объединённая проекция: путь агентства (5 этапов) + концепции как слой над ними.
-// Строка-факт о доказательной базе для Executive Summary (ТЗ 19). Считается из etapy.json
-// + planned.json тем же принципом, что индикатор на «Этапах». exec.json не трогаем.
-async function mountEvidenceLine() {
-  const host = document.querySelector("[data-evmeter]");
-  if (!host) return;
-  let etapy, planned;
-  try {
-    [etapy, planned] = await Promise.all([loadJSON("data/etapy.json"), loadJSON("data/planned.json")]);
-  } catch (e) { return; }                      // не блокируем главную, если данных нет
-  const rank = (s) => {
-    const t = String(s || "").toLowerCase();
-    if (t.startsWith("подтв") || t.startsWith("✅") || t.startsWith("закры")) return 4;
-    if (t.startsWith("частич")) return 3;
-    if (t.startsWith("план") || t.includes("в план")) return 2;
-    return 1;
-  };
-  let total = 0, confirmed = 0, conflicts = 0;
-  for (const s of (etapy.stages || [])) {
-    for (const h of (s.hypotheses || [])) {
-      total++;
-      let best = 0, conf = false;
-      for (const e of (h.evidence || [])) {
-        if (String(e.status || "").toLowerCase().includes("конфл")) { conf = true; continue; }
-        best = Math.max(best, rank(e.status));
-      }
-      if (best === 4) confirmed++;
-      if (conf) conflicts++;
-    }
-  }
-  const items = (planned.items || []);
-  const inPlan = items.filter((x) => String(x.status || "").startsWith("в плане")).length;
-  host.innerHTML = `
-    <p class="ev-meterline">
-      <span class="ev-meterline__k">Доказательная база</span>
-      <b>${confirmed} из ${total}</b> гипотез подтверждены интервью ·
-      <b>${conflicts}</b> открытых конфликтов ·
-      план Q3: <b>${inPlan} из ${items.length}</b> исследований заведено.
-      <a href="sootvetstvie.html">Доказательная база →</a>
-      <a href="planned.html">План исследований →</a>
-    </p>`;
-}
 
 async function mountEtapy() {
   const host = document.querySelector("[data-etapy]");
@@ -2414,17 +2373,6 @@ function mountProjbar() {
 }
 
 // ===================== Executive Summary (главная для C-level) =====================
-const BET_STATUS = {
-  "in-progress": ["status--prog", "В работе"],
-  "on-track":    ["status--ok",   "В графике"],
-  "at-risk":     ["status--risk", "На риске"],
-  "blocked":     ["status--risk", "Блокер"],
-  "not-started": ["status--idle", "Не начата"],
-};
-function betStatus(s) {
-  const b = BET_STATUS[s] || BET_STATUS["in-progress"];
-  return `<span class="status-dot ${b[0]}"></span><span class="status-lbl">${b[1]}</span>`;
-}
 async function mountExec() {
   const host = document.querySelector("[data-exec]");
   if (!host) return;
@@ -2456,18 +2404,6 @@ async function mountExec() {
       <span class="bc-t">${gloss(esc(x.t))}</span>
     </span>${i < a.length - 1 ? `<span class="bc-arr" aria-hidden="true">→</span>` : ""}`).join("");
 
-  const bets = (d.bets || []).map((b) => `
-    <article class="bet">
-      <div class="bet__top">
-        <span class="bet__n">Ставка ${esc(b.n)}</span>
-        ${stageTag(b.stage, `этап ${b.stage}`)}
-        <span class="bet__name">${esc(b.name)} · ${esc(b.stageName)}</span>
-      </div>
-      <div class="bet__status">${betStatus(b.status)}</div>
-      <p class="bet__what">${gloss(esc(b.what))}</p>
-      <div class="bet__metric"><span class="bet__mh">Ключевые метрики</span> ${gloss(esc(b.metric))}</div>
-    </article>`).join("");
-
   host.innerHTML = `
     <div class="ex-card">
       <div class="ex-progress" role="img" aria-label="Прогресс к цели">
@@ -2484,16 +2420,7 @@ async function mountExec() {
         <div class="ex-section__h">Бизнес-кейс одной цепочкой</div>
         <div class="bc">${bc}</div>
       </div>
-
-      <div class="ex-section">
-        <div class="ex-section__h">Две ставки направления — где мы сейчас</div>
-        <div class="bets">${bets}</div>
-      </div>
-
-      <div data-evmeter></div>
     </div>`;
-
-  mountEvidenceLine();
 }
 
 // Дашборды главной (Проекции / Работа / Данные) из data/home.json
@@ -2524,25 +2451,68 @@ async function mountDashboards() {
   // --- Проекции ---
   const proj = document.querySelector('[data-dash="proj"]');
   if (proj) {
+    // Ярлыки этапов/ролей для блока «два взгляда». Числа берём из home.json, тут только
+    // подписи и привязка к якорям (как PROJ/NAV-конфиг — это навигация, не данные).
+    const PROJ_STAGES = [
+      { num: "1", name: "Не мешать",          tag: "s-1",  focus: true  },
+      { num: "2", name: "Снимать нагрузку",    tag: "s-2a", focus: true  },
+      { num: "3", name: "Сохранять экономику", tag: "s-3",  focus: false },
+      { num: "4", name: "Увеличить маржу",     tag: "s-4",  focus: false },
+      { num: "5", name: "Новые деньги",        tag: "s-5",  focus: false },
+    ];
+    const PROJ_ROLES = [
+      { cls: "r-c", name: "Консультант" },
+      { cls: "r-s", name: "Супервизор" },
+      { cls: "r-r", name: "Руководитель" },
+    ];
+    const stageChips = PROJ_STAGES.map((s) =>
+      `<a class="proj-stage${s.focus ? " is-focus" : ""}" href="etapy.html#stage-${s.num}">`
+      + `<span class="stage-tag ${s.tag}">${s.num}</span>`
+      + `<span class="proj-stage__n">${esc(s.name)}</span></a>`
+    ).join("");
+    const roleChips = PROJ_ROLES.map((r) =>
+      `<a class="role-tag ${r.cls}" href="tree.html">${esc(r.name)}</a>`
+    ).join("");
+    let exBets = [];
+    try { exBets = (await loadJSON("data/exec.json")).bets || []; } catch (e) { /* без ставок */ }
+    const betCard = (b) => {
+      const num = (stageCode(b.stage) || String(b.stage)).replace(/[^\d]/g, "") || "1";
+      return `
+        <a class="bet" href="etapy.html#stage-${num}">
+          <div class="bet__top">
+            <span class="bet__name">${esc(b.name)}</span>
+            ${stageTag(b.stage, `этап ${esc(b.stage)} ${esc(b.stageName)}`)}
+          </div>
+          ${b.aim ? `<p class="bet__aim">${esc(b.aim)}</p>` : ""}
+          <div class="bet__metric"><span class="bet__mh">Метрики</span> ${gloss(esc(b.metric))}</div>
+        </a>`;
+    };
+    const betsBlock = exBets.length ? `<div class="bets">${exBets.map(betCard).join("")}</div>` : "";
     proj.innerHTML = `
       <div class="dash dash--proj">
-        <p class="dash__lead">Одно направление с двух сторон плюс портал-обзор. Каждая проекция отвечает на свой вопрос.</p>
-        <div class="dash__stats">
-          ${dstat("+" + (P.goal ?? "—"), "цель: новых агентств", "gold")}
-          ${dstat(P.stages ?? "—", "этапов · фокус " + esc(P.stagesFocus || ""), "gold")}
-          ${dstat(P.concepts ?? "—", "концепции ценности", "gold")}
-          ${dstat(P.treeRoles ?? "—", "роли в дереве (JTBD)", "gold")}
-        </div>
-        <div class="dash__note">
-          Концепции: <span class="dot-leg dot-leg--focus">${P.conceptsFocus ?? 0} в фокусе Q2</span> ·
-          <span class="dot-leg dot-leg--part">${P.conceptsPartial ?? 0} частично</span> ·
-          <span class="dot-leg dot-leg--out">${P.conceptsOut ?? 0} вне</span>.
-          Две ставки: ${(P.betsNames || []).map(esc).join(" · ")}.
+        <p class="dash__lead">Одно направление — два взгляда: <b>зачем</b> мы это делаем (этапы ценности) и <b>кто</b> делает работу (роли). Фокус 2026 — две ставки на этапах 1–2.</p>
+        ${betsBlock}
+        <div class="proj2">
+          <div class="proj2-card">
+            <div class="proj2-card__head">
+              <span class="proj2-card__q">зачем и когда</span>
+              <a class="proj2-card__title" href="etapy.html">Этапы ценности →</a>
+            </div>
+            <div class="proj2-card__chips">${stageChips}</div>
+            <div class="proj2-card__sub">${P.stages ?? 5} этапов · фокус ${esc(P.stagesFocus || "1–2")} · ${P.subgoals ?? 7} подцелей</div>
+          </div>
+          <div class="proj2-card">
+            <div class="proj2-card__head">
+              <span class="proj2-card__q">чья работа</span>
+              <a class="proj2-card__title" href="tree.html">Дерево работ (JTBD) →</a>
+            </div>
+            <div class="proj2-card__chips">${roleChips}</div>
+            <div class="proj2-card__sub">${P.treeRoles ?? 3} роли · работа по задачам (JTBD)</div>
+          </div>
         </div>
         ${dlinks([
-          { href: "vision.html", label: "Видение" },
-          { href: "etapy.html", label: "Этапы ценности" },
-          { href: "tree.html", label: "Дерево" },
+          { href: "vision.html", label: "Видение (портал)" },
+          { href: "vision.html#karta", label: "Карта связей" },
         ])}
       </div>`;
   }
