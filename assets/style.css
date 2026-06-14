@@ -1590,23 +1590,14 @@ a.ex-fact:hover { border-color: var(--copper); transform: translateY(-1px); text
 }
 .dash__lead { color: var(--cream-soft); font-size: .96rem; line-height: 1.55; margin: 0 0 18px; max-width: 82ch; }
 
-.dash__stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-.dstat {
-  padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px;
-  background: rgba(255,255,255,.02);
-}
-.dstat__n { font: 500 1.6rem/1.05 var(--f-mono); color: var(--cream); font-variant-numeric: tabular-nums; }
-.dstat__n--emerald { color: var(--emerald); }
-.dstat__n--gold { color: var(--gold); }
-.dstat__n--copper { color: var(--copper); }
-.dstat__n--muted { color: var(--muted); }
-.dstat__d { font: 600 .8rem/1 var(--f-mono); margin-left: 4px; }
-.dstat__d.is-down { color: var(--pink); }
-.dstat__d.is-up { color: var(--emerald); }
-.dstat__l { color: var(--muted); font-size: .8rem; line-height: 1.35; margin-top: 6px; }
-
-.dash__note { color: var(--cream-dim); font-size: .86rem; line-height: 1.5; margin: 16px 0 0; }
-.dash__note b { color: var(--cream); }
+/* плитки-источники (дашборд «Данные») */
+.src-tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.src-tile { padding: 14px 16px; border-radius: 12px; background: rgba(255,255,255,.03); transition: background .15s, transform .15s; }
+.src-tile:hover { background: rgba(226,179,85,.06); transform: translateY(-2px); text-decoration: none; }
+.src-tile__k { font: 600 .68rem/1 var(--f-mono); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.src-tile__n { font: 500 1.6rem/1.05 var(--f-mono); color: var(--gold); font-variant-numeric: tabular-nums; margin: 8px 0 6px; }
+.src-tile__n.is-text { font: 600 1.05rem/1.2 var(--f-display); color: var(--cream); }
+.src-tile__sub { color: var(--muted); font-size: .8rem; line-height: 1.4; }
 
 /* мини-бар MoSCoW */
 .mbar { display: flex; height: 12px; border-radius: 999px; overflow: hidden; margin: 18px 0 8px; background: var(--bg-2); }
@@ -1618,12 +1609,6 @@ a.ex-fact:hover { border-color: var(--copper); transform: translateY(-1px); text
 .mleg-row { display: flex; flex-wrap: wrap; gap: 8px 16px; }
 .mleg { display: inline-flex; align-items: center; gap: 6px; font: 500 .8rem/1 var(--f-mono); color: var(--cream-dim); }
 .mleg__sw { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
-
-/* концентрация */
-.cbar-wrap { margin: 16px 0 0; }
-.cbar { position: relative; display: flex; height: 12px; border-radius: 999px; overflow: hidden; background: var(--bg-2); }
-.cbar__top3 { background: var(--copper); height: 100%; }
-.cbar__top5 { background: var(--copper-dk, var(--gold)); height: 100%; opacity: .55; }
 
 .dash__links { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 18px 0 0; padding-top: 14px; border-top: 1px solid var(--line); }
 .dash__links a { color: var(--copper); font: 500 .85rem/1 var(--f-mono); }
@@ -1668,7 +1653,7 @@ a.mleg:hover { color: var(--gold); text-decoration: none; }
 }
 
 @media (max-width: 720px) {
-  .dash__stats { grid-template-columns: 1fr 1fr; }
+  .src-tiles { grid-template-columns: 1fr 1fr; }
 }
 
 @media (max-width: 920px) {

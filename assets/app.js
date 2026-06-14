@@ -2431,9 +2431,6 @@ function fmtSigned(x) {
   const v = Math.round(x * 1000) / 10;
   return (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v) + "%";
 }
-function dstat(n, label, accent) {
-  return `<div class="dstat"><div class="dstat__n${accent ? " dstat__n--" + accent : ""}">${n}</div><div class="dstat__l">${label}</div></div>`;
-}
 function dlinks(items) {
   return `<div class="dash__links">${items.map((i) => `<a href="${i.href}">${esc(i.label)} →</a>`).join("")}</div>`;
 }
@@ -2565,30 +2562,27 @@ async function mountDashboards() {
   // --- Данные ---
   const data = document.querySelector('[data-dash="data"]');
   if (data) {
-    const top3 = typeof D.top3 === "number" ? D.top3 * 100 : 0;
-    const top5extra = typeof D.top5 === "number" ? Math.max(0, D.top5 * 100 - top3) : 0;
+    const tiles = [
+      { href: "agencies.html", k: "Агентства", n: fmtInt(D.agenciesActive),
+        sub: `активных · ТОП-3 ${fmtPct(D.top3)} операций · ${fmtSigned(D.momPct)} м/м` },
+      { href: "research.html", k: "Исследования", n: fmtInt(D.researchTotal),
+        sub: `находок · ${D.researchConfirmed ?? "—"} подтверждены · ${D.researchClosed ?? "—"} закрыто` },
+      { href: "metrics.html", k: "Метрики", n: `${D.metricsActive ?? "—"} + ${D.metricsTarget ?? "—"}`,
+        sub: `активные + целевые · ${D.metricsBaseline ?? "—"} с baseline` },
+      { href: "rynok.html", k: "Рынок", n: "БТ РФ 2026", nText: true,
+        sub: "рост в ₽, спад в поездках · контр-тренд за рубежом" },
+    ];
     data.innerHTML = `
       <div class="dash dash--data">
-        <p class="dash__lead">Фактура под направлением: цифры по агентствам, исследования, метрики и рынок.</p>
-        <div class="dash__stats">
-          ${dstat(fmtInt(D.agenciesActive), "активных агентств", "copper")}
-          ${dstat(fmtInt(D.opsMay) + ` <span class="dstat__d ${D.momPct < 0 ? "is-down" : "is-up"}">${fmtSigned(D.momPct)}</span>`, "операций в мае · м/м", "copper")}
-          ${dstat(fmtInt(D.researchTotal), `находок · подтв. ${D.researchConfirmed ?? "—"}`, "copper")}
-          ${dstat((D.metricsActive ?? "—") + " + " + (D.metricsTarget ?? "—"), "метрик: активных + целевых", "copper")}
+        <p class="dash__lead">Фактура под направлением — четыре источника: агентства, исследования, метрики и рынок.</p>
+        <div class="src-tiles">
+          ${tiles.map((t) => `
+            <a class="src-tile" href="${t.href}">
+              <div class="src-tile__k">${esc(t.k)} →</div>
+              <div class="src-tile__n${t.nText ? " is-text" : ""}">${esc(t.n)}</div>
+              <div class="src-tile__sub">${esc(t.sub)}</div>
+            </a>`).join("")}
         </div>
-        <div class="cbar-wrap">
-          <div class="cbar" role="img" aria-label="Концентрация по операциям">
-            <span class="cbar__top3" style="width:${top3}%"></span>
-            <span class="cbar__top5" style="width:${top5extra}%"></span>
-          </div>
-          <div class="dash__note">Концентрация: ТОП-3 = <b>${fmtPct(D.top3)}</b> · ТОП-5 = <b>${fmtPct(D.top5)}</b> операций. База хрупкая.</div>
-        </div>
-        ${dlinks([
-          { href: "research.html", label: "Исследования" },
-          { href: "agencies.html", label: "Агентства" },
-          { href: "rynok.html", label: "Рынок" },
-          { href: "metrics.html", label: "Метрики" },
-        ])}
       </div>`;
   }
 }
