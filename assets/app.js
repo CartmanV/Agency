@@ -35,41 +35,81 @@ function mountFooter() {
     </footer>`;
 }
 
+// Навигация v4 (Design Guide · 06): 3 группы-дропдауна в один ряд вместо 14 пунктов в рядах.
+const NAV_MENUS = [
+  { label: "Обзор",  items: ["index.html", "now.html", "q3.html", "vision.html"] },
+  { label: "Работа", items: ["etapy.html", "tree.html", "levels.html", "backlog.html"] },
+  { label: "Данные", items: ["research.html", "sootvetstvie.html", "planned.html",
+                             "agencies.html", "rynok.html", "metrics.html", "legend.html"] },
+];
+
 function mountHeader() {
   const host = document.querySelector("[data-header]");
   if (!host) return;
   const cur = currentPage();
-  let prevGroup = null;
-  const links = NAV.map((n) => {
-    let sep = "";
-    if (n.group && n.group !== prevGroup) {
-      sep = `<span class="nav__glabel" aria-hidden="true">${esc(n.group)}</span>`;
-      prevGroup = n.group;
-    }
-    if (n.disabled) {
-      return sep + `<span class="nav__soon" aria-disabled="true" title="будет в следующих итерациях"
-                 style="opacity:.4;cursor:not-allowed">${n.label}</span>`;
-    }
-    const active = n.href === cur ? " is-active" : "";
-    const label = n.short
-      ? `<span class="nl-full">${esc(n.label)}</span><span class="nl-short">${esc(n.short)}</span>`
-      : esc(n.label);
-    return sep + `<a class="${active.trim()}" href="${n.href}"${n.short ? ` title="${esc(n.label)}"` : ""}>${label}</a>`;
+  const byHref = Object.fromEntries(NAV.map((n) => [n.href, n]));
+
+  const menus = NAV_MENUS.map((m, mi) => {
+    const items = m.items.map((href) => byHref[href]).filter(Boolean);
+    const hasActive = items.some((n) => n.href === cur);
+    const links = items.map((n) => {
+      if (n.disabled) {
+        return `<span class="navm__item navm__item--soon" aria-disabled="true"
+                  title="будет в следующих итерациях">${esc(n.label)}</span>`;
+      }
+      const active = n.href === cur ? " is-active" : "";
+      return `<a class="navm__item${active}" href="${n.href}">${esc(n.label)}</a>`;
+    }).join("");
+    return `<div class="navm" data-navm>
+        <button class="navm__btn${hasActive ? " is-active" : ""}" type="button"
+                aria-expanded="false" aria-haspopup="true" data-navm-btn id="navm-btn-${mi}">
+          ${esc(m.label)}<span class="navm__caret" aria-hidden="true">▾</span>
+        </button>
+        <div class="navm__pop" role="menu" aria-labelledby="navm-btn-${mi}" data-navm-pop hidden>${links}</div>
+      </div>`;
   }).join("");
+
   host.innerHTML = `
     <header class="site-header">
       <div class="site-header__inner">
         <a class="brand" href="index.html">Направление <b>«Агентства»</b></a>
-        <nav class="nav">${links}</nav>
+        <nav class="nav" aria-label="Основная навигация">${menus}</nav>
         <div class="gsearch" data-gsearch>
           <input type="search" class="gsearch__input ctl" data-gsearch-input autocomplete="off"
                  spellcheck="false" aria-label="Поиск по сайту"
-                 placeholder="Поиск по сайту…  (/ или ⌘K)" />
+                 placeholder="Поиск…  (/ или ⌘K)" />
           <div class="gsearch__results" data-gsearch-results role="listbox" hidden></div>
         </div>
       </div>
     </header>`;
+  mountNavDropdowns();
   mountGlobalSearch();
+}
+
+// Контроллер дропдаунов навигации: клик открывает/закрывает, клик вне/Escape — закрывают.
+function mountNavDropdowns() {
+  const menus = [...document.querySelectorAll("[data-navm]")];
+  if (!menus.length) return;
+  const closeAll = (except) => menus.forEach((m) => {
+    if (m === except) return;
+    m.querySelector("[data-navm-btn]").setAttribute("aria-expanded", "false");
+    m.querySelector("[data-navm-pop]").hidden = true;
+  });
+  menus.forEach((m) => {
+    const btn = m.querySelector("[data-navm-btn]");
+    const pop = m.querySelector("[data-navm-pop]");
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const open = btn.getAttribute("aria-expanded") === "true";
+      closeAll(m);
+      btn.setAttribute("aria-expanded", String(!open));
+      pop.hidden = open;
+    });
+  });
+  document.addEventListener("click", (e) => {
+    if (!menus.some((m) => m.contains(e.target))) closeAll();
+  });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeAll(); });
 }
 
 // Глобальный поиск по сайту (ТЗ 08): один индекс data/search.json по находкам/метрикам/
@@ -153,7 +193,7 @@ function esc(s) {
 // Пометка «редакторское допущение» — вместо сырого [*] (тултип вместо непонятного знака).
 const ASSUME = `<abbr class="assume-mark" title="редакторское допущение по сборке — не подтверждено данными">*</abbr>`;
 
-// Канон цвета этапа: 1=pink, 2A/2B=emerald (фокус Q2), 3/4/5=muted.
+// Канон цвета этапа v4: идентичность 1=--cat-1, 2A/2B=--cat-3, 3/4/5=muted; «фокус» — золото.
 // Принимает строку вида "этап 2A", "2A (+2B)", "этап 4 «Увеличить маржу»", "1" — извлекает первый код.
 function stageCode(s) {
   const m = String(s || "").match(/(?:^|[^\dA-Za-zА-Яа-я])(1|2A|2B|3|4|5)\b/i);
@@ -1403,7 +1443,7 @@ async function mountEtapy() {
   }
 
   // ——— Краткий обзор сверху ———
-  // Цвет номера этапа — единый канон сайта (1=pink, 2=emerald, 3–5=muted), просто опознавание этапа.
+  // Цвет этапа — категориальный канон v4 (1=cat-1, 2=cat-3, 3–5=muted), просто опознавание этапа.
   const stageChip = (n) => `<span class="stage-tag s-${n === "2" ? "2a" : n}">${esc(n)}</span>`;
   const heatStrip = `
     <div class="evm-strip">
@@ -1546,7 +1586,7 @@ async function mountEtapy() {
           <span class="e-stage__n">${esc(s.n)}</span>
           <span class="e-stage__name">${esc(s.name)}</span>
           <span class="e-stage__mean">${gloss(esc(s.meaning))}</span>
-          ${meterSummary(stageMeter(s))}
+          <span class="e-stage__meter"><span class="e-stage__meterh">доказательная база:</span> ${meterSummary(stageMeter(s))}</span>
         </summary>
         <div class="e-stage__body">
           ${s.sootv ? `<div class="e-evlink"><a href="sootvetstvie.html#${esc(s.sootv)}">Доказательная база этапа →</a> <a href="research.html?stage=${esc(s.n === "2" ? "2A,2B" : s.n)}">Все находки этапа →</a></div>` : ""}
@@ -2513,10 +2553,10 @@ async function mountDashboards() {
       <div class="dash dash--proj">
         <p class="dash__lead">Одно направление с двух сторон плюс портал-обзор. Каждая проекция отвечает на свой вопрос.</p>
         <div class="dash__stats">
-          ${dstat("+" + (P.goal ?? "—"), "цель: новых агентств", "emerald")}
-          ${dstat(P.stages ?? "—", "этапов · фокус " + esc(P.stagesFocus || ""), "emerald")}
-          ${dstat(P.concepts ?? "—", "концепции ценности", "emerald")}
-          ${dstat(P.treeRoles ?? "—", "роли в дереве (JTBD)", "emerald")}
+          ${dstat("+" + (P.goal ?? "—"), "цель: новых агентств", "gold")}
+          ${dstat(P.stages ?? "—", "этапов · фокус " + esc(P.stagesFocus || ""), "gold")}
+          ${dstat(P.concepts ?? "—", "концепции ценности", "gold")}
+          ${dstat(P.treeRoles ?? "—", "роли в дереве (JTBD)", "gold")}
         </div>
         <div class="dash__note">
           Концепции: <span class="dot-leg dot-leg--focus">${P.conceptsFocus ?? 0} в фокусе Q2</span> ·
