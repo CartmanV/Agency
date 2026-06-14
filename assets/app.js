@@ -2173,7 +2173,15 @@ async function mountLegend() {
   try { data = await loadJSON("data/legend.json"); }
   catch (e) { host.innerHTML = `<div class="error">${esc(e.message)}</div>`; return; }
 
-  const secs = data.sections || [];
+  const allSecs = data.sections || [];
+  // Вкладка «Легенда» в xlsx содержит строки-changelog (заметки о пересчётах): у них
+  // длинный заголовок-абзац или вид «v7 (…)», а в col B пусто — build.py ошибочно парсит
+  // их как заголовки секций. Отделяем их от настоящих разделов-определений.
+  const isChangelog = (s) =>
+    s.title.length > 44 || /^v\d+\s*\(/i.test(s.title) || /патч|пересч[её]т/i.test(s.title);
+  const secs = allSecs.filter((s) => !isChangelog(s) && (s.items || []).length);
+  const changelog = allSecs.filter(isChangelog);
+
   const toc = secs.map((s) => `<a class="leg-toc__item" href="#${s.id}">${esc(s.title)}</a>`).join("");
   const body = secs.map((s) => `
     <section class="leg-sect" id="${s.id}">
@@ -2183,9 +2191,23 @@ async function mountLegend() {
       </dl>
     </section>`).join("");
 
+  // changelog → сворачиваемая «История пересчётов скоринга» в конце, а не битые H2.
+  const clItems = changelog.flatMap((s) => {
+    const its = (s.items || []);
+    if (its.length) return its.map((it) => ({ term: it.term, def: it.def }));
+    return [{ term: "", def: s.title }];
+  });
+  const changelogHTML = clItems.length ? `
+    <details class="leg-changelog">
+      <summary>История пересчётов скоринга (${clItems.length})</summary>
+      <dl class="leg-list">
+        ${clItems.map((it) => `<div class="leg-row">${it.term ? `<dt>${esc(it.term)}</dt>` : `<dt class="leg-row__nodt"></dt>`}<dd>${esc(it.def)}</dd></div>`).join("")}
+      </dl>
+    </details>` : "";
+
   host.innerHTML = `
     <nav class="leg-toc" aria-label="Разделы легенды">${toc}</nav>
-    <div class="leg-body">${body}</div>`;
+    <div class="leg-body">${body}${changelogHTML}</div>`;
 
   // JSON грузится асинхронно — браузер уже не доскроллит к входящему #якорю сам.
   const hash = decodeURIComponent(location.hash.slice(1));

@@ -20,12 +20,113 @@
     <p class="eyebrow">Справочник</p>
     <h1>Легенды — библиотека определений</h1>
     <p class="lede">
-      Что означает каждый термин и бейдж направления: этапы пути, подцели,
-      механизмы, скоринг (RICE / MoSCoW / PV / Gate), метрики и поля. Сюда ведут
-      ссылки-якоря со всех страниц. Источник — вкладка «Легенда» единого бэклога v6.
+      Единое место, куда ведут все бейджи-ярлыки со всех страниц направления. Состоит из двух слоёв:
+      <b>словарь</b> (что означает каждый термин — этапы пути, подцели, механизмы, метрики, поля) и
+      <b>методология</b> (как из задачи получается приоритет: подробный разбор скоринга ниже).
     </p>
 
+    <nav class="leg-jump" aria-label="Быстрый переход">
+      <span class="leg-jump__lbl">Перейти:</span>
+      <a href="#scoring-how">Как оцениваются задачи</a>
+      <a href="#rice">RICE</a>
+      <a href="#moscow">MoSCoW</a>
+      <a href="#pv">PV-множитель</a>
+      <a href="#gate">Gate</a>
+      <a href="#concentration">Концентрация</a>
+      <a href="#ev-status">Статусы доказательств</a>
+    </nav>
+
     <div data-legend></div>
+
+    <!-- ============ Методология скоринга (редакторский слой, не из xlsx) ============ -->
+    <section id="scoring-how" class="lg-score">
+      <h2>Как оцениваются задачи</h2>
+      <p class="lede" style="font-size:14px">
+        Каждая задача (итерация) бэклога проходит один и тот же конвейер приоритизации. Он отвечает
+        на вопрос «что делать раньше» и состоит из трёх инструментов: <b>RICE</b> (числовая польза
+        задачи), <b>PV-множитель</b> (поправка продуктового фильтра) и <b>MoSCoW</b> (бакет «берём
+        ли вообще в фокус»). Главный ключ сортировки — итоговый <b>Final Score</b>.
+      </p>
+
+      <!-- конвейер одной строкой -->
+      <div class="sc-flow" aria-hidden="false">
+        <span class="sc-step"><span class="sc-k">Reach × Impact × Confidence</span><span class="sc-d">польза и охват</span></span>
+        <span class="sc-op">÷</span>
+        <span class="sc-step"><span class="sc-k">Effort</span><span class="sc-d">трудоёмкость</span></span>
+        <span class="sc-op">=</span>
+        <span class="sc-step sc-step--mid"><span class="sc-k">RICE</span><span class="sc-d">сырой балл</span></span>
+        <span class="sc-op">×</span>
+        <span class="sc-step"><span class="sc-k">PV Mult</span><span class="sc-d">0.7–1.2</span></span>
+        <span class="sc-op">=</span>
+        <span class="sc-step sc-step--final"><span class="sc-k">Final Score</span><span class="sc-d">ключ сортировки</span></span>
+      </div>
+      <p class="sc-note">
+        Округление до целого на каждом шаге. Сортировка в бэклоге — сначала по бакету
+        <a href="#moscow">MoSCoW</a> (Must → Won’t), внутри бакета — по Final Score по убыванию.
+      </p>
+
+      <!-- RICE: четыре шкалы -->
+      <h3 id="rice" class="sc-h">RICE — четыре шкалы</h3>
+      <div class="lg-evrows">
+        <div class="lg-evrow"><span class="sc-tag">Reach</span><span><b>Сколько агентств затронуты.</b> Правило Reach v1.5 — считается по числу агентств, реально называвших боль в исследованиях: ≤1 → 1; 2–4 → 4–6; 5–8 → 7–8; 9+ → 9. Не путать с числом заявок в GitLab.</span></div>
+        <div class="lg-evrow"><span class="sc-tag">Impact</span><span><b>Сила эффекта на подцель (1–10).</b> С патча v7 — двухслойный: <i>Слой A</i> (прежний балл сила×частота) + <i>Слой B</i> — рыночный модификатор ±1 (попутный рынку тренд → +1, встречный → −1; discovery не закрыт, поэтому модификатор ограничен ±1 и помечен как допущение). Impact = clamp(A + B, 1, 10).</span></div>
+        <div class="lg-evrow"><span class="sc-tag">Confidence</span><span><b>Уверенность в связке «проблема × решение» (1–10).</b> Учитывает наличие цитаты/прецедента из исследований. Предохранители: боль только от одного KAM-агентства без заявки в GitLab → Confidence ≤ 5; Confidence ≥ 7 допустим только при явном прецеденте.</span></div>
+        <div class="lg-evrow"><span class="sc-tag">Effort</span><span><b>Трудоёмкость в story points (Фибоначчи: 1, 2, 3, 5, 8, 13…).</b> Стоит в знаменателе — чем дороже задача, тем ниже её RICE.</span></div>
+      </div>
+      <p class="sc-formula"><span class="sc-tag sc-tag--res">RICE</span> = (Reach × Impact × Confidence) ÷ Effort</p>
+
+      <!-- PV multiplier -->
+      <h3 id="pv" class="sc-h">PV-множитель — поправка продуктового фильтра</h3>
+      <p class="lede" style="font-size:14px">
+        RICE измеряет пользу, но не качество задачи как продуктового решения. Множитель ProductV
+        (диапазон <b>0.7–1.2</b>) поднимает или опускает балл по итогам прогона через продуктовый
+        фильтр. Final Score = RICE × PV Mult.
+      </p>
+      <div class="lg-evrows">
+        <div class="lg-evrow"><span class="sc-tag sc-tag--up">× &gt; 1</span><span>Плюс за <b>автономию / стендэлон</b> — задача полезна сама по себе, не требует длинной цепочки зависимостей; широкая база агентств; сильное обоснование.</span></div>
+        <div class="lg-evrow"><span class="sc-tag sc-tag--dn">× &lt; 1</span><span>Минус за <b>концентрацию</b> (польза только узкой группе), слабое обоснование, хрупкость, зависимость от ещё не сделанного.</span></div>
+      </div>
+
+      <!-- MoSCoW -->
+      <h3 id="moscow" class="sc-h">MoSCoW — берём ли в фокус</h3>
+      <p class="lede" style="font-size:14px">
+        Отдельная ось — приоритет-бакет (не достоверность). Определяет, попадает ли задача в
+        фокус квартала вообще; внутри бакета порядок задаёт Final Score.
+      </p>
+      <div class="lg-evrows">
+        <div class="lg-evrow"><span class="badge prio--must">Must</span><span>Делаем — без этого фокус Q2 не закрывается.</span></div>
+        <div class="lg-evrow"><span class="badge prio--should">Should</span><span>Важно, но переживёт перенос; берём после Must.</span></div>
+        <div class="lg-evrow"><span class="badge prio--could">Could</span><span>Сделаем, если останется ёмкость.</span></div>
+        <div class="lg-evrow"><span class="badge prio--wont">Won’t</span><span>Сейчас не делаем — вне фокуса Q2 (не «никогда», а «не в этот раз»).</span></div>
+      </div>
+
+      <!-- Gate -->
+      <h3 id="gate" class="sc-h">Gate — вердикт продуктового фильтра</h3>
+      <div class="lg-evrows">
+        <div class="lg-evrow"><span class="ev-chip ev-ok">OK</span><span>Прошла фильтр — можно ставить в работу по приоритету.</span></div>
+        <div class="lg-evrow"><span class="ev-chip ev-part">Review</span><span>Есть сомнение (обоснование, концентрация, зависимость) — нужен пересмотр перед стартом.</span></div>
+        <div class="lg-evrow"><span class="ev-chip ev-warn">Fail</span><span>Не проходит в текущем виде — переформулировать или отложить.</span></div>
+      </div>
+
+      <!-- Концентрация -->
+      <h3 id="concentration" class="sc-h">Концентрация — сигнал хрупкости</h3>
+      <p class="lede" style="font-size:14px">
+        Насколько широка база агентств, которым нужна задача (IBC only · топ-3 · топ-5 · …).
+        <b>В Final Score напрямую не входит</b> — это отдельный предупреждающий сигнал: высокий
+        балл, опирающийся на одно-два крупных агентства, хрупок. Концентрация уже частично учтена
+        косвенно через Reach и PV-множитель.
+      </p>
+
+      <!-- учебный пример -->
+      <h3 class="sc-h">Учебный пример расчёта</h3>
+      <p class="lede" style="font-size:14px">Иллюстрация арифметики (значения условные, не из бэклога):</p>
+      <div class="sc-example">
+        <div class="sc-ex-row"><span>Reach 7 · Impact 8 · Confidence 6 · Effort 5</span></div>
+        <div class="sc-ex-row"><span>RICE = 7 × 8 × 6 ÷ 5 = 336 ÷ 5 ≈ <b>67</b></span></div>
+        <div class="sc-ex-row"><span>PV Mult = 1.1 (автономная, широкая база)</span></div>
+        <div class="sc-ex-row sc-ex-row--final"><span>Final = 67 × 1.1 ≈ <b>74</b> → место в бэклоге внутри своего бакета MoSCoW</span></div>
+      </div>
+    </section>
 
     <section id="ev-status" class="lg-evstatus">
       <h2>Статусы доказательств</h2>

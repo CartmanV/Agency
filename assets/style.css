@@ -1846,6 +1846,43 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
 .lg-evrows { display: grid; gap: 8px; margin-top: 12px; }
 .lg-evrow { display: flex; gap: 12px; align-items: baseline; font-size: 13.5px; line-height: 1.5; color: var(--cream-soft); }
 .lg-evrow .ev-chip { flex-shrink: 0; min-width: 116px; justify-content: center; }
+
+/* ----- Легенды: быстрый переход + методология скоринга ----- */
+.leg-jump { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 14px; margin: 0 0 22px; padding: 12px 14px; background: var(--gold-dim); border: 1px solid var(--gold-line); border-radius: 10px; font-size: 13px; }
+.leg-jump__lbl { font-family: var(--f-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--cream-dim); }
+.leg-jump a { font-family: var(--f-mono); font-size: 12px; color: var(--gold); }
+
+.leg-changelog { margin: 28px 0 0; border-top: 1px solid var(--line); padding-top: 14px; }
+.leg-changelog > summary { cursor: pointer; font-family: var(--f-mono); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--cream-dim); }
+.leg-changelog > summary:hover { color: var(--gold); }
+.leg-row__nodt { display: none; }
+
+.lg-score { margin: 40px 0 0; padding-top: 26px; border-top: 1px solid var(--line); scroll-margin-top: 80px; }
+.lg-score > h2 { font: 700 1.45rem/1.2 var(--f-display); color: var(--cream); margin: 0 0 10px; }
+.lg-score .sc-h { font-family: var(--f-mono); font-size: 12px; text-transform: uppercase; letter-spacing: .07em; color: var(--gold); margin: 28px 0 4px; scroll-margin-top: 80px; }
+.lg-score .sc-h:target { color: var(--gold-dk); }
+
+.sc-flow { display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px; margin: 18px 0 6px; }
+.sc-step { display: flex; flex-direction: column; gap: 3px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel, rgba(255,255,255,.02)); }
+.sc-step--mid { border-color: var(--gold-line); background: var(--gold-dim); }
+.sc-step--final { border-color: var(--gold); background: var(--gold-dim); }
+.sc-step .sc-k { font-family: var(--f-mono); font-size: 12.5px; color: var(--cream); }
+.sc-step .sc-d { font-size: 11px; color: var(--cream-dim); }
+.sc-step--final .sc-k, .sc-step--mid .sc-k { color: var(--gold); }
+.sc-op { align-self: center; font-family: var(--f-mono); font-size: 16px; color: var(--cream-dim); }
+.sc-note { font-size: 13px; color: var(--cream-soft); line-height: 1.55; margin: 6px 0 0; }
+
+.sc-tag { flex-shrink: 0; min-width: 116px; font-family: var(--f-mono); font-size: 12px; text-align: center; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--gold-line); color: var(--gold); }
+.sc-tag--res { color: var(--bg); background: var(--gold); border-color: var(--gold); }
+.sc-tag--up { color: var(--gold); }
+.sc-tag--dn { color: var(--cream-dim); border-color: var(--line); }
+.sc-formula { font-family: var(--f-mono); font-size: 13.5px; color: var(--cream); margin: 14px 0 0; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+
+.sc-example { margin: 12px 0 0; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.sc-ex-row { padding: 9px 14px; font-family: var(--f-mono); font-size: 13px; color: var(--cream-soft); border-top: 1px solid var(--line); }
+.sc-ex-row:first-child { border-top: 0; }
+.sc-ex-row--final { background: var(--gold-dim); color: var(--cream); }
+@media (max-width: 680px) { .sc-tag { min-width: 0; } }
 /* Ссылки «Доказательная база этапа → / Все находки этапа →» в шапке этапа */
 .e-evlink { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 0 0 14px; font-family: var(--f-mono); font-size: 12px; }
 .e-hyp.is-target > .e-hyp__sum { box-shadow: inset 0 0 0 2px var(--gold); border-radius: 8px; }
