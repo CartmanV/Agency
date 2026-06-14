@@ -1369,49 +1369,9 @@ async function mountEtapy() {
     return `<div class="e-hyp__ev"><span class="e-hyp__evh">Доказательства</span><div class="e-hyp__evchips">${chips}</div></div>`;
   }
 
-  // ——— Индикатор силы доказательной базы (ТЗ 19): агрегат статусов evidence, новых данных нет ———
-  const statusRank = (s) => {
-    const t = String(s || "").toLowerCase();
-    if (t.startsWith("подтв") || t.startsWith("✅") || t.startsWith("закры")) return 4;
-    if (t.startsWith("частич")) return 3;
-    if (t.startsWith("план") || t.includes("в план")) return 2;
-    return 1;                                  // не проверялась / спорно / ∅
-  };
-  function hypMeter(h) {                        // статус гипотезы = «худший из лучших» + флаг конфликта
-    let best = 0, conflict = false;
-    for (const e of (h.evidence || [])) {
-      if (String(e.status || "").toLowerCase().includes("конфл")) { conflict = true; continue; }
-      best = Math.max(best, statusRank(e.status));
-    }
-    return { key: { 4: "ok", 3: "part", 2: "plan", 1: "none", 0: "none" }[best], conflict };
-  }
-  function stageMeter(s) {
-    const m = { ok: 0, part: 0, plan: 0, none: 0, conflict: 0 };
-    for (const h of (s.hypotheses || [])) { const r = hypMeter(h); m[r.key]++; if (r.conflict) m.conflict++; }
-    return m;
-  }
-  function meterSummary(m) {
-    const p = [];
-    if (m.ok) p.push(`<span class="evm-ok">✓${m.ok}</span>`);
-    if (m.part) p.push(`<span class="evm-part">~${m.part}</span>`);
-    if (m.conflict) p.push(`<span class="evm-warn">⚠${m.conflict}</span>`);
-    if (m.plan) p.push(`<span class="evm-plan">?${m.plan}</span>`);
-    if (m.none) p.push(`<span class="evm-none">∅${m.none}</span>`);
-    const title = `${m.ok} подтверждены интервью · ${m.part} частично · ${m.conflict} с конфликтом · ${m.plan} в плане · ${m.none} не проверялись`;
-    return `<span class="evm" title="${esc(title)}">${p.join(" ")}</span>`;
-  }
-
   // ——— Краткий обзор сверху ———
   // Цвет этапа — категориальный канон v4 (1=cat-1, 2=cat-3, 3–5=muted), просто опознавание этапа.
   const stageChip = (n) => `<span class="stage-tag s-${n === "2" ? "2a" : n}">${esc(n)}</span>`;
-  const heatStrip = `
-    <div class="evm-strip">
-      <div class="evm-strip__h">На чём стоит стратегия — сила доказательной базы по этапам</div>
-      <div class="evm-cells">${(data.stages || []).map((s) =>
-        `<a class="evm-cell" href="#stage-${esc(s.n)}" title="этап ${esc(s.n)}: ${esc(s.name)}">${stageChip(s.n)} ${meterSummary(stageMeter(s))}</a>`).join("")}</div>
-      ${data.meterNote ? `<p class="evm-note">${gloss(esc(data.meterNote))}</p>` : ""}
-      <p class="evm-legend">✓ подтв. интервью · ~ частично · ⚠ конфликт · ? в плане · ∅ не проверялась — <a href="legend.html#ev-status">как читать</a></p>
-    </div>`;
   const prismRows = (data.prism.rows || []).map((r) => `
     <tr>
       <td class="e-pr-n">${stageChip(r.stage)} ${esc(r.name)}</td>
@@ -1426,12 +1386,11 @@ async function mountEtapy() {
       <h3 class="e-h3">5 этапов пути — коротко</h3>
       <div class="table-wrap">
         <table class="e-table e-prism">
-          <thead><tr><th>Этап</th><th>Где сейчас агентство</th><th>Что спрашивает у Ракеты</th></tr></thead>
+          <thead><tr><th>Этап</th><th>Участок CJM</th><th>Что спрашивает у Ракеты</th></tr></thead>
           <tbody>${prismRows}</tbody>
         </table>
       </div>
       <ul class="e-caveat-list">${prismCaveats}</ul>
-      ${heatStrip}
 
       <details class="e-extra"><summary>Что внутри каждого этапа</summary>
         <p class="e-flow-intro">Разверните любой этап ниже — структура одинаковая:</p>
@@ -1494,22 +1453,30 @@ async function mountEtapy() {
   }
 
   // ——— Таблицы задач / исследований ———
+  // Темы, совпадающие с темами бэклога, → ссылка на отфильтрованный бэклог; служебные («(нет владельца)» и т.п.) — текстом.
+  const BACKLOG_THEMES = new Set(["Онлайн-услуги", "Агентская админка", "Заказы", "Оффлайн 4.0", "Единый чат", "Сервис для клиента", "Предложения 2.0"]);
+  const themeCell = (theme) => BACKLOG_THEMES.has(theme)
+    ? `<a class="tlink" href="backlog.html?theme=${encodeURIComponent(theme)}">${esc(theme)}</a>`
+    : esc(theme);
   function tasksTable(s) {
     if (!(s.tasks || []).length) return "";
     const hasStatus = s.tasks.some((t) => t.status);
     const head = `<tr><th>Тема</th><th>Ключевые итерации</th><th>Гипотеза</th>${hasStatus ? "<th>Статус</th>" : ""}</tr>`;
     const rows = s.tasks.map((t) => `<tr>
-      <td>${esc(t.theme)}</td><td>${gloss(esc(t.iters))}</td><td>${esc(t.hyp || "—")}</td>
+      <td>${themeCell(t.theme)}</td><td>${gloss(esc(t.iters))}</td><td>${esc(t.hyp || "—")}</td>
       ${hasStatus ? `<td>${esc(t.status || "")}</td>` : ""}</tr>`).join("");
     return `
-      <div class="e-sub"><span class="e-sub__h">Задачи (проверяют гипотезы) · срез бэклога v8</span>
+      <div class="e-sub"><span class="e-sub__h">Задачи (проверяют гипотезы)</span>
         <div class="table-wrap"><table class="e-table">${`<thead>${head}</thead>`}<tbody>${rows}</tbody></table></div>
         ${s.tasksNote ? `<p class="e-note">${esc(s.tasksNote)}</p>` : ""}
       </div>`;
   }
 
   function research(s) {
-    const done = (s.researchDone || []).map((r) => `<tr><td>${esc(r.src)}</td><td>${gloss(esc(r.note))}</td></tr>`).join("");
+    // Источник исследования → Исследования по этому этапу (этап 2 раскрывается в 2A,2B), по аналогии с колонкой «Тема».
+    const rStage = s.n === "2" ? "2A,2B" : s.n;
+    const srcCell = (src) => `<a class="tlink" href="research.html?stage=${encodeURIComponent(rStage)}">${esc(src)}</a>`;
+    const done = (s.researchDone || []).map((r) => `<tr><td>${srcCell(r.src)}</td><td>${gloss(esc(r.note))}</td></tr>`).join("");
     const todo = (s.researchTodo || []).map((r) => {
       const how = r.planned ? `<a href="planned.html#${esc(r.planned)}">${esc(r.how)} →</a>` : esc(r.how);
       return `<tr><td>${gloss(esc(r.unclear))}</td><td>${how}</td><td><span class="e-rstat">${esc(r.status)}</span></td></tr>`;
@@ -1545,11 +1512,10 @@ async function mountEtapy() {
           <span class="e-stage__n">${esc(s.n)}</span>
           <span class="e-stage__name">${esc(s.name)}</span>
           <span class="e-stage__mean">${gloss(esc(s.meaning))}</span>
-          <span class="e-stage__meter"><span class="e-stage__meterh">доказательная база:</span> ${meterSummary(stageMeter(s))}</span>
         </summary>
         <div class="e-stage__body">
           ${s.sootv ? `<div class="e-evlink"><a href="sootvetstvie.html#${esc(s.sootv)}">Доказательная база этапа →</a> <a href="research.html?stage=${esc(s.n === "2" ? "2A,2B" : s.n)}">Все находки этапа →</a></div>` : ""}
-          <div class="e-sub"><span class="e-sub__h">Фаза жизни агентства</span><p>${gloss(esc(s.phase))}</p></div>
+          <div class="e-sub"><span class="e-sub__h">Участок CJM агентства</span><p>${gloss(esc(s.phase))}</p></div>
           <div class="e-sub"><span class="e-sub__h">Цель этапа</span><p>${gloss(esc(s.goal))}</p>
             ${s.keyIdea ? `<p class="e-note">${gloss(esc(s.keyIdea))}</p>` : ""}</div>
           <div class="e-sub"><span class="e-sub__h">Подцели этапа</span><ul>${subs}</ul></div>
@@ -1597,7 +1563,6 @@ async function mountEtapy() {
 
   const caveats = (data.caveats || []).map((c) => `
     <div class="lad-caveat"><div class="lad-caveat__h">${esc(c.title)}</div><p>${gloss(esc(c.text))}</p></div>`).join("");
-  const openQ = (data.openQuestions || []).map((q) => `<li>${gloss(esc(q))}</li>`).join("");
 
   host.innerHTML = `
     ${overview}
@@ -1609,9 +1574,7 @@ async function mountEtapy() {
     <div class="e-stages">${(data.stages || []).map(stage).join("")}</div>
     ${crossLayer}
     <h2 class="e-h2">Методологические оговорки</h2>
-    ${caveats}
-    <h2 class="e-h2">Открытые вопросы (на валидацию)</h2>
-    <ol class="e-openq">${openQ}</ol>`;
+    ${caveats}`;
 
   const all = () => host.querySelectorAll("details.e-stage");
   host.querySelector("[data-e-expand]").addEventListener("click", () => all().forEach((d) => (d.open = true)));
@@ -2333,7 +2296,7 @@ async function mountConcepts() {
 const PROJ = {
   etapy: { kicker: "Проекция · Зачем, когда и что строим", name: "Этапы ценности",
     q: "в каком порядке создаём ценность и что именно строим",
-    read: "5 этапов с гипотезами и метриками; концепции — слой над этапами; фокус 2026 — этапы 1–2" },
+    read: "Путь агентства от входа до зрелости; на каждом этапе — гипотезы и метрики. Концепции — общий язык поверх. В фокусе — ранние этапы." },
   tree: { kicker: "Проекция · Чья работа", name: "Дерево работ (JTBD)",
     q: "чью работу и на каком уровне абстракции закрываем", read: "Big → Medium → Small по ролям" },
   levels: { kicker: "Реестр работ", name: "Каталог задач",

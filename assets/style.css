@@ -1783,8 +1783,6 @@ a.guide__row:hover { border-color: var(--copper); transform: translateY(-2px); t
 .e-stage__name { font-family: var(--f-display); font-size: 21px; color: var(--cream); }
 .e-stage__con { font-family: var(--f-mono); font-size: 11px; color: var(--gold); text-align: right; }
 .e-stage__mean { grid-column: 1 / -1; font-size: 14px; color: var(--cream-soft); line-height: 1.55; }
-.e-stage__meter { grid-column: 1 / -1; display: inline-flex; align-items: center; gap: 8px; margin-top: 2px; }
-.e-stage__meterh { font-family: var(--f-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
 .e-stage__body { padding: 0 18px 18px; }
 .e-sub { border-top: 1px solid var(--line); padding-top: 14px; margin-top: 16px; }
 .e-sub__h { font-family: var(--f-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--gold); display: block; margin-bottom: 8px; }
@@ -1838,24 +1836,6 @@ a.ev-chip:hover { text-decoration: none; filter: brightness(1.15); }
 a.badge { text-decoration: none; }
 a.badge:hover { filter: brightness(1.12); text-decoration: none; }
 
-/* ===================== Индикатор силы доказательной базы (ТЗ 19) ===================== */
-.evm { font-family: var(--f-mono); font-size: 11px; display: inline-flex; gap: 6px; white-space: nowrap; }
-.evm-ok { color: var(--emerald); }
-.evm-part { color: var(--gold); }
-.evm-warn { color: var(--pink); }
-.evm-plan { color: var(--blue, #6BA8E6); }
-.evm-none { color: var(--muted); }
-.evm-strip { border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; margin: 18px 0; background: var(--panel); }
-.evm-strip__h { font: 500 .76rem/1 var(--f-mono); text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin-bottom: 10px; }
-.evm-cells { display: flex; flex-wrap: wrap; gap: 8px; }
-.evm-cell { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid var(--line-soft); border-radius: 8px; text-decoration: none; color: var(--cream); background: var(--bg); }
-.evm-cell:hover { border-color: var(--copper-dk); text-decoration: none; }
-.evm-note { font-size: 13px; color: var(--cream-soft); line-height: 1.55; margin: 12px 0 0; }
-.evm-legend { font-family: var(--f-mono); font-size: 10.5px; color: var(--muted); margin: 8px 0 0; }
-.evm-legend a { color: var(--copper); }
-
-/* Строка-факт доказательной базы в Executive Summary */
-
 /* Секция «Статусы доказательств» в Легендах */
 .lg-evstatus { margin: 36px 0 0; }
 .lg-evstatus h2 { font: 600 1.15rem/1.3 var(--f-display); margin: 0 0 10px; }
@@ -1869,8 +1849,6 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
 
 .e-rstat { font-family: var(--f-mono); font-size: 11px; color: var(--cream-dim); border: 1px solid var(--line-soft); border-radius: 999px; padding: 2px 8px; white-space: nowrap; }
 .e-i0 { font-size: 13.5px; color: var(--cream-soft); border-left: 2px solid var(--gold); padding-left: 14px; margin: 10px 0; line-height: 1.6; }
-.e-openq { margin: 6px 0 0; padding-left: 22px; font-size: 13.5px; color: var(--cream-soft); line-height: 1.6; }
-.e-openq li { margin: 6px 0; }
 
 @media (max-width: 720px) {
   .e-stage__sum { grid-template-columns: auto 1fr; }
