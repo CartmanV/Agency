@@ -813,7 +813,7 @@ function panelTheme(t, byTheme) {
   const tags = [
     `<span class="ltag">Механизм · ${esc(t.mechanism)}</span>`,
     `<span class="ltag">${esc(t.subgoal)}</span>`,
-    `<span class="ltag big">${esc(t.bigjob)}</span>`,
+    `<span class="ltag big">Big job · ${esc(t.bigjob)}</span>`,
   ].join("");
   let sub;
   if (t.editorialL2 && t.editorialL2.length) {
