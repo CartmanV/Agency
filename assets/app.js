@@ -2468,28 +2468,6 @@ async function mountExec() {
       <div class="bet__metric"><span class="bet__mh">Ключевые метрики</span> ${gloss(esc(b.metric))}</div>
     </article>`).join("");
 
-  const RISK_BADGE = { high: ["risk--high", "критический"], medium: ["risk--med", "средний"], low: ["risk--low", "невысокий"] };
-  const risks = (d.risks || []).map((r) => {
-    const rb = RISK_BADGE[r.level] || RISK_BADGE.medium;
-    return `
-      <a class="risk-card ${rb[0]}" href="${esc(r.href)}">
-        <div class="risk-card__top">
-          <span class="risk-card__lvl">${rb[1]}</span>
-          <span class="risk-card__val">${esc(r.value)}</span>
-        </div>
-        <div class="risk-card__val-lbl">${esc(r.valueLabel)}</div>
-        <h3 class="risk-card__title">${esc(r.title)}</h3>
-        <p class="risk-card__what">${gloss(esc(r.what))}</p>
-        <span class="risk-card__link">${esc(r.linkLabel)} →</span>
-      </a>`;
-  }).join("");
-
-  const askBlock = d.ask ? `
-    <div class="ex-ask${d.ask.placeholder ? " is-placeholder" : ""}">
-      <div class="ex-ask__h">📌 ${esc(d.ask.title)}</div>
-      <p>${esc(d.ask.text)}</p>
-    </div>` : "";
-
   host.innerHTML = `
     <div class="ex-card">
       <div class="ex-progress" role="img" aria-label="Прогресс к цели">
@@ -2512,13 +2490,10 @@ async function mountExec() {
         <div class="bets">${bets}</div>
       </div>
 
-      <div class="ex-section">
-        <div class="ex-section__h">Стратегические риски</div>
-        <div class="risks">${risks}</div>
-      </div>
-
-      ${askBlock}
+      <div data-evmeter></div>
     </div>`;
+
+  mountEvidenceLine();
 }
 
 // Дашборды главной (Проекции / Работа / Данные) из data/home.json
@@ -2756,7 +2731,6 @@ document.addEventListener("DOMContentLoaded", () => {
   mountResearch();
   mountSootv();
   mountPlanned();
-  mountEvidenceLine();
   mountEtapy();
   mountConcepts();
   mountProjbar();

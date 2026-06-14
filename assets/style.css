@@ -1522,9 +1522,9 @@ abbr.gloss:hover, abbr.assume-mark:hover { border-bottom-color: var(--copper); }
 .ex-progress__lbl { color: var(--cream-soft); font-size: .9rem; }
 .ex-progress__num { font-family: var(--f-mono); color: var(--cream-dim); font-size: .95rem; }
 .ex-progress__num b { color: var(--copper); font-size: 1.4rem; font-weight: 700; margin-right: 4px; }
-.ex-progress__pct { color: var(--emerald); margin-left: 8px; font-weight: 600; }
+.ex-progress__pct { color: var(--cream-dim); margin-left: 8px; font-weight: 600; }
 .ex-progress__bar { height: 8px; border-radius: 999px; background: var(--bg-2); margin: 10px 0 8px; overflow: hidden; }
-.ex-progress__fill { height: 100%; background: linear-gradient(90deg, var(--emerald), var(--copper)); border-radius: 999px; transition: width .4s ease; }
+.ex-progress__fill { height: 100%; background: var(--gold); border-radius: 999px; transition: width .4s ease; }
 .ex-progress__sub { color: var(--muted); font-size: .82rem; }
 .ex-facts { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
 .ex-fact { flex: 1 1 180px; display: flex; flex-direction: column; gap: 2px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,255,255,.02); transition: border-color .15s, transform .15s; }
@@ -1566,26 +1566,6 @@ a.ex-fact:hover { border-color: var(--copper); transform: translateY(-1px); text
 .bet__metric { color: var(--cream-dim); font-size: .82rem; }
 .bet__mh { color: var(--muted); margin-right: 6px; font-family: var(--f-mono); font-size: .74rem; text-transform: uppercase; letter-spacing: .04em; }
 
-/* риски */
-.risks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-.risk-card {
-  display: block; text-decoration: none; padding: 14px 16px; border: 1px solid var(--line);
-  border-radius: 12px; background: var(--panel); transition: border-color .15s, transform .15s;
-}
-.risk-card:hover { transform: translateY(-2px); border-color: var(--line-soft); }
-.risk-card.risk--high { border-color: var(--pink); }
-.risk-card.risk--med  { border-color: var(--gold); }
-.risk-card.risk--low  { border-color: var(--muted); }
-.risk-card__top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
-.risk-card__lvl { font: 600 .68rem/1 var(--f-mono); letter-spacing: .05em; text-transform: uppercase; color: var(--cream-dim); }
-.risk--high .risk-card__lvl { color: var(--pink); }
-.risk--med .risk-card__lvl { color: var(--gold); }
-.risk-card__val { font: 500 1.2rem/1 var(--f-mono); color: var(--cream); font-variant-numeric: tabular-nums; }
-.risk-card__val-lbl { color: var(--muted); font-size: .76rem; margin-bottom: 8px; }
-.risk-card__title { font: 600 1rem/1.3 var(--f-display); color: var(--cream); margin: 4px 0 6px; }
-.risk-card__what { color: var(--cream-dim); font-size: .85rem; line-height: 1.5; margin: 0 0 10px; }
-.risk-card__link { color: var(--copper); font-size: .82rem; font-family: var(--f-mono); }
-
 /* сейчас в работе — отдельный блок-карточка под саммари */
 /* v4: «Сейчас в работе» — активный/важный блок → золото (главный акцент), не розовый */
 .now-card {
@@ -1606,16 +1586,7 @@ a.ex-fact:hover { border-color: var(--copper); transform: translateY(-1px); text
 .now-card__what { color: var(--cream-soft); font-size: .92rem; line-height: 1.55; margin: 0 0 14px; max-width: 80ch; }
 .now-card__foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .now-card__link { color: var(--copper); font-size: .82rem; font-family: var(--f-mono); margin-left: auto; }
-
-/* запрос руководителю */
-.ex-ask {
-  margin-top: 22px; padding: 14px 18px; border: 1px solid var(--line-soft); border-radius: 12px;
-  background: rgba(226,179,85,.06);
-}
-.ex-ask__h { font: 600 .82rem/1 var(--f-mono); color: var(--copper); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px; }
-.ex-ask p { color: var(--cream-soft); font-size: .92rem; line-height: 1.55; margin: 0; }
-.ex-ask.is-placeholder { border-style: dashed; }
-.ex-ask.is-placeholder p { color: var(--cream-dim); font-style: italic; }
+.now-card + .now-card { margin-top: 12px; }
 
 /* подзаголовок плитки */
 .tile__sub { color: var(--copper); font-weight: 500; font-size: .8em; font-style: italic; }
@@ -1625,9 +1596,6 @@ a.ex-fact:hover { border-color: var(--copper); transform: translateY(-1px); text
   border: 1px solid var(--copper); border-radius: 16px;
   background: var(--panel); padding: 22px 24px;
 }
-.dash--proj { border-left-color: var(--emerald); }
-.dash--work { border-left-color: var(--gold); }
-.dash--data { border-left-color: var(--copper); }
 .dash__lead { color: var(--cream-soft); font-size: .96rem; line-height: 1.55; margin: 0 0 18px; max-width: 82ch; }
 
 .dash__stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
@@ -1649,16 +1617,16 @@ a.ex-fact:hover { border-color: var(--copper); transform: translateY(-1px); text
 .dash__note b { color: var(--cream); }
 .dot-leg { white-space: nowrap; }
 .dot-leg::before { content: "●"; margin-right: 4px; }
-.dot-leg--focus::before { color: var(--emerald); }
-.dot-leg--part::before { color: var(--gold); }
+.dot-leg--focus::before { color: var(--gold); }
+.dot-leg--part::before { color: var(--gold-dk); }
 .dot-leg--out::before { color: var(--muted); }
 
 /* мини-бар MoSCoW */
 .mbar { display: flex; height: 12px; border-radius: 999px; overflow: hidden; margin: 18px 0 8px; background: var(--bg-2); }
 .mbar__seg { display: block; height: 100%; }
-.mbar__seg--must { background: var(--pink); }
-.mbar__seg--should { background: var(--gold); }
-.mbar__seg--could { background: var(--emerald); }
+.mbar__seg--must { background: var(--gold); }
+.mbar__seg--should { background: var(--gold-dk); }
+.mbar__seg--could { background: var(--line-soft); }
 .mbar__seg--wont { background: var(--muted); }
 .mleg-row { display: flex; flex-wrap: wrap; gap: 8px 16px; }
 .mleg { display: inline-flex; align-items: center; gap: 6px; font: 500 .8rem/1 var(--f-mono); color: var(--cream-dim); }
@@ -1680,7 +1648,6 @@ a.ex-fact:hover { border-color: var(--copper); transform: translateY(-1px); text
 
 @media (max-width: 920px) {
   .bets { grid-template-columns: 1fr; }
-  .risks { grid-template-columns: 1fr; }
 }
 @media (max-width: 720px) {
   .bc-arr { display: none; }
