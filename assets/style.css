@@ -1652,6 +1652,17 @@ a.bet:hover { border-color: var(--gold); transform: translateY(-1px); text-decor
 .proj-stage.is-focus .proj-stage__n { color: var(--gold); }
 a.role-tag { transition: border-color .15s, color .15s; }
 a.role-tag:hover { border-color: var(--gold); color: var(--cream); text-decoration: none; }
+/* реестр: кликабельная легенда MoSCoW + чипы тем */
+a.mleg { transition: color .15s; }
+a.mleg:hover { color: var(--gold); text-decoration: none; }
+.topic-chip {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px;
+  border: 1px solid var(--line); color: var(--cream-soft); font-size: .82rem;
+  transition: border-color .15s, color .15s;
+}
+.topic-chip b { color: var(--muted); font-family: var(--f-mono); font-weight: 500; }
+.topic-chip:hover { border-color: var(--gold); color: var(--cream); text-decoration: none; }
+.topic-chip:hover b { color: var(--gold); }
 @media (max-width: 720px) {
   .proj2 { grid-template-columns: 1fr; }
 }

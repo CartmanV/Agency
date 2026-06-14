@@ -2527,23 +2527,38 @@ async function mountDashboards() {
       const v = m[k] || 0; const w = total ? (v / total * 100) : 0;
       return `<span class="mbar__seg mbar__seg--${cls}" style="width:${w}%" title="${k}: ${v}"></span>`;
     }).join("");
-    const legend = order.map(([k, cls]) => `<span class="mleg"><span class="mleg__sw mbar__seg--${cls}"></span>${k} ${m[k] || 0}</span>`).join("");
+    const legend = order.map(([k, cls]) =>
+      `<a class="mleg" href="backlog.html?moscow=${encodeURIComponent(k)}"><span class="mleg__sw mbar__seg--${cls}"></span>${k} ${m[k] || 0}</a>`
+    ).join("");
+    const themeChips = (W.themes || []).map((t) =>
+      `<a class="topic-chip" href="backlog.html?theme=${encodeURIComponent(t.name)}">${esc(t.name)} <b>${fmtInt(t.count)}</b></a>`
+    ).join("");
+    const topLine = W.topTitle
+      ? `<div class="proj2-card__sub">ТОП по приоритету: <a href="backlog.html?q=${encodeURIComponent(W.topTitle)}">${esc(W.topTitle)}</a> · Final ${W.topFinal}</div>`
+      : "";
     work.innerHTML = `
       <div class="dash dash--work">
-        <p class="dash__lead">Где лежат конкретные задачи: плоский список со скорингом, оглавление по темам и отобранные must.</p>
-        <div class="dash__stats">
-          ${dstat(fmtInt(W.total), "итераций всего", "gold")}
-          ${dstat(fmtInt(W.scored), "со скорингом", "gold")}
-          ${dstat(fmtInt(W.unscored), "без Effort", "muted")}
-          ${dstat(W.themes ? W.themes.length : "—", "тем в каталоге", "gold")}
+        <p class="dash__lead">Где лежат конкретные задачи: плоский список со скорингом по приоритету и оглавление по темам.</p>
+        <div class="proj2">
+          <div class="proj2-card">
+            <div class="proj2-card__head">
+              <span class="proj2-card__q">по приоритету</span>
+              <a class="proj2-card__title" href="backlog.html">Бэклог →</a>
+            </div>
+            <div class="mbar" role="img" aria-label="Распределение по MoSCoW">${bar}</div>
+            <div class="mleg-row">${legend}</div>
+            <div class="proj2-card__sub">${fmtInt(W.total)} задач · ${fmtInt(W.scored)} со скорингом · ${fmtInt(W.unscored)} без Effort</div>
+            ${topLine}
+          </div>
+          <div class="proj2-card">
+            <div class="proj2-card__head">
+              <span class="proj2-card__q">по темам</span>
+              <a class="proj2-card__title" href="levels.html">Каталог →</a>
+            </div>
+            <div class="proj2-card__chips">${themeChips}</div>
+            <div class="proj2-card__sub">${(W.themes || []).length} тем · ${fmtInt(W.total)} задач</div>
+          </div>
         </div>
-        <div class="mbar" role="img" aria-label="Распределение по MoSCoW">${bar}</div>
-        <div class="mleg-row">${legend}</div>
-        ${W.topTitle ? `<div class="dash__note">ТОП по приоритету (Final ${W.topFinal}): <b>${esc(W.topTitle)}</b></div>` : ""}
-        ${dlinks([
-          { href: "backlog.html", label: "Бэклог" },
-          { href: "levels.html", label: "Каталог" },
-        ])}
       </div>`;
   }
 
