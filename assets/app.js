@@ -1035,7 +1035,34 @@ function fmtK(n) {                              // 43587 → "43,6к", 920 → "
   return n >= 1000 ? (n / 1000).toFixed(1).replace(".", ",") + "к" : RU_NUM.format(n);
 }
 
-// Мини-линия динамики для строки таблицы (цвет = направление: вверх emerald / вниз pink).
+// --- Тултипы графиков: одна плавающая плашка на страницу + делегирование на контейнер ---
+// Любой SVG-элемент с атрибутом data-tip="..." показывает плашку у курсора. HTML внутри data-tip
+// допустим (мы сами его собираем из экранированных значений). Работает и для касаний (pointer*).
+function chTip() {
+  let t = document.getElementById("ch-tip");
+  if (!t) { t = document.createElement("div"); t.id = "ch-tip"; t.className = "ch-tip"; t.setAttribute("role", "tooltip"); document.body.appendChild(t); }
+  return t;
+}
+function wireTips(root) {
+  if (!root || root.dataset.tipsOn) return;     // вешаем один раз на контейнер; переживает re-render потомков
+  root.dataset.tipsOn = "1";
+  const t = chTip();
+  root.addEventListener("pointermove", (e) => {
+    const el = e.target.closest("[data-tip]");
+    if (!el) { t.classList.remove("is-on"); return; }
+    t.innerHTML = el.getAttribute("data-tip");
+    t.classList.add("is-on");
+    const pad = 14, r = t.getBoundingClientRect();
+    let x = e.clientX + pad, y = e.clientY + pad;
+    if (x + r.width > innerWidth - 8) x = e.clientX - r.width - pad;
+    if (y + r.height > innerHeight - 8) y = e.clientY - r.height - pad;
+    t.style.left = Math.max(8, x) + "px";
+    t.style.top = Math.max(8, y) + "px";
+  });
+  root.addEventListener("pointerleave", () => t.classList.remove("is-on"));
+}
+
+// Мини-линия динамики для строки таблицы (цвет = направление: вверх cat-3 шалфей / вниз cat-2 терракота).
 function sparkline(series, w = 88, h = 26) {
   const vals = (series || []).filter((v) => v != null);
   if (vals.length < 2) return `<span class="muted">—</span>`;
@@ -1047,7 +1074,8 @@ function sparkline(series, w = 88, h = 26) {
   const first = series.find((v) => v != null), last = [...series].reverse().find((v) => v != null);
   const dir = last > first ? "up" : last < first ? "down" : "flat";
   const lp = pts[n - 1];
-  return `<svg class="spark spark--${dir}" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true">
+  const tip = `последний <b>${fmtNum(last)}</b> · пик ${fmtNum(max)} · дно ${fmtNum(min)}`;
+  return `<svg class="spark spark--${dir} ch-hit" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true" data-tip="${tip}">
     <path d="${d}" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
     <circle cx="${lp[0].toFixed(1)}" cy="${lp[1].toFixed(1)}" r="2" fill="currentColor"/></svg>`;
 }
@@ -1060,82 +1088,56 @@ function niceStep(range, ticks = 4) {
   return (nrm <= 1 ? 1 : nrm <= 2 ? 2 : nrm <= 5 ? 5 : 10) * mag;
 }
 
-// Главный area-график по месяцам. opts.fmtVal — подписи точек, opts.fmtAxis — подписи оси Y.
-function areaChart(months, values, opts = {}) {
-  const v = (values || []).filter((x) => x != null);
-  if (v.length < 2) return "";
-  const fmtVal = opts.fmtVal || fmtK;
-  const fmtAxis = opts.fmtAxis || ((g) => g / 1000 + "к");
-  const W = 760, H = 240, pL = 46, pR = 14, pT = 18, pB = 30;
-  const iw = W - pL - pR, ih = H - pT - pB, n = values.length;
-  const step = opts.step || niceStep(Math.max(...v) - Math.min(...v));
-  const lo = Math.floor(Math.min(...v) / step) * step;
-  const hi = Math.ceil(Math.max(...v) / step) * step;
-  const span = (hi - lo) || 1;
-  const X = (i) => pL + (i / (n - 1)) * iw;
-  const Y = (val) => pT + ih - ((val - lo) / span) * ih;
-  const pts = values.map((val, i) => [X(i), Y(val)]);
-  const line = pts.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" ");
-  const base = (pT + ih).toFixed(1);
-  const area = `M${pts[0][0].toFixed(1)} ${base} ` + pts.map((p) => "L" + p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" ") + ` L${pts[n - 1][0].toFixed(1)} ${base} Z`;
-  let grid = "";
-  for (let g = lo; g <= hi + 1e-9; g += step) {
-    const y = Y(g).toFixed(1);
-    grid += `<line x1="${pL}" y1="${y}" x2="${W - pR}" y2="${y}" class="ch-grid"/>`
-      + `<text x="${pL - 8}" y="${(+y + 3).toFixed(1)}" class="ch-ylab" text-anchor="end">${fmtAxis(g)}</text>`;
-  }
-  // Якорь по краям, чтобы крайние подписи не обрезались о границу SVG.
-  const anc = (x) => (x <= pL + 22 ? "start" : x >= W - pR - 22 ? "end" : "middle");
-  let xlab = "";
-  months.forEach((m, i) => { if (i % 2 === 0 || i === n - 1) xlab += `<text x="${X(i).toFixed(1)}" y="${H - 9}" class="ch-xlab" text-anchor="${anc(X(i))}">${monLabel(m)}</text>`; });
-  const yref = Y(values[0]).toFixed(1);
-  const ref = opts.ref === false ? "" : `<line x1="${pL}" y1="${yref}" x2="${W - pR}" y2="${yref}" class="ch-ref"/>`;
-  const iMax = values.indexOf(Math.max(...v)), iMin = values.indexOf(Math.min(...v));
-  const mk = (i, cls) => { const [x, y] = pts[i]; return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.2" class="ch-dot ${cls}"/>`
-    + `<text x="${x.toFixed(1)}" y="${(y - 9).toFixed(1)}" class="ch-mark ${cls}" text-anchor="${anc(x)}">${fmtVal(values[i])}</text>`; };
-  return `<svg class="ag-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Операции по месяцам, ${months[0]}–${months[n - 1]}">
-    <defs><linearGradient id="agArea" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="var(--emerald)" stop-opacity="0.30"/>
-      <stop offset="1" stop-color="var(--emerald)" stop-opacity="0.02"/></linearGradient></defs>
-    ${grid}${ref}<path d="${area}" fill="url(#agArea)"/><path d="${line}" class="ch-line"/>
-    ${mk(iMax, "mk-peak")}${mk(iMin, "mk-low")}${mk(n - 1, "mk-last")}${xlab}</svg>`;
-}
-
-// Мульти-линейный график долей в % (динамика доли лидера по операциям и клиентам).
-// lines: [{ label, cls (CSS-переменная цвета), vals: [% …] }]
-function shareLines(months, lines) {
-  const all = lines.flatMap((l) => l.vals).filter((x) => x != null);
-  if (all.length < 2) return "";
-  const W = 760, H = 224, pL = 40, pR = 14, pT = 16, pB = 44;
+// Помесячный тренд «ядро ↔ остальные»: стэк-столбцы (операции ядра + остальных) + линия доли ядра
+// на правой оси (0–100%) + подпись Δ к прошлому месяцу над столбцом. opts: { leadName, others }.
+function agTrend(months, ibcVals, totVals, opts = {}) {
+  const n = months.length;
+  if (n < 2) return "";
+  const leadName = opts.leadName || "ядро", others = opts.others ?? "";
+  const restVals = totVals.map((tt, i) => Math.max((tt || 0) - (ibcVals[i] || 0), 0));
+  const W = 600, H = 280, pT = 24, pB = 46, pL = 46, pR = 40;
   const iw = W - pL - pR, ih = H - pT - pB;
-  const step = Math.max(niceStep(Math.max(...all) - Math.min(...all)), 5);
-  const lo = Math.floor(Math.min(...all) / step) * step;
-  const hi = Math.ceil(Math.max(...all) / step) * step;
-  const span = (hi - lo) || 1;
-  const n = Math.max(...lines.map((l) => l.vals.length));
-  const X = (i) => pL + (i / (n - 1)) * iw;
-  const Y = (val) => pT + ih - ((val - lo) / span) * ih;
+  const maxT = Math.max(...totVals, 1);
+  const step = niceStep(maxT, 5);
+  const hi = Math.ceil(maxT / step) * step || step;
+  const Y = (val) => pT + ih - (val / hi) * ih;        // левая ось — операции
+  const Y1 = (pct) => pT + ih - (pct / 100) * ih;      // правая ось — доля %
+  const slot = iw / n, bw = Math.min(slot * 0.6, 44), cx = (i) => pL + slot * (i + 0.5);
   let grid = "";
-  for (let g = lo; g <= hi + 1e-9; g += step) {
+  for (let g = 0; g <= hi + 1e-9; g += step) {
     const y = Y(g).toFixed(1);
     grid += `<line x1="${pL}" y1="${y}" x2="${W - pR}" y2="${y}" class="ch-grid"/>`
-      + `<text x="${pL - 8}" y="${(+y + 3).toFixed(1)}" class="ch-ylab" text-anchor="end">${g}%</text>`;
+      + `<text x="${pL - 8}" y="${(+y + 3).toFixed(1)}" class="ch-ylab" text-anchor="end">${fmtK(g)}</text>`;
   }
-  const anc = (x) => (x <= pL + 22 ? "start" : x >= W - pR - 22 ? "end" : "middle");
-  let xlab = "";
-  months.forEach((m, i) => { if (i % 2 === 0 || i === n - 1) xlab += `<text x="${X(i).toFixed(1)}" y="${H - 24}" class="ch-xlab" text-anchor="${anc(X(i))}">${monLabel(m)}</text>`; });
-  let paths = "", legend = "";
-  lines.forEach((l, li) => {
-    const pts = l.vals.map((val, i) => [X(i), Y(val)]);
-    const d = pts.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" ");
-    const lp = pts[pts.length - 1], lv = l.vals[l.vals.length - 1];
-    paths += `<path d="${d}" fill="none" stroke="var(${l.cls})" stroke-width="2" stroke-linejoin="round"/>`
-      + `<circle cx="${lp[0].toFixed(1)}" cy="${lp[1].toFixed(1)}" r="3" fill="var(${l.cls})"/>`
-      + `<text x="${(lp[0] - 6).toFixed(1)}" y="${(lp[1] + 3).toFixed(1)}" text-anchor="end" class="ch-mark" fill="var(${l.cls})">${Math.round(lv)}%</text>`;
-    legend += `<g transform="translate(${pL + li * 180}, ${H - 6})"><line x1="0" y1="-4" x2="16" y2="-4" stroke="var(${l.cls})" stroke-width="2"/><text x="22" y="0" class="ch-leg">${esc(l.label)}</text></g>`;
+  let yr = "";
+  [0, 50, 100].forEach((pp) => { const y = Y1(pp).toFixed(1); yr += `<text x="${W - pR + 8}" y="${(+y + 3).toFixed(1)}" class="ch-ylab ch-ylab--r" text-anchor="start">${pp}%</text>`; });
+  let bars = "", deltas = "", xlab = "";
+  totVals.forEach((tt, i) => {
+    const x = (cx(i) - bw / 2).toFixed(1);
+    const hI = (ibcVals[i] / hi) * ih, hR = (restVals[i] / hi) * ih;
+    const yR = Y(tt), yI = yR + hR;                     // остальные сверху, ядро снизу
+    bars += `<rect class="agb agb--ibc" x="${x}" y="${yI.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(hI, 0).toFixed(1)}"/>`
+          + `<rect class="agb agb--rest" x="${x}" y="${yR.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(hR, 0).toFixed(1)}"/>`;
+    if (i > 0 && totVals[i - 1]) {
+      const dp = (tt / totVals[i - 1] - 1) * 100;
+      deltas += `<text class="agt-d" x="${cx(i).toFixed(1)}" y="${(yR - 6).toFixed(1)}" text-anchor="middle">${dp > 0 ? "+" : dp < 0 ? "−" : ""}${Math.abs(dp).toFixed(0)}%</text>`;
+    }
+    if (i % 2 === 0 || i === n - 1) xlab += `<text x="${cx(i).toFixed(1)}" y="${H - 24}" class="ch-xlab" text-anchor="middle">${monLabel(months[i])}</text>`;
   });
-  return `<svg class="ag-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Доля лидера по месяцам">
-    ${grid}${paths}${xlab}${legend}</svg>`;
+  const sh = totVals.map((tt, i) => (tt ? 100 * ibcVals[i] / tt : 0));
+  const pts = sh.map((p, i) => [cx(i), Y1(p)]);
+  const dPath = pts.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" ");
+  const lineSvg = `<path d="${dPath}" class="agt-line"/>` + pts.map((p) => `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="2.4" class="agt-dot"/>`).join("");
+  let hit = "";
+  totVals.forEach((tt, i) => {
+    const x = (cx(i) - slot / 2).toFixed(1);
+    const d = i > 0 && totVals[i - 1] ? (tt / totVals[i - 1] - 1) * 100 : null;
+    const dtip = d == null ? "" : `<br>Δ к пред.: <b>${d > 0 ? "+" : "−"}${Math.abs(d).toFixed(1)}%</b>`;
+    const tip = `<b>${monLabel(months[i])}</b><br>${esc(leadName)}: <b>${fmtNum(ibcVals[i])}</b> · остальные: <b>${fmtNum(restVals[i])}</b><br>всего ${fmtNum(tt)} · доля ${esc(leadName)} <b>${Math.round(sh[i])}%</b>${dtip}`;
+    hit += `<rect x="${x}" y="${pT}" width="${slot.toFixed(1)}" height="${ih}" fill="transparent" class="ch-hit" data-tip="${tip}"/>`;
+  });
+  return `<svg class="agbars-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Операции ${esc(leadName)} и остальных по месяцам: стэк-столбцы и доля ядра">
+    ${grid}${yr}${bars}${lineSvg}${deltas}${xlab}${hit}</svg>`;
 }
 
 async function mountAgencies() {
@@ -1157,49 +1159,85 @@ async function mountAgencies() {
   const lead = ags.reduce((a, b) => ((b.may || 0) > (a.may || 0) ? b : a), ags[0] || {});
   const leadName = /IBC/i.test(lead.name || "") ? "IBC" : (lead.name || "лидер");
   const others = Math.max(ags.length - 1, 0);
-  const opsTotal = t.may || ags.reduce((s, a) => s + (a.may || 0), 0);
-  const clTotal = nsm.now || ags.reduce((s, a) => s + (a.clNow || 0), 0);
-  const opsLeadPct = opsTotal ? (lead.may || 0) / opsTotal : 0;
-  const clLeadPct = clTotal ? (lead.clNow || 0) / clTotal : 0;
-  const opcLead = lead.clNow ? Math.round((lead.may || 0) / lead.clNow) : null;
-  const opcRest = (clTotal - (lead.clNow || 0)) ? Math.round((opsTotal - (lead.may || 0)) / (clTotal - (lead.clNow || 0))) : null;
   const clUp = ags.filter((a) => (a.clNet || 0) > 0).length;
   const clDown = ags.filter((a) => (a.clNet || 0) < 0).length;
 
-  // Динамика доли лидера по месяцам (операции + клиенты). Ряды выравниваем к 12-мес. окну клиентов.
-  let ibcShareBlock = "";
-  if (mon && monCl && mon.total && monCl.total && mon.byId && monCl.byId) {
-    const ibcId = String(lead.id);
-    const opsT = mon.total, opsIbc = mon.byId[ibcId] || [];
-    const clT = monCl.total, clIbc = monCl.byId[ibcId] || [];
-    const cm = monCl.months;
-    const off = Math.max(mon.months.length - cm.length, 0);   // ops длиннее на 1 мес. — сдвигаем
-    const opsShare = cm.map((_, i) => { const a = opsIbc[i + off], b = opsT[i + off]; return (a != null && b) ? 100 * a / b : null; });
-    const clShare = cm.map((_, i) => { const a = clIbc[i], b = clT[i]; return (a != null && b) ? 100 * a / b : null; });
-    const chart = shareLines(cm, [
-      { label: `Операции (${leadName})`, cls: "--emerald", vals: opsShare },
-      { label: `Клиенты (${leadName})`, cls: "--gold", vals: clShare },
-    ]);
-    const ov = opsShare.filter((x) => x != null), cv = clShare.filter((x) => x != null);
-    if (chart && ov.length && cv.length) {
-      const oL = ov[ov.length - 1], cL = cv[cv.length - 1];
-      ibcShareBlock = `
-        <div class="split" style="margin-top:18px">
-          <div class="split-row"><div class="lbl">Динамика: доля ${esc(leadName)} в объёме — операции и клиенты, по месяцам</div></div>
-          ${chart}
-          <div class="conc-cap"><b>Доля ${esc(leadName)} в операциях держится около ${Math.round(oL)}% весь год</b>
-          (${Math.round(Math.min(...ov))}–${Math.round(Math.max(...ov))}%) — концентрация по объёму не растёт, но
-          остаётся высокой. По клиентам — около ${Math.round(cL)}%, чуть ниже, чем год назад. Разрыв ~${Math.round(oL - cL)} пп
-          устойчив: один клиент ${esc(leadName)} «весит» больше.</div>
-        </div>`;
-    }
-  }
+  // Помесячные ряды «ядро ↔ остальные» для дашборда за период (операции — поток, клиенты — сток).
+  const ibcId = String(lead.id);
+  const opsMonths = (mon && mon.months) || [], opsTot = (mon && mon.total) || [], opsIbc = (mon && mon.byId && mon.byId[ibcId]) || [];
+  const clMonths = (monCl && monCl.months) || [], clTot = (monCl && monCl.total) || [], clIbc = (monCl && monCl.byId && monCl.byId[ibcId]) || [];
+  const hasSeries = opsTot.length > 1 && opsIbc.length > 1;
+  const hasClSeries = clTot.length > 1 && clIbc.length > 1;
+  const lastK = (arr, k) => (arr || []).slice(-k);
+  const aSum = (a) => a.reduce((s, x) => s + (x || 0), 0);
+  const aAvg = (a) => (a.length ? aSum(a) / a.length : 0);
+  // Агрегат за окно последних k месяцев: операции — сумма, клиенты — среднее активных за период.
+  const periodAgg = (k) => {
+    const ko = Math.min(k, opsTot.length || 1), kc = Math.min(k, clTot.length || 1);
+    const oIbc = aSum(lastK(opsIbc, ko)), oTot = aSum(lastK(opsTot, ko)), oRest = Math.max(oTot - oIbc, 0);
+    const cIbc = Math.round(aAvg(lastK(clIbc, kc))), cTot = Math.round(aAvg(lastK(clTot, kc))), cRest = Math.max(cTot - cIbc, 0);
+    return {
+      ko,
+      ops: { ibc: oIbc, rest: oRest, pct: oTot ? oIbc / oTot : 0 },
+      cl: { ibc: cIbc, rest: cRest, pct: cTot ? cIbc / cTot : 0 },
+      opcIbc: cIbc ? Math.round((oIbc / ko) / cIbc) : null,        // операций на клиента в месяц
+      opcRest: cRest ? Math.round((oRest / ko) / cRest) : null,
+    };
+  };
 
   if (sumHost) {
-    const splitBar = (leadPct, leadTxt, restTxt) => `
-      <div class="split-bar">
-        <span class="seg seg-ibc" style="flex:${(leadPct * 100).toFixed(1)}">${leadTxt}</span>
-        <span class="seg seg-rest" style="flex:${((1 - leadPct) * 100).toFixed(1)}">${restTxt}</span>
+    // Дашборд «ядро ↔ остальные» за период: два помесячных стэк-тренда (операции, клиенты) друг под другом.
+    // «Месяц» убран — у одного месяца нет тренда и нет Δ; помесячная детализация видна по столбцам.
+    const PERIODS = [
+      { v: "3", k: 3, lbl: "3 мес" },
+      { v: "6", k: 6, lbl: "6 мес" },
+      { v: "all", k: 999, lbl: "Всё" },
+    ];
+    const PMAP = Object.fromEntries(PERIODS.map((p) => [p.v, p]));
+    const state = { period: "all" };
+
+    // Помесячные стэк-тренды за окно периода (см. agTrend): операции — поток, клиенты (NSM) — активные за месяц.
+    const opsTrend = (k) => {
+      const ko = Math.min(k, opsTot.length);
+      return agTrend(lastK(opsMonths, ko), lastK(opsIbc, ko), lastK(opsTot, ko), { leadName, others });
+    };
+    const clTrendChart = (k) => {
+      const ko = Math.min(k, clTot.length);
+      return agTrend(lastK(clMonths, ko), lastK(clIbc, ko), lastK(clTot, ko), { leadName, others });
+    };
+
+    // Перерисовка тела дашборда под выбранный период (обёртка с контролами статична).
+    const renderDash = () => {
+      const body = sumHost.querySelector("[data-dashbody]");
+      if (!body) return;
+      const p = PMAP[state.period] || PMAP.all;
+      const agg = periodAgg(p.k);
+      const legend = `<div class="agbars__legend">
+          <span class="lg-key"><i class="lg-sw lg-sw--ibc"></i>${esc(leadName)} (ядро)</span>
+          <span class="lg-key"><i class="lg-sw lg-sw--rest"></i>остальные ${others}</span>
+          <span class="lg-key"><i class="lg-sw lg-sw--share"></i>доля ${esc(leadName)}, %</span>
+        </div>`;
+      const opsCol = hasSeries
+        ? `<div class="agdash__col"><div class="agdash__cap">Операции по месяцам · стэк ${esc(leadName)}+остальные · линия — доля · Δ за месяц над столбцом</div>${opsTrend(p.k)}</div>`
+        : "";
+      const nsmNote = `<div class="conc-cap">Активный клиент = факт поездок (не логин в Ракете). NSM (${fmtNum(nsm.now)}) считается за 3 месяца, поэтому выше месячной. Чистая дельта <b>+${fmtNum(nsm.net)}</b> за полгода: база выросла у <b>${clUp}</b> из ${ags.length} агентств, сократилась у ${clDown}. Цель «+20» — про агентства, NSM — про их клиентов: это разные счётчики.</div>`;
+      const clCol = `<div class="agdash__col" id="nsm"><div class="agdash__cap">Клиенты (NSM) по месяцам · стэк ${esc(leadName)}+остальные · линия — доля · Δ за месяц над столбцом</div>${hasClSeries ? clTrendChart(p.k) : ""}${nsmNote}</div>`;
+      const opc = (agg.opcIbc != null && agg.opcRest != null)
+        ? `<b>${fmtNum(agg.opcIbc)} операций на клиента в месяц у ${esc(leadName)} против ${fmtNum(agg.opcRest)} у остальных.</b> ` : "";
+      const win = p.v === "all" ? "за весь период" : `за ${p.lbl}`;
+      const cap = `${opc}В долях ${win} ядро держит ${fmtPct(agg.ops.pct, 0)} операций, но ${fmtPct(agg.cl.pct, 0)} клиентов — объём опирается на ядро, число клиентов уже нет. Потеря ядра обрушит метрику направления.`;
+      body.innerHTML = legend + `<div class="agtrend-stack">${opsCol}${clCol}</div><div class="conc-cap">${cap}</div>`;
+    };
+
+    const dashShell = `
+      <div class="agbars">
+        <div class="agbars__head">
+          <div class="lbl">${esc(leadName)} ↔ остальные ${others}: операции и клиенты по месяцам</div>
+          <div class="seg" role="group" aria-label="Период">
+            ${PERIODS.map((p) => `<button type="button" class="seg__btn${p.v === state.period ? " is-active" : ""}" data-period-v="${p.v}">${p.lbl}</button>`).join("")}
+          </div>
+        </div>
+        <div data-dashbody></div>
       </div>`;
     sumHost.innerHTML = `
       <div class="ag-strip">
@@ -1217,58 +1255,18 @@ async function mountAgencies() {
         </div>
         <div class="conc-cap">Полоса выше — доли пяти крупнейших агентств и «хвоста» по операциям. ТОП-5 = ${fmtPct(c.top5, 0)} операций, ТОП-3 = ${fmtPct(c.top3, 0)}.</div>
       </div>
-      <div class="split">
-        <div class="split-row">
-          <div class="lbl">Операции (май): ${esc(leadName)} ↔ остальные ${others}</div>
-          ${splitBar(opsLeadPct, `${esc(leadName)} ${fmtPct(opsLeadPct, 0)}`, `остальные ${others} — ${fmtPct(1 - opsLeadPct, 0)}`)}
-        </div>
-        <div class="split-row">
-          <div class="lbl">Клиенты сейчас: ${esc(leadName)} ↔ остальные ${others}</div>
-          ${splitBar(clLeadPct, `${esc(leadName)} ${fmtPct(clLeadPct, 0)}`, `остальные ${others} — ${fmtPct(1 - clLeadPct, 0)}`)}
-        </div>
-        <div class="conc-cap"><b>${esc(leadName)} даёт ${fmtPct(opsLeadPct, 0)} операций, но лишь ${fmtPct(clLeadPct, 0)} клиентов</b> — клиенты ядра крупнее: ≈${fmtNum(opcLead)} операций на клиента против ${fmtNum(opcRest)} у остальных. Потеря ядра обрушит метрику направления.</div>
-      </div>
-      ${ibcShareBlock}`;
-  }
+      ${dashShell}`;
 
-  // Клиенты агентств — North Star Metric: линия активных клиентов по месяцам + методическая подпись.
-  const nsmHost = document.querySelector("[data-ag-nsm]");
-  if (nsmHost && nsm.now != null) {
-    let clTrend = "";
-    if (monCl && monCl.total && monCl.total.filter((x) => x != null).length > 1) {
-      const ct = monCl.total, cmm = monCl.months, cvv = ct.filter((x) => x != null);
-      const iMax = ct.indexOf(Math.max(...cvv)), iMin = ct.indexOf(Math.min(...cvv));
-      const fmtPlain = (x) => RU_NUM.format(Math.round(x));
-      clTrend = areaChart(cmm, ct, { fmtVal: fmtPlain, fmtAxis: fmtPlain, ref: false }) + `
-        <div class="conc-cap">
-          Активных клиентов помесячно (кто ездил в этом месяце): <b>${fmtNum(ct[ct.length - 1])}</b> в мае,
-          пик ${fmtNum(ct[iMax])} (${monLabel(cmm[iMax])}), яма ${fmtNum(ct[iMin])} (${monLabel(cmm[iMin])}).
-          Метрика NSM (${fmtNum(nsm.now)}) считается за 3 месяца, поэтому выше месячной.
-        </div>`;
-    }
-    nsmHost.innerHTML = clTrend + `
-      <div class="conc-cap">
-        За полгода (дек.25–май'26) активны <b>${fmtNum(nsm.l6m)}</b> клиентов, в мае — <b>${fmtNum(nsm.activeMo)}</b>.
-        Чистая дельта <b>+${fmtNum(nsm.net)}</b>: база выросла у <b>${clUp}</b> из ${ags.length} агентств, сократилась у ${clDown}.
-        «Активный» = есть факт поездок (а не логин в Ракете); новые и ушедшие считаем на окнах по 3 месяца — мар–май'26 против сен–ноя'25.
-      </div>`;
-  }
-
-  // Динамика операций по месяцам — главный area-график (ИТОГО, 13 мес.).
-  const trendHost = document.querySelector("[data-ag-trend]");
-  if (trendHost && mon && mon.total && mon.total.filter((x) => x != null).length > 1) {
-    const tv = mon.total, mm = mon.months;
-    const vv = tv.filter((x) => x != null);
-    const iMax = tv.indexOf(Math.max(...vv)), iMin = tv.indexOf(Math.min(...vv));
-    const yoy = tv[0] ? tv[tv.length - 1] / tv[0] - 1 : null;
-    // 1 знак после запятой (общий fmtPct округляет до целых — здесь нужна точность).
-    const yoyTxt = yoy == null ? "—" : (yoy > 0 ? "+" : "") + (yoy * 100).toFixed(1).replace(".", ",") + "%";
-    trendHost.innerHTML = areaChart(mm, tv) + `
-      <div class="conc-cap">
-        Пик — ${monLabel(mm[iMax])} (${fmtK(tv[iMax])}), дно — ${monLabel(mm[iMin])} (${fmtK(tv[iMin])}).
-        Год к году почти ровно: ${monLabel(mm[0])} ${fmtK(tv[0])} → ${monLabel(mm[mm.length - 1])} ${fmtK(tv[tv.length - 1])}
-        (${yoyTxt}). Пунктир — уровень ${monLabel(mm[0])}: спад последнего месяца сезонный, не обвал.
-      </div>`;
+    // Период-селектор перерисовывает тело; делегирование тултипов на sumHost переживает перерисовку.
+    sumHost.querySelectorAll("[data-period-v]").forEach((b) => b.addEventListener("click", () => {
+      state.period = b.dataset.periodV;
+      sumHost.querySelectorAll("[data-period-v]").forEach((x) => x.classList.toggle("is-active", x === b));
+      renderDash();
+    }));
+    renderDash();
+    wireTips(sumHost);
+    // Async-рендер: доскроллить к #nsm, если страницу открыли по якорю (ссылки из сводки/etapy).
+    if (location.hash === "#nsm") { const el = sumHost.querySelector("#nsm"); if (el) el.scrollIntoView(); }
   }
 
   // Отображение сегментов партнёрской базы по-русски (данные остаются как в источнике).
@@ -1329,6 +1327,7 @@ async function mountAgencies() {
       state[e.target.dataset.ag] = e.target.value;
       tblHost.querySelector("tbody").innerHTML = rows();
     }));
+    wireTips(tblHost);   // спарклайны в строках — делегирование переживает перерисовку tbody
   }
 }
 

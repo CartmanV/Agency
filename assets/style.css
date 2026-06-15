@@ -751,11 +751,11 @@ a.chip.branch:hover { border-color: var(--copper); color: var(--cream); text-dec
 .conc-wrap { margin: 4px 0 8px; }
 .conc-bar { display: flex; height: 22px; border-radius: 6px; overflow: hidden; border: 1px solid var(--line); }
 .conc-seg { display: block; min-width: 1px; }
-.conc-seg.s0 { background: var(--pink); }
-.conc-seg.s1 { background: var(--gold); }
-.conc-seg.s2 { background: var(--emerald); }
-.conc-seg.s3 { background: var(--blue); }
-.conc-seg.s4 { background: var(--copper-dk); }
+.conc-seg.s0 { background: var(--gold); }       /* IBC = ядро/фокус (та же золотая семантика, что в столбчатом дашборде) */
+.conc-seg.s1 { background: var(--cat-3); }      /* далее — категориальная шкала v4 (не статус-цвета) */
+.conc-seg.s2 { background: var(--cat-1); }
+.conc-seg.s3 { background: var(--cat-2); }
+.conc-seg.s4 { background: var(--cat-4); }
 .conc-seg.rest { background: var(--panel-2); }
 .conc-cap { font-size: 12.5px; color: var(--cream-dim); margin-top: 8px; max-width: 80ch; }
 
@@ -774,35 +774,58 @@ a.chip.branch:hover { border-color: var(--copper); color: var(--cream); text-dec
 .ag-stat--goal .l::before { content: "◎ "; }
 @media (max-width: 820px) { .ag-stat { flex-basis: 45%; } }
 
-/* Сплит-полоса «лидер ↔ остальные» (IBC vs все) — операции и клиенты */
+/* Контейнер блоков «лидер ↔ остальные» (помесячный график долей использует .split) */
 .split { margin-top: 16px; display: grid; gap: 12px; }
 .split-row .lbl { font-family: var(--f-mono); font-size: 11px; color: var(--cream-dim);
   text-transform: uppercase; letter-spacing: .04em; margin-bottom: 5px; }
-.split-bar { display: flex; height: 28px; border-radius: 6px; overflow: hidden; border: 1px solid var(--line); }
-.split-bar .seg { display: flex; align-items: center; padding: 0 10px; white-space: nowrap;
-  overflow: hidden; font-family: var(--f-mono); font-size: 11.5px; min-width: 0; }
-.split-bar .seg-ibc { background: var(--pink); color: #fff; font-weight: 600; }
-.split-bar .seg-rest { background: var(--panel-2); color: var(--cream-soft); justify-content: flex-end; }
 
-/* Графики динамики операций (SVG) */
-.ag-chart { width: 100%; height: auto; display: block; border: 1px solid var(--line);
-  border-radius: 12px; background: var(--panel); padding: 6px; margin: 8px 0 4px; }
-.ag-chart .ch-grid { stroke: var(--line); stroke-width: 1; }
-.ag-chart .ch-ref { stroke: var(--gold); stroke-width: 1; stroke-dasharray: 4 3; opacity: .65; }
-.ag-chart .ch-line { fill: none; stroke: var(--emerald); stroke-width: 2; stroke-linejoin: round; }
-.ag-chart .ch-ylab, .ag-chart .ch-xlab { fill: var(--cream-dim); font-family: var(--f-mono); font-size: 10px; }
-.ag-chart .ch-dot { stroke: var(--bg); stroke-width: 1.5; }
-.ag-chart .ch-mark { font-family: var(--f-mono); font-size: 11px; font-weight: 600; }
-.ag-chart .ch-leg { fill: var(--cream-soft); font-family: var(--f-mono); font-size: 11px; }
-.ag-chart .mk-peak { fill: var(--gold); } .ag-chart .ch-dot.mk-peak { fill: var(--gold); }
-.ag-chart .mk-low { fill: var(--pink); } .ag-chart .ch-dot.mk-low { fill: var(--pink); }
-.ag-chart .mk-last { fill: var(--emerald); } .ag-chart .ch-dot.mk-last { fill: var(--emerald); }
+/* Столбчатый дашборд «ядро ↔ остальные»: Доли % (стэк-100%) / Абсолют (группы) */
+.agbars { margin-top: 18px; }
+.agbars__head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.agbars__head .lbl { font-family: var(--f-mono); font-size: 11px; color: var(--cream-dim);
+  text-transform: uppercase; letter-spacing: .04em; margin-right: auto; }
+.agbars__legend { display: flex; gap: 16px; margin: 10px 0 2px; }
+.lg-key { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--cream-soft); }
+.lg-sw { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+.lg-sw--ibc { background: var(--gold); }
+.lg-sw--rest { background: var(--cat-3); }
+.lg-sw--share { background: var(--cat-1); height: 3px; align-self: center; }   /* линия доли — тонкий штрих */
+
+/* Помесячный тренд: линия доли ядра (правая ось) + подписи Δ к прошлому месяцу */
+.agbars-svg .agt-line { fill: none; stroke: var(--cat-1); stroke-width: 2; stroke-linejoin: round; }
+.agbars-svg .agt-dot { fill: var(--cat-1); stroke: var(--bg); stroke-width: 1; }
+.agbars-svg .agt-d { font-family: var(--f-mono); font-size: 9.5px; fill: var(--cream-soft); }
+.agbars-svg .ch-grid { stroke: var(--line); stroke-width: 1; }
+.agbars-svg .ch-ylab, .agbars-svg .ch-xlab { fill: var(--cream-dim); font-family: var(--f-mono); font-size: 10px; }
+.agbars-svg .ch-ylab--r { fill: var(--cat-1); }
+.agbars-svg { width: 100%; height: auto; display: block; border: 1px solid var(--line);
+  border-radius: 12px; background: var(--panel); padding: 6px; margin: 6px 0 4px; }
+.agb--ibc { fill: var(--gold); }
+.agb--rest { fill: var(--cat-3); }
+.agbars-svg .ch-hit { cursor: crosshair; }
+
+/* Дашборд за период: два помесячных тренда (операции, клиенты) друг под другом, во всю ширину */
+.agtrend-stack { display: flex; flex-direction: column; gap: 22px; margin: 8px 0 4px; }
+.agdash__col { min-width: 0; }
+.agdash__col .agbars-svg { margin-top: 0; }
+.agdash__cap { font-family: var(--f-mono); font-size: 11px; color: var(--cream-dim);
+  text-transform: uppercase; letter-spacing: .04em; margin: 2px 0 5px; }
 
 .spark { display: block; color: var(--cream-dim); }
-.spark--up { color: var(--emerald); }
-.spark--down { color: var(--pink); }
+.spark--up { color: var(--cat-3); }              /* рост — шалфей (категориальная шкала, не статус-изумруд) */
+.spark--down { color: var(--cat-2); }            /* спад — терракота (не «срочно»-розовый) */
 .spark--flat { color: var(--cream-dim); }
+.spark.ch-hit { cursor: crosshair; }
 table.backlog td.spark-cell { padding: 4px 8px; }
+
+/* Плавающая плашка-тултип графиков (одна на страницу, следует за курсором) */
+.ch-tip { position: fixed; left: 0; top: 0; z-index: 60; pointer-events: none;
+  opacity: 0; transition: opacity .1s; max-width: 280px;
+  background: var(--panel-2); border: 1px solid var(--gold-line); border-radius: 8px;
+  padding: 7px 11px; font-family: var(--f-mono); font-size: 12px; line-height: 1.5;
+  color: var(--cream-soft); box-shadow: 0 8px 24px rgba(0,0,0,.45); }
+.ch-tip.is-on { opacity: 1; }
+.ch-tip b { color: var(--gold); font-weight: 600; }
 
 .delta { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
 .delta.pos { color: var(--emerald); }
