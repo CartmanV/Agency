@@ -9,6 +9,57 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Manrope:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/style.css" />
+  <style>
+    /* Карточка-итерация по образцу вложения «Бэклог Сервис для клиента» — локально для q3, токены v4 */
+    .ecard{ margin-top:6px; }
+    .ecard .e-meta{ background:var(--panel-2); border-left:3px solid var(--gold); padding:16px 20px; margin:4px 0 20px; }
+    .ecard .e-meta dl{ display:grid; grid-template-columns:165px 1fr; gap:9px 18px; margin:0; }
+    .ecard .e-meta dt{ font-family:var(--f-mono); font-size:11px; text-transform:uppercase; letter-spacing:.10em; color:var(--cream-dim); font-weight:500; }
+    .ecard .e-meta dd{ margin:0; color:var(--cream); font-size:14px; line-height:1.5; }
+    .ecard h4{ font-family:var(--f-mono); font-size:12px; text-transform:uppercase; letter-spacing:.16em; color:var(--gold); margin:26px 0 10px; padding-bottom:6px; border-bottom:1px solid var(--line); }
+    .ecard p, .ecard ul, .ecard ol{ color:var(--cream-soft); font-size:14.5px; line-height:1.7; }
+    .ecard ul, .ecard ol{ padding-left:20px; margin:6px 0 0; }
+    .ecard li{ margin:5px 0; }
+    .ecard strong{ color:var(--cream); }
+    .ecard em{ color:var(--cream-dim); }
+    /* сценарии As is / To be */
+    .ecard .scn-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:8px; }
+    .ecard .scn{ background:var(--panel); border-left:3px solid var(--line-soft); padding:13px 16px; }
+    .ecard .scn.tobe{ border-left-color:var(--gold); background:var(--gold-dim); }
+    .ecard .scn .lbl{ font-family:var(--f-mono); font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--cream-dim); font-weight:600; margin-bottom:5px; }
+    .ecard .scn.tobe .lbl{ color:var(--gold); }
+    .ecard .scn p{ margin:0; color:var(--cream); font-size:14px; line-height:1.55; }
+    /* задачи-шаги */
+    .ecard .tasks{ list-style:none; padding:0; margin:8px 0 0; counter-reset:t; }
+    .ecard .tasks li{ position:relative; padding:11px 16px 11px 48px; background:var(--panel); border:1px solid var(--line); margin:8px 0; color:var(--cream-soft); }
+    .ecard .tasks li::before{ counter-increment:t; content:counter(t,decimal-leading-zero); position:absolute; left:16px; top:11px; font-family:var(--f-mono); font-size:13px; font-weight:700; color:var(--gold); }
+    /* блок ProductV */
+    .ecard .pv{ background:var(--bg-2); border:1px solid var(--line); padding:26px 28px 22px; margin:30px 0 8px; position:relative; }
+    .ecard .pv::before{ content:'PRODUCT-V'; position:absolute; top:-10px; left:22px; background:var(--gold); color:var(--bg-2); font-family:var(--f-mono); font-size:11px; font-weight:700; letter-spacing:.18em; padding:3px 12px; }
+    .ecard .pv h4{ color:var(--gold); border-bottom-color:var(--line-soft); margin-top:8px; }
+    .ecard .thinkers{ display:grid; grid-template-columns:repeat(auto-fit,minmax(205px,1fr)); gap:12px; margin-top:14px; }
+    .ecard .thinker{ background:var(--panel); border-left:3px solid var(--gold); padding:13px 15px; }
+    .ecard .thinker.muted{ border-left-color:var(--line-soft); }
+    .ecard .thinker.risk{ border-left-color:var(--attention); }
+    .ecard .thinker .who{ display:flex; align-items:center; justify-content:space-between; gap:8px; font-family:var(--f-mono); font-size:11px; letter-spacing:.10em; text-transform:uppercase; color:var(--gold); }
+    .ecard .thinker.muted .who, .ecard .thinker.risk .who{ color:var(--cream-dim); }
+    .ecard .sign{ font-family:var(--f-mono); font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; padding:2px 7px; border:1px solid var(--line-soft); color:var(--cream-dim); white-space:nowrap; }
+    .ecard .sign.plus{ color:var(--gold); border-color:var(--gold-line); }
+    .ecard .sign.risk{ color:var(--attention-soft); border-color:var(--attention); }
+    .ecard .thinker .role{ font-size:11.5px; color:var(--cream-dim); margin:7px 0; line-height:1.4; }
+    .ecard .thinker p{ font-size:13px; color:var(--cream-soft); line-height:1.5; margin:0; }
+    .ecard .pv-sum{ display:grid; grid-template-columns:repeat(4,1fr); margin-top:20px; border-top:1px solid var(--line); padding-top:16px; }
+    .ecard .pv-sum .cell{ text-align:center; border-right:1px solid var(--line); padding:0 10px; }
+    .ecard .pv-sum .cell:last-child{ border-right:none; }
+    .ecard .pv-sum .k{ font-family:var(--f-mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--cream-dim); margin-bottom:6px; }
+    .ecard .pv-sum .v{ font-family:var(--f-mono); font-size:19px; font-weight:700; color:var(--gold); }
+    @media(max-width:720px){
+      .ecard .scn-grid{ grid-template-columns:1fr; }
+      .ecard .e-meta dl{ grid-template-columns:1fr; gap:3px 0; }
+      .ecard .e-meta dd{ margin:0 0 8px; }
+      .ecard .pv-sum{ grid-template-columns:1fr 1fr; gap:16px 0; }
+    }
+  </style>
 </head>
 <body>
   <a class="skip-link" href="#main">К содержанию</a>
@@ -59,7 +110,7 @@
         <tbody>
           <tr><td class="title">Весь единый бэклог</td><td class="title">7 тем направления</td><td class="num">214 итераций</td></tr>
           <tr><td class="title">Фокус Q2</td><td class="title">этапы 1–2, дорожка привлечения (наниматель → консультант); отсечены ветки продления и этапы 3–5</td><td class="num">~130</td></tr>
-          <tr><td class="title">Готовность к деливери</td><td class="title">статус «К оценке» (прошла скоринг) + Gate OK + уверенность ≥ 7; отсечены гипотезы на проверку, эпики без оценки трудозатрат, проблемы «из названия»</td><td class="num">12 итераций</td></tr>
+          <tr><td class="title">Готовность к деливери</td><td class="title">прошла оценку и проверку готовности, уверенность ≥ 7; отсечены непроверенные гипотезы, крупные задачи без оценки трудозатрат и «проблемы из названия»</td><td class="num">12 итераций</td></tr>
           <tr><td class="title">Связность</td><td class="title">сгруппированы в темы, бьющие в одну метрику ↓ T-op</td><td class="num"><strong>3 темы</strong></td></tr>
         </tbody>
       </table>
@@ -79,153 +130,297 @@
       <p class="section-note" style="margin-top:14px">Final — итоговый балл приоритета (Reach × Impact × Confidence ÷ Effort, с поправкой). Reach — на скольких агентствах встречается. Чем выше Final, тем раньше в очереди.</p>
 
       <h3 style="font-family:var(--f-display);font-size:19px;margin:34px 0 6px">Три темы — по шагам</h3>
-      <p class="section-note" style="margin-bottom:14px">Каждая тема — отдельная карточка (нажмите, чтобы раскрыть): чем подтверждена боль, какая гипотеза, какую подцель и какую цель закрывает, что делаем по шагам, на какую метрику бьём, доказательство приоритета и прогон через ProductV (пятикнижный фильтр: вердикт, Gate, PV Multiplier, что увидели мыслители).</p>
+      <p class="section-note" style="margin-bottom:14px">Каждая тема — отдельная карточка (нажмите, чтобы раскрыть): в чём проблема, что делаем по шагам, что получит пользователь и почему эту тему берём в работу (короткая проверка через ProductV — «пять взглядов» на задачу).</p>
 
       <!-- ТЕМА 1 — Единый чат -->
       <details class="vis-sect">
         <summary>1 · Единый чат — все обращения в одном окне</summary>
-        <div class="vis-sect__body">
-          <div class="scheme-sub" style="margin:2px 0 16px">
+        <div class="vis-sect__body ecard">
+
+          <div class="scheme-sub" style="margin:2px 0 14px">
             <a class="chip stage" href="etapy.html#stage-2">этап 2 · блок 2A</a>
             <a class="chip chip--copper" href="legend.html#subgoals">подцель 1 «Освободить время консультанта»</a>
             <a class="chip chip--copper" href="backlog.html?hCode=H2.4">гипотеза H2.4</a>
             <span class="chip">↓ T-op · ↓ T-wait</span>
           </div>
 
-          <p><strong>Боль и подтверждение.</strong> 50+ обращений в день, до 40% времени
-          консультанта — ручная сортировка «кто кому»; контекст рвётся между почтой и
-          мессенджерами (ATH, Aeroglobus, Global Air, KazTour, Corp Travel). Подтверждено
-          находками исследований: 1.2 «нет привязки обращения к услуге → ручное уточнение»,
-          1.4 «нужна автомаршрутизация по услуге и рабочему времени», 1.7 «общий чат без
-          автоматизации бесполезен» (анти-находка). Дополнительный кейс: тревел-менеджеру
-          клиента тяжело вести много командировок — поток сообщений по разным поездкам не
-          структурирован; в исходном скоринге кейс не учтён, он усиливает приоритет.
-          → <a href="research.html" style="color:var(--copper)">Исследования</a></p>
+          <p style="max-width:80ch;color:var(--cream)">Общение с клиентом сейчас разбросано по
+          почте и мессенджерам — консультант вручную разбирает «кто кому» и теряет историю
+          переписки. Делаем единый чат внутри Ракеты, привязанный к заказу: все сообщения в одном
+          окне, видно, к какой услуге они относятся, ничего не теряется.</p>
 
-          <p><strong>Гипотеза H2.4 (фича).</strong> ЕСЛИ соберём всё общение с клиентом в
-          едином чате внутри Ракеты, привязанном к заказу → ТО консультант реагирует быстрее
-          и не теряет историю переписки. <em>Подтвердится</em>, если заметная доля общения
-          уходит в чат Ракеты, а время реакции и поиска переписки падает. <em>Опровергнется</em>,
-          если клиент не уходит из WhatsApp — тогда эффект только внутри команды, частичный.
-          → <a href="etapy.html#stage-2" style="color:var(--copper)">гипотеза на «Этапах»</a></p>
+          <!-- Мета -->
+          <div class="e-meta">
+            <dl>
+              <dt>Этап / блок</dt><dd>Этап 2 «Снимать нагрузку» · блок 2A «Сокращение трудозатрат»</dd>
+              <dt>Механизм</dt><dd>Сервис для клиента · единый чат в заказе</dd>
+              <dt>Подцель</dt><dd>1 «Освободить время консультанта» (плюс 2 «Убрать операционные тормоза»)</dd>
+              <dt>Гипотеза</dt><dd>H2.4 «Единое окно экономит время консультанта». ЕСЛИ соберём
+                всё общение с клиентом в одном чате внутри Ракеты → ТО консультант реагирует
+                быстрее и не теряет переписку.</dd>
+            </dl>
+          </div>
 
-          <p><strong>Какую подцель решает.</strong> Подцель 1 «Освободить время консультанта»
-          (этап 2, блок 2A — «закрывать операции без переключений»); работает и на подцель 2
-          «Убрать операционные тормоза».</p>
+          <h4>Поток ролей</h4>
+          <ul>
+            <li><strong>Роль:</strong> консультант агентства — ведёт всю переписку в одном окне,
+            не переключаясь между почтой и мессенджерами.</li>
+            <li><strong>Кто исчез из потока:</strong> ручная сортировка «кто кому написал»; поиск
+            истории по разным каналам; уточнение, к какой поездке относится сообщение.</li>
+          </ul>
 
-          <p><strong>Какую цель закрывает.</strong> Этап 2 → консультант ведёт больше клиентов →
-          рост NSM (активные клиенты-компании, обслуживаемые агентствами) → вклад в годовую
-          цель «+20 агентств».</p>
-
-          <p style="margin-bottom:6px"><strong>Что делаем — по шагам (Q3, 2 итерации):</strong></p>
-          <ol style="margin:0 0 12px;padding-left:18px;line-height:1.7;color:var(--cream-soft)">
-            <li>Создать таблицу «чаты».</li>
-            <li>Создать страницу единого чата с учётом ролей (кому по роли показываем сообщение):
-            выводить комментарии ко всем услугам; фильтры (основные / активные / прошедшие) +
-            менеджер-селектор; статус прочитано/непрочитано (прочитанными считаем все сообщения,
-            отправленные клиенту).</li>
+          <h4>Проблема</h4>
+          <ol>
+            <li>50+ обращений в день; до 40% времени консультанта уходит на ручную сортировку «кто кому».</li>
+            <li>Контекст рвётся между почтой и мессенджерами (5 агентств: ATH, Aeroglobus, Global Air, KazTour, Corp Travel).</li>
+            <li>Тревел-менеджеру клиента тяжело вести много командировок — поток сообщений по разным поездкам не структурирован.</li>
           </ol>
-          <p class="section-note" style="margin:0 0 12px">Остальные итерации темы (правая панель заказа, разделение чатов, уведомления) — в бэклоге.</p>
+          <p style="margin-top:8px;font-size:13.5px;color:var(--cream-dim)">Подтверждено находками
+          1.2 / 1.4 / 1.7. → <a href="research.html" style="color:var(--copper)">Исследования</a></p>
 
-          <p><strong>Метрика и эффект.</strong> ↓ T-op «Трудозатраты на операцию», ↓ T-wait
-          «Время простоя процесса». Baseline пока не снят — его даёт стартовый замер (запрос И0,
-          план исследований). → <a href="metrics.html" style="color:var(--copper)">Метрики</a></p>
+          <h4>Результат</h4>
+          <ol>
+            <li>Единый чат в заказе: все сообщения по клиенту в одном окне.</li>
+            <li>Видно, к какой услуге относится сообщение; фильтры (основные / активные / прошедшие).</li>
+            <li>Статус «прочитано / не прочитано»; показ сообщений с учётом роли сотрудника.</li>
+          </ol>
 
-          <p><strong>Аргументация приоритета.</strong> Final 61.6, Reach 7 (5 агентств),
-          Уверенность 8. Чья работа — консультант агентства, «не терять контекст между каналами».
-          → <a href="backlog.html?hCode=H2.4" style="color:var(--copper)">итерации по H2.4</a> ·
-          <a href="backlog.html?theme=%D0%95%D0%B4%D0%B8%D0%BD%D1%8B%D0%B9%20%D1%87%D0%B0%D1%82" style="color:var(--copper)">вся тема в бэклоге</a> ·
+          <h4>Влияние на цель</h4>
+          <p><strong>Прямое:</strong> подцель 1 «Освободить время консультанта» (этап 2, блок 2A).
+          Этап 2 → консультант ведёт больше клиентов → рост NSM → вклад в цель «+20 агентств».</p>
+          <p><strong>Метрика и эффект:</strong> ↓ T-op «Трудозатраты на операцию», ↓ T-wait
+          «Время простоя процесса». Baseline пока не снят (запрос И0).
+          → <a href="metrics.html" style="color:var(--copper)">Метрики</a></p>
+
+          <h4>Пользовательский сценарий</h4>
+          <div class="scn-grid">
+            <div class="scn">
+              <div class="lbl">As is · сейчас</div>
+              <p>Клиент пишет в WhatsApp и на почту → консультант разбирает, к какой поездке это
+              относится, ищет прошлую переписку по разным каналам, отвечает; часть контекста теряется.</p>
+            </div>
+            <div class="scn tobe">
+              <div class="lbl">To be · станет</div>
+              <p>Консультант открывает заказ → единый чат: вся переписка по клиенту на месте,
+              видно услугу и статус сообщений → отвечает сразу, ничего не ищет.</p>
+            </div>
+          </div>
+
+          <h4>Образ результата</h4>
+          <p style="max-width:80ch">Переписка по клиенту собрана в одном окне внутри заказа;
+          консультант перестаёт тратить время на сортировку каналов и поиск истории. Время реакции
+          и поиска переписки падает после релиза. <em>Целевые цифры зафиксируем по замеру (запрос И0).</em></p>
+
+          <h4>Задачи — что делаем (2 шага в Q3)</h4>
+          <ol class="tasks">
+            <li><strong>Хранилище чатов</strong> — завести таблицу для сообщений.</li>
+            <li><strong>Страница единого чата</strong> — все сообщения по услугам в одном окне:
+            фильтры (основные / активные / прошедшие), выбор менеджера, статус прочитано/не прочитано,
+            показ с учётом роли сотрудника.</li>
+          </ol>
+          <p style="margin-top:8px;font-size:13.5px;color:var(--cream-dim)">Остальные шаги темы
+          (правая панель заказа, разделение чатов, уведомления) — в бэклоге.
+          → <a href="backlog.html?theme=%D0%95%D0%B4%D0%B8%D0%BD%D1%8B%D0%B9%20%D1%87%D0%B0%D1%82" style="color:var(--copper)">вся тема</a> ·
           <a href="tree.html" style="color:var(--copper)">дерево работ (JTBD)</a></p>
 
           <!-- ProductV -->
-          <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--line)">
-            <p class="eyebrow" style="margin-bottom:8px">ProductV — пятикнижный фильтр</p>
-            <p><strong>Вердикт: Proceed</strong> (Gate = Review). Тема обоснована данными и снимает когнитивную нагрузку; для запуска нужно доукомплектовать карточку.</p>
-            <p><strong>Gate.</strong> G-TAL-3 — не назначен владелец метрики и срок ревью. Зеркало метрик: Impact ≥ 7 при незамеренном baseline T-op/T-wait → Review (baseline даёт замер И0).</p>
-            <div style="overflow-x:auto">
-            <table class="backlog">
-              <thead><tr><th>Мыслитель</th><th>Модификатор</th><th>Δ</th><th>Основание</th></tr></thead>
-              <tbody>
-                <tr><td class="title">Докинз</td><td class="title">S-DAW-3 валидирована данными</td><td class="num">+0.2</td><td class="title">находки 1.2 / 1.4 / 1.7, 5 агентств</td></tr>
-                <tr><td class="title">Канеман</td><td class="title">S-KAH-1 ↓ когн. нагрузка</td><td class="num">+0.2</td><td class="title">одно окно вместо переключений между каналами</td></tr>
-                <tr><td class="title">Докинз</td><td class="title">S-DAW-2 сильный мем</td><td class="num">+0.1</td><td class="title">«всё общение с клиентом в одном окне»</td></tr>
-              </tbody>
-            </table>
+          <div class="pv">
+            <h4>Проверка через ProductV</h4>
+            <p style="font-size:13px;color:var(--cream-dim);margin-bottom:12px">ProductV — это «пять
+            взглядов» на задачу: каждый проверяет её со своей стороны. Если плюсов больше — берём.</p>
+            <p><strong>Вывод.</strong> Берём. Тема подтверждена данными и снимает нагрузку с
+            консультанта. Перед запуском нужно назначить, кто отвечает за замер времени.</p>
+
+            <div class="thinkers">
+              <div class="thinker">
+                <div class="who"><span>Докинз</span><span class="sign plus">довод</span></div>
+                <div class="role">Идея простая и доказана данными?</div>
+                <p>Да: понятная идея «всё общение в одном окне», подтверждена на 5 агентствах.</p>
+              </div>
+              <div class="thinker">
+                <div class="who"><span>Канеман</span><span class="sign plus">довод</span></div>
+                <div class="role">Меньше шагов и нагрузки на голову?</div>
+                <p>Да: одно окно вместо постоянных переключений между каналами.</p>
+              </div>
+              <div class="thinker muted">
+                <div class="who"><span>Талеб</span><span class="sign">нейтрально</span></div>
+                <div class="role">Эффект можно честно измерить?</div>
+                <p>Пока нет замера «до» — назначить ответственного и проверить через 2 недели после релиза.</p>
+              </div>
+              <div class="thinker muted">
+                <div class="who"><span>Дойч</span><span class="sign">нейтрально</span></div>
+                <div class="role">Результат можно проверить?</div>
+                <p>Да: видно по падению времени реакции и поиска переписки.</p>
+              </div>
+              <div class="thinker muted">
+                <div class="who"><span>Аджемоглу</span><span class="sign">нейтрально</span></div>
+                <div class="role">Нет конфликта: кому работа и выгода?</div>
+                <p>Работа остаётся за консультантом — никого не задеваем.</p>
+              </div>
             </div>
-            <p style="margin-top:10px"><strong>PV Multiplier: 1.10</strong> (плюсы выражены; консервативно — пока не снят baseline).</p>
-            <p><strong>Что увидели мыслители.</strong> Талеб — без baseline эффект измеряется «в среднем»: назначить владельца метрики и ревью через 2 недели после релиза. Аджемоглу — инклюзивно: операция остаётся за консультантом, ничего не уносим, конфликт мотивации E.6 не задет.</p>
-            <p class="section-note"><strong>Строка бэклога:</strong> Should · Reach 7 · Conf 8 · Final 61.6 · PV 1.10 · Gate Review. MoSCoW: часто × закрыт частично.</p>
+
+            <div class="pv-sum">
+              <div class="cell"><div class="k">Решение</div><div class="v">Берём</div></div>
+              <div class="cell"><div class="k">Готовность</div><div class="v">почти</div></div>
+              <div class="cell"><div class="k">Сколько подтвердили</div><div class="v">5</div></div>
+              <div class="cell"><div class="k">Приоритет (из 100)</div><div class="v">62</div></div>
+            </div>
+
+            <p style="margin-top:16px;font-size:13px;color:var(--cream-dim)">Что осталось дописать:
+            назначить ответственного за замер времени и срок проверки результата.</p>
           </div>
         </div>
       </details>
 
       <!-- ТЕМА 2 — Документы в заказе -->
       <details class="vis-sect">
-        <summary>2 · Документы в заказе — единое окно документов</summary>
-        <div class="vis-sect__body">
-          <div class="scheme-sub" style="margin:2px 0 16px">
+        <summary>2 · Документы к услуге — единое окно документов</summary>
+        <div class="vis-sect__body ecard">
+
+          <div class="scheme-sub" style="margin:2px 0 14px">
             <a class="chip stage" href="etapy.html#stage-2">этап 2 · блок 2A</a>
             <a class="chip chip--copper" href="legend.html#subgoals">подцель 1 «Освободить время консультанта»</a>
             <a class="chip chip--copper" href="backlog.html?hCode=H2.4">гипотеза H2.4</a>
             <span class="chip">↓ T-op</span>
           </div>
 
-          <p><strong>Боль и подтверждение.</strong> Групповые заказы ~30% — «открываю каждый
-          файл, чтобы понять чей билет» (Татьяна, ATH); «постоянно качаем маршрутную квитанцию
-          ради статуса у поставщика» (IBC, отдел 24). Подтверждено находками: 4.1 «привязка
-          билета к ФИО в групповых заказах», 4.2 «цветовые маркеры статусов билета», 4.3 «единое
-          модальное окно документов с фильтрами», 4.4 «подтверждение перед аннуляцией». Плюс
-          реальные GitLab-тикеты 18592, 28034, 14390.
+          <p style="max-width:80ch;color:var(--cream)">У каждой услуги в заказе свои документы
+          (билет, ваучер, маршрутная квитанция, справка). Сейчас они разрознены — консультант
+          вручную ищет «чей это билет» и пересылает файлы по почте. Делаем одно окно «Документы»
+          прямо в карточке услуги: все файлы в одном месте, привязаны к путешественнику, видно
+          историю и можно отправить на email в один клик.</p>
+
+          <!-- Мета -->
+          <div class="e-meta">
+            <dl>
+              <dt>Этап / блок</dt><dd>Этап 2 «Снимать нагрузку» · блок 2A «Сокращение трудозатрат»</dd>
+              <dt>Механизм</dt><dd>Сервис для клиента · единое окно в заказе</dd>
+              <dt>Подцель</dt><dd>1 «Освободить время консультанта»</dd>
+              <dt>Гипотеза</dt><dd>H2.4 «Единое окно экономит время консультанта». ЕСЛИ соберём
+                документы услуги в одном окне с привязкой к путешественнику → ТО консультант
+                перестаёт «искать чей билет», уходит навигационный налог (Ракета ↔ почта ↔ GDS ↔
+                Excel ↔ мессенджер) — второй источник времени на операцию.</dd>
+            </dl>
+          </div>
+
+          <h4>Поток ролей</h4>
+          <ul>
+            <li><strong>Роль:</strong> консультант агентства — видит все документы услуги в одном
+            окне, отправляет клиенту, не выходя из заказа.</li>
+            <li><strong>Кто исчез из потока:</strong> ручной поиск «чей это файл» по выгрузкам
+            поставщика; пересылка документов почтой вручную; повторные вопросы клиента «пришлите
+            билет / маршрутную квитанцию» — клиент получает пакет сам.</li>
+          </ul>
+
+          <h4>Проблема</h4>
+          <ol>
+            <li>Документы услуги лежат разрозненно; в групповом заказе (~30%) не видно, чей это
+            билет — «открываю каждый файл, чтобы понять чей» <em>(Татьяна, ATH)</em>.</li>
+            <li>Статус документа приходится перепроверять у поставщика — «постоянно качаем
+            маршрутную квитанцию ради статуса» <em>(IBC, отдел 24)</em>.</li>
+            <li>Отправка клиенту — руками через почту; не видно, что и когда уже отправлено и кем.</li>
+          </ol>
+          <p style="margin-top:8px;font-size:13.5px;color:var(--cream-dim)">Подтверждено находками
+          4.1–4.4 и GitLab-тикетами 18592 / 28034 / 14390.
           → <a href="research.html" style="color:var(--copper)">Исследования</a></p>
 
-          <p><strong>Гипотеза H2.4 (фича).</strong> Та же гипотеза «единое окно экономит время
-          консультанта»: «Чат» и «Документы» — две фичи одной гипотезы. ЕСЛИ соберём документы
-          заказа в едином окне с привязкой к пассажиру → ТО консультант перестаёт «искать чей
-          билет» и реагирует быстрее, уходит навигационный налог (Ракета ↔ почта ↔ GDS ↔ Excel ↔
-          мессенджер) — второй источник времени на операцию.
-          → <a href="etapy.html#stage-2" style="color:var(--copper)">гипотеза на «Этапах»</a></p>
-
-          <p><strong>Какую подцель решает.</strong> Подцель 1 «Освободить время консультанта»
-          (этап 2, блок 2A).</p>
-
-          <p><strong>Какую цель закрывает.</strong> Этап 2 → консультант ведёт больше клиентов →
-          рост NSM → вклад в цель «+20 агентств».</p>
-
-          <p style="margin-bottom:6px"><strong>Что делаем — по шагам:</strong></p>
-          <ol style="margin:0 0 12px;padding-left:18px;line-height:1.7;color:var(--cream-soft)">
-            <li>Массовое скачивание документов с ФИО в названии файла.</li>
-            <li>Привязка билета к пассажиру.</li>
-            <li>Отправка документов + статус отправки + имя отправителя.</li>
-            <li>Цветовые статусы билета.</li>
+          <h4>Результат</h4>
+          <ol>
+            <li>В карточке услуги — окно «Документы»: все файлы услуги в одном месте.</li>
+            <li>Каждый документ привязан к конкретному путешественнику (видно, чей билет).</li>
+            <li>История изменений окна: что добавлено / отправлено, когда и кем.</li>
+            <li>Отправка выбранных документов клиенту на email из этого же окна.</li>
           </ol>
 
-          <p><strong>Метрика и эффект.</strong> ↓ T-op «Трудозатраты на операцию». Baseline пока
+          <h4>Влияние на цель</h4>
+          <p><strong>Прямое:</strong> подцель 1 «Освободить время консультанта» (этап 2, блок 2A).
+          Этап 2 → консультант ведёт больше клиентов → рост NSM → вклад в цель «+20 агентств».</p>
+          <p><strong>Метрика и эффект:</strong> ↓ T-op «Трудозатраты на операцию». Baseline пока
           не снят (запрос И0). → <a href="metrics.html" style="color:var(--copper)">Метрики</a></p>
 
-          <p><strong>Аргументация приоритета.</strong> Final <span style="color:var(--gold)">82.3</span>
-          (max бэклога), Reach 7 (6 агентств), Уверенность 8 — <strong>самый доказанный блок</strong>.
-          Чья работа — консультант, «не косячить в групповых заказах, видеть чей билет».
-          → <a href="backlog.html?hCode=H2.4" style="color:var(--copper)">итерации по H2.4</a> ·
+          <h4>Пользовательский сценарий</h4>
+          <div class="scn-grid">
+            <div class="scn">
+              <div class="lbl">As is · сейчас</div>
+              <p>Клиент пишет «пришлите билеты пакетом» → консультант открывает выгрузки
+              поставщика, по очереди сверяет, чей это файл, собирает их и отправляет почтой;
+              через неделю клиент просит маршрутную квитанцию — цикл повторяется.</p>
+            </div>
+            <div class="scn tobe">
+              <div class="lbl">To be · станет</div>
+              <p>Консультант открывает услугу → окно «Документы»: все файлы привязаны к
+              путешественникам, видно историю → отмечает нужные и отправляет на email клиента,
+              не выходя из заказа.</p>
+            </div>
+          </div>
+
+          <h4>Образ результата</h4>
+          <p style="max-width:80ch">У услуг с документами окно «Документы» — единая точка работы с
+          файлами: документ всегда привязан к путешественнику, отправка по email идёт из окна и
+          фиксируется в истории. Обращения «пришлите / чей это билет» к консультанту заметно
+          падают после релиза. <em>Целевую долю снижения зафиксируем по baseline T-op (замер И0).</em></p>
+
+          <h4>Задачи — что делаем (4 шага)</h4>
+          <ol class="tasks">
+            <li><strong>Модальное окно «Документы»</strong> в карточке услуги на странице заказа —
+            все файлы услуги в одном месте.</li>
+            <li><strong>Связка документа и путешественника</strong> — каждый файл привязан к ФИО,
+            видно, чей это билет (важно в групповых заказах).</li>
+            <li><strong>История изменений</strong> для окна — что добавлено / отправлено, когда и кем.</li>
+            <li><strong>Отправка документов по email</strong> — выбрать файлы и отправить клиенту из окна.</li>
+          </ol>
+          <p style="margin-top:8px;font-size:13.5px;color:var(--cream-dim)">Полный скоринг и волны —
+          <a href="backlog.html?hCode=H2.4" style="color:var(--copper)">итерации по H2.4</a> ·
           <a href="backlog.html?theme=%D0%97%D0%B0%D0%BA%D0%B0%D0%B7%D1%8B" style="color:var(--copper)">тема «Заказы» в бэклоге</a> ·
           <a href="tree.html" style="color:var(--copper)">дерево работ (JTBD)</a></p>
 
           <!-- ProductV -->
-          <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--line)">
-            <p class="eyebrow" style="margin-bottom:8px">ProductV — пятикнижный фильтр</p>
-            <p><strong>Вердикт: Proceed.</strong> Самый доказанный блок бэклога; Gate по сути чистый, дописать только владельца метрики.</p>
-            <p><strong>Gate.</strong> OK по содержанию. Мягкий Review по G-TAL-3 — назначить владельца метрики и срок ревью (baseline T-op даёт замер И0).</p>
-            <div style="overflow-x:auto">
-            <table class="backlog">
-              <thead><tr><th>Мыслитель</th><th>Модификатор</th><th>Δ</th><th>Основание</th></tr></thead>
-              <tbody>
-                <tr><td class="title">Докинз</td><td class="title">S-DAW-3 валидирована данными</td><td class="num">+0.3</td><td class="title">GitLab 18592 / 28034 / 14390 + цитаты, 6 агентств</td></tr>
-                <tr><td class="title">Канеман</td><td class="title">S-KAH-1 ↓ когн. нагрузка</td><td class="num">+0.2</td><td class="title">не нужно держать в памяти «чей билет» в групповых</td></tr>
-              </tbody>
-            </table>
+          <div class="pv">
+            <h4>Проверка через ProductV</h4>
+            <p style="font-size:13px;color:var(--cream-dim);margin-bottom:12px">ProductV — это «пять
+            взглядов» на задачу: каждый проверяет её со своей стороны (доказано ли, не рискованно ли,
+            кому достаётся работа). Если плюсов больше — задачу берём.</p>
+            <p><strong>Вывод.</strong> Берём. Самая доказанная тема бэклога — реальные заявки и
+            прямые цитаты с 6 агентств, маленькая и обратимая. Осталось одно: назначить, кто отвечает
+            за замер времени на операцию.</p>
+
+            <div class="thinkers">
+              <div class="thinker">
+                <div class="who"><span>Докинз</span><span class="sign plus">довод</span></div>
+                <div class="role">Идея простая и доказана данными?</div>
+                <p>Да: запросы агентств и прямые цитаты с 6 агентств — спрос подтверждён.</p>
+              </div>
+              <div class="thinker">
+                <div class="who"><span>Канеман</span><span class="sign plus">довод</span></div>
+                <div class="role">Меньше шагов и нагрузки на голову?</div>
+                <p>Да: не нужно держать в памяти «чей билет» в групповом заказе.</p>
+              </div>
+              <div class="thinker muted">
+                <div class="who"><span>Талеб</span><span class="sign">нейтрально</span></div>
+                <div class="role">Ставка маленькая и обратимая?</div>
+                <p>Да: окно внутри заказа, без рисков для остальной системы.</p>
+              </div>
+              <div class="thinker muted">
+                <div class="who"><span>Дойч</span><span class="sign">нейтрально</span></div>
+                <div class="role">Результат можно проверить замером?</div>
+                <p>Да: эффект видно по падению времени на операцию после релиза.</p>
+              </div>
+              <div class="thinker muted">
+                <div class="who"><span>Аджемоглу</span><span class="sign">нейтрально</span></div>
+                <div class="role">Нет конфликта: кому работа и выгода?</div>
+                <p>Работа остаётся за консультантом — никого не задеваем.</p>
+              </div>
             </div>
-            <p style="margin-top:10px"><strong>PV Multiplier: 1.15</strong> (два явных плюса, минусов нет).</p>
-            <p><strong>Что увидели мыслители.</strong> Дойч — хорошее, фальсифицируемое объяснение: «навигационный налог — второй источник T-op». Аджемоглу — операция остаётся за консультантом (S-ACE-6, нейтрально): конфликт мотивации E.6 не задет.</p>
-            <p class="section-note"><strong>Строка бэклога:</strong> Should · Reach 7 · Conf 8 · Final 82.3 (max) · PV 1.15 · Gate OK. MoSCoW: часто × закрыт частично.</p>
+
+            <div class="pv-sum">
+              <div class="cell"><div class="k">Решение</div><div class="v">Берём</div></div>
+              <div class="cell"><div class="k">Готовность</div><div class="v">почти</div></div>
+              <div class="cell"><div class="k">Сколько подтвердили</div><div class="v">6</div></div>
+              <div class="cell"><div class="k">Приоритет (из 100)</div><div class="v">82</div></div>
+            </div>
+
+            <p style="margin-top:16px;font-size:13px;color:var(--cream-dim)">Что осталось дописать:
+            назначить ответственного за замер времени на операцию и срок проверки результата.</p>
           </div>
         </div>
       </details>
@@ -233,68 +428,140 @@
       <!-- ТЕМА 3 — Реестр справок -->
       <details class="vis-sect">
         <summary>3 · Реестр справок о перелёте — селф-сервис</summary>
-        <div class="vis-sect__body">
-          <div class="scheme-sub" style="margin:2px 0 16px">
+        <div class="vis-sect__body ecard">
+
+          <div class="scheme-sub" style="margin:2px 0 14px">
             <a class="chip stage" href="etapy.html#stage-4">этап 4</a>
             <a class="chip chip--copper" href="legend.html#subgoals">подцель 5 «Масштабировать без роста штата»</a>
             <a class="chip chip--copper" href="legend.html#subgoals">подцель 3 «Снизить нагрузку на клиента»</a>
             <a class="chip chip--copper" href="backlog.html?hCode=H4.2">гипотеза H4.2</a>
-            <span class="chip">↓ T-op · ↑ Self-service share</span>
+            <span class="chip">↓ T-op · ↑ доля самообслуживания</span>
           </div>
 
-          <p><strong>Боль и подтверждение.</strong> Клиенты «вообще не видят кнопку»; консультант
-          собирает справку вручную через 1С; ~10 справок в месяц у KPMG. Подтверждено находками:
-          C5 «справки о перелёте спрятаны, нет самообслуживания», L5 «теряют посадочные для отчёта»;
-          GitLab #36364.
-          → <a href="research.html" style="color:var(--copper)">Исследования</a></p>
+          <p style="max-width:80ch;color:var(--cream)">Справки о перелёте нужны клиентам для
+          отчётности, но кнопку «получить справку» они почти не находят — и каждый раз пишут
+          консультанту, который собирает справку вручную через 1С. Делаем, чтобы клиент сам
+          формировал реестр справок и выгружал готовый документ, без обращения к консультанту.</p>
 
-          <p><strong>Гипотеза H4.2 (фича).</strong> ЕСЛИ дадим клиенту самому выполнять типовые
-          операции → ТО консультант разгружается и ведёт больше клиентов. <em>Подтвердится</em>,
-          если доля операций, которые клиент делает сам, растёт и один консультант ведёт больше
-          клиентов. <em>Опровергнется</em>, если клиент не уходит в самообслуживание.
-          → <a href="etapy.html#stage-4" style="color:var(--copper)">гипотеза на «Этапах»</a></p>
+          <!-- Мета -->
+          <div class="e-meta">
+            <dl>
+              <dt>Этап / блок</dt><dd>Этап 4 «Дать клиенту делать самому» (самообслуживание)</dd>
+              <dt>Механизм</dt><dd>Сервис для клиента · самообслуживание в личном кабинете</dd>
+              <dt>Подцель</dt><dd>5 «Масштабировать агентство без роста штата» + 3 «Снизить нагрузку на клиента»</dd>
+              <dt>Гипотеза</dt><dd>H4.2 «Если дать клиенту самому делать типовые операции →
+                консультант разгружается и ведёт больше клиентов».</dd>
+            </dl>
+          </div>
 
-          <p><strong>Какую подцель решает.</strong> Двигает подцель 5 «Масштабировать агентство
-          без роста штата» и подцель 3 «Снизить когнитивную нагрузку на клиента» (этап 4).</p>
+          <h4>Поток ролей</h4>
+          <ul>
+            <li><strong>Роль:</strong> клиент (сам формирует и выгружает справку) + консультант
+            (перестаёт делать это вручную).</li>
+            <li><strong>Кто исчез из потока:</strong> ручной заход консультанта в 1С, сборка справки
+            и пересылка клиенту по каждому запросу.</li>
+          </ul>
 
-          <p><strong>Какую цель закрывает.</strong> Этапы 3–5 → агентство остаётся и зарабатывает →
-          удержание и выручка Ракеты; самообслуживание разгружает консультанта → вклад в NSM.</p>
+          <h4>Проблема</h4>
+          <ol>
+            <li>Клиенты «вообще не видят кнопку» — функция спрятана, самообслуживания по факту нет.</li>
+            <li>Консультант собирает справку вручную через 1С; ~10 справок в месяц только у одного клиента (KPMG).</li>
+            <li>Клиенты теряют посадочные талоны, нужные для отчёта.</li>
+          </ol>
+          <p style="margin-top:8px;font-size:13.5px;color:var(--cream-dim)">Подтверждено находками
+          C5 / L5 и заявкой GitLab #36364. → <a href="research.html" style="color:var(--copper)">Исследования</a></p>
 
-          <p style="margin-bottom:6px"><strong>Что делаем — по шагам (2 задачи):</strong></p>
-          <ol style="margin:0 0 12px;padding-left:18px;line-height:1.7;color:var(--cream-soft)">
-            <li>Реестр справок (запрос от ГСП Сервис, агентство).</li>
-            <li>Формирование PDF-документа реестра — с подписью и печатью (запрос от IBC для клиента IBC).</li>
+          <h4>Результат</h4>
+          <ol>
+            <li>Клиент сам формирует реестр справок в личном кабинете (запрос от агентства ГСП Сервис).</li>
+            <li>Выгрузка готового PDF-реестра с подписью и печатью (запрос от IBC для своего клиента).</li>
           </ol>
 
-          <p><strong>Метрика и эффект.</strong> ↓ T-op «Трудозатраты на операцию», ↑ Self-service
-          share «Доля самообслуживания». Baseline пока не снят (запрос И0).
+          <h4>Влияние на цель</h4>
+          <p><strong>Прямое:</strong> подцели 5 и 3 (этап 4). Самообслуживание разгружает
+          консультанта и помогает агентству расти без найма → удержание и выручка Ракеты, вклад в NSM.</p>
+          <p><strong>Метрика и эффект:</strong> ↓ T-op «Трудозатраты на операцию», ↑ доля
+          самообслуживания. Baseline пока не снят (запрос И0).
           → <a href="metrics.html" style="color:var(--copper)">Метрики</a></p>
 
-          <p><strong>Аргументация приоритета.</strong> Final 61.7, Уверенность 7. Единственный
-          чистый Must бэклога (ревизия 27→5), GitLab #36364. Чья работа — клиент (самообслуживание) +
-          консультант, «выдать справку без ручного захода в 1С».
-          → <a href="backlog.html?hCode=H4.2" style="color:var(--copper)">итерации по H4.2</a> ·
+          <h4>Пользовательский сценарий</h4>
+          <div class="scn-grid">
+            <div class="scn">
+              <div class="lbl">As is · сейчас</div>
+              <p>Клиенту нужна справка для отчёта → кнопку он не находит → пишет консультанту →
+              тот заходит в 1С, собирает справку вручную и отправляет; так по каждому запросу.</p>
+            </div>
+            <div class="scn tobe">
+              <div class="lbl">To be · станет</div>
+              <p>Клиент в личном кабинете сам формирует реестр справок и выгружает готовый PDF
+              с подписью и печатью — без обращения к консультанту.</p>
+            </div>
+          </div>
+
+          <h4>Образ результата</h4>
+          <p style="max-width:80ch">Клиент получает справки сам, консультант перестаёт собирать их
+          вручную. Доля операций, которые клиент делает без консультанта, растёт после релиза.
+          <em>Целевые цифры зафиксируем по замеру (запрос И0).</em></p>
+
+          <h4>Задачи — что делаем (2 шага)</h4>
+          <ol class="tasks">
+            <li><strong>Реестр справок</strong> — клиент формирует список справок сам (запрос от ГСП Сервис).</li>
+            <li><strong>PDF-документ реестра</strong> — выгрузка с подписью и печатью (запрос от IBC).</li>
+          </ol>
+          <p style="margin-top:8px;font-size:13.5px;color:var(--cream-dim)">Полная тема —
+          <a href="backlog.html?hCode=H4.2" style="color:var(--copper)">итерации по H4.2</a> ·
           <a href="backlog.html?theme=%D0%A1%D0%B5%D1%80%D0%B2%D0%B8%D1%81%20%D0%B4%D0%BB%D1%8F%20%D0%BA%D0%BB%D0%B8%D0%B5%D0%BD%D1%82%D0%B0" style="color:var(--copper)">тема в бэклоге</a> ·
           <a href="tree.html" style="color:var(--copper)">дерево работ (JTBD)</a></p>
 
           <!-- ProductV -->
-          <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--line)">
-            <p class="eyebrow" style="margin-bottom:8px">ProductV — пятикнижный фильтр</p>
-            <p><strong>Вердикт: Rework</strong> (Gate = Review). Полезно для клиента и снижает нагрузку на саппорт, но есть конфликт мотивации консультанта и пробел в данных — исправимо в той же карточке.</p>
-            <p><strong>Gate.</strong> G-ACE-4 (ось 2, находка E.6) — селф-сервис уносит у консультанта операцию со сборами без realignment мотивации; этап 4 (не блок 2A), поэтому Review, не Fail, но пометка обязательна. G-TAL-3 — назначить владельца метрики и срок ревью (baseline даёт И0).</p>
-            <div style="overflow-x:auto">
-            <table class="backlog">
-              <thead><tr><th>Мыслитель</th><th>Модификатор</th><th>Δ</th><th>Основание</th></tr></thead>
-              <tbody>
-                <tr><td class="title">Аджемоглу</td><td class="title">S-ACE-1 расширяет доступ клиента, ↓ Support-ratio</td><td class="num">+0.2</td><td class="title">клиент выдаёт справку сам, без захода консультанта в 1С</td></tr>
-                <tr><td class="title">Канеман</td><td class="title">S-KAH-1 ↓ шагов</td><td class="num">+0.1</td><td class="title">справка в один клик вместо ручной сборки</td></tr>
-                <tr><td class="title">Аджемоглу</td><td class="title">S-ACE-7 уносит биллинговую операцию без realignment (E.6)</td><td class="num">−0.2</td><td class="title">у справок есть сборы; бонус консультанта может падать → сопротивление</td></tr>
-              </tbody>
-            </table>
+          <div class="pv">
+            <h4>Проверка через ProductV</h4>
+            <p style="font-size:13px;color:var(--cream-dim);margin-bottom:12px">ProductV — это «пять
+            взглядов» на задачу: каждый проверяет её со своей стороны. Здесь один взгляд нашёл риск.</p>
+            <p><strong>Вывод.</strong> Берём, но с оговоркой. Для клиента польза очевидна, однако
+            есть риск: у справок есть платные сборы, и если клиент делает их сам, заработок
+            консультанта может проседать — он начнёт сопротивляться. Перед запуском проверить, как
+            устроен бонус консультанта в агентстве.</p>
+
+            <div class="thinkers">
+              <div class="thinker">
+                <div class="who"><span>Аджемоглу</span><span class="sign plus">довод</span></div>
+                <div class="role">Кому достаётся доступ и выгода?</div>
+                <p>Клиент получает справку сам — нагрузка на консультанта падает.</p>
+              </div>
+              <div class="thinker">
+                <div class="who"><span>Канеман</span><span class="sign plus">довод</span></div>
+                <div class="role">Меньше шагов?</div>
+                <p>Справка в один клик вместо ручной сборки через 1С.</p>
+              </div>
+              <div class="thinker risk">
+                <div class="who"><span>Аджемоглу</span><span class="sign risk">риск</span></div>
+                <div class="role">Нет ли конфликта интересов?</div>
+                <p>У справок есть сборы — заработок консультанта может падать, отсюда сопротивление.
+                Нужно проверить структуру бонуса в агентстве.</p>
+              </div>
+              <div class="thinker muted">
+                <div class="who"><span>Канеман</span><span class="sign">оговорка</span></div>
+                <div class="role">В чём настоящая причина?</div>
+                <p>Клиенты «не видят кнопку» — это проблема заметности, а не отсутствия функции.</p>
+              </div>
+              <div class="thinker muted">
+                <div class="who"><span>Талеб</span><span class="sign">оговорка</span></div>
+                <div class="role">Насколько широка база спроса?</div>
+                <p>Подтвердили всего 2 — стоит перепроверить, действительно ли это «обязательно сейчас».</p>
+              </div>
             </div>
-            <p style="margin-top:10px"><strong>PV Multiplier: 0.95</strong> (плюсы инклюзивности гасятся риском конфликта мотивации E.6).</p>
-            <p><strong>Что увидели мыслители.</strong> Аджемоглу — главный сигнал: операция со сбором уходит к клиенту, консультант может сопротивляться независимо от UX; нужен realignment мотивации на стороне агентства (проверить структуру бонуса per-agency). Канеман — клиенты «не видят кнопку»: это проблема видимости и дефолта, не отсутствия функции. Талеб — Reach 2 (узкая база); MoSCoW = Must из ревизии конфликтует с матрицей (редко × … → ближе к Should) — проверить, действительно ли Must.</p>
-            <p class="section-note"><strong>Строка бэклога:</strong> Must (по ревизии; по матрице ближе к Should — проверить) · Reach 2 · Conf 7 · Final 61.7 · PV 0.95 · Gate Review · PV Notes: конфликт E.6.</p>
+
+            <div class="pv-sum">
+              <div class="cell"><div class="k">Решение</div><div class="v">С оговоркой</div></div>
+              <div class="cell"><div class="k">Готовность</div><div class="v">доработать</div></div>
+              <div class="cell"><div class="k">Сколько подтвердили</div><div class="v">2</div></div>
+              <div class="cell"><div class="k">Приоритет (из 100)</div><div class="v">62</div></div>
+            </div>
+
+            <p style="margin-top:16px;font-size:13px;color:var(--cream-dim)">Что осталось сделать
+            перед запуском: проверить, не падает ли заработок консультанта из-за самообслуживания
+            (структура бонуса в агентстве), и назначить ответственного за замер результата.</p>
           </div>
         </div>
       </details>
