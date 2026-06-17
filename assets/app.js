@@ -5,6 +5,7 @@ const NAV = [
   { href: "index.html",    label: "Направление", group: "Обзор" },
   { href: "now.html",      label: "Сейчас в работе", group: "Обзор" },
   { href: "q3.html",       label: "Планы Q3", group: "Обзор" },
+  { href: "plan-1-2.html", label: "Общий план 1+2", short: "План 1+2", group: "Обзор" },
   { href: "vision.html",   label: "Видение", group: "Обзор" },
   { href: "etapy.html",    label: "Этапы ценности", group: "Проекции" },
   { href: "tree.html",     label: "Дерево (JTBD)", group: "Проекции" },
@@ -2000,10 +2001,12 @@ async function mountPlanned() {
     return m ? `<a class="pl-stage" href="etapy.html#stage-${m[0]}">этап ${esc(s)}</a>` : `<span class="pl-stage">${esc(s)}</span>`;
   };
 
+  const pkgTag = (p) => p ? `<span class="pl-pkg-mini">Пакет ${esc(p)}</span>` : "";
+
   // ---- сводная таблица-карта ----
   const mapRows = items.map((it) => `
     <tr id="${esc(it.id)}-row">
-      <td><a href="#${esc(it.id)}"><b>${esc(it.code)}</b> ${esc(it.title)}</a></td>
+      <td>${pkgTag(it.package)}<a href="#${esc(it.id)}"><b>${esc(it.code)}</b> ${esc(it.title)}</a></td>
       <td>${statusChip(it.status)}</td>
       <td>${(it.stages || []).map(stageLink).join(" ")}</td>
       <td>${(it.unlocks || []).map(unlockChip).join(" ")}</td>
@@ -2013,24 +2016,48 @@ async function mountPlanned() {
   const card = (it) => {
     const owned = !String(it.owner || "").toLowerCase().startsWith("нет вла");
     const dl = (l, v) => v ? `<div class="pl-row"><dt>${esc(l)}</dt><dd>${esc(v)}</dd></div>` : "";
+    const blocks = it.blocksWaves ? `<div class="pl-row"><dt>Разблокирует волны</dt><dd>${esc(it.blocksWaves)}</dd></div>` : "";
+    const fail = it.failCriterion ? `<div class="pl-fail"><span class="pl-fail__k">Критерий фейла (до сбора данных)</span> ${esc(it.failCriterion)}</div>` : "";
     return `
       <details class="pl-card" id="${esc(it.id)}">
         <summary class="pl-sum">
           <span class="pl-code">${esc(it.code)}</span>
           <span class="pl-title">${esc(it.title)}</span>
-          <span class="pl-chips">${statusChip(it.status)}${owned ? "" : `<span class="pl-noowner">нет владельца</span>`}</span>
+          <span class="pl-chips">${pkgTag(it.package)}${statusChip(it.status)}${owned ? "" : `<span class="pl-noowner">нет владельца</span>`}</span>
         </summary>
         <div class="pl-body">
           <p class="pl-q">${esc(it.question)}</p>
           <div class="pl-unlocks"><span class="pl-unlocks__h">разблокирует:</span> ${(it.unlocks || []).map(unlockChip).join(" ")} ${(it.stages || []).map(stageLink).join(" ")}</div>
           <dl>
-            ${dl("Метод", it.method)}${dl("Материал", it.material)}${dl("Кто/где", it.audience)}
+            ${blocks}${dl("Метод", it.method)}${dl("Материал", it.material)}${dl("Кто/где", it.audience)}
             ${dl("Владелец", it.owner)}${dl("Срок", it.term)}${dl("Что изменится по результату", it.effect)}
             ${dl("Документ-источник", it.srcDoc)}
           </dl>
+          ${fail}
         </div>
       </details>`;
   };
+
+  // ---- карточки сгруппированы: пакеты А/Б/В (этапы 1+2), затем прочий долг ----
+  const pkgMeta = (c) => (data.packages || []).find((p) => p.code === c) || {};
+  let cardsHTML = "";
+  for (const pk of ["А", "Б", "В"]) {
+    const inp = items.filter((it) => it.package === pk);
+    if (!inp.length) continue;
+    const m = pkgMeta(pk);
+    cardsHTML += `<div class="pl-pkg-h"><span class="pl-pkg-tag">Пакет ${esc(pk)}</span> <b>${esc(m.title || "")}</b> <span class="pl-pkg-h__items">${esc(m.items || "")}</span></div>`;
+    cardsHTML += inp.map(card).join("");
+  }
+  const debt = items.filter((it) => !it.package);
+  if (debt.length) {
+    cardsHTML += `<div class="pl-pkg-h pl-pkg-h--debt">Прочий research-долг (этапы 3–5 и точечное)</div>`;
+    cardsHTML += debt.map(card).join("");
+  }
+
+  // ---- обзор пакетов + решения ----
+  const pkgOverview = (data.packages || []).map((p) =>
+    `<div class="pl-pkg"><div class="pl-pkg__k"><span class="pl-pkg-tag">Пакет ${esc(p.code)}</span> ${esc(p.title)}</div><div class="pl-pkg__items">${esc(p.items || "")}</div><p>${esc(p.note || "")}</p></div>`).join("");
+  const decisionsHTML = (data.decisions || []).map((d) => `<li>${esc(d)}</li>`).join("");
 
   // ---- акцент-блок «не заведено / нет владельца» ----
   const unstaffed = items.filter((it) => String(it.status).startsWith("не заведено"));
@@ -2040,6 +2067,13 @@ async function mountPlanned() {
   host.innerHTML = `
     <p class="pl-rule">${esc(data.rule || "")}</p>
     <div class="pl-precond"><span class="pl-precond__k">предусловие</span> ${esc(data.precondition || "")}</div>
+
+    ${data.packages ? `<section class="pl-packages">
+      <h2>Три пакета исследований</h2>
+      <p class="muted">Из 7 пунктов дискавери этапов 1+2 — 3 пакета вместо 7 заходов: общий источник данных и общий исполнитель.</p>
+      <div class="pl-pkg-grid">${pkgOverview}</div>
+      ${data.packagesOrder ? `<p class="pl-pkg-order"><b>Очерёдность:</b> ${esc(data.packagesOrder)}</p>` : ""}
+    </section>` : ""}
 
     <section class="pl-map">
       <h2>Сводная карта</h2>
@@ -2057,8 +2091,13 @@ async function mountPlanned() {
 
     <section class="pl-cards">
       <h2>Карточки исследований</h2>
-      ${items.map(card).join("")}
-    </section>`;
+      ${cardsHTML}
+    </section>
+
+    ${data.decisions ? `<section class="pl-decisions">
+      <h2>Решения Влада (2026-06-16)</h2>
+      <ol class="pl-dec-list">${decisionsHTML}</ol>
+    </section>` : ""}`;
 
   // Доскролл к карточке: planned.html#g2 (с Рынка/Этапов/Доказательной базы)
   if (location.hash) {
@@ -2682,12 +2721,19 @@ function mountJtbd() {
   glossifyDOM(document.getElementById("main"));
 }
 
+// Общий план 1+2 (plan-1-2.html) — расшифровка жаргона в готовом DOM (как у дерева)
+function mountPlan12() {
+  if (!document.querySelector("[data-plan]")) return;
+  glossifyDOM(document.getElementById("main"));
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   mountHeader();
   mountFooter();
   mountBacklog();
   mountLevels();
   mountJtbd();
+  mountPlan12();
   mountLegend();
   mountAgencies();
   mountMetrics();

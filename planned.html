@@ -9,6 +9,29 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700&family=Manrope:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/style.css" />
+  <style>
+    /* Дискавери этапов 1+2: пакеты, критерий фейла, решения — локально, токены v4 */
+    .pl-packages{ margin:26px 0 8px; }
+    .pl-pkg-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:12px; }
+    @media(max-width:820px){ .pl-pkg-grid{ grid-template-columns:1fr; } }
+    .pl-pkg{ background:var(--panel); border:1px solid var(--line); border-top:3px solid var(--gold); padding:16px 18px; }
+    .pl-pkg__k{ font-family:var(--f-display); font-size:17px; color:var(--cream); margin-bottom:2px; }
+    .pl-pkg__items{ font-family:var(--f-mono); font-size:11px; letter-spacing:.04em; color:var(--gold); margin-bottom:8px; }
+    .pl-pkg p{ margin:0; color:var(--cream-soft); font-size:13.5px; line-height:1.55; }
+    .pl-pkg-tag{ display:inline-block; font-family:var(--f-mono); font-size:11px; font-weight:700; letter-spacing:.06em; color:var(--bg-2); background:var(--gold); padding:1px 8px; border-radius:3px; }
+    .pl-pkg-mini{ display:inline-block; font-family:var(--f-mono); font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--gold); border:1px solid var(--gold-line); border-radius:3px; padding:1px 6px; margin-right:6px; }
+    .pl-pkg-order{ font-size:13.5px; color:var(--cream-soft); line-height:1.55; margin:14px 0 0; }
+    .pl-pkg-order b{ color:var(--gold); }
+    .pl-pkg-h{ margin:26px 0 6px; padding-bottom:6px; border-bottom:1px solid var(--line); font-size:15px; color:var(--cream); }
+    .pl-pkg-h b{ color:var(--cream); }
+    .pl-pkg-h__items{ font-family:var(--f-mono); font-size:11px; color:var(--cream-dim); }
+    .pl-pkg-h--debt{ color:var(--cream-dim); }
+    .pl-fail{ background:var(--panel-2); border-left:3px solid var(--line-soft); padding:11px 15px; margin:14px 0 0; font-size:13.5px; color:var(--cream); line-height:1.55; }
+    .pl-fail__k{ display:block; font-family:var(--f-mono); font-size:10px; letter-spacing:.10em; text-transform:uppercase; color:var(--cream-dim); margin-bottom:3px; }
+    .pl-decisions{ margin:30px 0 0; }
+    .pl-dec-list{ margin:10px 0 0; padding-left:20px; color:var(--cream-soft); font-size:14px; line-height:1.7; }
+    .pl-dec-list li{ margin:6px 0; }
+  </style>
 </head>
 <body>
   <a class="skip-link" href="#main">К содержанию</a>
