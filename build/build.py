@@ -882,7 +882,7 @@ def build_home(items, agencies, research):
         "researchClosed": closed,
         "metricsActive": sum(1 for m in mlist if m.get("type") == "active"),
         "metricsTarget": sum(1 for m in mlist if m.get("type") == "target"),
-        "metricsBaseline": sum(1 for m in mlist if m.get("baseline")),
+        "metricsBaseline": sum(1 for m in mlist if m.get("baseline") or m.get("baselineNum")),
     }
 
     # --- Проекции: видение / лестница / концепции / дерево ---
