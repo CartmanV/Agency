@@ -2339,13 +2339,27 @@ async function mountMetrics() {
   const stageOrder = { "1": 0, "2A": 1, "2B": 2, "3": 3, "4": 4, "5": 5 };
   const byStage = (a, b) => (stageOrder[a.stage] ?? 9) - (stageOrder[b.stage] ?? 9);
   const stageLabel = (s) => (s === "1" ? "этап 1" : `этап ${esc(s)}`);
+  // Слаг кода метрики → id карточки (#m-…) и блока методики (#calc-…). Должен совпадать в обоих местах.
+  const mSlug = (c) => String(c).toLowerCase().replace(/[^a-zа-я0-9]+/gi, "-").replace(/^-|-$/g, "");
 
   function card(m) {
     const dirGood = `хорошо ${esc(m.direction)}`;
     const lead = m.leading ? `<span class="m-lead">ведущая</span>` : "";
-    const base = m.baseline
-      ? `<div class="m-base"><span class="m-base__h">baseline 2026-05</span> ${esc(m.baseline)}</div>`
-      : `<div class="m-base m-base--need">baseline нужен</div>`;
+    let base;
+    if (m.baselineNum) {
+      // Выделенный baseline: крупная цифра + мелкие подписи; «почему такая» — в блоке «Как считается».
+      const unit = m.baselineUnit ? `<div class="m-base__unit">${esc(m.baselineUnit)}</div>` : "";
+      const asof = m.baselineAsof ? `<div class="m-base__asof">${esc(m.baselineAsof)}</div>` : "";
+      const bnote = m.baselineNote ? `<span>${esc(m.baselineNote)}</span>` : "";
+      const blink = m.baselineLink ? `<a href="${esc(m.baselineLink.href)}">${esc(m.baselineLink.text)}</a>` : "";
+      const foot = (bnote || blink) ? `<div class="m-base__note">${bnote}${bnote && blink ? " · " : ""}${blink}</div>` : "";
+      base = `<div class="m-base m-base--big"><span class="m-base__h">baseline 2026-05</span>
+          <div class="m-base__num">${esc(m.baselineNum)}</div>${unit}${asof}${foot}</div>`;
+    } else if (m.baseline) {
+      base = `<div class="m-base"><span class="m-base__h">baseline 2026-05</span> ${esc(m.baseline)}</div>`;
+    } else {
+      base = `<div class="m-base m-base--need">baseline нужен</div>`;
+    }
     const note = m.note ? `<div class="m-note">${esc(m.note)}</div>` : "";
     // План vs факт (ТЗ 09): дельта после релиза + статус гипотезы каноном .ev-chip.
     let fact = "";
@@ -2354,7 +2368,10 @@ async function mountMetrics() {
       const chip = ev ? ` <span class="ev-chip ${ev.cls}" aria-label="гипотеза ${esc(ev.label)}">${ev.sign} ${esc(ev.label)}</span>` : "";
       fact = `<div class="m-fact"><span class="m-fact__h">факт${m.checkedAt ? ` · ${esc(m.checkedAt)}` : ""}</span>${esc(m.factDelta)}${chip}</div>`;
     }
-    const mid = String(m.code).toLowerCase().replace(/[^a-zа-я0-9]+/gi, "-").replace(/^-|-$/g, "");
+    const mid = mSlug(m.code);
+    // Компактная формула в карточке; подробности «как считается и почему» — в секции ниже.
+    const formula = m.formula ? `<div class="m-formula"><span class="m-formula__h">формула</span> <code>${esc(m.formula)}</code></div>` : "";
+    const calcLink = (m.howCalc || (m.why && m.why.length)) ? `<a class="m-calc-link" href="#calc-${mid}">как считается ↓</a>` : "";
     return `
       <article id="m-${mid}" class="m-card ${m.type === "active" ? "is-act" : "is-tgt"}">
         <div class="m-card__top">
@@ -2369,8 +2386,11 @@ async function mountMetrics() {
           <span>подцель ${esc(m.subgoal)}</span>
           <span>${esc(m.hypothesis)}</span>
         </div>
-        ${base}${fact}${note}
-        <a class="m-link" href="backlog.html?q=${encodeURIComponent(m.code)}">итерации с метрикой →</a>
+        ${base}${formula}${fact}${note}
+        <div class="m-links">
+          <a class="m-link" href="backlog.html?q=${encodeURIComponent(m.code)}">итерации с метрикой →</a>
+          ${calcLink}
+        </div>
       </article>`;
   }
 
@@ -2400,6 +2420,27 @@ async function mountMetrics() {
       <div class="lead-wrap">${leadHTML}</div>
     </section>`;
 
+  // «Как считается» — развёрнутая методика по метрикам, где задан howCalc/why. Со временем — по каждой.
+  const calcMetrics = metrics.filter((m) => m.howCalc || (m.why && m.why.length));
+  const calcItem = (m) => {
+    const mid = mSlug(m.code);
+    const f = m.formula ? `<div class="m-calc__formula"><code>${esc(m.formula)}</code></div>` : "";
+    const how = m.howCalc ? `<p class="m-calc__how">${esc(m.howCalc)}</p>` : "";
+    const why = (m.why && m.why.length)
+      ? `<div class="m-calc__why"><span class="m-calc__wh">Почему именно так</span><ul>${m.why.map((w) => `<li>${esc(w)}</li>`).join("")}</ul></div>` : "";
+    const src = m.sources ? `<p class="m-calc__src">${esc(m.sources)}</p>` : "";
+    return `<details id="calc-${mid}" class="m-calc">
+      <summary><span class="m-code">${esc(m.code)}</span> — как считается и почему</summary>
+      <div class="m-calc__body">${f}${how}${why}${src}</div>
+    </details>`;
+  };
+  const calc = calcMetrics.length ? `
+    <section class="m-group m-group--calc">
+      <h2>Как считается</h2>
+      <p class="m-group__sub">Формула и логика расчёта по метрикам, где это важно для интерпретации. Раскрывается по клику; со временем — по каждой метрике.</p>
+      ${calcMetrics.map(calcItem).join("")}
+    </section>` : "";
+
   host.innerHTML = `
     <div class="m-intro">
       <div class="stats">
@@ -2408,13 +2449,21 @@ async function mountMetrics() {
       </div>
     </div>
     ${primary}
-    ${secondary}`;
+    ${secondary}
+    ${calc}`;
 
-  // Доскролл к метрике, если пришли по ссылке вида metrics.html#m-<код> (карточки рендерятся асинхронно).
-  if (location.hash) {
+  // Доскролл к метрике/методике, если пришли по ссылке #m-<код> или #calc-<код> (рендер асинхронный).
+  const focusHash = () => {
+    if (!location.hash) return;
     const el = document.getElementById(location.hash.slice(1));
-    if (el) { el.scrollIntoView({ block: "center" }); el.classList.add("is-target"); }
-  }
+    if (!el) return;
+    if (el.tagName === "DETAILS") el.open = true;          // раскрыть блок методики
+    el.scrollIntoView({ block: "center" });
+    el.classList.add("is-target");
+  };
+  focusHash();
+  // Клик по «как считается ↓» внутри страницы тоже раскрывает нужный блок.
+  window.addEventListener("hashchange", focusHash);
 }
 
 // ===================== Легенды (legend.html) =====================
