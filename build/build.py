@@ -389,6 +389,169 @@ def find_work_xlsx(needle):
     return None
 
 
+def build_support():
+    """Нагрузка на саппорт → support.json.
+
+    Источники: «Обращения агентств — единый вывод …xlsx» (выводы, ratio, сегменты,
+    категории, join ratio×NSM) + «Support-ratio baseline …xlsx» (помесячный ratio L13M,
+    тренд). Ось «частота боли» (Impact), НЕ канал Reach. Числа — отсюда, не из HTML.
+    """
+    f1 = find_work_xlsx("единый вывод")
+    f2 = find_work_xlsx("support-ratio baseline")
+    if not f1 or not f2:
+        return None
+    wb1 = openpyxl.load_workbook(f1, data_only=True, read_only=True)
+    wb2 = openpyxl.load_workbook(f2, data_only=True, read_only=True)
+
+    def sheet(wb, *needles):
+        for s in wb.sheetnames:
+            sl = s.lower()
+            if all(n.lower() in sl for n in needles):
+                return wb[s]
+        return None
+
+    def num(v):
+        if v is None or v == "":
+            return None
+        try:
+            return round(float(v), 4)
+        except (TypeError, ValueError):
+            return None
+
+    def rows_of(ws):
+        return list(ws.iter_rows(values_only=True)) if ws else []
+
+    def last_cell(r):
+        """Последняя непустая ячейка строки (значения в сводных листах прижаты вправо)."""
+        for v in reversed(r):
+            c = clean(v)
+            if c is not None:
+                return c
+        return None
+
+    # --- ratio по агентствам (лист «2. Support-ratio») + строка BASELINE ---
+    per_agency, baseline = [], None
+    for r in rows_of(sheet(wb1, "support-ratio"))[1:]:
+        nm = clean(r[0])
+        if not nm:
+            continue
+        rec = {
+            "name": nm, "segment": clean(r[1]),
+            "calls": num(r[2]), "ops": num(r[3]), "ratio": num(r[4]),
+            "trendMo": num(r[5]), "dyn": clean(r[6]),
+            "signal": clean(r[7]), "pain": clean(r[8]),
+        }
+        if str(nm).upper().startswith("BASELINE"):
+            baseline = {"ratio": rec["ratio"], "calls": rec["calls"], "ops": rec["ops"],
+                        "trendMo": rec["trendMo"], "dyn": rec["dyn"]}
+            continue
+        per_agency.append(rec)
+
+    # --- профиль по сегментам (лист «3. Профиль по сегментам») ---
+    segments = []
+    for r in rows_of(sheet(wb1, "профиль по сегментам"))[1:]:
+        nm = clean(r[0])
+        if not nm:
+            continue
+        segments.append({"name": nm, "volume": clean(r[1]), "ratio": clean(r[2]),
+                         "pain": clean(r[3]), "lever": clean(r[4]), "note": clean(r[5])})
+
+    # --- категории-кандидаты (лист «4. Категории-кандидаты»); поимённый столбец опускаем (приватность) ---
+    categories = []
+    for r in rows_of(sheet(wb1, "категории"))[1:]:
+        nm = clean(r[0])
+        if not nm:
+            continue
+        categories.append({
+            "name": nm, "freq": num(r[1]), "ibcShare": clean(r[2]), "stage": clean(r[3]),
+            "mechanism": clean(r[4]), "hypothesis": clean(r[5]), "action": clean(r[6]),
+            "concentration": clean(r[7]), "reachAgencies": num(r[8]), "reach": num(r[9]),
+        })
+    categories.sort(key=lambda c: (c["freq"] or 0), reverse=True)
+
+    # --- сводка выводов (лист «1. Сводка выводов») ---
+    conclusions = []
+    for r in rows_of(sheet(wb1, "сводка выводов"))[1:]:
+        if num(r[0]) is None:
+            continue
+        conclusions.append({"n": int(num(r[0])), "text": clean(r[1]), "fact": clean(r[2]),
+                            "status": clean(r[3]), "frame": clean(r[4])})
+
+    # --- корреляция ratio×NSM (лист «Join ratio×NSM»): сводные строки внизу ---
+    join = {"correlations": [], "verdict": None, "predictor": None,
+            "caseFor": None, "caseAgainst": None, "implication": None}
+    for r in rows_of(sheet(wb1, "join")):
+        c0 = clean(r[0])
+        if not c0:
+            continue
+        if c0.startswith("ВЫВОД"):
+            join["verdict"] = c0.split(":", 1)[-1].strip()
+        elif c0.startswith("r("):
+            join["correlations"].append({"pair": c0, "val": last_cell(r)})
+        elif "Предиктор" in c0:
+            join["predictor"] = last_cell(r)
+        elif c0.startswith("Кейс ЗА"):
+            join["caseFor"] = last_cell(r)
+        elif c0.startswith("Кейс ПРОТИВ"):
+            join["caseAgainst"] = last_cell(r)
+        elif c0.startswith("Следствие"):
+            join["implication"] = last_cell(r)
+
+    # --- помесячный ratio L13M (лист «Ratio×мес (L13M)») — теплокарта ---
+    heat = None
+    ws_h = sheet(wb2, "ratio")
+    if ws_h:
+        rows_h = rows_of(ws_h)
+        hdr = rows_h[0]
+        keep = [i for i, v in enumerate(hdr[1:]) if clean(v) and re.match(r"^\d{4}-\d{2}$", str(clean(v)))]
+        months = [clean(hdr[1 + i]) for i in keep]
+        h_agencies, h_total = [], None
+        for r in rows_h[1:]:
+            nm = clean(r[0])
+            if not nm:
+                continue
+            if any(str(nm).startswith(p) for p in ("Метрика", "Цветовая", "Источник")):
+                continue
+            vals = [num(r[1 + i]) for i in keep]
+            if str(nm).startswith("ИТОГО"):
+                h_total = vals
+                continue
+            h_agencies.append({"name": nm, "vals": vals})
+        heat = {"months": months, "agencies": h_agencies, "total": h_total}
+
+    # --- тренд во времени (лист «Тренд Support-ratio — вывод») ---
+    trend = {"slopeText": None, "slopeNum": None, "first6": None, "last6": None,
+             "conclusion": None, "perAgency": []}
+    for r in rows_of(sheet(wb2, "тренд")):
+        c0 = clean(r[0])
+        if not c0:
+            continue
+        low = c0.lower()
+        if c0.startswith("ВЫВОД"):
+            trend["conclusion"] = last_cell(r)
+        elif "наклон" in low and "total" in low:
+            txt = last_cell(r)
+            trend["slopeText"] = txt
+            m = re.search(r"[-+]?\d+[.,]?\d*", str(txt or ""))
+            trend["slopeNum"] = float(m.group().replace(",", ".")) if m else None
+        elif c0.startswith("Первые 6"):
+            trend["first6"] = num(last_cell(r))
+        elif c0.startswith("Последние 6"):
+            trend["last6"] = num(last_cell(r))
+        elif num(r[1]) is not None and not c0.startswith("Агентство"):
+            trend["perAgency"].append({"name": c0, "slope": num(r[1]), "first6": num(r[2]),
+                                       "last6": num(r[3]), "status": clean(r[4]), "read": clean(r[5])})
+
+    return {
+        "sourceCalls": f1.name, "sourceRatio": f2.name,
+        "metric": "Support-ratio — обращений в саппорт на 1000 операций (L6M: дек-25 … май-26)",
+        "axisNote": "Ось «частота боли» (Impact), не канал Reach.",
+        "baseline": baseline, "trend": trend, "perAgency": per_agency,
+        "segments": segments, "categories": categories, "conclusions": conclusions,
+        "join": join, "heat": heat,
+    }
+
+
 # --- нормализация доказательной базы (ТЗ 13) -----------------------------
 # Единый словарь этапов. Любое значение в research/etapy/sootv обязано быть отсюда.
 STAGE_VOCAB = ["1", "2A", "2B", "3", "4", "5", "клиент", "вне этапов"]
@@ -862,6 +1025,16 @@ def main():
         ag_out.write_text(json.dumps(agencies, ensure_ascii=False, indent=2), encoding="utf-8")
         c = agencies["concentration"]
         print(f"Агентства: {len(agencies['agencies'])} активных · ТОП-3 {c['top3']:.0%} / ТОП-5 {c['top5']:.0%} → {ag_out.relative_to(SITE_DIR)}")
+
+    # support.json — нагрузка на саппорт (Support-ratio)
+    support = build_support()
+    if support:
+        sup_out = DATA_DIR / "support.json"
+        sup_out.write_text(json.dumps(support, ensure_ascii=False, indent=2), encoding="utf-8")
+        b = support.get("baseline") or {}
+        print(f"Саппорт: {len(support['perAgency'])} агентств · baseline {b.get('ratio')} · "
+              f"{len(support['conclusions'])} выводов · {len(support['categories'])} категорий "
+              f"→ {sup_out.relative_to(SITE_DIR)}")
 
     # research.json — реестр исследований
     research = build_research()

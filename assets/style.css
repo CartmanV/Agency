@@ -1919,3 +1919,53 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
   .e-hyp__row { flex-direction: column; gap: 1px; }
   .e-hyp__row dt { min-width: 0; }
 }
+
+/* ===================== Нагрузка на саппорт (support.html) =====================
+   Переиспользует .accent-card / .backlog / .ag-strip / .ev-chip. Своё — ниже.
+   Цвет: золото — единственный акцент; теплокарта — отдельная секвенциальная шкала
+   данных (зелёный→янтарь→терракота), НЕ из акцентной оси, с легендой. */
+.sup-lead { margin-top: 16px; }
+.sup-fact { font-family: var(--f-mono); font-size: 13px; color: var(--cream); margin: 6px 0 0; }
+[data-sup-seg] .accent-card p + p,
+[data-sup-concl] .accent-card p + p,
+.sup-lead p + p { margin-top: 8px; }
+.sup-seg-ratio { font-family: var(--f-mono); font-size: 12px; color: var(--gold); margin: 0 0 8px; }
+
+/* раскрывающиеся «ещё выводы» / теплокарта */
+.sup-more { margin: 16px 0 0; border-top: 1px solid var(--line); }
+.sup-more > summary { cursor: pointer; list-style: none; font-family: var(--f-mono); font-size: 12.5px;
+  color: var(--cream-dim); padding: 12px 0; }
+.sup-more > summary::-webkit-details-marker { display: none; }
+.sup-more > summary::before { content: "▸ "; color: var(--gold); }
+.sup-more[open] > summary::before { content: "▾ "; }
+.sup-more > summary:hover { color: var(--cream); }
+.sup-conclist { list-style: none; padding: 0; margin: 6px 0 14px; display: grid; gap: 9px; }
+.sup-conclist li { font-size: 13.5px; color: var(--cream-soft); line-height: 1.5; }
+.ev-chip--mini { padding: 1px 6px; font-size: 11px; }
+
+/* тренд/динамика в таблице: рост ratio — дороже, снижение — лучше */
+.sup-up { color: var(--cream-soft); }
+.sup-down { color: var(--success); font-weight: 500; }
+
+/* сигнал и строка базового уровня */
+.sup-sig { font-family: var(--f-mono); font-size: 12px; white-space: nowrap; }
+.sup-sig--base { font-size: 10px; color: var(--cream-dim); border: 1px dashed var(--line-soft);
+  border-radius: 999px; padding: 1px 8px; }
+tr.sup-baseline td { border-top: 2px solid var(--line-soft); color: var(--cream);
+  font-weight: 500; background: var(--gold-dim); }
+
+/* корреляция / оговорки */
+.sup-corr { list-style: none; padding: 0; margin: 10px 0; display: grid; gap: 5px;
+  font-family: var(--f-mono); font-size: 12.5px; color: var(--cream-soft); }
+.sup-corr code { color: var(--cream-dim); }
+.sup-caveats { color: var(--cream-dim); font-size: 13px; line-height: 1.6; padding-left: 18px; margin: 0 0 12px; }
+.sup-caveats li { margin: 0 0 6px; }
+
+/* теплокарта Support-ratio (секвенциальная шкала данных, не акцентная ось) */
+.hm-table th { font-size: 10px; padding: 6px 5px; }
+.hm-table td.hm { font-family: var(--f-mono); font-size: 10.5px; text-align: center;
+  padding: 4px 5px; color: var(--cream); font-variant-numeric: tabular-nums; }
+.hm--g  { background: rgba(61, 163, 114, .20); }   /* ниже базового — эффективно */
+.hm--y  { background: rgba(226, 179, 85, .18); }   /* выше базового */
+.hm--r  { background: rgba(207, 131, 80, .34); }   /* дорого (≥20) */
+.hm--na { background: transparent; color: var(--cream-dim); }

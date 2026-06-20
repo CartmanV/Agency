@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0A1F16" />
+  <title>Нагрузка на саппорт — направление «Агентства»</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700&family=Manrope:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">К содержанию</a>
+  <div data-header></div>
+
+  <div class="crumbs"><a href="index.html">Направление</a> <span>›</span> Нагрузка на саппорт</div>
+
+  <main id="main">
+    <p class="eyebrow">Данные · доказательная база</p>
+    <h1>Нагрузка на саппорт</h1>
+    <p class="lede">
+      Эта страница показывает, насколько «дорого» каждое агентство в обслуживании: сколько
+      обращений в поддержку оно создаёт на тысячу операций. Чем больше — тем дороже. Видно, у кого
+      и какая боль самая частая, растёт ли нагрузка со временем и где небольшая доработка даст
+      самый заметный эффект. Питает метрику <a href="metrics.html">«нагрузка на поддержку»</a>.
+    </p>
+    <p class="ev-srcline">Основа для <a href="etapy.html#stage-2">этапа «Снимать нагрузку»</a> и <a href="sootvetstvie.html">доказательной базы</a>. Показывает, <b>где болит чаще всего</b> — это не то же самое, сколько агентств затронуто.</p>
+
+    <!-- 0. KPI-плашки + главный вывод -->
+    <div data-sup-kpi></div>
+
+    <!-- 2. Ключевые выводы -->
+    <h2>Главные выводы</h2>
+    <div data-sup-concl></div>
+
+    <!-- 3. Ratio по агентствам -->
+    <h2>Насколько дорого обслуживается каждое агентство</h2>
+    <p class="lede" style="font-size:14px">
+      За последние полгода. «Дорогие» — те, кто создаёт нагрузки больше среднего, кандидаты на
+      разбор; «эффективные» — те, у кого работа идёт гладко. Колонки «сигнал» и «тренд» показывают,
+      становится ли хуже.
+    </p>
+    <div data-sup-table></div>
+
+    <!-- 4. Профиль боли по сегментам -->
+    <h2>У кого что болит — по группам агентств</h2>
+    <p class="lede" style="font-size:14px">
+      Один сценарий «для всех» не работает: у разных групп агентств болит разное — значит, и помощь
+      нужна разная. Что строить, выбираем под группу, а не усредняем.
+    </p>
+    <div data-sup-seg></div>
+
+    <!-- 5. Тренд во времени + теплокарта -->
+    <h2>Как нагрузка меняется со временем</h2>
+    <div data-sup-trend></div>
+
+    <!-- 6. Категории обращений -->
+    <h2>О чём чаще всего пишут в поддержку</h2>
+    <p class="lede" style="font-size:14px">
+      Самые частые темы. Это показывает, что болит чаще всего. Полный список и охват —
+      в <a href="backlog.html">Бэклоге</a>.
+    </p>
+    <div data-sup-cat></div>
+
+    <!-- 7. Корреляция тормоза → отток -->
+    <h2>Дорогая поддержка приводит к уходу клиентов?</h2>
+    <div data-sup-join></div>
+
+    <!-- 9. Оговорки и источники -->
+    <h2>Оговорки и источники</h2>
+    <div data-sup-caveats></div>
+  </main>
+
+  <div data-footer></div>
+
+  <script src="assets/app.js"></script>
+</body>
+</html>

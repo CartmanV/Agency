@@ -24,7 +24,7 @@
     { "code": "T-wait", "name": "Время простоя процесса", "type": "active", "stage": "2B", "block": "2B · тормоза", "subgoal": "2 · убрать операционные тормоза", "hypothesis": "H2.2, H2.3", "direction": "↓", "leading": true,
       "measures": "Время простоя процесса между шагами, когда никто не двигал.", "baseline": null },
     { "code": "Support-ratio Ракеты", "name": "Зависимость от саппорта", "type": "active", "stage": "2B", "block": "2B · тормоза", "subgoal": "2", "hypothesis": "H2.2, H2.3", "direction": "↓", "leading": true,
-      "measures": "Доля операций, по которым агентство пришло в саппорт Ракеты.", "baseline": null },
+      "measures": "Доля операций, по которым агентство пришло в саппорт Ракеты.", "baseline": "12,1 обращения на 1000 операций — средний уровень по всей базе (дек-2025 … май-2026). Нагрузка медленно растёт (~+0,2 в месяц), сама не падает. Дороже всех: Корпорэйт Трэвел (29,8) и Аэроглобус (21,7); образец улучшения — Аэроглобус. Подробно — на странице «Нагрузка на саппорт»." },
     { "code": "Rework rate", "name": "Доля переделок", "type": "active", "stage": "2B", "block": "2B · тормоза", "subgoal": "2", "hypothesis": "H2.3", "direction": "↓", "leading": false,
       "measures": "Доля операций, которые пришлось переделать.", "baseline": null },
     { "code": "Incidents-per-services", "name": "Инциденты на услуги", "type": "active", "stage": "2B", "block": "2B · тормоза", "subgoal": "2", "hypothesis": "H2.2, H2.3", "direction": "↓", "leading": false,

@@ -15,6 +15,7 @@ const NAV = [
   { href: "sootvetstvie.html", label: "Доказательная база", short: "Доказательства", group: "Данные" },
   { href: "planned.html", label: "План исследований", short: "План ресёрча", group: "Данные" },
   { href: "agencies.html", label: "Агентства", group: "Данные" },
+  { href: "support.html",  label: "Нагрузка на саппорт", short: "Саппорт", group: "Данные" },
   { href: "rynok.html",    label: "Рынок", group: "Данные" },
   { href: "metrics.html",  label: "Метрики", group: "Данные" },
   { href: "legend.html",   label: "Легенды", group: "Справка" },
@@ -41,7 +42,7 @@ const NAV_MENUS = [
   { label: "Обзор",  items: ["index.html", "now.html", "q3.html", "vision.html"] },
   { label: "Работа", items: ["etapy.html", "tree.html", "levels.html", "backlog.html"] },
   { label: "Данные", items: ["research.html", "sootvetstvie.html", "planned.html",
-                             "agencies.html", "rynok.html", "metrics.html", "legend.html"] },
+                             "agencies.html", "support.html", "rynok.html", "metrics.html", "legend.html"] },
 ];
 
 function mountHeader() {
@@ -1332,6 +1333,219 @@ async function mountAgencies() {
   }
 }
 
+// ===================== Нагрузка на саппорт (support.html) =====================
+// Ось «частота боли» (Impact): Support-ratio = обращений на 1000 операций. Числа — из
+// support.json (build_support), курирование и оговорки — из support_extra.json (вручную).
+
+async function mountSupport() {
+  const kpiHost = document.querySelector("[data-sup-kpi]");
+  if (!kpiHost) return;                       // не на этой странице
+  let d;
+  try { d = await loadJSON("data/support.json"); }
+  catch (e) { kpiHost.innerHTML = `<div class="error">${esc(e.message)}</div>`; return; }
+  let ex = {};
+  try { ex = await loadJSON("data/support_extra.json"); } catch (_) { /* авторский слой необязателен */ }
+
+  const pa = d.perAgency || [], bl = d.baseline || {}, tr = d.trend || {};
+  const r1 = (x) => (x == null ? "—" : Number(x).toLocaleString("ru-RU", { minimumFractionDigits: 1, maximumFractionDigits: 1 }));
+  // Тренд ratio: рост (+) — это плохо (дороже), снижение (−) — хорошо.
+  const signDelta = (x) => (x == null ? "—" : `<span class="${x > 0 ? "sup-up" : x < 0 ? "sup-down" : ""}">${x > 0 ? "+" : ""}${Number(x).toFixed(2)}</span>`);
+  const signalChip = (s) => {
+    if (!s) return "—";
+    const t = String(s).toLowerCase();
+    const cls = (t.includes("🔴") || t.includes("дорог")) ? "sup-sig--bad"
+      : (t.includes("🟢") || t.includes("эффектив")) ? "sup-sig--good" : "sup-sig--mid";
+    return `<span class="sup-sig ${cls}">${esc(s)}</span>`;
+  };
+  // Статус вывода/гипотезы → словарь evChip (✓ ~ ⚠ ∅ ?).
+  const stStatus = (s) => {
+    const t = String(s || "").toLowerCase();
+    if (t.startsWith("подтв")) return "подтверждено";
+    if (t.startsWith("открыт")) return "в плане";
+    if (t.startsWith("нет дан")) return "не проверялась";
+    return "гипотеза";
+  };
+  // Сегменты — единый русский канон (см. SEG_RU в mountAgencies / память segment-names-canon).
+  const SEG_RU = {
+    "Strategist": "Опорные (ядро)", "Strategist (ядро)": "Опорные (ядро)",
+    "Growth leader": "Лидеры роста", "Growth": "Лидеры роста",
+    "Stable": "Устойчивые", "Stable/Growth": "Устойчивые / рост",
+    "Riser": "Растущие", "Riser (новичок)": "Растущие (новичок)",
+    "Stagnating/Declining": "Замедляющиеся/Уходящие", "Declining": "Уходящие",
+    "хвост": "Хвост",
+  };
+  const segRu = (v) => {
+    if (!v) return "—";
+    if (SEG_RU[v]) return SEG_RU[v];
+    return String(v).split("/").map((p) => SEG_RU[p.trim()] || p.trim()).join(" / ");
+  };
+
+  // --- 0. KPI-плашки + главный вывод -----------------------------------
+  const dearest = pa.reduce((a, b) => ((b.ratio || 0) > (a.ratio || 0) ? b : a), pa[0] || {});
+  const improver = pa.reduce((a, b) => (((b.trendMo ?? 0) < (a.trendMo ?? 0)) ? b : a), pa[0] || {});
+  const slopeTxt = tr.slopeNum != null ? `+${Number(tr.slopeNum).toFixed(2)}` : (tr.slopeText || "—");
+  kpiHost.innerHTML = `
+    <div class="ag-strip">
+      <div class="ag-stat"><div class="v">${r1(bl.ratio)}</div><div class="l">средний уровень</div><div class="s">обращений на 1000 операций</div></div>
+      <div class="ag-stat"><div class="v">${esc(slopeTxt)}</div><div class="l">растёт за месяц</div><div class="s">нагрузка медленно увеличивается</div></div>
+      <div class="ag-stat"><div class="v">${r1(dearest.ratio)}</div><div class="l">самый дорогой</div><div class="s">${esc(dearest.name || "")} · ${esc(dearest.pain || "")}</div></div>
+      <div class="ag-stat ag-stat--win"><div class="v">${esc(improver.dyn || "—")}</div><div class="l">пример улучшения</div><div class="s">${esc(improver.name || "")} · обслуживание подешевело</div></div>
+    </div>
+    <article class="accent-card is-bet2 sup-lead">
+      <div class="k">Главный вывод</div>
+      <h3>Нагрузка сама не уменьшается</h3>
+      <p>${esc(ex.leadPlain || tr.conclusion || "")}</p>
+      <div class="ev-chiprow"><span class="ev-chip ev-ok" aria-label="подтверждено">✓ подтверждено</span></div>
+    </article>`;
+
+  // --- 2. Ключевые выводы ----------------------------------------------
+  const conclHost = document.querySelector("[data-sup-concl]");
+  if (conclHost) {
+    const cons = d.conclusions || [];
+    const plainMap = ex.conclusionsPlain || {};
+    const plainOf = (c) => plainMap[String(c.n)] || c.text || "";
+    const featured = (ex.featuredConclusions && ex.featuredConclusions.length) ? ex.featuredConclusions : [1, 2, 5, 6];
+    const cardOf = (c) => {
+      const ev = evChip(stStatus(c.status));
+      return `<article class="accent-card is-nsm">
+        <div class="k">${esc(c.status || "")}</div>
+        <h3>${esc(plainOf(c))}</h3>
+        <div class="ev-chiprow"><span class="ev-chip ${ev.cls}" aria-label="${ev.label}">${ev.sign} ${esc(c.status || ev.label)}</span></div>
+      </article>`;
+    };
+    const feat = cons.filter((c) => featured.includes(c.n));
+    const rest = cons.filter((c) => !featured.includes(c.n));
+    conclHost.innerHTML = `<div class="accent-grid">${feat.map(cardOf).join("")}</div>
+      ${rest.length ? `<details class="sup-more"><summary>Ещё ${rest.length} наблюдений из разбора</summary>
+        <ul class="sup-conclist">${rest.map((c) => {
+          const ev = evChip(stStatus(c.status));
+          return `<li><span class="ev-chip ${ev.cls} ev-chip--mini" aria-label="${ev.label}">${ev.sign}</span> ${esc(plainOf(c))}</li>`;
+        }).join("")}</ul></details>` : ""}`;
+  }
+
+  // --- 3. Support-ratio по агентствам (таблица) ------------------------
+  const tblHost = document.querySelector("[data-sup-table]");
+  if (tblHost) {
+    const rowsHtml = pa.slice().sort((a, b) => (b.ratio || 0) - (a.ratio || 0)).map((a) => `
+      <tr>
+        <td class="title">${esc(a.name)}</td>
+        <td class="muted">${esc(segRu(a.segment))}</td>
+        <td class="num">${r1(a.ratio)}</td>
+        <td class="num">${signDelta(a.trendMo)}</td>
+        <td class="muted">${esc(a.dyn || "—")}</td>
+        <td>${signalChip(a.signal)}</td>
+        <td class="muted">${esc(a.pain || "—")}</td>
+      </tr>`).join("");
+    const blRow = `<tr class="sup-baseline">
+        <td class="title">Базовый уровень · вся база</td><td class="muted">—</td>
+        <td class="num">${r1(bl.ratio)}</td><td class="num">${signDelta(bl.trendMo)}</td>
+        <td class="muted">${esc(bl.dyn || "—")}</td><td><span class="sup-sig sup-sig--base">порог 2B</span></td><td class="muted">—</td>
+      </tr>`;
+    tblHost.innerHTML = `<div class="table-wrap"><table class="backlog">
+      <thead><tr>
+        <th>Агентство</th><th>Сегмент</th>
+        <th><abbr title="Обращений в саппорт на 1000 операций, за последние 6 месяцев">Ratio</abbr></th>
+        <th><abbr title="Изменение ratio в месяц: рост — дороже, снижение — лучше">Тренд/мес</abbr></th>
+        <th><abbr title="Ratio в начале → в конце окна">Динамика</abbr></th>
+        <th>Сигнал</th><th>Доминанта боли</th>
+      </tr></thead>
+      <tbody>${rowsHtml}${blRow}</tbody>
+    </table></div>`;
+  }
+
+  // --- 4. Профиль боли по сегментам (карточки) ------------------------
+  const segHost = document.querySelector("[data-sup-seg]");
+  if (segHost) {
+    // Русские названия и простые формулировки — из авторского слоя (ex.segments),
+    // сопоставление по подстроке match; числа (объём) остаются из support.json.
+    const segEx = ex.segments || [];
+    const exFor = (s) => segEx.find((e) => e.match && String(s.name || "").toLowerCase().includes(e.match.toLowerCase())) || {};
+    segHost.innerHTML = `<div class="accent-grid">${(d.segments || []).map((s) => {
+      const e = exFor(s);
+      const pain = e.painPlain || s.pain || "—";
+      const lever = e.leverPlain || s.lever || "—";
+      return `<article class="accent-card is-bet1">
+        <div class="k">${esc(s.volume || "")} обращений</div>
+        <h3>${esc(e.nameRu || s.name)}</h3>
+        ${e.who ? `<p class="sup-seg-ratio">${esc(e.who)}</p>` : ""}
+        <p><b>Что болит:</b> ${esc(pain)}</p>
+        <p><b>Чем помочь:</b> ${esc(lever)}</p>
+      </article>`;
+    }).join("")}</div>`;
+  }
+
+  // --- 5. Тренд во времени + теплокарта L13M --------------------------
+  const trendHost = document.querySelector("[data-sup-trend]");
+  if (trendHost) {
+    const heat = d.heat || { months: [], agencies: [], total: null };
+    const grow = (tr.perAgency || []).filter((p) => (p.slope || 0) > 0).length;
+    const tot = (tr.perAgency || []).length;
+    const cell = (v) => {
+      if (v == null) return `<td class="hm hm--na"></td>`;
+      const c = v === 0 ? "hm--na" : v < 12 ? "hm--g" : v < 20 ? "hm--y" : "hm--r";
+      return `<td class="hm ${c}" title="${r1(v)}">${v === 0 ? "" : r1(v)}</td>`;
+    };
+    const heatTable = `<div class="table-wrap"><table class="backlog hm-table">
+      <thead><tr><th>Агентство</th>${heat.months.map((m) => `<th>${esc(String(m).slice(2))}</th>`).join("")}</tr></thead>
+      <tbody>${heat.agencies.map((a) => `<tr><td class="title">${esc(a.name)}</td>${a.vals.map(cell).join("")}</tr>`).join("")}
+        ${heat.total ? `<tr class="sup-baseline"><td class="title">ИТОГО</td>${heat.total.map(cell).join("")}</tr>` : ""}</tbody>
+    </table></div>`;
+    const trendHead = ex.trendHead || `у ${grow} из ${tot} агентств нагрузка растёт или держится`;
+    trendHost.innerHTML = `
+      <article class="accent-card is-nsm">
+        <div class="k">${grow} из ${tot} агентств — нагрузка не падает</div>
+        <h3>${esc(trendHead)}</h3>
+        <p>${esc(ex.trendPlain || tr.conclusion || "")}</p>
+        ${ex.seasonNote ? `<p class="muted">${esc(ex.seasonNote)}</p>` : ""}
+        <div class="ev-chiprow"><span class="ev-chip ev-ok" aria-label="подтверждено">✓ подтверждено</span> <a class="ev-chip ev-ok" href="etapy.html#stage-2">→ почему это задача «снять тормоза»</a></div>
+      </article>
+      <details class="sup-more"><summary>Помесячная нагрузка по месяцам (теплокарта, 13 месяцев)</summary>
+        <p class="lede" style="font-size:13px">🟩 ниже среднего · 🟨 выше среднего · 🟥 дорого. Пусто — обращений в этом месяце не было.</p>
+        ${heatTable}
+      </details>`;
+  }
+
+  // --- 6. Категории обращений (топ-5 + ссылка в Бэклог) ---------------
+  const catHost = document.querySelector("[data-sup-cat]");
+  if (catHost) {
+    const cats = (d.categories || []).slice(0, 5);
+    catHost.innerHTML = `<div class="table-wrap"><table class="backlog">
+      <thead><tr><th>Категория</th><th>Частота</th><th>Этап</th><th>Механизм</th><th><abbr title="Связанная гипотеза">Гипотеза</abbr></th></tr></thead>
+      <tbody>${cats.map((c) => `<tr>
+        <td class="title">${esc(c.name)}</td>
+        <td class="num">${fmtNum(c.freq)}</td>
+        <td>${esc(c.stage || "—")}</td>
+        <td class="muted">${esc(c.mechanism || "—")}</td>
+        <td class="muted">${esc(c.hypothesis || "—")}</td>
+      </tr>`).join("")}</tbody>
+    </table></div>
+    <p class="lede" style="font-size:13px">Показаны 5 из ${(d.categories || []).length}. Полный список, доли IBC и Reach — <a href="backlog.html">в Бэклоге</a>.</p>`;
+  }
+
+  // --- 7. Корреляция тормоза → отток (честный отрицательный результат) ---
+  const joinHost = document.querySelector("[data-sup-join]");
+  if (joinHost) {
+    const j = d.join || {};
+    const jp = ex.joinPlain || {};
+    joinHost.innerHTML = `<article class="accent-card is-bet1">
+      <div class="k">Проверка предположения</div>
+      <h3>Дорогая поддержка пока не объясняет уход клиентов</h3>
+      <p>${esc(jp.verdict || j.verdict || "")}</p>
+      <p>${esc(jp.caseFor || j.caseFor || "—")}<br>${esc(jp.caseAgainst || j.caseAgainst || "—")}</p>
+      ${(jp.implication || j.implication) ? `<p class="muted">${esc(jp.implication || j.implication)}</p>` : ""}
+      <div class="ev-chiprow"><span class="ev-chip ev-muted" aria-label="не проверялась">∅ пока не подтверждено</span></div>
+    </article>`;
+  }
+
+  // --- 9. Оговорки и источники ----------------------------------------
+  const cavHost = document.querySelector("[data-sup-caveats]");
+  if (cavHost) {
+    const cav = ex.caveats || [];
+    cavHost.innerHTML = `${cav.length ? `<ul class="sup-caveats">${cav.map((c) => `<li>${esc(c)}</li>`).join("")}</ul>` : ""}
+      <p class="ev-srcline">Источники: <b>${esc(d.sourceCalls || "")}</b> · <b>${esc(d.sourceRatio || "")}</b>. ${esc(d.metric || "")}</p>`;
+  }
+}
+
 // ===================== Этапы ценности (etapy.html) =====================
 // Объединённая проекция: путь агентства (5 этапов) + концепции как слой над ними.
 
@@ -1354,6 +1568,7 @@ async function mountEtapy() {
     sootv: (r) => `sootvetstvie.html#${r}`,
     planned: (r) => `planned.html#${r}`,
     agencies: (r) => `agencies.html#${r}`,
+    support: (r) => (r ? `support.html#${r}` : "support.html"),
     rynok: (r) => `rynok.html#${r}`,
   };
   function evidenceChips(arr) {
@@ -2736,6 +2951,7 @@ document.addEventListener("DOMContentLoaded", () => {
   mountPlan12();
   mountLegend();
   mountAgencies();
+  mountSupport();
   mountMetrics();
   mountResearch();
   mountSootv();
