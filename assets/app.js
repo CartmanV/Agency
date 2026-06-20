@@ -1509,14 +1509,33 @@ async function mountSupport() {
   const catHost = document.querySelector("[data-sup-cat]");
   if (catHost) {
     const cats = (d.categories || []).slice(0, 5);
+    const hypoWords = ex.hypoWords || {}, mechLinks = ex.mechanismLinks || {};
+    // Этап → раздел этапа на «Этапах ценности» (stageAnchor: «2B»→«stage-2»).
+    const stageCell = (s) => {
+      if (!s) return "—";
+      const a = stageAnchor(s);
+      return a ? `<a href="etapy.html#${a}">${esc(s)}</a>` : esc(s);
+    };
+    // Механизм → тема в Бэклоге (карта в support_extra).
+    const mechCell = (m) => {
+      if (!m) return "—";
+      const ml = mechLinks[m];
+      return ml ? `<a href="backlog.html?theme=${encodeURIComponent(ml.theme)}">${esc(ml.label || m)}</a>` : esc(m);
+    };
+    // Гипотеза словами → карточка гипотезы на «Этапах» (зеркало hypId: «H2.1-доп»→«h2-1-доп»; для «H2.4/H2.5» берём первую).
+    const hypAnchor = (code) => "h" + String(code).split("/")[0].replace(/^H/i, "").toLowerCase().replace(/[.\s]+/g, "-").replace(/^-|-$/g, "");
+    const hypCell = (code) => {
+      if (!code) return "—";
+      return `<a href="etapy.html#${hypAnchor(code)}" title="${esc(code)}">${esc(hypoWords[code] || code)}</a>`;
+    };
     catHost.innerHTML = `<div class="table-wrap"><table class="backlog">
-      <thead><tr><th>Категория</th><th>Частота</th><th>Этап</th><th>Механизм</th><th><abbr title="Связанная гипотеза">Гипотеза</abbr></th></tr></thead>
+      <thead><tr><th>Категория</th><th>Частота</th><th>Этап</th><th>Механизм</th><th>Гипотеза</th></tr></thead>
       <tbody>${cats.map((c) => `<tr>
         <td class="title">${esc(c.name)}</td>
         <td class="num">${fmtNum(c.freq)}</td>
-        <td>${esc(c.stage || "—")}</td>
-        <td class="muted">${esc(c.mechanism || "—")}</td>
-        <td class="muted">${esc(c.hypothesis || "—")}</td>
+        <td>${stageCell(c.stage)}</td>
+        <td>${mechCell(c.mechanism)}</td>
+        <td>${hypCell(c.hypothesis)}</td>
       </tr>`).join("")}</tbody>
     </table></div>
     <p class="lede" style="font-size:13px">Показаны 5 из ${(d.categories || []).length}. Полный список, доли IBC и Reach — <a href="backlog.html">в Бэклоге</a>.</p>`;
