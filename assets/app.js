@@ -1222,13 +1222,13 @@ async function mountAgencies() {
       const opsCol = hasSeries
         ? `<div class="agdash__col"><div class="agdash__cap">Операции по месяцам · стэк ${esc(leadName)}+остальные · линия — доля · Δ за месяц над столбцом</div>${opsTrend(p.k)}</div>`
         : "";
-      const nsmNote = `<div class="conc-cap">Активный клиент = факт поездок (не логин в Ракете). NSM (${fmtNum(nsm.now)}) считается за 3 месяца, поэтому выше месячной. Чистая дельта <b>+${fmtNum(nsm.net)}</b> за полгода: база выросла у <b>${clUp}</b> из ${ags.length} агентств, сократилась у ${clDown}. Цель «+20» — про агентства, NSM — про их клиентов: это разные счётчики.</div>`;
+      const nsmNote = `<div class="ag-note"><span class="ag-note__lbl">Как считаем NSM</span><p>Активный клиент — это <b>факт поездок</b>, а не логин в Ракете (пока прокси к строгой NSM). Считаем за 3 месяца, поэтому цифра (${fmtNum(nsm.now)}) выше месячной (${fmtNum(nsm.activeMo)}). «+20» и NSM — два множителя одной воронки: «+20» растит число агентств, NSM — число их клиентов.</p></div>`;
       const clCol = `<div class="agdash__col" id="nsm"><div class="agdash__cap">Клиенты (NSM) по месяцам · стэк ${esc(leadName)}+остальные · линия — доля · Δ за месяц над столбцом</div>${hasClSeries ? clTrendChart(p.k) : ""}${nsmNote}</div>`;
       const opc = (agg.opcIbc != null && agg.opcRest != null)
-        ? `<b>${fmtNum(agg.opcIbc)} операций на клиента в месяц у ${esc(leadName)} против ${fmtNum(agg.opcRest)} у остальных.</b> ` : "";
+        ? `${fmtNum(agg.opcIbc)} операций на клиента в месяц у ${esc(leadName)} против ${fmtNum(agg.opcRest)} у остальных. ` : "";
       const win = p.v === "all" ? "за весь период" : `за ${p.lbl}`;
-      const cap = `${opc}В долях ${win} ядро держит ${fmtPct(agg.ops.pct, 0)} операций, но ${fmtPct(agg.cl.pct, 0)} клиентов — объём опирается на ядро, число клиентов уже нет. Потеря ядра обрушит метрику направления.`;
-      body.innerHTML = legend + `<div class="agtrend-stack">${opsCol}${clCol}</div><div class="conc-cap">${cap}</div>`;
+      const cap = `${opc}В долях ${win} ядро держит <b>${fmtPct(agg.ops.pct, 0)} операций</b>, но только <b>${fmtPct(agg.cl.pct, 0)} клиентов</b>: объём опирается на ядро, а число клиентов — уже нет. <b>Потеря ядра обрушит метрику направления.</b>`;
+      body.innerHTML = legend + `<div class="agtrend-stack">${opsCol}${clCol}</div><div class="ag-note ag-note--risk"><span class="ag-note__lbl">Концентрация — риск</span><p>${cap}</p></div>`;
     };
 
     const dashShell = `
@@ -1244,11 +1244,15 @@ async function mountAgencies() {
     sumHost.innerHTML = `
       <div class="ag-strip">
         <div class="ag-stat"><div class="v">${t.count ?? ags.length}</div><div class="l">агентств</div><div class="s">активных в мае</div></div>
-        <div class="ag-stat"><div class="v">${fmtNum(nsm.now)}</div><div class="l">клиентов · NSM</div><div class="s">главная метрика</div></div>
+        <div class="ag-stat"><div class="v">${fmtNum(nsm.now)}</div><div class="l">клиентов-компаний · NSM</div><div class="s">главная метрика</div></div>
         <div class="ag-stat ag-stat--win"><div class="v">+${fmtNum(nsm.net)}</div><div class="l">клиентов / 6 мес.</div><div class="s">${fmtNum(nsm.new)} пришло − ${fmtNum(nsm.lost)} ушло</div></div>
         <div class="ag-stat"><div class="v">${fmtNum(t.may)}</div><div class="l">операций · май</div><div class="s">${pctCell(t.momPct)} к апрелю</div></div>
         <div class="ag-stat"><div class="v">${fmtPct(c.top3, 0)}</div><div class="l">у ТОП-3</div><div class="s">концентрация базы</div></div>
         <div class="ag-stat ag-stat--goal"><div class="v">+20</div><div class="l">цель · агентств</div><div class="s">стратегия 2026 (KR-2)</div></div>
+      </div>
+      <div class="ag-insight">
+        <span class="ag-insight__lbl">Главный вывод</span>
+        <p class="ag-insight__txt">Рост держится на <b>углублении существующих агентств</b>, а не на новых. За полгода чистыми <b>+${fmtNum(nsm.net)} клиента</b>, и почти весь прирост дали уже подключённые агентства — база выросла у <b>${clUp} из ${ags.length}</b>. Это рычаг №1 роста NSM (этап 2A, ≈82% прироста клиентов). <a href="metrics.html#nsm">Воронка NSM →</a></p>
       </div>
       <div class="conc-wrap">
         <div class="conc-bar" role="img" aria-label="Концентрация: ТОП-3 ${fmtPct(c.top3,0)}, ТОП-5 ${fmtPct(c.top5,0)}">
@@ -2523,7 +2527,7 @@ async function mountMetrics() {
       </section>`;
     }
 
-    return `<section class="nsm-hero">
+    return `<section class="nsm-hero" id="nsm">
       ${n.eyebrow ? `<p class="eyebrow">${esc(n.eyebrow)}</p>` : ""}
       <h2 class="nsm-h2">${esc(n.title)}</h2>
       ${n.lede ? `<p class="lede">${esc(n.lede)}</p>` : ""}
@@ -2533,6 +2537,7 @@ async function mountMetrics() {
         <div class="nsm-stages"><div class="nsm-colh">Метрики на каждом этапе воронки</div>${steps.map(stepCard).join("")}</div>
       </div>
       <div class="nsm-stats">${stats}</div>
+      <p class="nsm-src">Живые цифры по базе агентств (откуда взяты 51/259, +25, концентрация) — на странице <a href="agencies.html#nsm">«Агентства. Цифры»</a> →</p>
       ${ladder}
       ${n.punch ? `<div class="nsm-punch">${esc(n.punch)}</div>` : ""}
       ${takeaways}
