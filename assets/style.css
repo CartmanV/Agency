@@ -840,6 +840,94 @@ table.backlog td.spark-cell { padding: 4px 8px; }
 .churn-type.t-other { color: var(--cream-dim); border-color: var(--line-soft); }
 
 /* ===================== Метрики (metrics.html) ===================== */
+/* One-pager «Как +20 агентств растят NSM» — смысловой мост над карточками. Токены v4. */
+.nsm-hero { margin: 4px 0 8px; padding-bottom: 26px; border-bottom: 1px solid var(--line); }
+.nsm-hero .eyebrow { margin-bottom: 4px; }
+.nsm-h2 { font-family: var(--f-display); font-size: 26px; line-height: 1.15; margin: 2px 0 8px; }
+.nsm-eq { margin: 16px 0 4px; background: var(--gold-dim); border: 1px solid var(--gold-line); border-radius: 10px;
+  padding: 12px 16px; display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+.nsm-eq b { font-family: var(--f-mono); font-size: 16px; color: var(--gold); }
+.nsm-eq span { font-size: 13px; color: var(--cream-soft); line-height: 1.5; flex: 1; min-width: 240px; }
+.nsm-cols { display: grid; grid-template-columns: 420px 1fr; gap: 26px; margin-top: 22px; align-items: start; }
+.nsm-colh { font-family: var(--f-mono); font-size: 11px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--cream-dim); margin-bottom: 10px; }
+.nsm-svg { width: 100%; height: auto; }
+.nsm-svg text { font-family: var(--f-body); }
+/* Ступени-карточки правой колонки */
+.nsm-stage { background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--line-soft);
+  border-radius: 9px; padding: 11px 14px; margin-bottom: 10px; }
+.nsm-stage--product { border-left-color: var(--cat-3); }
+.nsm-stage--sales   { border-left-color: var(--line-soft); }
+.nsm-stage--outcome { border-left-color: var(--gold); background: var(--gold-dim); }
+.nsm-stage__top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.nsm-stage__name { font-size: 14.5px; font-weight: 600; color: var(--cream); }
+.nsm-stage--outcome .nsm-stage__name { color: var(--gold); font-size: 16px; font-family: var(--f-display); }
+.nsm-own { font-family: var(--f-mono); font-size: 9.5px; font-weight: 500; letter-spacing: .04em; text-transform: uppercase;
+  padding: 2px 8px; border-radius: 20px; white-space: nowrap; background: var(--panel-2); color: var(--cream-dim); }
+.nsm-own--product { background: rgba(127,168,106,.16); color: var(--cat-3); }
+.nsm-own--outcome { background: var(--gold-dim); color: var(--gold); }
+.nsm-stage__desc { font-size: 12px; color: var(--cream-soft); margin: 3px 0 8px; line-height: 1.45; }
+.nsm-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.nsm-chip { font-size: 12px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px;
+  padding: 2px 8px; color: var(--cream); text-decoration: none; display: inline-flex; align-items: baseline; gap: 4px; }
+.nsm-chip:hover { border-color: var(--gold-line); color: var(--gold); }
+.nsm-chip__d { font-family: var(--f-mono); color: var(--cream-dim); }
+.nsm-chip:hover .nsm-chip__d { color: var(--gold); }
+.nsm-chip--tgt { font-style: italic; color: var(--cream-dim); background: transparent; }
+/* Полоса цифр */
+.nsm-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 24px;
+  border-top: 1px solid var(--line); padding-top: 18px; }
+.nsm-stat__num { font-family: var(--f-display); font-size: 26px; line-height: 1; color: var(--cream); font-variant-numeric: tabular-nums; }
+.nsm-stat--gold .nsm-stat__num { color: var(--gold); }
+.nsm-stat--attention .nsm-stat__num { color: var(--attention); }
+.nsm-stat__lab { font-size: 11.5px; color: var(--cream-dim); margin-top: 6px; line-height: 1.4; }
+.nsm-guardnote { font-size: 11.5px; color: var(--muted); margin-top: 12px; line-height: 1.45; }
+.nsm-punch { margin-top: 18px; background: var(--panel-2); border: 1px solid var(--line); border-left: 4px solid var(--gold);
+  border-radius: 10px; padding: 14px 18px; font-size: 14px; color: var(--cream); line-height: 1.55; }
+.nsm-foot { margin-top: 12px; font-family: var(--f-mono); font-size: 10.5px; color: var(--muted); }
+/* «Что из этого следует» — практические выводы из пирамиды метрик */
+.nsm-tk { margin-top: 24px; }
+.nsm-tk__h { font-family: var(--f-display); font-size: 19px; color: var(--cream); }
+.nsm-tk__sub { font-size: 13px; color: var(--cream-soft); margin: 4px 0 0; line-height: 1.5; max-width: 70ch; }
+.nsm-tk__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 14px; }
+.nsm-tk__card { background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--gold);
+  border-radius: 10px; padding: 13px 15px; }
+.nsm-tk__tag { display: inline-block; font-family: var(--f-mono); font-size: 9.5px; font-weight: 500; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--gold); background: var(--gold-dim); border-radius: 20px; padding: 2px 9px; margin-bottom: 7px; }
+.nsm-tk__head { font-size: 14.5px; font-weight: 600; color: var(--cream); line-height: 1.3; margin-bottom: 5px; }
+.nsm-tk__body { font-size: 12.5px; color: var(--cream-soft); line-height: 1.5; margin: 0; }
+/* «Где этапы 3–5» — лестница к двум вершинам */
+.nsm-ladder { margin-top: 24px; }
+.nsm-lg { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin: 12px 0 14px; }
+.nsm-lg__d { font-size: 11.5px; color: var(--cream-dim); margin-right: 6px; }
+.nsm-out { font-family: var(--f-mono); font-size: 10.5px; font-weight: 500; letter-spacing: .02em;
+  padding: 2px 9px; border-radius: 20px; white-space: nowrap; }
+.nsm-out--nsm { background: var(--gold); color: var(--bg); }
+.nsm-out--margin { background: transparent; color: var(--cat-2); border: 1px solid var(--cat-2); }
+.nsm-out--revenue { background: var(--panel-2); color: var(--cream-dim); }
+.nsm-lstages { display: grid; gap: 10px; }
+.nsm-lstage { background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--muted);
+  border-radius: 9px; padding: 11px 14px; }
+.nsm-lstage--s1 { border-left-color: var(--cat-1); }
+.nsm-lstage--s2 { border-left-color: var(--cat-3); }
+.nsm-lstage--s345 { border-left-color: var(--muted); opacity: .92; }
+.nsm-lstage__top { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px; }
+.nsm-lstage__n { font-family: var(--f-mono); font-size: 11px; color: var(--cream-dim); }
+.nsm-lstage__name { font-size: 14.5px; font-weight: 600; color: var(--cream); }
+.nsm-lstage__top .nsm-out { margin-left: 2px; }
+.nsm-lq { font-family: var(--f-mono); font-size: 9.5px; letter-spacing: .04em; text-transform: uppercase;
+  padding: 1px 7px; border-radius: 4px; margin-left: auto; }
+.nsm-lq.is-yes { color: var(--gold); background: var(--gold-dim); }
+.nsm-lq.is-no { color: var(--muted); background: var(--panel-2); }
+.nsm-lstage__meta { font-family: var(--f-mono); font-size: 11.5px; color: var(--cream-dim); margin-top: 5px; }
+.nsm-lstage__bridge { font-size: 12.5px; color: var(--cream-soft); line-height: 1.5; margin: 6px 0 0; }
+@media (max-width: 860px) {
+  .nsm-cols { grid-template-columns: 1fr; gap: 18px; }
+  .nsm-stats { grid-template-columns: repeat(2, 1fr); }
+  .nsm-tk__grid { grid-template-columns: 1fr; }
+  .nsm-lq { margin-left: 0; }
+}
+
 .m-intro { margin-bottom: 12px; }
 .m-group { margin-top: 30px; }
 .m-group h2 { font-size: 19px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }

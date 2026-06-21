@@ -2413,6 +2413,133 @@ async function mountMetrics() {
       </article>`;
   }
 
+  // ── One-pager «Как +20 агентств растят NSM» — смысловой мост над карточками ──
+  function nsmHero(n) {
+    if (!n) return "";
+    // Цвет ступени воронки — по канону этапов (1=--cat-1, 2A/2B=--cat-3); вход/исход — нейтраль/золото.
+    const stepFill = { input: "var(--panel-2)", "1": "var(--cat-1)", "2A": "var(--cat-3)", "2B": "var(--cat-3)", nsm: "var(--gold)" };
+    const stepInk  = { input: "var(--cream)", "1": "var(--bg)", "2A": "var(--bg)", "2B": "var(--bg)", nsm: "var(--bg)" };
+    const steps = n.funnel || [];
+    // Геометрия воронки (сужающиеся ступени) — это представление, держим в JS, тексты из JSON.
+    const geo = [
+      { w: 400, h: 84 }, { w: 344, h: 78 }, { w: 288, h: 78 }, { w: 232, h: 78 }, { w: 190, h: 96 },
+    ];
+    let y = 14; const VBW = 430; const svgRows = []; const arrows = [];
+    steps.forEach((s, i) => {
+      const g = geo[i] || geo[geo.length - 1];
+      const x = Math.round((VBW - g.w) / 2);
+      const key = s.key === "nsm" ? "nsm" : s.key === "input" ? "input" : (s.stage || "input");
+      const fill = stepFill[key] || "var(--panel-2)";
+      const ink = stepInk[key] || "var(--cream)";
+      const cx = VBW / 2;
+      const big = s.key === "nsm";
+      const titleY = y + (big ? 38 : 30);
+      const subY = y + (big ? 60 : 50);
+      svgRows.push(
+        `<rect x="${x}" y="${y}" width="${g.w}" height="${g.h}" rx="10" fill="${fill}"/>` +
+        `<text x="${cx}" y="${titleY}" text-anchor="middle" fill="${ink}" font-size="${big ? 19 : 15}" font-weight="700">${esc(s.title)}</text>` +
+        (s.sub ? `<text x="${cx}" y="${subY}" text-anchor="middle" fill="${ink}" font-size="10.5" opacity=".88">${esc(s.sub)}</text>` : "")
+      );
+      const nextY = y + g.h;
+      if (i < steps.length - 1) arrows.push(`M${cx} ${nextY} L${cx} ${nextY + 16}`);
+      y = nextY + 16;
+    });
+    const svg = `<svg viewBox="0 0 ${VBW} ${y}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Воронка: от +20 агентств к NSM" class="nsm-svg">
+        <defs><marker id="nsm-ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 Z" fill="var(--muted)"/></marker></defs>
+        ${svgRows.join("\n        ")}
+        <path d="${arrows.join(" ")}" stroke="var(--line-soft)" stroke-width="2" fill="none" marker-end="url(#nsm-ar)"/>
+      </svg>`;
+
+    // Правая колонка: те же ступени с кликабельными чипами метрик (→ карточки ниже).
+    const ownLabel = (k) => k === "sales" ? "Продажи" : k === "outcome" ? "Бизнес" : "Продукт";
+    // Подсказка на чипе: полное русское название метрики + пояснение цели/предохранителя.
+    const mByCode = {};
+    metrics.forEach((m) => { mByCode[m.code] = m; });
+    const stepCard = (s) => {
+      const head = s.stageLabel ? `${esc(s.title)} · ${esc(s.stageLabel)}` : esc(s.title);
+      const chips = (s.metrics || []).map((c) => {
+        const cls = "nsm-chip" + (c.target ? " nsm-chip--tgt" : "");
+        const full = (mByCode[c.code] && mByCode[c.code].name) || c.name;
+        let tip = full;
+        if (c.guard) tip += " · предохранитель: следим, чтобы операция не ушла от консультанта к клиенту";
+        else if (c.target) tip += " · целевая (косвенная) метрика";
+        return `<a class="${cls}" href="#m-${mSlug(c.code)}" title="${esc(tip)}"><span class="nsm-chip__d">${esc(c.dir)}</span> ${esc(c.name)}</a>`;
+      }).join("");
+      const chipWrap = chips ? `<div class="nsm-chips">${chips}</div>` : "";
+      return `<div class="nsm-stage nsm-stage--${esc(s.ownKind)}">
+          <div class="nsm-stage__top"><span class="nsm-stage__name">${head}</span><span class="nsm-own nsm-own--${esc(s.ownKind)}">${esc(ownLabel(s.ownKind))}</span></div>
+          ${s.desc ? `<p class="nsm-stage__desc">${esc(s.desc)}</p>` : ""}${chipWrap}
+        </div>`;
+    };
+
+    const stats = (n.stats || []).map((st) =>
+      `<div class="nsm-stat nsm-stat--${esc(st.tone || "plain")}"><div class="nsm-stat__num">${esc(st.num)}</div><div class="nsm-stat__lab">${esc(st.lab)}</div></div>`).join("");
+
+    const eq = n.equation ? `<div class="nsm-eq"><b>${esc(n.equation.formula)}</b><span>${esc(n.equation.note)}</span></div>` : "";
+
+    // «Где этапы 3–5» — лестница ведёт к двум вершинам; этапы 3–5 кормят маржу/выручку, не NSM.
+    let ladder = "";
+    const ld = n.ladder;
+    if (ld && (ld.stages || []).length) {
+      const outName = {}; (ld.outcomes || []).forEach((o) => { outName[o.key] = o.label; });
+      const legend = (ld.outcomes || []).map((o) =>
+        `<span class="nsm-out nsm-out--${esc(o.key)}">${esc(o.label)}</span><span class="nsm-lg__d">${esc(o.desc)}</span>`).join("");
+      const rows = ld.stages.map((s) => {
+        const sc = s.n === "1" ? "s1" : s.n === "2" ? "s2" : "s345";
+        const q2 = s.q2
+          ? `<span class="nsm-lq is-yes">фокус Q2</span>`
+          : `<span class="nsm-lq is-no">вне Q2</span>`;
+        return `<div class="nsm-lstage nsm-lstage--${sc}">
+            <div class="nsm-lstage__top">
+              <span class="nsm-lstage__n">Этап ${esc(s.n)}</span>
+              <span class="nsm-lstage__name">${esc(s.name)}</span>
+              <span class="nsm-out nsm-out--${esc(s.outcome)}">→ ${esc(outName[s.outcome] || s.outcome)}</span>
+              ${q2}
+            </div>
+            <div class="nsm-lstage__meta">${esc(s.meta)}</div>
+            <p class="nsm-lstage__bridge">${esc(s.bridge)}</p>
+          </div>`;
+      }).join("");
+      ladder = `<section class="nsm-ladder">
+        <div class="nsm-tk__h">${esc(ld.title)}</div>
+        ${ld.intro ? `<p class="nsm-tk__sub">${esc(ld.intro)}</p>` : ""}
+        ${legend ? `<div class="nsm-lg">${legend}</div>` : ""}
+        <div class="nsm-lstages">${rows}</div>
+        ${ld.note ? `<p class="nsm-guardnote">${esc(ld.note)}</p>` : ""}
+      </section>`;
+    }
+
+    // «Что из этого следует» — практические выводы из пирамиды метрик (акцент-карточки).
+    let takeaways = "";
+    const tk = n.takeaways;
+    if (tk && (tk.items || []).length) {
+      const cards = tk.items.map((it) =>
+        `<div class="nsm-tk__card">${it.tag ? `<span class="nsm-tk__tag">${esc(it.tag)}</span>` : ""}<div class="nsm-tk__head">${esc(it.head)}</div><p class="nsm-tk__body">${esc(it.body)}</p></div>`).join("");
+      takeaways = `<section class="nsm-tk">
+        <div class="nsm-tk__h">${esc(tk.title || "Что из этого следует")}</div>
+        ${tk.sub ? `<p class="nsm-tk__sub">${esc(tk.sub)}</p>` : ""}
+        <div class="nsm-tk__grid">${cards}</div>
+        ${tk.caveat ? `<p class="nsm-guardnote">${esc(tk.caveat)}</p>` : ""}
+      </section>`;
+    }
+
+    return `<section class="nsm-hero">
+      ${n.eyebrow ? `<p class="eyebrow">${esc(n.eyebrow)}</p>` : ""}
+      <h2 class="nsm-h2">${esc(n.title)}</h2>
+      ${n.lede ? `<p class="lede">${esc(n.lede)}</p>` : ""}
+      ${eq}
+      <div class="nsm-cols">
+        <div class="nsm-funnel"><div class="nsm-colh">Воронка: вход → конверсия → исход</div>${svg}</div>
+        <div class="nsm-stages"><div class="nsm-colh">Метрики на каждом этапе воронки</div>${steps.map(stepCard).join("")}</div>
+      </div>
+      <div class="nsm-stats">${stats}</div>
+      ${ladder}
+      ${n.punch ? `<div class="nsm-punch">${esc(n.punch)}</div>` : ""}
+      ${takeaways}
+      ${n.sources ? `<p class="nsm-foot">${esc(n.sources)}</p>` : ""}
+    </section>`;
+  }
+
   const active = metrics.filter((m) => m.type === "active").sort(byStage);
   const target = metrics.filter((m) => m.type === "target").sort(byStage);
 
@@ -2461,6 +2588,7 @@ async function mountMetrics() {
     </section>` : "";
 
   host.innerHTML = `
+    ${nsmHero(data.nsm)}
     <div class="m-intro">
       <div class="stats">
         <div class="stat"><div class="v">${target.length}</div><div class="l">целевых</div></div>
