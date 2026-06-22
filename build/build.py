@@ -271,6 +271,9 @@ def build_agencies():
             "may": num(r[3]), "apr": num(r[4]), "momPct": num(r[5]),
             "l3m": num(r[6]), "l6m": num(r[7]), "may25": num(r[8]), "yoyPct": num(r[9]),
             "sharePct": num(r[10]), "band": clean(r[11]),
+            # Оффлайн L6M (лист «Свод», колонки M/N/O): сколько услуг за 6 мес. оформлено
+            # вручную, а не онлайн. Источник — те же данные, что и объёмы; окно — 6 мес.
+            "offlineN": num(r[12]), "offlineTotal": num(r[13]), "offlinePct": num(r[14]),
         }
         if str(name).startswith("ИТОГО"):
             total = {"may": rec["may"], "apr": rec["apr"], "momPct": rec["momPct"], "count": len(agencies)}

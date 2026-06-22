@@ -25,8 +25,8 @@
     },
     "scored": 199,
     "unscored": 17,
-    "topTitle": "Обмен авиа (полный + вторичный)",
-    "topFinal": 85,
+    "topTitle": "Avia: атрибуты (iata, политика)",
+    "topFinal": 120,
     "themes": [
       {
         "name": "Агентская админка",
@@ -70,6 +70,6 @@
     "researchClosed": 18,
     "metricsActive": 9,
     "metricsTarget": 6,
-    "metricsBaseline": 3
+    "metricsBaseline": 4
   }
 }

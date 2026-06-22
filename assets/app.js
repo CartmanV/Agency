@@ -4,6 +4,7 @@
 const NAV = [
   { href: "index.html",    label: "Направление", group: "Обзор" },
   { href: "now.html",      label: "Сейчас в работе", group: "Обзор" },
+  { href: "vyvody.html",   label: "Выводы и статус", short: "Выводы", group: "Обзор" },
   { href: "q3.html",       label: "Планы Q3", group: "Обзор" },
   { href: "plan-1-2.html", label: "Общий план 1+2", short: "План 1+2", group: "Обзор" },
   { href: "vision.html",   label: "Видение", group: "Обзор" },
@@ -39,7 +40,7 @@ function mountFooter() {
 
 // Навигация v4 (Design Guide · 06): 3 группы-дропдауна в один ряд вместо 14 пунктов в рядах.
 const NAV_MENUS = [
-  { label: "Обзор",  items: ["index.html", "now.html", "q3.html", "vision.html"] },
+  { label: "Обзор",  items: ["index.html", "now.html", "vyvody.html", "q3.html", "vision.html"] },
   { label: "Работа", items: ["etapy.html", "tree.html", "levels.html", "backlog.html"] },
   { label: "Данные", items: ["research.html", "sootvetstvie.html", "planned.html",
                              "agencies.html", "support.html", "rynok.html", "metrics.html", "legend.html"] },
@@ -1294,7 +1295,7 @@ async function mountAgencies() {
 
     const rows = () => {
       const list = ags.filter((a) => (!state.seg || a.segment === state.seg) && (!state.band || a.band === state.band));
-      if (!list.length) return `<tr><td colspan="11"><div class="empty">Ничего не найдено<span class="empty__hint">Измени или сбрось фильтры.</span></div></td></tr>`;
+      if (!list.length) return `<tr><td colspan="12"><div class="empty">Ничего не найдено<span class="empty__hint">Измени или сбрось фильтры.</span></div></td></tr>`;
       return list.map((a) => `
         <tr>
           <td class="title">${esc(a.name)}</td>
@@ -1305,6 +1306,7 @@ async function mountAgencies() {
           <td class="num">${pctCell(a.momPct)}</td>
           <td class="num">${pctCell(a.yoyPct)}</td>
           <td class="num">${fmtNum(a.l6m)}</td>
+          <td class="num" title="${a.offlineN != null ? esc(fmtNum(a.offlineN) + " из " + fmtNum(a.offlineTotal) + " услуг за 6 мес. — вручную") : "нет данных"}">${fmtPct(a.offlinePct)}</td>
           <td class="spark-cell">${sparkline(mon && mon.byId ? mon.byId[a.id] : null)}</td>
           <td class="num">${fmtNum(a.clNow)}</td>
           <td class="num">${intDelta(a.clNet)}</td>
@@ -1323,6 +1325,7 @@ async function mountAgencies() {
             <th><abbr title="Операции мая'26 к апрелю'26">За месяц</abbr></th>
             <th><abbr title="Операции мая'26 к маю'25">За год</abbr></th>
             <th><abbr title="Среднее число операций в месяц за последние 6 месяцев">Ср. за 6 мес.</abbr></th>
+            <th><abbr title="Какая доля услуг за последние 6 месяцев оформлена вручную, а не онлайн">Доля оффлайн, 6 мес</abbr></th>
             <th><abbr title="Операции по месяцам за 13 месяцев (май'25 – май'26)">Динамика</abbr></th>
             <th>Клиентов сейчас</th><th>Δ клиентов за полгода</th>
           </tr></thead>
@@ -3143,6 +3146,12 @@ function mountPlan12() {
   glossifyDOM(document.getElementById("main"));
 }
 
+// Выводы и статус (vyvody.html) — расшифровка жаргона в готовом DOM (как у плана 1+2)
+function mountVyvody() {
+  if (!document.querySelector("[data-vyvody]")) return;
+  glossifyDOM(document.getElementById("main"));
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   mountHeader();
   mountFooter();
@@ -3150,6 +3159,7 @@ document.addEventListener("DOMContentLoaded", () => {
   mountLevels();
   mountJtbd();
   mountPlan12();
+  mountVyvody();
   mountLegend();
   mountAgencies();
   mountSupport();

@@ -32,6 +32,18 @@
     .save h3{ font-family:var(--f-display); font-size:17px; margin:7px 0 8px; color:var(--cream); }
     .save p{ margin:0; color:var(--cream-soft); font-size:13.5px; line-height:1.55; }
 
+    /* основание очереди — выводы диагностики с чипом достоверности */
+    .found-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:12px; }
+    @media(max-width:900px){ .found-grid{ grid-template-columns:1fr 1fr; } }
+    @media(max-width:620px){ .found-grid{ grid-template-columns:1fr; } }
+    .found{ background:var(--panel); border:1px solid var(--line); padding:16px 18px 18px; display:flex; flex-direction:column; }
+    .found .ev-chip{ align-self:flex-start; margin-bottom:11px; }
+    .found h3{ font-family:var(--f-display); font-size:17px; margin:0 0 8px; color:var(--cream); line-height:1.3; }
+    .found p{ margin:0; color:var(--cream-soft); font-size:13.5px; line-height:1.55; }
+    .found .so{ margin-top:9px; color:var(--cream-dim); font-size:12.5px; }
+    .found .so b{ font-family:var(--f-mono); font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--gold); font-weight:500; margin-right:6px; }
+    .found .so a{ white-space:nowrap; }
+
     /* карточка очереди (проверки Д0–Д6 + инициативы) */
     .qcard{ background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--gold); padding:20px 24px 22px; margin:14px 0; scroll-margin-top:90px; }
     .qcard--cond{ border-style:dashed; border-left:3px solid var(--line-soft); }
@@ -85,7 +97,7 @@
     <!-- ГЕРОЙ -->
     <section class="hero">
       <div>
-        <p class="eyebrow">Стратегия · этапы 1 и 2 · единая очередь · 2026-06-17</p>
+        <p class="eyebrow">Стратегия · этапы 1 и 2 · единая очередь · 2026-06-21</p>
         <h1>Этапы 1 и 2 — <span class="accent">одной очередью</span></h1>
         <p class="sub">
           Два этапа развития продукта — «Не мешать» (этап 1) и «Снимать нагрузку»
@@ -133,6 +145,65 @@
         <span class="stage-tag s-2a">этап 2</span> шалфейный ·
         <span class="stage-tag s-x">оба</span> нейтральный. Подробнее — <a href="legend.html#stages">Легенды</a>.
       </p>
+    </section>
+
+    <!-- ОСНОВАНИЕ ОЧЕРЕДИ (из свода направления, 2026-06-21) -->
+    <section class="section">
+      <p class="eyebrow">На каких данных стоит очередь</p>
+      <h2>Почему именно <span class="accent">эти два этапа</span></h2>
+      <p class="sub" style="max-width:80ch">
+        Очередь ниже — не список идей, а следствие диагностики направления (свод 2026-06-21).
+        Шесть выводов, на которых держится фокус на этапах 1 и 2. Значок показывает, насколько
+        вывод подкреплён: <span class="ev-chip ev-ok">✓ подтверждён</span> данными ·
+        <span class="ev-chip ev-part">~ частично</span> (один срез) ·
+        <span class="ev-chip ev-muted">гипотеза</span> — ещё проверяем.
+        Расшифровка значков — <a href="legend.html#ev-status">Легенды</a>.
+      </p>
+      <div class="found-grid">
+
+        <div class="found">
+          <span class="ev-chip ev-ok">✓ подтверждён данными</span>
+          <h3>Фокус выбран не на вкус</h3>
+          <p>Этапы 1 и 2 закрывают работу консультанта — вход в продукт и ежедневные операции. Работа руководителя (продление договора, новые источники дохода) объективно лежит дальше, на этапах 3–4.</p>
+          <p class="so"><b>Следствие</b>Держим фокус на консультанте; задачи руководителя — следующий горизонт, осознанно вне этой очереди.</p>
+        </div>
+
+        <div class="found">
+          <span class="ev-chip ev-ok">✓ подтверждён данными</span>
+          <h3>Нагрузка на поддержку растёт сама</h3>
+          <p>По всей базе агентств число обращений в поддержку не падает по мере привыкания, а медленно растёт. Значит тормоза — в устройстве работы, а не временные, и сами они не рассосутся.</p>
+          <p class="so"><b>Следствие</b>Самостоятельность и разгрузка (этап 2) оправданы уже сейчас — независимо от связи с оттоком. → <a href="support.html">Нагрузка на поддержку</a></p>
+        </div>
+
+        <div class="found">
+          <span class="ev-chip ev-ok">✓ подтверждён данными</span>
+          <h3>Удержание клиентов — скрытая проблема</h3>
+          <p>Среди сильных клиентов крупнейших агентств примерно половина за два года просела по объёму или ушла. Общая цифра удержания это маскирует.</p>
+          <p class="so"><b>Следствие</b>Это потолок эффекта этапов 1–2; саму тему удержания подняли в план на квартал.</p>
+        </div>
+
+        <div class="found">
+          <span class="ev-chip ev-ok">✓ подтверждён данными</span>
+          <h3>База предельно концентрирована</h3>
+          <p>Три агентства дают около 86% объёма. «Универсальная» задача формально закрывает почти весь охват, но потеря одного из них одномоментно обрушит эффект.</p>
+          <p class="so"><b>Следствие</b>У задач, завязанных на этой тройке, — метка «Концентрация» и приоритет ниже; рост ищем в средних агентствах.</p>
+        </div>
+
+        <div class="found">
+          <span class="ev-chip ev-part">~ частично · один срез</span>
+          <h3>Рост идёт вглубь, а не вширь</h3>
+          <p>Большую часть прироста клиентов дают уже подключённые агентства, а не новые: новичок стартует с 3–5 клиентов против сотни у зрелого.</p>
+          <p class="so"><b>Следствие</b>Цель «+20 агентств» — это вход воронки, а не счётчик. Продукт этапов 1–2 превращает подключённый канал в реальную работу.</p>
+        </div>
+
+        <div class="found">
+          <span class="ev-chip ev-muted">гипотеза · проверяем</span>
+          <h3>Доверие — отдельный гейт этапа 1</h3>
+          <p>Консультант не пользуется даже теми функциями, что уже есть: один сбой при клиенте — и он возвращается к привычному инструменту. Доверие легко потерять и долго возвращать.</p>
+          <p class="so"><b>Следствие</b>На этапе 1 надёжность важнее объёма функций. Проверяем в <a href="#d5">Д5</a> — от этого зависит условная <a href="#w10">инициатива 10</a>.</p>
+        </div>
+
+      </div>
     </section>
 
     <!-- ЛОГИКА ОЧЕРЁДНОСТИ -->
