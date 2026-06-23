@@ -5,6 +5,8 @@ const NAV = [
   { href: "index.html",    label: "Направление", group: "Обзор" },
   { href: "now.html",      label: "Сейчас в работе", group: "Обзор" },
   { href: "vyvody.html",   label: "Выводы и статус", short: "Выводы", group: "Обзор" },
+  { href: "voprosy.html",  label: "Вопросы стейкхолдеров", short: "Вопросы", group: "Обзор" },
+  { href: "nmt.html",      label: "Диагностика (NMT)", short: "Диагностика", group: "Обзор" },
   { href: "q3.html",       label: "Планы Q3", group: "Обзор" },
   { href: "plan-1-2.html", label: "Общий план 1+2", short: "План 1+2", group: "Обзор" },
   { href: "vision.html",   label: "Видение", group: "Обзор" },
@@ -40,7 +42,7 @@ function mountFooter() {
 
 // Навигация v4 (Design Guide · 06): 3 группы-дропдауна в один ряд вместо 14 пунктов в рядах.
 const NAV_MENUS = [
-  { label: "Обзор",  items: ["index.html", "now.html", "vyvody.html", "q3.html", "vision.html"] },
+  { label: "Обзор",  items: ["index.html", "now.html", "vyvody.html", "nmt.html", "q3.html", "vision.html"] },
   { label: "Работа", items: ["etapy.html", "tree.html", "levels.html", "backlog.html"] },
   { label: "Данные", items: ["research.html", "sootvetstvie.html", "planned.html",
                              "agencies.html", "support.html", "rynok.html", "metrics.html", "legend.html"] },
