@@ -215,7 +215,7 @@ function stageTag(s, label) {
 // На вход — УЖЕ экранированный текст (без своих тегов). Один проход, без вложенности.
 const GLOSS_TERMS = [
   ["TTFO", "время до первой закрытой услуги новым агентством"],
-  ["T-op", "трудозатраты на операцию (время консультанта)"],
+  ["T-op", "трудозатраты на транзакцию (время консультанта)"],
   ["T-wait", "время ожидания: очередь, поддержка, согласования"],
   ["OPEX", "операционные расходы агентства"],
   ["NSM", "главная метрика направления (North Star)"],
@@ -223,16 +223,16 @@ const GLOSS_TERMS = [
   // Английские метрики из этапов пути — раскрываем простым языком (раньше шли без тултипа).
   ["Adoption-in-AA", "доля новых агентств, реально перешедших работать в Агентскую админку"],
   ["Parity gap", "разрыв в функциях: чего в Ракете ещё нет против привычных инструментов"],
-  ["Self-service share", "доля операций, которые делают сами, без обращения в поддержку"],
-  ["Support-ratio", "сколько обращений в поддержку Ракеты приходится на объём операций"],
-  ["Rework rate", "доля переделок — операций, которые пришлось делать заново"],
+  ["Self-service share", "доля транзакций, которые делают сами, без обращения в поддержку"],
+  ["Support-ratio", "сколько обращений в поддержку Ракеты приходится на объём транзакций"],
+  ["Rework rate", "доля переделок — транзакций, которые пришлось делать заново"],
   ["Incidents-per-services", "число сбоев на объём оказанных услуг"],
   ["Blocker-time", "время, когда работа стоит из-за блокера"],
   ["SLA hit rate", "доля обращений, закрытых в обещанный срок"],
   ["Time-to-cash", "время от оказанной услуги до денег на счёте агентства"],
   ["Hidden-work", "скрытая ручная работа, не видимая в системе"],
   ["Steps-per-task", "сколько шагов уходит на одну задачу"],
-  ["Operations per consultant", "сколько операций обслуживает один консультант"],
+  ["Operations per consultant", "сколько транзакций обслуживает один консультант"],
   ["adoption", "приживаемость: реально ли команда начала пользоваться продуктом"],
   ["паритет", "паритет функций: в Ракете есть всё, к чему команда привыкла"],
   ["GDS", "глобальная система бронирования (Amadeus, Sabre и т.п.)"],
@@ -1028,7 +1028,7 @@ function intDelta(n) {
   return `<span class="delta ${cls}">${sign}${RU_NUM.format(n)}</span>`;
 }
 
-// --- Графики динамики операций (чистый SVG, без библиотек) ---
+// --- Графики динамики транзакций (чистый SVG, без библиотек) ---
 const RU_MON = ["янв", "фев", "мар", "апр", "май", "июн", "июл", "авг", "сен", "окт", "ноя", "дек"];
 function monLabel(s) {                          // "05.2025" → "май·25"
   if (!s) return "";
@@ -1093,7 +1093,7 @@ function niceStep(range, ticks = 4) {
   return (nrm <= 1 ? 1 : nrm <= 2 ? 2 : nrm <= 5 ? 5 : 10) * mag;
 }
 
-// Помесячный тренд «ядро ↔ остальные»: стэк-столбцы (операции ядра + остальных) + линия доли ядра
+// Помесячный тренд «ядро ↔ остальные»: стэк-столбцы (транзакции ядра + остальных) + линия доли ядра
 // на правой оси (0–100%) + подпись Δ к прошлому месяцу над столбцом. opts: { leadName, others }.
 function agTrend(months, ibcVals, totVals, opts = {}) {
   const n = months.length;
@@ -1105,7 +1105,7 @@ function agTrend(months, ibcVals, totVals, opts = {}) {
   const maxT = Math.max(...totVals, 1);
   const step = niceStep(maxT, 5);
   const hi = Math.ceil(maxT / step) * step || step;
-  const Y = (val) => pT + ih - (val / hi) * ih;        // левая ось — операции
+  const Y = (val) => pT + ih - (val / hi) * ih;        // левая ось — транзакции
   const Y1 = (pct) => pT + ih - (pct / 100) * ih;      // правая ось — доля %
   const slot = iw / n, bw = Math.min(slot * 0.6, 44), cx = (i) => pL + slot * (i + 0.5);
   let grid = "";
@@ -1141,7 +1141,7 @@ function agTrend(months, ibcVals, totVals, opts = {}) {
     const tip = `<b>${monLabel(months[i])}</b><br>${esc(leadName)}: <b>${fmtNum(ibcVals[i])}</b> · остальные: <b>${fmtNum(restVals[i])}</b><br>всего ${fmtNum(tt)} · доля ${esc(leadName)} <b>${Math.round(sh[i])}%</b>${dtip}`;
     hit += `<rect x="${x}" y="${pT}" width="${slot.toFixed(1)}" height="${ih}" fill="transparent" class="ch-hit" data-tip="${tip}"/>`;
   });
-  return `<svg class="agbars-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Операции ${esc(leadName)} и остальных по месяцам: стэк-столбцы и доля ядра">
+  return `<svg class="agbars-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Транзакции ${esc(leadName)} и остальных по месяцам: стэк-столбцы и доля ядра">
     ${grid}${yr}${bars}${lineSvg}${deltas}${xlab}${hit}</svg>`;
 }
 
@@ -1167,7 +1167,7 @@ async function mountAgencies() {
   const clUp = ags.filter((a) => (a.clNet || 0) > 0).length;
   const clDown = ags.filter((a) => (a.clNet || 0) < 0).length;
 
-  // Помесячные ряды «ядро ↔ остальные» для дашборда за период (операции — поток, клиенты — сток).
+  // Помесячные ряды «ядро ↔ остальные» для дашборда за период (транзакции — поток, клиенты — сток).
   const ibcId = String(lead.id);
   const opsMonths = (mon && mon.months) || [], opsTot = (mon && mon.total) || [], opsIbc = (mon && mon.byId && mon.byId[ibcId]) || [];
   const clMonths = (monCl && monCl.months) || [], clTot = (monCl && monCl.total) || [], clIbc = (monCl && monCl.byId && monCl.byId[ibcId]) || [];
@@ -1176,7 +1176,7 @@ async function mountAgencies() {
   const lastK = (arr, k) => (arr || []).slice(-k);
   const aSum = (a) => a.reduce((s, x) => s + (x || 0), 0);
   const aAvg = (a) => (a.length ? aSum(a) / a.length : 0);
-  // Агрегат за окно последних k месяцев: операции — сумма, клиенты — среднее активных за период.
+  // Агрегат за окно последних k месяцев: транзакции — сумма, клиенты — среднее активных за период.
   const periodAgg = (k) => {
     const ko = Math.min(k, opsTot.length || 1), kc = Math.min(k, clTot.length || 1);
     const oIbc = aSum(lastK(opsIbc, ko)), oTot = aSum(lastK(opsTot, ko)), oRest = Math.max(oTot - oIbc, 0);
@@ -1185,13 +1185,13 @@ async function mountAgencies() {
       ko,
       ops: { ibc: oIbc, rest: oRest, pct: oTot ? oIbc / oTot : 0 },
       cl: { ibc: cIbc, rest: cRest, pct: cTot ? cIbc / cTot : 0 },
-      opcIbc: cIbc ? Math.round((oIbc / ko) / cIbc) : null,        // операций на клиента в месяц
+      opcIbc: cIbc ? Math.round((oIbc / ko) / cIbc) : null,        // транзакций на клиента в месяц
       opcRest: cRest ? Math.round((oRest / ko) / cRest) : null,
     };
   };
 
   if (sumHost) {
-    // Дашборд «ядро ↔ остальные» за период: два помесячных стэк-тренда (операции, клиенты) друг под другом.
+    // Дашборд «ядро ↔ остальные» за период: два помесячных стэк-тренда (транзакции, клиенты) друг под другом.
     // «Месяц» убран — у одного месяца нет тренда и нет Δ; помесячная детализация видна по столбцам.
     const PERIODS = [
       { v: "3", k: 3, lbl: "3 мес" },
@@ -1201,7 +1201,7 @@ async function mountAgencies() {
     const PMAP = Object.fromEntries(PERIODS.map((p) => [p.v, p]));
     const state = { period: "all" };
 
-    // Помесячные стэк-тренды за окно периода (см. agTrend): операции — поток, клиенты (NSM) — активные за месяц.
+    // Помесячные стэк-тренды за окно периода (см. agTrend): транзакции — поток, клиенты (NSM) — активные за месяц.
     const opsTrend = (k) => {
       const ko = Math.min(k, opsTot.length);
       return agTrend(lastK(opsMonths, ko), lastK(opsIbc, ko), lastK(opsTot, ko), { leadName, others });
@@ -1223,21 +1223,21 @@ async function mountAgencies() {
           <span class="lg-key"><i class="lg-sw lg-sw--share"></i>доля ${esc(leadName)}, %</span>
         </div>`;
       const opsCol = hasSeries
-        ? `<div class="agdash__col"><div class="agdash__cap">Операции по месяцам · стэк ${esc(leadName)}+остальные · линия — доля · Δ за месяц над столбцом</div>${opsTrend(p.k)}</div>`
+        ? `<div class="agdash__col"><div class="agdash__cap">Транзакции по месяцам · стэк ${esc(leadName)}+остальные · линия — доля · Δ за месяц над столбцом</div>${opsTrend(p.k)}</div>`
         : "";
       const nsmNote = `<div class="ag-note"><span class="ag-note__lbl">Как считаем NSM</span><p>Активный клиент — это <b>факт поездок</b>, а не логин в Ракете (пока прокси к строгой NSM). Считаем за 3 месяца, поэтому цифра (${fmtNum(nsm.now)}) выше месячной (${fmtNum(nsm.activeMo)}). «+20» и NSM — два множителя одной воронки: «+20» растит число агентств, NSM — число их клиентов.</p></div>`;
       const clCol = `<div class="agdash__col" id="nsm"><div class="agdash__cap">Клиенты (NSM) по месяцам · стэк ${esc(leadName)}+остальные · линия — доля · Δ за месяц над столбцом</div>${hasClSeries ? clTrendChart(p.k) : ""}${nsmNote}</div>`;
       const opc = (agg.opcIbc != null && agg.opcRest != null)
-        ? `${fmtNum(agg.opcIbc)} операций на клиента в месяц у ${esc(leadName)} против ${fmtNum(agg.opcRest)} у остальных. ` : "";
+        ? `${fmtNum(agg.opcIbc)} транзакций на клиента в месяц у ${esc(leadName)} против ${fmtNum(agg.opcRest)} у остальных. ` : "";
       const win = p.v === "all" ? "за весь период" : `за ${p.lbl}`;
-      const cap = `${opc}В долях ${win} ядро держит <b>${fmtPct(agg.ops.pct, 0)} операций</b>, но только <b>${fmtPct(agg.cl.pct, 0)} клиентов</b>: объём опирается на ядро, а число клиентов — уже нет. <b>Потеря ядра обрушит метрику направления.</b>`;
+      const cap = `${opc}В долях ${win} ядро держит <b>${fmtPct(agg.ops.pct, 0)} транзакций</b>, но только <b>${fmtPct(agg.cl.pct, 0)} клиентов</b>: объём опирается на ядро, а число клиентов — уже нет. <b>Потеря ядра обрушит метрику направления.</b>`;
       body.innerHTML = legend + `<div class="agtrend-stack">${opsCol}${clCol}</div><div class="ag-note ag-note--risk"><span class="ag-note__lbl">Концентрация — риск</span><p>${cap}</p></div>`;
     };
 
     const dashShell = `
       <div class="agbars">
         <div class="agbars__head">
-          <div class="lbl">${esc(leadName)} ↔ остальные ${others}: операции и клиенты по месяцам</div>
+          <div class="lbl">${esc(leadName)} ↔ остальные ${others}: транзакции и клиенты по месяцам</div>
           <div class="seg" role="group" aria-label="Период">
             ${PERIODS.map((p) => `<button type="button" class="seg__btn${p.v === state.period ? " is-active" : ""}" data-period-v="${p.v}">${p.lbl}</button>`).join("")}
           </div>
@@ -1249,7 +1249,7 @@ async function mountAgencies() {
         <div class="ag-stat"><div class="v">${t.count ?? ags.length}</div><div class="l">агентств</div><div class="s">активных в мае</div></div>
         <div class="ag-stat"><div class="v">${fmtNum(nsm.now)}</div><div class="l">клиентов-компаний · NSM</div><div class="s">главная метрика</div></div>
         <div class="ag-stat ag-stat--win"><div class="v">+${fmtNum(nsm.net)}</div><div class="l">клиентов / 6 мес.</div><div class="s">${fmtNum(nsm.new)} пришло − ${fmtNum(nsm.lost)} ушло</div></div>
-        <div class="ag-stat"><div class="v">${fmtNum(t.may)}</div><div class="l">операций · май</div><div class="s">${pctCell(t.momPct)} к апрелю</div></div>
+        <div class="ag-stat"><div class="v">${fmtNum(t.may)}</div><div class="l">транзакций · май</div><div class="s">${pctCell(t.momPct)} к апрелю</div></div>
         <div class="ag-stat"><div class="v">${fmtPct(c.top3, 0)}</div><div class="l">у ТОП-3</div><div class="s">концентрация базы</div></div>
         <div class="ag-stat ag-stat--goal"><div class="v">+20</div><div class="l">цель · агентств</div><div class="s">стратегия 2026 (KR-2)</div></div>
       </div>
@@ -1262,7 +1262,7 @@ async function mountAgencies() {
           ${ags.slice(0, 5).map((a, i) => `<span class="conc-seg s${i}" style="flex:${(a.sharePct || 0) * 100}" title="${esc(a.name)} · ${fmtPct(a.sharePct)}"></span>`).join("")}
           <span class="conc-seg rest" style="flex:${(1 - (ags.slice(0, 5).reduce((s, a) => s + (a.sharePct || 0), 0))) * 100}" title="остальные"></span>
         </div>
-        <div class="conc-cap">Полоса выше — доли пяти крупнейших агентств и «хвоста» по операциям. ТОП-5 = ${fmtPct(c.top5, 0)} операций, ТОП-3 = ${fmtPct(c.top3, 0)}.</div>
+        <div class="conc-cap">Полоса выше — доли пяти крупнейших агентств и «хвоста» по транзакциям. ТОП-5 = ${fmtPct(c.top5, 0)} транзакций, ТОП-3 = ${fmtPct(c.top3, 0)}.</div>
       </div>
       ${dashShell}`;
 
@@ -1323,12 +1323,12 @@ async function mountAgencies() {
         <table class="backlog">
           <thead><tr>
             <th>Агентство</th><th>Сегмент</th><th>Концентрация</th>
-            <th>Операций, май</th><th>Доля операций</th>
-            <th><abbr title="Операции мая'26 к апрелю'26">За месяц</abbr></th>
-            <th><abbr title="Операции мая'26 к маю'25">За год</abbr></th>
-            <th><abbr title="Среднее число операций в месяц за последние 6 месяцев">Ср. за 6 мес.</abbr></th>
+            <th>Транзакций, май</th><th>Доля транзакций</th>
+            <th><abbr title="Транзакции мая'26 к апрелю'26">За месяц</abbr></th>
+            <th><abbr title="Транзакции мая'26 к маю'25">За год</abbr></th>
+            <th><abbr title="Среднее число транзакций в месяц за последние 6 месяцев">Ср. за 6 мес.</abbr></th>
             <th><abbr title="Какая доля услуг за последние 6 месяцев оформлена вручную, а не онлайн">Доля оффлайн, 6 мес</abbr></th>
-            <th><abbr title="Операции по месяцам за 13 месяцев (май'25 – май'26)">Динамика</abbr></th>
+            <th><abbr title="Транзакции по месяцам за 13 месяцев (май'25 – май'26)">Динамика</abbr></th>
             <th>Клиентов сейчас</th><th>Δ клиентов за полгода</th>
           </tr></thead>
           <tbody>${rows()}</tbody>
@@ -1343,7 +1343,7 @@ async function mountAgencies() {
 }
 
 // ===================== Нагрузка на саппорт (support.html) =====================
-// Ось «частота боли» (Impact): Support-ratio = обращений на 1000 операций. Числа — из
+// Ось «частота боли» (Impact): Support-ratio = обращений на 1000 транзакций. Числа — из
 // support.json (build_support), курирование и оговорки — из support_extra.json (вручную).
 
 async function mountSupport() {
@@ -1379,9 +1379,9 @@ async function mountSupport() {
     "Strategist": "Опорные (ядро)", "Strategist (ядро)": "Опорные (ядро)",
     "Growth leader": "Лидеры роста", "Growth": "Лидеры роста",
     "Stable": "Устойчивые", "Stable/Growth": "Устойчивые / рост",
-    "Riser": "Растущие", "Riser (новичок)": "Растущие (новичок)",
+    "Riser": "Растущие", "Riser (новичок)": "Растущие (новичок)", "Riser (KMP)": "Растущие (KMP)",
     "Stagnating/Declining": "Замедляющиеся/Уходящие", "Declining": "Уходящие",
-    "хвост": "Хвост",
+    "новичок": "Новичок", "ОТТОК": "Отток", "хвост": "Хвост",
   };
   const segRu = (v) => {
     if (!v) return "—";
@@ -1389,20 +1389,36 @@ async function mountSupport() {
     return String(v).split("/").map((p) => SEG_RU[p.trim()] || p.trim()).join(" / ");
   };
 
+  // Доля в процентах (0.296 → «30%»).
+  const pct = (x) => (x == null ? "—" : `${Math.round(Number(x) * 100)}%`);
+  // Класс закрытия темы → чип (Ракета-fixable / поставщик-bound / частично).
+  const TCLS = ex.themeClass || {};
+  const clsChip = (cls) => {
+    if (!cls) return "—";
+    const t = String(cls).toLowerCase();
+    const k = t.includes("fixable") ? "fixable" : t.includes("bound") ? "bound" : "partial";
+    const m = TCLS[k] || {};
+    return `<span class="sup-cls sup-cls--${m.cls || "mid"}">${esc(m.label || cls)}</span>`;
+  };
+
   // --- 0. KPI-плашки + главный вывод -----------------------------------
-  const dearest = pa.reduce((a, b) => ((b.ratio || 0) > (a.ratio || 0) ? b : a), pa[0] || {});
-  const improver = pa.reduce((a, b) => (((b.trendMo ?? 0) < (a.trendMo ?? 0)) ? b : a), pa[0] || {});
-  const slopeTxt = tr.slopeNum != null ? `+${Number(tr.slopeNum).toFixed(2)}` : (tr.slopeText || "—");
+  // «Самый дорогой» — максимум среди стабильных (без малой базы и без оттока).
+  const stable = pa.filter((a) => !a.smallBase && !a.outflow);
+  const dearest = stable.reduce((a, b) => ((b.ratio || 0) > (a.ratio || 0) ? b : a), stable[0] || {});
+  const sup = d.supplier || {};
+  const slopeTxt = tr.slopeNum != null ? `+${Number(tr.slopeNum).toFixed(2)}` : (tr.slopeText || "растёт");
+  const kx = ex.kpi || {};
   kpiHost.innerHTML = `
     <div class="ag-strip">
-      <div class="ag-stat"><div class="v">${r1(bl.ratio)}</div><div class="l">средний уровень</div><div class="s">обращений на 1000 операций</div></div>
-      <div class="ag-stat"><div class="v">${esc(slopeTxt)}</div><div class="l">растёт за месяц</div><div class="s">нагрузка медленно увеличивается</div></div>
+      <div class="ag-stat"><div class="v">${r1(bl.ratio)}</div><div class="l">средний уровень</div><div class="s">обращений на 1000 транзакций</div></div>
+      <div class="ag-stat ag-stat--bad"><div class="v">${pct(sup.share)}</div><div class="l">${esc(kx.supplierLabel || "уходит поставщику")}</div><div class="s">${esc(kx.supplierSub || "")}</div></div>
       <div class="ag-stat"><div class="v">${r1(dearest.ratio)}</div><div class="l">самый дорогой</div><div class="s">${esc(dearest.name || "")} · ${esc(dearest.pain || "")}</div></div>
-      <div class="ag-stat ag-stat--win"><div class="v">${esc(improver.dyn || "—")}</div><div class="l">пример улучшения</div><div class="s">${esc(improver.name || "")} · обслуживание подешевело</div></div>
+      <div class="ag-stat"><div class="v">${esc(slopeTxt)}</div><div class="l">тренд за месяц</div><div class="s">нагрузка медленно растёт</div></div>
     </div>
+    ${kx.methodLine ? `<p class="ev-srcline">${esc(kx.methodLine)}</p>` : ""}
     <article class="accent-card is-bet2 sup-lead">
       <div class="k">Главный вывод</div>
-      <h3>Нагрузка сама не уменьшается</h3>
+      <h3>Нагрузка сама не уменьшается — и часть её вне нашего контроля</h3>
       <p>${esc(ex.leadPlain || tr.conclusion || "")}</p>
       <div class="ev-chiprow"><span class="ev-chip ev-ok" aria-label="подтверждено">✓ подтверждено</span></div>
     </article>`;
@@ -1410,77 +1426,155 @@ async function mountSupport() {
   // --- 2. Ключевые выводы ----------------------------------------------
   const conclHost = document.querySelector("[data-sup-concl]");
   if (conclHost) {
-    const cons = d.conclusions || [];
     const plainMap = ex.conclusionsPlain || {};
     const plainOf = (c) => plainMap[String(c.n)] || c.text || "";
-    const featured = (ex.featuredConclusions && ex.featuredConclusions.length) ? ex.featuredConclusions : [1, 2, 5, 6];
+    const hide = ex.hideConclusions || [];
+    const cons = (d.conclusions || []).filter((c) => !hide.includes(c.n));
     const cardOf = (c) => {
       const ev = evChip(stStatus(c.status));
-      return `<article class="accent-card is-nsm">
-        <div class="k">${esc(c.status || "")}</div>
+      return `<article class="accent-card is-nsm sup-conclcard">
         <h3>${esc(plainOf(c))}</h3>
-        <div class="ev-chiprow"><span class="ev-chip ${ev.cls}" aria-label="${ev.label}">${ev.sign} ${esc(c.status || ev.label)}</span></div>
+        <div class="ev-chiprow"><span class="ev-chip ${ev.cls} ev-chip--mini" aria-label="${ev.label}">${ev.sign} ${esc(c.status || ev.label)}</span></div>
       </article>`;
     };
-    const feat = cons.filter((c) => featured.includes(c.n));
-    const rest = cons.filter((c) => !featured.includes(c.n));
-    conclHost.innerHTML = `<div class="accent-grid">${feat.map(cardOf).join("")}</div>
-      ${rest.length ? `<details class="sup-more"><summary>Ещё ${rest.length} наблюдений из разбора</summary>
-        <ul class="sup-conclist">${rest.map((c) => {
-          const ev = evChip(stStatus(c.status));
-          return `<li><span class="ev-chip ${ev.cls} ev-chip--mini" aria-label="${ev.label}">${ev.sign}</span> ${esc(plainOf(c))}</li>`;
-        }).join("")}</ul></details>` : ""}`;
+    conclHost.innerHTML = `<div class="accent-grid accent-grid--sm">${cons.map(cardOf).join("")}</div>`;
   }
 
-  // --- 3. Support-ratio по агентствам (таблица) ------------------------
+  // --- 3. Support-ratio по агентствам (одна таблица, с динамикой) ------
   const tblHost = document.querySelector("[data-sup-table]");
   if (tblHost) {
-    const rowsHtml = pa.slice().sort((a, b) => (b.ratio || 0) - (a.ratio || 0)).map((a) => `
-      <tr>
+    const m26 = d.months2026 || 5.79;
+    // Динамика нагрузки: обращений в месяц 2025 → 2026 (новая атрибуция, 2026 — неполный год).
+    const dynCell = (a) => {
+      if (a.y2025 == null && a.y2026 == null) return `<td class="muted">—</td>`;
+      const r25 = (a.y2025 || 0) / 12, r26 = (a.y2026 || 0) / m26;
+      const tip = `2025: ${Math.round(r25)}/мес → 2026: ${Math.round(r26)}/мес`;
+      let arr = "→", cls = "sup-dyn--flat", word = "ровно";
+      if (r25 < 0.5 && r26 > 0) { arr = "▲"; cls = "sup-dyn--up"; word = "новое"; }
+      else if (r26 > r25 * 1.12) { arr = "▲"; cls = "sup-dyn--up"; word = "растёт"; }
+      else if (r26 < r25 * 0.88) { arr = "▼"; cls = "sup-dyn--down"; word = "падает"; }
+      return `<td class="num"><span class="sup-dyn ${cls}" title="${tip}">${arr} ${word}</span></td>`;
+    };
+    // Уровень обслуживания из сигнала — для группировки строк.
+    const levelKey = (sig) => {
+      const t = String(sig || "").toLowerCase();
+      if (t.includes("отток") || t.includes("мал")) return "noise";
+      if (t.includes("эффект") || t.includes("🟢")) return "eff";
+      if (t.includes("дорог") || t.includes("🔴")) return "dear";
+      return "norm";
+    };
+    // Ячейка нагрузки: мини-полоска (секвенциальная шкала данных) + число. Шкала ограничена 40,
+    // выше — полная полоска (выбросы вроде оттока не «съедают» масштаб остальных).
+    const LOAD_CAP = 40;
+    const loadCell = (a) => {
+      const w = Math.max(2, Math.min((a.ratio || 0) / LOAD_CAP, 1) * 100);
+      return `<td class="sup-load"><span class="sup-load-bar" style="width:${w.toFixed(0)}%"></span><span class="sup-load-val">${r1(a.ratio)}</span></td>`;
+    };
+    const rowOf = (a, mute) => `
+      <tr${mute ? ' class="sup-row--mute"' : ""}>
         <td class="title">${esc(a.name)}</td>
         <td class="muted">${esc(segRu(a.segment))}</td>
-        <td class="num">${r1(a.ratio)}</td>
-        <td class="num">${signDelta(a.trendMo)}</td>
-        <td class="muted">${esc(a.dyn || "—")}</td>
-        <td>${signalChip(a.signal)}</td>
+        <td class="num">${fmtNum(a.callsL6M)}</td>
+        ${loadCell(a)}
+        ${dynCell(a)}
+        <td class="num muted">${pct(a.supShare)}</td>
         <td class="muted">${esc(a.pain || "—")}</td>
-      </tr>`).join("");
+      </tr>`;
+    const COLS = 7;
+    const GROUPS = [
+      ["dear", "Дорогие · обслуживание выше среднего"],
+      ["norm", "Около среднего"],
+      ["eff", "Эффективные · ниже среднего"],
+      ["noise", "Малая база и отток · показатель нестабилен"],
+    ];
+    const sorted = pa.slice().sort((a, b) => (b.ratio || 0) - (a.ratio || 0));
+    let body = "";
+    for (const [key, label] of GROUPS) {
+      const grp = sorted.filter((a) => levelKey(a.signal) === key);
+      if (!grp.length) continue;
+      body += `<tr class="sup-grouphdr"><td colspan="${COLS}">${label}</td></tr>`;
+      body += grp.map((a) => rowOf(a, key === "noise")).join("");
+    }
     const blRow = `<tr class="sup-baseline">
-        <td class="title">Базовый уровень · вся база</td><td class="muted">—</td>
-        <td class="num">${r1(bl.ratio)}</td><td class="num">${signDelta(bl.trendMo)}</td>
-        <td class="muted">${esc(bl.dyn || "—")}</td><td><span class="sup-sig sup-sig--base">порог 2B</span></td><td class="muted">—</td>
+        <td class="title">Средний по всей базе</td><td class="muted">—</td>
+        <td class="num">${fmtNum(bl.calls)}</td>
+        <td class="sup-load"><span class="sup-load-val">${r1(bl.ratio)}</span> <span class="sup-sig sup-sig--base">порог для задач 2B</span></td>
+        <td class="num muted">—</td><td class="num muted">—</td>
+        <td class="muted">—</td>
       </tr>`;
     tblHost.innerHTML = `<div class="table-wrap"><table class="backlog">
       <thead><tr>
         <th>Агентство</th><th>Сегмент</th>
-        <th><abbr title="Обращений в саппорт на 1000 операций, за последние 6 месяцев">Ratio</abbr></th>
-        <th><abbr title="Изменение ratio в месяц: рост — дороже, снижение — лучше">Тренд/мес</abbr></th>
-        <th><abbr title="Ratio в начале → в конце окна">Динамика</abbr></th>
-        <th>Сигнал</th><th>Доминанта боли</th>
+        <th><abbr title="Сколько обращений в саппорт за последние 6 месяцев">Обращений<br>за 6 мес</abbr></th>
+        <th><abbr title="Обращений в саппорт на 1000 транзакций за 6 месяцев: чем больше — тем дороже агентство в обслуживании">Нагрузка<br>на 1000 опер.</abbr></th>
+        <th><abbr title="Растёт или падает нагрузка: обращений в месяц 2025 → 2026 (2026 — неполный год)">Динамика</abbr></th>
+        <th><abbr title="Доля обращений, переадресованных внешнему поставщику — её продуктом не снять">→ поставщику</abbr></th>
+        <th>Чаще всего пишут о</th>
       </tr></thead>
-      <tbody>${rowsHtml}${blRow}</tbody>
-    </table></div>`;
+      <tbody>${body}${blRow}</tbody>
+    </table></div>
+    ${ex.tableConcl ? `<p class="lede" style="font-size:13px">${esc(ex.tableConcl)}</p>` : ""}`;
   }
 
-  // --- 4. Профиль боли по сегментам (карточки) ------------------------
+  // --- 4. Профиль боли по сегментам (карточки, авторский слой) --------
   const segHost = document.querySelector("[data-sup-seg]");
   if (segHost) {
-    // Русские названия и простые формулировки — из авторского слоя (ex.segments),
-    // сопоставление по подстроке match; числа (объём) остаются из support.json.
-    const segEx = ex.segments || [];
-    const exFor = (s) => segEx.find((e) => e.match && String(s.name || "").toLowerCase().includes(e.match.toLowerCase())) || {};
-    segHost.innerHTML = `<div class="accent-grid">${(d.segments || []).map((s) => {
-      const e = exFor(s);
-      const pain = e.painPlain || s.pain || "—";
-      const lever = e.leverPlain || s.lever || "—";
-      return `<article class="accent-card is-bet1">
-        <div class="k">${esc(s.volume || "")} обращений</div>
-        <h3>${esc(e.nameRu || s.name)}</h3>
+    const segs = ex.segments || [];
+    segHost.innerHTML = `<div class="accent-grid">${segs.map((e) => `
+      <article class="accent-card is-bet1">
+        <div class="k">${esc(e.volume || "")} обращений</div>
+        <h3>${esc(e.nameRu || "")}</h3>
         ${e.who ? `<p class="sup-seg-ratio">${esc(e.who)}</p>` : ""}
-        <p><b>Что болит:</b> ${esc(pain)}</p>
-        <p><b>Чем помочь:</b> ${esc(lever)}</p>
-      </article>`;
-    }).join("")}</div>`;
+        <p><b>Что болит:</b> ${esc(e.painPlain || "—")}</p>
+        <p><b>Чем помочь:</b> ${esc(e.leverPlain || "—")}</p>
+      </article>`).join("")}</div>`;
+  }
+
+  // --- 4b. Что чинимо продуктом, а что упирается в поставщика ----------
+  const supHost = document.querySelector("[data-sup-supplier]");
+  if (supHost) {
+    const sx = ex.supplier || {};
+    const bound = (sup.byTheme || []).filter((t) => String(t.cls || "").toLowerCase().includes("bound"));
+    const fixable = sup.fixable || [];
+    const themeRow = (t) => `<li><span class="sup-tname">${esc(t.theme)}</span> <span class="sup-tval">${pct(t.share)} → поставщику</span></li>`;
+    const fixRow = (t) => `<li><span class="sup-tname">${esc(t.theme)}</span> <span class="sup-tval muted">${fmtNum(t.freq)} обращений</span></li>`;
+    // «Другое» = обращения без точной привязки к агентству — не показываем как агентство.
+    // Метка «чтения» → чип: высокая/повышенная/низкая зависимость.
+    const readChip = (t) => {
+      const s = String(t || "").toLowerCase();
+      const cls = s.includes("высок") ? "sup-cls--bad" : s.includes("повыш") ? "sup-cls--mid" : "sup-cls--good";
+      return `<span class="sup-cls ${cls}">${esc(t || "—")}</span>`;
+    };
+    const agRows = (sup.byAgency || []).filter((a) => a.name !== "Другое").map((a) => `<tr>
+        <td class="title">${esc(a.name)}</td>
+        <td class="num">${pct(a.share)}</td>
+        <td>${readChip(a.read)}</td>
+      </tr>`).join("");
+    supHost.innerHTML = `
+      <article class="accent-card is-bet2 sup-lead">
+        <div class="k">Структурный «пол» нагрузки</div>
+        <h3>${esc(sx.head || "Что чинимо, а что упирается в поставщика")}</h3>
+        <p>${esc(sx.lead || "")}</p>
+        <div class="ev-chiprow"><span class="sup-sig sup-sig--bad">${pct(sup.share)} · ${fmtNum(sup.calls)} обращений</span></div>
+      </article>
+      <div class="sup-supgrid">
+        <article class="accent-card is-nsm">
+          <h3>${esc(sx.boundHead || "Упирается в поставщика")}</h3>
+          <p class="muted">${esc(sx.boundNote || "")}</p>
+          <ul class="sup-tlist">${bound.map(themeRow).join("")}</ul>
+        </article>
+        <article class="accent-card is-bet1">
+          <h3>${esc(sx.fixableHead || "В наших руках")}</h3>
+          <p class="muted">${esc(sx.fixableNote || "")}</p>
+          <ul class="sup-tlist">${fixable.map(fixRow).join("")}</ul>
+        </article>
+      </div>
+      ${agRows ? `<details class="sup-more"><summary>Зависимость от поставщика по агентствам</summary>
+        ${sx.agencyNote ? `<p class="lede" style="font-size:13px">${esc(sx.agencyNote)}</p>` : ""}
+        <div class="table-wrap"><table class="backlog">
+          <thead><tr><th>Агентство</th><th>→ поставщику</th><th>Что это значит</th></tr></thead>
+          <tbody>${agRows}</tbody>
+        </table></div></details>` : ""}`;
   }
 
   // --- 5. Тренд во времени + теплокарта L13M --------------------------
@@ -1494,8 +1588,13 @@ async function mountSupport() {
       const c = v === 0 ? "hm--na" : v < 12 ? "hm--g" : v < 20 ? "hm--y" : "hm--r";
       return `<td class="hm ${c}" title="${r1(v)}">${v === 0 ? "" : r1(v)}</td>`;
     };
+    const MON_RU = ["янв", "фев", "мар", "апр", "май", "июн", "июл", "авг", "сен", "окт", "ноя", "дек"];
+    const monLabel = (m) => {
+      const mm = String(m).match(/^(\d{4})-(\d{2})$/);
+      return mm ? `${MON_RU[+mm[2] - 1]}<br>${mm[1].slice(2)}` : esc(String(m));
+    };
     const heatTable = `<div class="table-wrap"><table class="backlog hm-table">
-      <thead><tr><th>Агентство</th>${heat.months.map((m) => `<th>${esc(String(m).slice(2))}</th>`).join("")}</tr></thead>
+      <thead><tr><th>Агентство</th>${heat.months.map((m) => `<th>${monLabel(m)}</th>`).join("")}</tr></thead>
       <tbody>${heat.agencies.map((a) => `<tr><td class="title">${esc(a.name)}</td>${a.vals.map(cell).join("")}</tr>`).join("")}
         ${heat.total ? `<tr class="sup-baseline"><td class="title">ИТОГО</td>${heat.total.map(cell).join("")}</tr>` : ""}</tbody>
     </table></div>`;
@@ -1508,70 +1607,48 @@ async function mountSupport() {
         ${ex.seasonNote ? `<p class="muted">${esc(ex.seasonNote)}</p>` : ""}
         <div class="ev-chiprow"><span class="ev-chip ev-ok" aria-label="подтверждено">✓ подтверждено</span> <a class="ev-chip ev-ok" href="etapy.html#stage-2">→ почему это задача «снять тормоза»</a></div>
       </article>
+      ${ex.trendCaveat ? `<p class="ev-srcline">⚠ ${esc(ex.trendCaveat)}</p>` : ""}
       <details class="sup-more"><summary>Помесячная нагрузка по месяцам (теплокарта, 13 месяцев)</summary>
         <p class="lede" style="font-size:13px">🟩 ниже среднего · 🟨 выше среднего · 🟥 дорого. Пусто — обращений в этом месяце не было.</p>
         ${heatTable}
       </details>`;
   }
 
-  // --- 6. Категории обращений (топ-5 + ссылка в Бэклог) ---------------
+  // --- 6. Темы обращений (топ + класс закрытия) ----------------------
   const catHost = document.querySelector("[data-sup-cat]");
   if (catHost) {
-    const cats = (d.categories || []).slice(0, 5);
-    const hypoWords = ex.hypoWords || {}, mechLinks = ex.mechanismLinks || {};
-    // Этап → раздел этапа на «Этапах ценности» (stageAnchor: «2B»→«stage-2»).
-    const stageCell = (s) => {
-      if (!s) return "—";
-      const a = stageAnchor(s);
-      return a ? `<a href="etapy.html#${a}">${esc(s)}</a>` : esc(s);
-    };
-    // Механизм → тема в Бэклоге (карта в support_extra).
-    const mechCell = (m) => {
-      if (!m) return "—";
-      const ml = mechLinks[m];
-      return ml ? `<a href="backlog.html?theme=${encodeURIComponent(ml.theme)}">${esc(ml.label || m)}</a>` : esc(m);
-    };
-    // Гипотеза словами → карточка гипотезы на «Этапах» (зеркало hypId: «H2.1-доп»→«h2-1-доп»; для «H2.4/H2.5» берём первую).
-    const hypAnchor = (code) => "h" + String(code).split("/")[0].replace(/^H/i, "").toLowerCase().replace(/[.\s]+/g, "-").replace(/^-|-$/g, "");
-    const hypCell = (code) => {
-      if (!code) return "—";
-      return `<a href="etapy.html#${hypAnchor(code)}" title="${esc(code)}">${esc(hypoWords[code] || code)}</a>`;
+    const cats = (d.categories || []).slice(0, 8);
+    const maxFreq = Math.max(1, ...cats.map((c) => c.freq || 0));
+    const freqCell = (c) => {
+      const w = Math.max(2, ((c.freq || 0) / maxFreq) * 100);
+      return `<td class="sup-load"><span class="sup-load-bar" style="width:${w.toFixed(0)}%"></span><span class="sup-load-val">${fmtNum(c.freq)}</span></td>`;
     };
     catHost.innerHTML = `<div class="table-wrap"><table class="backlog">
-      <thead><tr><th>Категория</th><th>Частота</th><th>Этап</th><th>Механизм</th><th>Гипотеза</th></tr></thead>
+      <thead><tr><th>Тема обращений</th><th><abbr title="Сколько обращений в саппорт по этой теме за весь период">Обращений</abbr></th><th><abbr title="Доля обращений по теме, ушедшая внешнему поставщику">→ поставщику</abbr></th><th><abbr title="Можно ли снять тему продуктом или она упирается в поставщика">Что с этим делать</abbr></th></tr></thead>
       <tbody>${cats.map((c) => `<tr>
-        <td class="title">${esc(c.name)}</td>
-        <td class="num">${fmtNum(c.freq)}</td>
-        <td>${stageCell(c.stage)}</td>
-        <td>${mechCell(c.mechanism)}</td>
-        <td>${hypCell(c.hypothesis)}</td>
+        <td class="title">${esc(c.theme)}</td>
+        ${freqCell(c)}
+        <td class="num muted">${pct(c.supShare)}</td>
+        <td>${clsChip(c.cls)}</td>
       </tr>`).join("")}</tbody>
     </table></div>
-    <p class="lede" style="font-size:13px">Показаны 5 из ${(d.categories || []).length}. Полный список, доли IBC и Reach — <a href="backlog.html">в Бэклоге</a>.</p>`;
+    <p class="lede" style="font-size:13px">Показаны 8 из ${(d.categories || []).length} тем. Полный список и охват — <a href="backlog.html">в Бэклоге</a>.</p>`;
   }
 
   // --- 7. Корреляция тормоза → отток (честный отрицательный результат) ---
   const joinHost = document.querySelector("[data-sup-join]");
   if (joinHost) {
-    const j = d.join || {};
     const jp = ex.joinPlain || {};
     joinHost.innerHTML = `<article class="accent-card is-bet1">
       <div class="k">Проверка предположения</div>
       <h3>Дорогая поддержка пока не объясняет уход клиентов</h3>
-      <p>${esc(jp.verdict || j.verdict || "")}</p>
-      <p>${esc(jp.caseFor || j.caseFor || "—")}<br>${esc(jp.caseAgainst || j.caseAgainst || "—")}</p>
-      ${(jp.implication || j.implication) ? `<p class="muted">${esc(jp.implication || j.implication)}</p>` : ""}
+      <p>${esc(jp.verdict || "")}</p>
+      <p>${esc(jp.caseFor || "—")}<br>${esc(jp.caseAgainst || "—")}</p>
+      ${jp.implication ? `<p class="muted">${esc(jp.implication)}</p>` : ""}
       <div class="ev-chiprow"><span class="ev-chip ev-muted" aria-label="не проверялась">∅ пока не подтверждено</span></div>
     </article>`;
   }
 
-  // --- 9. Оговорки и источники ----------------------------------------
-  const cavHost = document.querySelector("[data-sup-caveats]");
-  if (cavHost) {
-    const cav = ex.caveats || [];
-    cavHost.innerHTML = `${cav.length ? `<ul class="sup-caveats">${cav.map((c) => `<li>${esc(c)}</li>`).join("")}</ul>` : ""}
-      <p class="ev-srcline">Источники: <b>${esc(d.sourceCalls || "")}</b> · <b>${esc(d.sourceRatio || "")}</b>. ${esc(d.metric || "")}</p>`;
-  }
 }
 
 // ===================== Этапы ценности (etapy.html) =====================
@@ -2370,6 +2447,21 @@ async function mountMetrics() {
   // Слаг кода метрики → id карточки (#m-…) и блока методики (#calc-…). Должен совпадать в обоих местах.
   const mSlug = (c) => String(c).toLowerCase().replace(/[^a-zа-я0-9]+/gi, "-").replace(/^-|-$/g, "");
 
+  // Готовность данных — ОТДЕЛЬНАЯ ось от достоверности (.ev-chip) и категориальной шкалы.
+  // Нейтральный монохром: метр из 3 сегментов (сколько данных уже есть), без новых цветов-хексов.
+  const READY = {
+    green: { lab: "из данных", fill: 3 },
+    amber: { lab: "нужен атрибут", fill: 2 },
+    red:   { lab: "новая инструментовка", fill: 1 },
+    black: { lab: "данные не наши", fill: 0 },
+  };
+  const readyChip = (r) => {
+    if (!r || !READY[r]) return "";
+    const cfg = READY[r];
+    const segs = [0, 1, 2].map((i) => `<i${i < cfg.fill ? ' class="on"' : ""}></i>`).join("");
+    return `<span class="m-ready m-ready--${r}" title="готовность данных: ${esc(cfg.lab)}"><span class="m-ready__meter" aria-hidden="true">${segs}</span>${esc(cfg.lab)}</span>`;
+  };
+
   function card(m) {
     const dirGood = `хорошо ${esc(m.direction)}`;
     const lead = m.leading ? `<span class="m-lead">ведущая</span>` : "";
@@ -2389,6 +2481,20 @@ async function mountMetrics() {
       base = `<div class="m-base m-base--need">baseline нужен</div>`;
     }
     const note = m.note ? `<div class="m-note">${esc(m.note)}</div>` : "";
+    // Слой реализуемости (из «Инструментовки метрик»): откуда данные, как часто, какая волна, текст тикета.
+    let instr = "";
+    if (m.instr) {
+      const wv = m.instr.wave
+        ? `<a class="m-instr__wave" href="#instr" title="порядок запуска">волна ${esc(m.instr.wave)}</a>`
+        : (m.instr.refine ? `<span class="m-instr__wave m-instr__wave--has">цифра уже есть</span>` : "");
+      const t0 = m.instr.blockedByT0 ? `<a class="m-instr__t0" href="#instr-t0" title="разблокируется логом транзакций">из тикета №0</a>` : "";
+      const refine = m.instr.refine ? `<p class="m-instr__refine"><span class="m-instr__rh">что доуточнить</span> ${esc(m.instr.refine)}</p>` : "";
+      instr = `<div class="m-instr">
+        <div class="m-instr__src"><span class="m-instr__h">источник данных</span> ${esc(m.instr.source)}</div>
+        <div class="m-instr__bar">${readyChip(m.instr.readiness)}<span class="m-instr__freq">частота: ${esc(m.instr.freq)}</span>${wv}${t0}</div>
+        <details class="m-instr__ticket"><summary>тикет аналитику ↓</summary><div class="m-instr__tbody"><p>${esc(m.instr.ticket)}</p>${refine}</div></details>
+      </div>`;
+    }
     // План vs факт (ТЗ 09): дельта после релиза + статус гипотезы каноном .ev-chip.
     let fact = "";
     if (m.factDelta) {
@@ -2414,7 +2520,7 @@ async function mountMetrics() {
           <span>подцель ${esc(m.subgoal)}</span>
           <span>${esc(m.hypothesis)}</span>
         </div>
-        ${base}${formula}${fact}${note}
+        ${base}${formula}${fact}${note}${instr}
         <div class="m-links">
           <a class="m-link" href="backlog.html?q=${encodeURIComponent(m.code)}">итерации с метрикой →</a>
           ${calcLink}
@@ -2470,7 +2576,7 @@ async function mountMetrics() {
         const cls = "nsm-chip" + (c.target ? " nsm-chip--tgt" : "");
         const full = (mByCode[c.code] && mByCode[c.code].name) || c.name;
         let tip = full;
-        if (c.guard) tip += " · предохранитель: следим, чтобы операция не ушла от консультанта к клиенту";
+        if (c.guard) tip += " · предохранитель: следим, чтобы транзакция не ушла от консультанта к клиенту";
         else if (c.target) tip += " · целевая (косвенная) метрика";
         return `<a class="${cls}" href="#m-${mSlug(c.code)}" title="${esc(tip)}"><span class="nsm-chip__d">${esc(c.dir)}</span> ${esc(c.name)}</a>`;
       }).join("");
@@ -2550,6 +2656,53 @@ async function mountMetrics() {
     </section>`;
   }
 
+  // ── «Как это измерить»: тикет №0 + волны запуска (из «Инструментовки метрик») ──
+  function instrHero(ins) {
+    if (!ins) return "";
+    const t0 = ins.ticket0;
+    const fields = t0 && (t0.fields || []).length
+      ? `<ol class="instr-t0__fields">${t0.fields.map((f) => `<li>${esc(f)}</li>`).join("")}</ol>` : "";
+    const unlocks = t0 && (t0.unlocks || []).length
+      ? `<div class="instr-t0__unlocks"><span class="instr-t0__uh">разблокирует</span>${t0.unlocks.map((c) => `<a class="instr-tag" href="#m-${mSlug(c)}">${esc(c)}</a>`).join("")}</div>` : "";
+    const ticket0 = t0 ? `<div class="instr-t0" id="instr-t0">
+        <div class="instr-t0__head"><span class="instr-t0__badge">тикет №0</span><span class="instr-t0__title">${esc(t0.title)}</span></div>
+        <p class="instr-t0__body">${esc(t0.body)}</p>
+        ${fields}${unlocks}
+        ${t0.punch ? `<p class="instr-t0__punch">${esc(t0.punch)}</p>` : ""}
+      </div>` : "";
+
+    const legend = (ins.readinessLegend || []).map((l) =>
+      `<div class="instr-lg__row">${readyChip(l.key)}<span class="instr-lg__desc">${esc(l.desc)}</span></div>`).join("");
+    const legendBlock = legend
+      ? `<div class="instr-lg"><span class="instr-lg__h">Готовность данных</span>${legend}</div>` : "";
+
+    const waves = (ins.waves || []).map((w) => {
+      const chips = (w.metrics || []).map((c) => `<a class="instr-tag" href="#m-${mSlug(c)}">${esc(c)}</a>`).join("");
+      return `<div class="instr-wave">
+          <div class="instr-wave__top"><span class="instr-wave__n">Волна ${esc(w.n)}</span><span class="instr-wave__title">${esc(w.title)}</span></div>
+          ${w.desc ? `<p class="instr-wave__desc">${esc(w.desc)}</p>` : ""}
+          <div class="instr-wave__chips">${chips}</div>
+        </div>`;
+    }).join("");
+    const wavesBlock = waves
+      ? `<div class="instr-waves"><span class="instr-sub__h">Волны запуска</span><div class="instr-waves__grid">${waves}</div></div>` : "";
+
+    const order = (ins.order || []).length
+      ? `<div class="instr-order"><span class="instr-sub__h">Порядок запуска — 3 тикета вместо 11</span><ol>${ins.order.map((o) => `<li>${esc(o)}</li>`).join("")}</ol></div>` : "";
+
+    return `<section class="instr-hero" id="instr">
+      ${ins.eyebrow ? `<p class="eyebrow">${esc(ins.eyebrow)}</p>` : ""}
+      <h2 class="instr-h2">${esc(ins.title)}</h2>
+      ${ins.lede ? `<p class="lede">${esc(ins.lede)}</p>` : ""}
+      ${ticket0}
+      ${legendBlock}
+      ${wavesBlock}
+      ${order}
+      ${ins.note ? `<p class="nsm-guardnote">${esc(ins.note)}</p>` : ""}
+      ${ins.source ? `<p class="nsm-foot">${esc(ins.source)}</p>` : ""}
+    </section>`;
+  }
+
   const active = metrics.filter((m) => m.type === "active").sort(byStage);
   const target = metrics.filter((m) => m.type === "target").sort(byStage);
 
@@ -2605,6 +2758,7 @@ async function mountMetrics() {
         <div class="stat"><div class="v">${active.length}</div><div class="l">активных</div></div>
       </div>
     </div>
+    ${instrHero(data.instrumentation)}
     ${primary}
     ${secondary}
     ${calc}`;
@@ -2838,7 +2992,7 @@ async function mountExec() {
     const leadPct = totalMay ? Math.round((lead.may || 0) / totalMay * 100) : null;
     const facts = [];
     if (clients != null) facts.push(`<a class="ex-fact" href="agencies.html"><b>${fmtInt(clients)}</b><span>активных клиентов · NSM</span></a>`);
-    if (leadPct != null) facts.push(`<a class="ex-fact" href="agencies.html#nsm"><b>IBC ${leadPct}% <span class="ex-fact__vs">/ остальные ${100 - leadPct}%</span></b><span>доля операций · ${ags.length} агентств</span></a>`);
+    if (leadPct != null) facts.push(`<a class="ex-fact" href="agencies.html#nsm"><b>IBC ${leadPct}% <span class="ex-fact__vs">/ остальные ${100 - leadPct}%</span></b><span>доля транзакций · ${ags.length} агентств</span></a>`);
     if (facts.length) factsBlock = `<div class="ex-facts">${facts.join("")}</div>`;
   } catch (e) { /* agencies.json необязателен — без строки фактов */ }
 
@@ -3008,7 +3162,7 @@ async function mountDashboards() {
   if (data) {
     const tiles = [
       { href: "agencies.html", k: "Агентства", n: fmtInt(D.agenciesActive),
-        sub: `активных · ТОП-3 ${fmtPct(D.top3)} операций · ${fmtSigned(D.momPct)} м/м` },
+        sub: `активных · ТОП-3 ${fmtPct(D.top3)} транзакций · ${fmtSigned(D.momPct)} м/м` },
       { href: "research.html", k: "Исследования", n: fmtInt(D.researchTotal),
         sub: `находок · ${D.researchConfirmed ?? "—"} подтверждены · ${D.researchClosed ?? "—"} закрыто` },
       { href: "metrics.html", k: "Метрики", n: `${D.metricsActive ?? "—"} + ${D.metricsTarget ?? "—"}`,

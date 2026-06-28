@@ -822,7 +822,7 @@ a.chip.branch:hover { border-color: var(--copper); color: var(--cream); text-dec
 .agb--rest { fill: var(--cat-3); }
 .agbars-svg .ch-hit { cursor: crosshair; }
 
-/* Дашборд за период: два помесячных тренда (операции, клиенты) друг под другом, во всю ширину */
+/* Дашборд за период: два помесячных тренда (транзакции, клиенты) друг под другом, во всю ширину */
 .agtrend-stack { display: flex; flex-direction: column; gap: 22px; margin: 8px 0 4px; }
 .agdash__col { min-width: 0; }
 .agdash__col .agbars-svg { margin-top: 0; }
@@ -1005,6 +1005,68 @@ table.backlog td.spark-cell { padding: 4px 8px; }
 .m-links { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; margin-top: auto; padding-top: 12px; }
 .m-link { font-family: var(--f-mono); font-size: 11.5px; }
 .m-calc-link { font-family: var(--f-mono); font-size: 11.5px; color: var(--gold); }
+
+/* ── Готовность данных — отдельная ось (не достоверность .ev-chip, не категориальная шкала). ──
+   Нейтральный монохром: метр из 3 сегментов кодирует «сколько данных уже есть». */
+.m-ready { display: inline-flex; align-items: center; gap: 6px; font-family: var(--f-mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em; color: var(--cream-dim); }
+.m-ready__meter { display: inline-flex; gap: 2px; }
+.m-ready__meter i { width: 7px; height: 7px; border-radius: 2px; background: transparent; border: 1px solid var(--line-soft); }
+.m-ready__meter i.on { background: var(--cream-dim); border-color: var(--cream-dim); }
+.m-ready--green .m-ready__meter i.on { background: var(--cream-soft); border-color: var(--cream-soft); }
+.m-ready--green { color: var(--cream-soft); }
+.m-ready--black .m-ready__meter i { border-style: dashed; }
+.m-ready--black { color: var(--muted); }
+
+/* Слой реализуемости в карточке метрики: источник · готовность · частота · волна · тикет. */
+.m-instr { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
+.m-instr__src { font-size: 12px; color: var(--cream-soft); line-height: 1.5; }
+.m-instr__h { font-family: var(--f-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--cream-dim); margin-right: 4px; }
+.m-instr__bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-top: 8px; }
+.m-instr__freq { font-family: var(--f-mono); font-size: 10.5px; color: var(--cream-dim); }
+.m-instr__wave { font-family: var(--f-mono); font-size: 10.5px; color: var(--gold); border: 1px solid var(--gold-line); border-radius: 999px; padding: 1px 8px; }
+.m-instr__wave--has { color: var(--cream-dim); border-color: var(--line-soft); }
+.m-instr__t0 { font-family: var(--f-mono); font-size: 10.5px; color: var(--gold); }
+.m-instr__ticket { margin-top: 8px; }
+.m-instr__ticket > summary { cursor: pointer; font-family: var(--f-mono); font-size: 11px; color: var(--gold); list-style: none; }
+.m-instr__ticket > summary::-webkit-details-marker { display: none; }
+.m-instr__tbody { font-size: 12px; color: var(--cream-soft); line-height: 1.5; margin-top: 6px; }
+.m-instr__tbody p { margin: 0 0 6px; }
+.m-instr__refine { color: var(--cream-dim); }
+.m-instr__rh { font-family: var(--f-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--cream-dim); margin-right: 4px; }
+
+/* ── «Как это измерить»: тикет №0 + волны запуска. ── */
+.instr-hero { margin: 36px 0; }
+.instr-h2 { font-family: var(--f-display); font-size: 26px; color: var(--cream); margin: 4px 0 8px; }
+.instr-tag { display: inline-block; font-family: var(--f-mono); font-size: 11px; color: var(--gold); border: 1px solid var(--gold-line); border-radius: 999px; padding: 2px 9px; margin: 3px 4px 0 0; }
+/* Тикет №0 — главный рычаг, единственный золотой акцент блока. */
+.instr-t0 { border: 1px solid var(--gold-line); border-left: 3px solid var(--gold); border-radius: 12px; background: var(--gold-dim); padding: 16px 18px; margin: 16px 0; }
+.instr-t0__head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.instr-t0__badge { font-family: var(--f-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--bg); background: var(--gold); border-radius: 6px; padding: 3px 8px; }
+.instr-t0__title { font-size: 15px; font-weight: 600; color: var(--cream); }
+.instr-t0__body { font-size: 13px; color: var(--cream-soft); line-height: 1.55; margin: 10px 0; }
+.instr-t0__fields { margin: 10px 0; padding-left: 20px; display: grid; gap: 4px; }
+.instr-t0__fields li { font-size: 12.5px; color: var(--cream-soft); line-height: 1.5; }
+.instr-t0__unlocks { margin-top: 10px; }
+.instr-t0__uh { font-family: var(--f-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--cream-dim); margin-right: 6px; }
+.instr-t0__punch { font-size: 13px; color: var(--cream); font-weight: 500; margin: 10px 0 0; }
+/* Легенда готовности. */
+.instr-lg { display: grid; gap: 6px; margin: 16px 0; padding: 12px 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+.instr-lg__h, .instr-sub__h { font-family: var(--f-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--cream-dim); display: block; }
+.instr-lg__row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.instr-lg__desc { font-size: 12px; color: var(--cream-soft); }
+/* Волны запуска. */
+.instr-waves { margin: 18px 0; }
+.instr-waves__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; margin-top: 8px; }
+.instr-wave { border: 1px solid var(--line); border-radius: 10px; background: var(--panel); padding: 12px 14px; }
+.instr-wave__top { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.instr-wave__n { font-family: var(--f-mono); font-size: 11px; color: var(--gold); }
+.instr-wave__title { font-size: 13px; font-weight: 600; color: var(--cream); }
+.instr-wave__desc { font-size: 12px; color: var(--cream-dim); line-height: 1.5; margin: 6px 0; }
+.instr-wave__chips { margin-top: 4px; }
+/* Порядок запуска. */
+.instr-order { margin: 18px 0; }
+.instr-order ol { margin: 8px 0 0; padding-left: 20px; display: grid; gap: 6px; }
+.instr-order li { font-size: 13px; color: var(--cream-soft); line-height: 1.55; }
 
 /* Секция «Как считается»: сворачиваемая методика по метрикам. */
 .m-group--calc { margin-top: 40px; }
@@ -2095,6 +2157,59 @@ tr.sup-baseline td { border-top: 2px solid var(--line-soft); color: var(--cream)
 .sup-corr code { color: var(--cream-dim); }
 .sup-caveats { color: var(--cream-dim); font-size: 13px; line-height: 1.6; padding-left: 18px; margin: 0 0 12px; }
 .sup-caveats li { margin: 0 0 6px; }
+
+/* KPI «уходит поставщику» — структурный пол (акцентная ось: золото) */
+.ag-stat--bad { background: var(--gold-dim); }
+.ag-stat--bad .v { color: var(--gold); }
+
+/* строка агентства в оттоке — мягкая пометка, не критично-розовая */
+tr.sup-row--warn td { color: var(--cream-dim); }
+tr.sup-row--warn td.title { color: var(--cream-soft); }
+
+/* блок «что чинимо / упирается в поставщика» */
+.sup-supgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+@media (max-width: 720px) { .sup-supgrid { grid-template-columns: 1fr; } }
+.sup-tlist { list-style: none; padding: 0; margin: 10px 0 0; display: grid; gap: 7px; }
+.sup-tlist li { display: flex; justify-content: space-between; gap: 10px; align-items: baseline;
+  font-size: 13.5px; color: var(--cream-soft); border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+.sup-tlist li:last-child { border-bottom: none; }
+.sup-tname { line-height: 1.35; }
+.sup-tval { font-family: var(--f-mono); font-size: 12px; white-space: nowrap; color: var(--cream); }
+
+/* выводы — все карточки, компактнее (6 шт.) */
+.accent-grid--sm { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+@media (max-width: 900px) { .accent-grid--sm { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) { .accent-grid--sm { grid-template-columns: 1fr; } }
+.sup-conclcard { padding: 14px 16px; }
+.sup-conclcard h3 { font-size: 14px; line-height: 1.4; margin: 0 0 8px; }
+
+/* динамика нагрузки в таблице (обращений/мес 2025→2026) */
+.sup-dyn { font-family: var(--f-mono); font-size: 12px; white-space: nowrap; }
+.sup-dyn--up { color: var(--cream); }
+.sup-dyn--down { color: var(--success); }
+.sup-dyn--flat { color: var(--cream-dim); }
+
+/* ячейка «нагрузка»: мини-полоска (секвенциальная шкала данных) + число */
+td.sup-load { position: relative; min-width: 96px; }
+.sup-load-bar { position: absolute; left: 8px; top: 50%; transform: translateY(-50%);
+  height: 16px; background: var(--gold-line); border-radius: 3px; z-index: 0; max-width: calc(100% - 16px); }
+.sup-load-val { position: relative; z-index: 1; font-family: var(--f-mono);
+  font-variant-numeric: tabular-nums; font-weight: 500; }
+
+/* подзаголовок группы агентств по уровню обслуживания */
+tr.sup-grouphdr td { font-family: var(--f-mono); font-size: 10.5px; text-transform: uppercase;
+  letter-spacing: .05em; color: var(--cream-dim); background: var(--panel-2);
+  padding: 7px 12px; border-top: 1px solid var(--line-soft); }
+/* строки-шум (малая база, отток) — приглушены */
+tr.sup-row--mute td, tr.sup-row--mute td.title { color: var(--cream-dim); }
+tr.sup-row--mute .sup-load-bar { opacity: .4; }
+
+/* чип «класс закрытия» темы — отдельная пилюля, не путать с эмодзи-сигналом */
+.sup-cls { font-family: var(--f-mono); font-size: 11px; padding: 1px 9px; border-radius: 999px;
+  white-space: nowrap; border: 1px solid var(--line-soft); color: var(--cream-soft); }
+.sup-cls--good { color: var(--success); border-color: rgba(61, 163, 114, .45); background: rgba(61, 163, 114, .08); }
+.sup-cls--bad { color: var(--cream-dim); border-style: dashed; }
+.sup-cls--mid { color: var(--cream-soft); }
 
 /* теплокарта Support-ratio (секвенциальная шкала данных, не акцентная ось) */
 .hm-table th { font-size: 10px; padding: 6px 5px; }

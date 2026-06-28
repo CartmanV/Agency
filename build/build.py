@@ -93,6 +93,28 @@ def clean(value):
     return value
 
 
+# Единый термин: «операция» (как единица работы агентства) → «транзакция».
+# \b защищает «операционные/операционка» и «кооперация» (другая основа). Применяется
+# к собранным data/*.json после сборки, чтобы термин был устойчив к пересборке.
+_TERM_RX = re.compile(r"\b(операци|Операци)(я|и|й|ю|ей|ях|ями|ям)\b")
+
+
+def _term_repl(m):
+    return ("Транзакци" if m.group(1)[0] == "О" else "транзакци") + m.group(2)
+
+
+def normalize_terms():
+    total = 0
+    for p in sorted(DATA_DIR.glob("*.json")):
+        text = p.read_text(encoding="utf-8")
+        new, n = _TERM_RX.subn(_term_repl, text)
+        if n:
+            p.write_text(new, encoding="utf-8")
+            total += n
+    if total:
+        print(f"Термин «операция→транзакция»: {total} замен в data/*.json")
+
+
 def find_source():
     """Самый свежий файл единого бэклога (по версии vN) в папке My work.
     Устойчиво к ревизиям (v5 → v6 → …) и NFD/NFC-нормализации имён на macOS."""
@@ -432,73 +454,128 @@ def build_support():
                 return c
         return None
 
-    # --- ratio по агентствам (лист «2. Support-ratio») + строка BASELINE ---
-    per_agency, baseline = [], None
+    def digits(v):
+        """Целое из строки с разделителями-пробелами (886, «9 271»)."""
+        m = re.search(r"\d[\d\s ]*", str(v or ""))
+        return int(re.sub(r"[\s ]", "", m.group())) if m else None
+
+    # --- мета и метод (лист «0. Сводка и метод») ---
+    data_period = rows_n = sup_share = sup_calls = sup_total = prev_ratio = method_note = None
+    for r in rows_of(sheet(wb1, "сводка")):
+        c0 = clean(r[0])
+        if not c0:
+            continue
+        v = next((clean(x) for x in r[1:] if clean(x) is not None), None)
+        low = c0.lower()
+        if low.startswith("период данных"):
+            data_period = re.sub(r"\s*\(.*\)\s*$", "", v).strip() if v else v
+        elif low.startswith("строк"):
+            rows_n = digits(v)
+        elif low.startswith("было 19"):
+            method_note = v
+            pm = re.search(r"\d+[.,]\d+", str(v or ""))
+            prev_ratio = float(pm.group().replace(",", ".")) if pm else None
+        elif low.startswith("доля обращений к поставщику"):
+            sm = re.search(r"(\d+[.,]\d+)\s*%", str(v or ""))
+            sup_share = round(float(sm.group(1).replace(",", ".")) / 100, 4) if sm else None
+            pair = re.search(r"\((\d[\d\s ]*)\s+из\s+(\d[\d\s ]*)\)", str(v or ""))
+            if pair:
+                sup_calls, sup_total = digits(pair.group(1)), digits(pair.group(2))
+
+    # --- ratio по агентствам (лист «2. Support-ratio»): активные · BASELINE · ушедшие ---
+    # Колонки: имя · сегмент · обращ.всего · обращ.L6M · опер.L6M · ratio · →поставщик · sup% · сигнал · боль.
+    per_agency, per_agency_hist, baseline = [], [], None
+    hist_mode = False
     for r in rows_of(sheet(wb1, "support-ratio"))[1:]:
         nm = clean(r[0])
         if not nm:
             continue
+        if str(nm).startswith("Без операций"):
+            hist_mode = True
+            continue
         rec = {
             "name": nm, "segment": clean(r[1]),
-            "calls": num(r[2]), "ops": num(r[3]), "ratio": num(r[4]),
-            "trendMo": num(r[5]), "dyn": clean(r[6]),
-            "signal": clean(r[7]), "pain": clean(r[8]),
+            "callsTotal": num(r[2]), "callsL6M": num(r[3]), "ops": num(r[4]),
+            "ratio": num(r[5]), "toSupplier": num(r[6]), "supShare": num(r[7]),
+            "signal": clean(r[8]), "pain": clean(r[9]),
         }
         if str(nm).upper().startswith("BASELINE"):
-            baseline = {"ratio": rec["ratio"], "calls": rec["calls"], "ops": rec["ops"],
-                        "trendMo": rec["trendMo"], "dyn": rec["dyn"]}
+            baseline = {"ratio": rec["ratio"], "calls": rec["callsL6M"], "ops": rec["ops"],
+                        "toSupplier": rec["toSupplier"], "prevRatio": prev_ratio,
+                        "methodNote": method_note}
             continue
-        per_agency.append(rec)
+        sig = (rec["signal"] or "")
+        rec["smallBase"] = "мал. база" in sig
+        rec["outflow"] = "отток" in sig
+        (per_agency_hist if hist_mode else per_agency).append(rec)
 
-    # --- профиль по сегментам (лист «3. Профиль по сегментам») ---
-    segments = []
-    for r in rows_of(sheet(wb1, "профиль по сегментам"))[1:]:
+    # --- помесячная динамика по агентствам (лист «5. Профиль агентств»): обращений в 2025 vs 2026 ---
+    # Единственный временной срез новой (точной) атрибуции. 2026 — неполный год (до 24.06).
+    prof = {}
+    for r in rows_of(sheet(wb1, "профиль"))[1:]:
         nm = clean(r[0])
         if not nm:
             continue
-        segments.append({"name": nm, "volume": clean(r[1]), "ratio": clean(r[2]),
-                         "pain": clean(r[3]), "lever": clean(r[4]), "note": clean(r[5])})
+        prof[nm] = {"y2025": num(r[2]), "y2026": num(r[3])}
+    for rec in (*per_agency, *per_agency_hist):
+        p = prof.get(rec["name"])
+        if p:
+            rec["y2025"], rec["y2026"] = p["y2025"], p["y2026"]
 
-    # --- категории-кандидаты (лист «4. Категории-кандидаты»); поимённый столбец опускаем (приватность) ---
-    categories = []
-    for r in rows_of(sheet(wb1, "категории"))[1:]:
-        nm = clean(r[0])
-        if not nm:
-            continue
-        categories.append({
-            "name": nm, "freq": num(r[1]), "ibcShare": clean(r[2]), "stage": clean(r[3]),
-            "mechanism": clean(r[4]), "hypothesis": clean(r[5]), "action": clean(r[6]),
-            "concentration": clean(r[7]), "reachAgencies": num(r[8]), "reach": num(r[9]),
-        })
-    categories.sort(key=lambda c: (c["freq"] or 0), reverse=True)
-
-    # --- сводка выводов (лист «1. Сводка выводов») ---
-    conclusions = []
-    for r in rows_of(sheet(wb1, "сводка выводов"))[1:]:
-        if num(r[0]) is None:
-            continue
-        conclusions.append({"n": int(num(r[0])), "text": clean(r[1]), "fact": clean(r[2]),
-                            "status": clean(r[3]), "frame": clean(r[4])})
-
-    # --- корреляция ratio×NSM (лист «Join ratio×NSM»): сводные строки внизу ---
-    join = {"correlations": [], "verdict": None, "predictor": None,
-            "caseFor": None, "caseAgainst": None, "implication": None}
-    for r in rows_of(sheet(wb1, "join")):
+    # --- обращения к поставщику (лист «3. Обращения к поставщику»): блок A (агентства) + блок B (темы) ---
+    sup_by_agency, sup_by_theme, mode = [], [], None
+    for r in rows_of(sheet(wb1, "поставщик")):
         c0 = clean(r[0])
         if not c0:
             continue
-        if c0.startswith("ВЫВОД"):
-            join["verdict"] = c0.split(":", 1)[-1].strip()
-        elif c0.startswith("r("):
-            join["correlations"].append({"pair": c0, "val": last_cell(r)})
-        elif "Предиктор" in c0:
-            join["predictor"] = last_cell(r)
-        elif c0.startswith("Кейс ЗА"):
-            join["caseFor"] = last_cell(r)
-        elif c0.startswith("Кейс ПРОТИВ"):
-            join["caseAgainst"] = last_cell(r)
-        elif c0.startswith("Следствие"):
-            join["implication"] = last_cell(r)
+        if c0.startswith("БЛОК A"):
+            mode = "A"; continue
+        if c0.startswith("БЛОК B"):
+            mode = "B"; continue
+        if c0 in ("Агентство", "Тема (L2)"):
+            continue
+        if mode == "A":
+            sup_by_agency.append({"name": c0, "total": num(r[1]), "toSupplier": num(r[2]),
+                                  "share": num(r[3]), "read": clean(r[4])})
+        elif mode == "B":
+            sup_by_theme.append({"theme": c0, "total": num(r[1]), "toSupplier": num(r[2]),
+                                 "share": num(r[3]), "cls": clean(r[4])})
+
+    # --- разбивка по темам (лист «4. Разбивка по темам») ---
+    categories = []
+    for r in rows_of(sheet(wb1, "разбивка"))[1:]:
+        nm = clean(r[0])
+        if not nm or num(r[1]) is None:
+            continue
+        categories.append({
+            "theme": nm, "freq": num(r[1]), "shareBase": num(r[2]),
+            "toSupplier": num(r[3]), "supShare": num(r[4]), "cls": clean(r[5]),
+            "mapping": clean(r[6]),
+        })
+    categories.sort(key=lambda c: (c["freq"] or 0), reverse=True)
+
+    # Чисто «Ракета-fixable» темы (0% поставщику) — кандидаты в селф-сервис №1.
+    fixable = [{"theme": c["theme"], "freq": c["freq"]} for c in categories
+               if c["cls"] and "fixable" in c["cls"].lower() and (c["toSupplier"] or 0) == 0]
+    fixable.sort(key=lambda c: (c["freq"] or 0), reverse=True)
+
+    supplier = {
+        "share": sup_share, "calls": sup_calls, "total": sup_total or rows_n,
+        "byAgency": sup_by_agency, "byTheme": sup_by_theme, "fixable": fixable[:6],
+    }
+
+    # --- сводка выводов (лист «1. Выводы»): # · вывод · что меняет ---
+    # Статус для канона .ev-chip: вывод про пересборку baseline ссылается на открытый вопрос.
+    conclusions = []
+    for r in rows_of(sheet(wb1, "вывод"))[1:]:
+        if num(r[0]) is None:
+            continue
+        n = int(num(r[0]))
+        txt = clean(r[1])
+        fact = clean(r[2])
+        open_q = bool(txt and ("baseline" in txt.lower() or "пересчёт" in str(fact or "").lower()))
+        conclusions.append({"n": n, "text": txt, "fact": fact,
+                            "status": "Открыто" if open_q else "Подтверждено"})
 
     # --- помесячный ratio L13M (лист «Ratio×мес (L13M)») — теплокарта ---
     heat = None
@@ -545,13 +622,21 @@ def build_support():
             trend["perAgency"].append({"name": c0, "slope": num(r[1]), "first6": num(r[2]),
                                        "last6": num(r[3]), "status": clean(r[4]), "read": clean(r[5])})
 
+    # Доля 2026 года в данных (для пересчёта обращений в «в месяц»): по дате конца периода.
+    months_2026 = None
+    em = re.search(r"(\d{2})\.(\d{2})\.2026\s*$", str(data_period or ""))
+    if em:
+        months_2026 = round((int(em.group(2)) - 1) + int(em.group(1)) / 30.44, 2)
+
     return {
         "sourceCalls": f1.name, "sourceRatio": f2.name,
+        "dataPeriod": data_period, "rows": rows_n, "months2026": months_2026,
         "metric": "Support-ratio — обращений в саппорт на 1000 операций (L6M: дек-25 … май-26)",
         "axisNote": "Ось «частота боли» (Impact), не канал Reach.",
-        "baseline": baseline, "trend": trend, "perAgency": per_agency,
-        "segments": segments, "categories": categories, "conclusions": conclusions,
-        "join": join, "heat": heat,
+        "baseline": baseline, "supplier": supplier,
+        "trend": trend, "heat": heat,
+        "perAgency": per_agency, "perAgencyHist": per_agency_hist,
+        "categories": categories, "conclusions": conclusions,
     }
 
 
@@ -1035,8 +1120,10 @@ def main():
         sup_out = DATA_DIR / "support.json"
         sup_out.write_text(json.dumps(support, ensure_ascii=False, indent=2), encoding="utf-8")
         b = support.get("baseline") or {}
-        print(f"Саппорт: {len(support['perAgency'])} агентств · baseline {b.get('ratio')} · "
-              f"{len(support['conclusions'])} выводов · {len(support['categories'])} категорий "
+        sup = support.get("supplier") or {}
+        print(f"Саппорт: {len(support['perAgency'])} активных + {len(support['perAgencyHist'])} ушедших · "
+              f"baseline {b.get('ratio')} (было {b.get('prevRatio')}) · поставщик {sup.get('calls')} ({sup.get('share')}) · "
+              f"{len(support['conclusions'])} выводов · {len(support['categories'])} тем "
               f"→ {sup_out.relative_to(SITE_DIR)}")
 
     # research.json — реестр исследований
@@ -1072,6 +1159,9 @@ def main():
 
     must = sum(1 for x in items if x.get("moscow") == "Must")
     print(f"  Must: {must}  ·  с Final Score: {sum(1 for x in items if x['finalScore'] is not None)}")
+
+    # Единый термин по всем собранным json (устойчиво к пересборке).
+    normalize_terms()
 
     if errors:
         print(f"\n⚠ Предупреждения валидации ({len(errors)}):")
