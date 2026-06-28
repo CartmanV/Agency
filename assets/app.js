@@ -1427,13 +1427,23 @@ async function mountSupport() {
   const conclHost = document.querySelector("[data-sup-concl]");
   if (conclHost) {
     const plainMap = ex.conclusionsPlain || {};
-    const plainOf = (c) => plainMap[String(c.n)] || c.text || "";
     const hide = ex.hideConclusions || [];
-    const cons = (d.conclusions || []).filter((c) => !hide.includes(c.n));
+    // Вывод = t (жирный итог) + s (строка пояснения). Поддержка легаси-строки и c.text.
+    const partsOf = (c) => {
+      const p = plainMap[String(c.n)];
+      if (p && typeof p === "object") return { t: p.t || "", s: p.s || "" };
+      if (c.t || c.s) return { t: c.t || "", s: c.s || "" };
+      const str = (typeof p === "string" ? p : null) || c.text || "";
+      return { t: str, s: "" };
+    };
+    // Собранные выводы (из xlsx) + авторские (extraConclusions: PM-выводы, которых нет в источнике сборки).
+    const cons = (d.conclusions || []).filter((c) => !hide.includes(c.n)).concat(ex.extraConclusions || []);
     const cardOf = (c) => {
       const ev = evChip(stStatus(c.status));
+      const { t, s } = partsOf(c);
       return `<article class="accent-card is-nsm sup-conclcard">
-        <h3>${esc(plainOf(c))}</h3>
+        <h3>${esc(t)}</h3>
+        ${s ? `<p class="muted">${esc(s)}</p>` : ""}
         <div class="ev-chiprow"><span class="ev-chip ${ev.cls} ev-chip--mini" aria-label="${ev.label}">${ev.sign} ${esc(c.status || ev.label)}</span></div>
       </article>`;
     };
@@ -1536,6 +1546,13 @@ async function mountSupport() {
     const sx = ex.supplier || {};
     const bound = (sup.byTheme || []).filter((t) => String(t.cls || "").toLowerCase().includes("bound"));
     const fixable = sup.fixable || [];
+    // Потолок эффекта: расклад всей нагрузки по управляемости (доля обращений по классу темы).
+    const cats0 = d.categories || [];
+    const ctot = cats0.reduce((s, c) => s + (c.freq || 0), 0) || 1;
+    const clKey = (c) => { const t = String(c.cls || "").toLowerCase(); return t.includes("bound") ? "supp" : t.includes("частичн") ? "part" : "own"; };
+    const ceil = { own: 0, part: 0, supp: 0 };
+    cats0.forEach((c) => { ceil[clKey(c)] += (c.freq || 0); });
+    const ceilPct = (k) => Math.round((ceil[k] / ctot) * 100);
     const themeRow = (t) => `<li><span class="sup-tname">${esc(t.theme)}</span> <span class="sup-tval">${pct(t.share)} → поставщику</span></li>`;
     const fixRow = (t) => `<li><span class="sup-tname">${esc(t.theme)}</span> <span class="sup-tval muted">${fmtNum(t.freq)} обращений</span></li>`;
     // «Другое» = обращения без точной привязки к агентству — не показываем как агентство.
@@ -1552,10 +1569,17 @@ async function mountSupport() {
       </tr>`).join("");
     supHost.innerHTML = `
       <article class="accent-card is-bet2 sup-lead">
-        <div class="k">Структурный «пол» нагрузки</div>
+        <div class="k">Предел эффекта</div>
         <h3>${esc(sx.head || "Что чинимо, а что упирается в поставщика")}</h3>
         <p>${esc(sx.lead || "")}</p>
-        <div class="ev-chiprow"><span class="sup-sig sup-sig--bad">${pct(sup.share)} · ${fmtNum(sup.calls)} обращений</span></div>
+        ${sx.ceilLead ? `<p class="muted">${esc(sx.ceilLead)}</p>` : ""}
+        <div class="ev-chiprow">
+          <span class="sup-cls sup-cls--good">${ceilPct("own")}% в наших руках</span>
+          <span class="sup-cls sup-cls--mid">${ceilPct("part")}% частично</span>
+          <span class="sup-cls sup-cls--bad">${ceilPct("supp")}% упирается в поставщика</span>
+        </div>
+        <div class="ev-chiprow"><span class="sup-sig sup-sig--bad">${pct(sup.share)} · ${fmtNum(sup.calls)} обращений физически ушли поставщику</span></div>
+        ${sx.ceilNote ? `<p class="ev-srcline">${esc(sx.ceilNote)}</p>` : ""}
       </article>
       <div class="sup-supgrid">
         <article class="accent-card is-nsm">
@@ -1601,14 +1625,14 @@ async function mountSupport() {
     const trendHead = ex.trendHead || `у ${grow} из ${tot} агентств нагрузка растёт или держится`;
     trendHost.innerHTML = `
       <article class="accent-card is-nsm">
-        <div class="k">${grow} из ${tot} агентств — нагрузка не падает</div>
+        <div class="k">Тренд · ${grow} из ${tot} агентств</div>
         <h3>${esc(trendHead)}</h3>
         <p>${esc(ex.trendPlain || tr.conclusion || "")}</p>
         ${ex.seasonNote ? `<p class="muted">${esc(ex.seasonNote)}</p>` : ""}
         <div class="ev-chiprow"><span class="ev-chip ev-ok" aria-label="подтверждено">✓ подтверждено</span> <a class="ev-chip ev-ok" href="etapy.html#stage-2">→ почему это задача «снять тормоза»</a></div>
       </article>
       ${ex.trendCaveat ? `<p class="ev-srcline">⚠ ${esc(ex.trendCaveat)}</p>` : ""}
-      <details class="sup-more"><summary>Помесячная нагрузка по месяцам (теплокарта, 13 месяцев)</summary>
+      <details class="sup-more"><summary>Помесячная нагрузка по месяцам (теплокарта, ${heat.months.length} месяцев)</summary>
         <p class="lede" style="font-size:13px">🟩 ниже среднего · 🟨 выше среднего · 🟥 дорого. Пусто — обращений в этом месяце не было.</p>
         ${heatTable}
       </details>`;
@@ -1623,16 +1647,33 @@ async function mountSupport() {
       const w = Math.max(2, ((c.freq || 0) / maxFreq) * 100);
       return `<td class="sup-load"><span class="sup-load-bar" style="width:${w.toFixed(0)}%"></span><span class="sup-load-val">${fmtNum(c.freq)}</span></td>`;
     };
+    // Темы бэклога — для перехода «обращение → задачи в продукте» (?theme=).
+    // Определяем по сырому mapping/названию темы (видимый текст берём из чистого catMapPlain).
+    const BL_THEMES = ["Агентская админка", "Заказы", "Сервис для клиента", "Предложения 2.0", "Оффлайн 4.0", "Онлайн-услуги", "Единый чат"];
+    const blThemeOf = (c) => { const hay = `${c.theme} ${c.mapping || ""}`; return BL_THEMES.find((t) => hay.includes(t)) || null; };
+    const catMap = ex.catMapPlain || {};
+    const nameCell = (c) => {
+      const bt = blThemeOf(c);
+      return bt
+        ? `<td class="title"><a href="backlog.html?theme=${encodeURIComponent(bt)}" title="Задачи бэклога по направлению «${esc(bt)}»">${esc(c.theme)}</a></td>`
+        : `<td class="title">${esc(c.theme)}</td>`;
+    };
+    // «→ куда в продукте»: только чистый авторский текст; сырой mapping не показываем (жаргон).
+    const mapCell = (c) => {
+      const m = catMap[c.theme];
+      return m ? `<td class="muted">${esc(m)}</td>` : `<td class="muted">уточняется</td>`;
+    };
     catHost.innerHTML = `<div class="table-wrap"><table class="backlog">
-      <thead><tr><th>Тема обращений</th><th><abbr title="Сколько обращений в саппорт по этой теме за весь период">Обращений</abbr></th><th><abbr title="Доля обращений по теме, ушедшая внешнему поставщику">→ поставщику</abbr></th><th><abbr title="Можно ли снять тему продуктом или она упирается в поставщика">Что с этим делать</abbr></th></tr></thead>
+      <thead><tr><th>Тема обращений</th><th><abbr title="Сколько обращений в саппорт по этой теме за весь период">Обращений</abbr></th><th><abbr title="Доля обращений по теме, ушедшая внешнему поставщику">→ поставщику</abbr></th><th><abbr title="Можно ли снять тему продуктом или она упирается в поставщика">Что с этим делать</abbr></th><th><abbr title="Куда тема ложится в продукте — этап и направление работ">→ куда в продукте</abbr></th></tr></thead>
       <tbody>${cats.map((c) => `<tr>
-        <td class="title">${esc(c.theme)}</td>
+        ${nameCell(c)}
         ${freqCell(c)}
         <td class="num muted">${pct(c.supShare)}</td>
         <td>${clsChip(c.cls)}</td>
+        ${mapCell(c)}
       </tr>`).join("")}</tbody>
     </table></div>
-    <p class="lede" style="font-size:13px">Показаны 8 из ${(d.categories || []).length} тем. Полный список и охват — <a href="backlog.html">в Бэклоге</a>.</p>`;
+    <p class="lede" style="font-size:13px">Показаны 8 из ${(d.categories || []).length} тем. Кликабельная тема ведёт в Бэклог по направлению; полный список и охват — <a href="backlog.html">в Бэклоге</a>.</p>`;
   }
 
   // --- 7. Корреляция тормоза → отток (честный отрицательный результат) ---
@@ -1641,12 +1682,78 @@ async function mountSupport() {
     const jp = ex.joinPlain || {};
     joinHost.innerHTML = `<article class="accent-card is-bet1">
       <div class="k">Проверка предположения</div>
-      <h3>Дорогая поддержка пока не объясняет уход клиентов</h3>
+      <h3>Дорогая поддержка ≠ уход клиентов</h3>
       <p>${esc(jp.verdict || "")}</p>
       <p>${esc(jp.caseFor || "—")}<br>${esc(jp.caseAgainst || "—")}</p>
       ${jp.implication ? `<p class="muted">${esc(jp.implication)}</p>` : ""}
       <div class="ev-chiprow"><span class="ev-chip ev-muted" aria-label="не проверялась">∅ пока не подтверждено</span></div>
     </article>`;
+  }
+
+  // --- 9. Куда бить первым — кандидаты в пилот 2B (авторский приоритет) ---
+  // Числа (нагрузка, доля поставщика) берём из support.json по агентству; текст — авторский.
+  const pilotHost = document.querySelector("[data-sup-pilot]");
+  if (pilotHost) {
+    const px = ex.pilot || {};
+    const items = px.items || [];
+    const byName = {};
+    pa.forEach((a) => { byName[a.name] = a; });
+    const VERD = {
+      go:    { label: "Брать в пилот",     cls: "sup-cls--good" },
+      hold:  { label: "Другой рычаг",      cls: "sup-cls--mid" },
+      watch: { label: "Образец, не пилот", cls: "sup-cls--mid" },
+      skip:  { label: "Не сейчас",         cls: "sup-cls--bad" },
+    };
+    const PCAP = 40;  // та же шкала нагрузки, что в основной таблице
+    const loadC = (r) => {
+      if (r == null) return `<td class="num muted">—</td>`;
+      const w = Math.max(2, Math.min(r / PCAP, 1) * 100);
+      return `<td class="sup-load"><span class="sup-load-bar" style="width:${w.toFixed(0)}%"></span><span class="sup-load-val">${r1(r)}</span></td>`;
+    };
+    const rowOf = (it) => {
+      const a = byName[it.key] || {};
+      const v = VERD[it.verdict] || { label: it.verdictLabel || "—", cls: "sup-cls--mid" };
+      return `<tr>
+        <td class="title">${esc(it.name || it.key)}</td>
+        ${loadC(a.ratio)}
+        <td class="num muted">${pct(a.supShare)}</td>
+        <td class="muted">${esc(it.pain || a.pain || "—")}</td>
+        <td><span class="sup-cls ${v.cls}">${esc(v.label)}</span></td>
+        <td class="muted">${esc(it.why || "")}</td>
+      </tr>`;
+    };
+    pilotHost.innerHTML = `
+      <article class="accent-card is-bet2 sup-lead">
+        <div class="k">Рабочий приоритет</div>
+        <h3>${esc(px.head || "Куда бить первым")}</h3>
+        <p>${esc(px.lead || "")}</p>
+      </article>
+      <div class="table-wrap"><table class="backlog">
+        <thead><tr>
+          <th>Агентство</th>
+          <th><abbr title="Обращений в саппорт на 1000 транзакций за 6 месяцев: чем больше — тем дороже">Нагрузка</abbr></th>
+          <th><abbr title="Доля обращений, переадресованных внешнему поставщику — её продуктом не снять">→ поставщику</abbr></th>
+          <th>Чаще болит</th>
+          <th>Что делать</th>
+          <th>Почему</th>
+        </tr></thead>
+        <tbody>${items.map(rowOf).join("")}</tbody>
+      </table></div>
+      ${px.note ? `<p class="ev-srcline">${esc(px.note)}</p>` : ""}`;
+  }
+
+  // --- 10. Открытые вопросы / что достать дальше (авторский) ---
+  const openHost = document.querySelector("[data-sup-open]");
+  if (openHost) {
+    const ox = ex.openBlock || {};
+    const items = ox.items || [];
+    if (items.length) {
+      openHost.innerHTML = `
+        <article class="accent-card is-nsm">
+          ${ox.lead ? `<p class="muted">${esc(ox.lead)}</p>` : ""}
+          <ul class="sup-caveats">${items.map((it) => `<li><b>${esc(it.q)}.</b> ${esc(it.why || "")}</li>`).join("")}</ul>
+        </article>`;
+    }
   }
 
 }

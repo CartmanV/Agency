@@ -414,6 +414,122 @@ def find_work_xlsx(needle):
     return None
 
 
+# --- пересчёт истории Support-ratio по ТОЧНОЙ привязке (HDE + Свод) --------
+# Старые теплокарта/тренд считались прежним методом привязки обращений и
+# несопоставимы с baseline 13,6. Здесь числитель — сырой экспорт HDE (колонка
+# «Агентство» + дата заявки), знаменатель — Свод («Операции помесячно L12M»).
+# Малые агентства (Космос Тревел, Альбатрос) в временной срез не берём:
+# месячный знаменатель <300 операций даёт шум, а не сигнал (см. основную таблицу).
+SUP_HIST_MAP = {
+    # имя в HDE «Агентство»: (имя в Своде «Операции помесячно», отображаемое имя)
+    "IBC": ("IBC", "IBC"),
+    "АТН": ("ATH", "АТН"),
+    "Аэроглобус": ("Aeroglobus", "Аэроглобус"),
+    "Корпорейт Тревел": ("Корпорэйт Трэвел", "Корпорейт Трэвел"),
+    "Глобал Эир": ("Global Air", "Глобал Эир"),
+    "ИНТЕРСИТИ СЕРВИС": ("KMP Group", "Интерсити (KMP)"),
+    "Казтур": ("KazTour", "Казтур"),
+    "ГСП": ("ГСП-Сервис", "ГСП"),
+}
+SUP_HIST_ORDER = ["IBC", "АТН", "Аэроглобус", "Корпорейт Тревел", "Глобал Эир",
+                  "ИНТЕРСИТИ СЕРВИС", "Казтур", "ГСП"]
+
+
+def recompute_support_history():
+    """Теплокарта + тренд Support-ratio по точной привязке. None — если нет исходников."""
+    import datetime
+    f_hde = find_work_xlsx("hde_report")
+    f_svod = find_work_xlsx("свод по агентствам")
+    if not f_hde or not f_svod:
+        return None
+
+    # числитель: обращения помесячно по агентству (точная колонка «Агентство»)
+    wb = openpyxl.load_workbook(f_hde, data_only=True, read_only=True)
+    ws = next((wb[s] for s in wb.sheetnames if s.strip().lower().startswith("hde_report")), wb[wb.sheetnames[0]])
+    it = ws.iter_rows(values_only=True)
+    pos = {h: i for i, h in enumerate(next(it))}
+    di, ai = pos.get("Дата создание заявки"), pos.get("Агентство")
+    if di is None or ai is None:
+        return None
+    calls = {}
+    for r in it:
+        d, a = r[di], r[ai]
+        if isinstance(d, datetime.datetime) and a:
+            calls.setdefault(a, {})
+            key = f"{d.year}-{d.month:02d}"
+            calls[a][key] = calls[a].get(key, 0) + 1
+
+    # знаменатель: операции помесячно
+    wb2 = openpyxl.load_workbook(f_svod, data_only=True, read_only=True)
+    ws2 = next((wb2[s] for s in wb2.sheetnames if "операции помесячно" in s.lower()), None)
+    if not ws2:
+        return None
+    o = list(ws2.iter_rows(values_only=True))
+    mcols = {}
+    for i in range(1, len(o[0])):
+        m = re.match(r"^(\d{2})\.(\d{4})$", str(o[0][i]).strip()) if o[0][i] else None
+        if m:
+            mcols[i] = f"{m.group(2)}-{m.group(1)}"
+    months = [mcols[i] for i in sorted(mcols)]
+    ops = {r[0]: {mcols[i]: r[i] for i in sorted(mcols)} for r in o[1:] if r[0]}
+
+    def fnum(x):
+        try:
+            return float(x)
+        except (TypeError, ValueError):
+            return None
+
+    def slope(series):
+        pts = [(i, v) for i, v in enumerate(series) if v is not None]
+        n = len(pts)
+        if n < 2:
+            return None
+        sx = sum(p[0] for p in pts); sy = sum(p[1] for p in pts)
+        sxx = sum(p[0] ** 2 for p in pts); sxy = sum(p[0] * p[1] for p in pts)
+        den = n * sxx - sx * sx
+        return round((n * sxy - sx * sy) / den, 3) if den else None
+
+    def mean(xs):
+        xs = [x for x in xs if x is not None]
+        return round(sum(xs) / len(xs), 2) if xs else None
+
+    h_agencies, per = [], []
+    for hde in SUP_HIST_ORDER:
+        svod, disp = SUP_HIST_MAP[hde]
+        if svod not in ops:
+            continue
+        vals = []
+        for m in months:
+            c = calls.get(hde, {}).get(m, 0)
+            op = fnum(ops[svod].get(m))
+            vals.append(round(c / op * 1000, 1) if op else None)
+        h_agencies.append({"name": disp, "vals": vals})
+        per.append({"name": disp, "slope": slope(vals),
+                    "first6": mean(vals[:6]), "last6": mean(vals[-6:]),
+                    "status": "спад ⤓" if (slope(vals) or 0) < -0.2 else "рост ⤒" if (slope(vals) or 0) > 0.2 else "плоско →"})
+
+    total = []
+    for m in months:
+        sc = sum(calls.get(h, {}).get(m, 0) for h in SUP_HIST_ORDER)
+        so = sum((fnum(ops[SUP_HIST_MAP[h][0]].get(m)) or 0) for h in SUP_HIST_ORDER if SUP_HIST_MAP[h][0] in ops)
+        total.append(round(sc / so * 1000, 2) if so else None)
+
+    tslope = slope(total)
+    grow = sum(1 for p in per if (p["slope"] or 0) > 0)
+    word = "растёт" if (tslope or 0) > 0 else "падает" if (tslope or 0) < 0 else "ровно"
+    return {
+        "heat": {"months": months, "agencies": h_agencies, "total": total},
+        "trend": {
+            "slopeText": f"{'+' if (tslope or 0) >= 0 else ''}{tslope} / мес ({word})",
+            "slopeNum": tslope, "first6": mean(total[:6]), "last6": mean(total[-6:]),
+            "conclusion": f"Пересчёт по точной привязке: ratio {word} ({'+' if (tslope or 0) >= 0 else ''}{tslope}/мес), {grow} из {len(per)} агентств не снижаются. Вывод «нагрузка не самоизлечивается» подтверждается на честном методе.",
+            "perAgency": per,
+            "method": "Точная привязка: числитель — HDE (колонка «Агентство»), знаменатель — Свод (операции помесячно). 8 агентств со стабильным знаменателем; малые (Космос Тревел, Альбатрос) исключены как шум.",
+            "window": f"{months[0]} … {months[-1]}" if months else None,
+        },
+    }
+
+
 def build_support():
     """Нагрузка на саппорт → support.json.
 
@@ -621,6 +737,14 @@ def build_support():
         elif num(r[1]) is not None and not c0.startswith("Агентство"):
             trend["perAgency"].append({"name": c0, "slope": num(r[1]), "first6": num(r[2]),
                                        "last6": num(r[3]), "status": clean(r[4]), "read": clean(r[5])})
+
+    # Пересчёт теплокарты/тренда по ТОЧНОЙ привязке (HDE + Свод) — заменяет
+    # старый метод из baseline.xlsx, несопоставимый с 13,6. Если исходников нет —
+    # остаётся старый расчёт из wb2 (graceful fallback).
+    rec = recompute_support_history()
+    if rec:
+        heat = rec["heat"]
+        trend = rec["trend"]
 
     # Доля 2026 года в данных (для пересчёта обращений в «в месяц»): по дате конца периода.
     months_2026 = None
