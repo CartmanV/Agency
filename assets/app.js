@@ -1408,14 +1408,25 @@ async function mountSupport() {
   const sup = d.supplier || {};
   const slopeTxt = tr.slopeNum != null ? `+${Number(tr.slopeNum).toFixed(2)}` : (tr.slopeText || "растёт");
   const kx = ex.kpi || {};
+  const xt = ex.external || {};
+  // Внешний рынок без IBC (своя компания холдинга, ~⅔ объёма тянет среднее вниз).
+  const ibc = pa.find((a) => a.name === "IBC") || {};
+  const extOps = (bl.ops || 0) - (ibc.ops || 0);
+  const extRatio = extOps ? ((bl.calls || 0) - (ibc.callsL6M || 0)) / extOps * 1000 : null;
+  const ibcShare = bl.ops ? (ibc.ops || 0) / bl.ops : null;
+  const extStat = extRatio == null ? "" :
+    `<div class="ag-stat ag-stat--bad"><div class="v">${r1(extRatio)}</div><div class="l">${esc(xt.label || "внешний рынок")}</div><div class="s">${esc(xt.subExt || "без IBC")}</div></div>`;
   kpiHost.innerHTML = `
     <div class="ag-strip">
-      <div class="ag-stat"><div class="v">${r1(bl.ratio)}</div><div class="l">средний уровень</div><div class="s">обращений на 1000 транзакций</div></div>
+      <div class="ag-stat"><div class="v">${r1(bl.ratio)}</div><div class="l">средний уровень</div><div class="s">на 1000 транзакций (с IBC)</div></div>
+      ${extStat}
       <div class="ag-stat ag-stat--bad"><div class="v">${pct(sup.share)}</div><div class="l">${esc(kx.supplierLabel || "уходит поставщику")}</div><div class="s">${esc(kx.supplierSub || "")}</div></div>
       <div class="ag-stat"><div class="v">${r1(dearest.ratio)}</div><div class="l">самый дорогой</div><div class="s">${esc(dearest.name || "")} · ${esc(dearest.pain || "")}</div></div>
       <div class="ag-stat"><div class="v">${esc(slopeTxt)}</div><div class="l">тренд за месяц</div><div class="s">нагрузка медленно растёт</div></div>
     </div>
-    ${kx.methodLine ? `<p class="ev-srcline">${esc(kx.methodLine)}</p>` : ""}
+    ${xt.whatBase ? `<p class="ev-srcline">${esc(xt.whatBase)}</p>` : ""}
+    ${xt.whatExt ? `<p class="ev-srcline">${esc(xt.whatExt)}</p>` : ""}
+    ${xt.footBody ? `<details class="sup-more"><summary>${esc(xt.footHead || "Почему IBC считаем отдельно")}</summary><p>${esc(xt.footBody)}</p></details>` : ""}
     <article class="accent-card is-bet2 sup-lead">
       <div class="k">Главный вывод</div>
       <h3>Нагрузка сама не уменьшается — и часть её вне нашего контроля</h3>
