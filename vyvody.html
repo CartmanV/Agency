@@ -10,12 +10,87 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Manrope:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/style.css" />
   <style>
-    /* Локальные стили страницы выводов — токены v4, золото единственный акцент */
+    /* Локальные стили страницы выводов — токены v4, золото единственный акцент;
+       розовый --attention встречается ровно один раз (слепое пятно по поставщикам). */
+
+    /* раскладка: липкий боковой указатель + поток */
+    .vy-shell{ display:grid; grid-template-columns:206px 1fr; gap:34px; align-items:start; }
+    .vy-rail{ position:sticky; top:14px; align-self:start; }
+    .vy-rail .rlab{ font-family:var(--f-mono); font-size:10px; letter-spacing:.14em;
+      text-transform:uppercase; color:var(--muted); margin:0 0 8px 12px; }
+    .vy-rail a{ display:block; font-family:var(--f-mono); font-size:11.5px; color:var(--cream-dim);
+      text-decoration:none; padding:6px 12px; border-left:2px solid var(--line); line-height:1.35; }
+    .vy-rail a:hover{ color:var(--cream); border-left-color:var(--line-soft); }
+    .vy-rail a.active{ color:var(--gold); border-left-color:var(--gold); }
+    .vy-flow{ min-width:0; }
+    .vy-flow .section:first-child{ padding-top:0; }
+    @media(max-width:980px){ .vy-shell{ grid-template-columns:1fr; gap:0; } .vy-rail{ display:none; } }
+    /* оглавитель-чипы — запасной вариант для узких экранов */
+    @media(min-width:981px){ .vy-toc{ display:none; } }
+
+    /* статус-легенда */
     .vy-legend{ display:flex; flex-wrap:wrap; gap:10px; margin:6px 0 0; }
     .vy-legend .it{ display:flex; gap:9px; align-items:baseline; font-size:13px;
       color:var(--cream-soft); background:var(--panel); border:1px solid var(--line);
       border-radius:8px; padding:9px 13px; line-height:1.4; }
     .vy-legend .it .ev-chip{ flex-shrink:0; }
+
+    /* «Главное одним взглядом» — резюме-плашка */
+    .vy-resume{ background:var(--gold-dim); border:1px solid var(--gold-line);
+      border-radius:14px; padding:22px 24px; margin-top:8px; }
+    .vy-resume p{ margin:0; color:var(--cream-soft); font-size:15px; line-height:1.7; max-width:84ch; }
+    .vy-resume p + p{ margin-top:10px; }
+    .vy-resume strong{ color:var(--cream); }
+    .vy-thread{ display:flex; gap:11px; align-items:flex-start; margin-top:16px;
+      padding-top:15px; border-top:1px solid var(--gold-line); }
+    .vy-thread .ic{ flex-shrink:0; width:26px; height:26px; border-radius:7px;
+      background:var(--gold-dim); border:1px solid var(--gold-line); color:var(--gold);
+      font-family:var(--f-mono); font-weight:600; display:flex; align-items:center; justify-content:center; font-size:13px; }
+    .vy-thread p{ font-size:14px; }
+
+    /* счётчики-факты */
+    .vy-stats{ display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; margin-top:16px; }
+    .vy-stat{ background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:15px 16px; }
+    .vy-stat .v{ font-family:var(--f-display); font-size:26px; line-height:1.05; color:var(--gold); }
+    .vy-stat .v small{ font-size:15px; color:var(--cream-soft); }
+    .vy-stat .k{ font-size:12.5px; color:var(--cream-dim); margin-top:6px; line-height:1.5; }
+    .vy-stats__lab{ font-family:var(--f-mono); font-size:10.5px; letter-spacing:.12em;
+      text-transform:uppercase; color:var(--gold); margin:20px 0 0; }
+
+    /* мини-схемы (SVG) */
+    .vy-dia{ width:100%; height:auto; display:block; margin:14px 0 4px; }
+    .vy-dia-cap{ font-size:12.5px; color:var(--cream-dim); margin:0 0 4px; }
+
+    /* выводы — список-инсайты */
+    .vy-grp{ font-family:var(--f-mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase;
+      color:var(--gold); margin:26px 0 2px; padding-top:16px; border-top:1px solid var(--line); }
+    .vy-grp:first-of-type{ border-top:none; padding-top:6px; }
+    .vy-insight{ display:flex; gap:14px; padding:15px 0; border-top:1px dashed var(--line); }
+    .vy-grp + .vy-insight{ border-top:none; }
+    .vy-insight .ico{ flex:0 0 34px; height:34px; border-radius:9px; background:var(--gold-dim);
+      border:1px solid var(--gold-line); color:var(--gold); font-family:var(--f-mono); font-weight:600;
+      font-size:15px; display:flex; align-items:center; justify-content:center; }
+    .vy-insight__body{ min-width:0; flex:1; }
+    .vy-insight h4{ font-family:var(--f-display); font-size:17.5px; margin:2px 0 6px; color:var(--cream);
+      display:flex; gap:9px; align-items:baseline; flex-wrap:wrap; line-height:1.3; }
+    .vy-insight h4 .ev-chip, .vy-insight h4 .chip{ flex-shrink:0; }
+    .vy-insight .ess{ margin:0; color:var(--cream-soft); font-size:14px; line-height:1.6; max-width:82ch; }
+    .vy-insight .ess strong{ color:var(--cream); }
+    .vy-insight .scheme-sub{ margin-top:9px; }
+    .vy-more{ margin-top:9px; }
+    .vy-more > summary{ cursor:pointer; font-family:var(--f-mono); font-size:11px; letter-spacing:.06em;
+      text-transform:uppercase; color:var(--gold); list-style:none; display:inline-block; }
+    .vy-more > summary::-webkit-details-marker{ display:none; }
+    .vy-more > summary::before{ content:"▸ "; }
+    .vy-more[open] > summary::before{ content:"▾ "; }
+    .vy-more__body{ padding:8px 0 4px; }
+    .vy-row{ margin:11px 0 0; }
+    .vy-k{ font-family:var(--f-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.12em;
+      color:var(--gold); margin-bottom:4px; }
+    .vy-row p{ color:var(--cream-soft); font-size:14px; line-height:1.6; margin:0; max-width:82ch; }
+    .vy-row p + p{ margin-top:6px; }
+    .vy-row strong{ color:var(--cream); }
+    .vy-row .src{ font-size:12.5px; color:var(--cream-dim); margin-top:5px; }
 
     /* строки-группы в таблицах */
     table.backlog tr.grp td{ background:var(--bg-2); color:var(--gold);
@@ -23,17 +98,17 @@
       font-weight:600; }
     table.backlog td.st{ white-space:nowrap; }
 
-    /* свёрнутая карточка вывода */
-    .vy-card{ padding:2px 18px 18px; }
-    .vy-card .scheme-sub{ margin:2px 0 12px; }
-    .vy-card .vy-row{ margin:13px 0 0; }
-    .vy-card .vy-k{ font-family:var(--f-mono); font-size:10.5px; text-transform:uppercase;
-      letter-spacing:.12em; color:var(--gold); margin-bottom:4px; }
-    .vy-card p{ color:var(--cream-soft); font-size:14.5px; line-height:1.65; margin:0; }
-    .vy-card p + p{ margin-top:6px; }
-    .vy-card strong{ color:var(--cream); }
-    .vy-card .src{ font-size:12.5px; color:var(--cream-dim); margin-top:5px; }
-    .vis-sect > summary .ev-chip{ margin-right:6px; }
+    /* плашки-сигналы (слепые пятна и развилки) в блоке рисков */
+    .vy-flags{ display:grid; gap:12px; margin:6px 0 22px; }
+    .vy-flag{ background:var(--panel); border:1px solid var(--line);
+      border-left:3px solid var(--gold); border-radius:10px; padding:15px 18px; }
+    .vy-flag.is-crit{ border-left-color:var(--attention); background:var(--attention-dim); }
+    .vy-flag .lab{ display:flex; align-items:center; gap:8px; font-family:var(--f-mono);
+      font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:var(--gold); margin-bottom:7px; }
+    .vy-flag.is-crit .lab{ color:var(--attention); }
+    .vy-flag .lab .ev-chip{ flex-shrink:0; }
+    .vy-flag p{ margin:0; color:var(--cream-soft); font-size:14px; line-height:1.65; max-width:84ch; }
+    .vy-flag strong{ color:var(--cream); }
 
     /* карточки-инвентарь «что сделано» */
     .vy-inv{ display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:14px; margin-top:6px; }
@@ -45,7 +120,7 @@
     .vy-go{ display:flex; flex-wrap:wrap; gap:6px; margin-top:11px; }
     a.chip:hover{ border-color:var(--gold); color:var(--cream); text-decoration:none; }
 
-    /* плашка-ссылка на план 1+2 (раздел 5) */
+    /* плашка-ссылка на план 1+2 */
     .vy-cta{ background:var(--gold-dim); border:1px solid var(--gold-line);
       border-radius:12px; padding:24px 26px; display:grid; grid-template-columns:1fr auto;
       gap:18px 28px; align-items:center; }
@@ -67,440 +142,700 @@
     <!-- ГЕРОЙ -->
     <section class="hero">
       <div>
-        <p class="eyebrow">Свод по направлению · 2026-06-21</p>
+        <p class="eyebrow">Свод по направлению · обновлено 2026-06-29</p>
         <h1>Выводы, статус и <span class="accent">риски</span></h1>
         <p class="sub">
-          Что мы поняли о рынке, продукте и работе агентств — и на каком основании. Что уже
-          сделано. Насколько надёжна каждая идея, на которой держится направление. И что может
-          эти выводы пошатнуть. Это диагностика; план на следующий квартал вынесен на отдельную
-          страницу «Этапы 1 и 2 — одной очередью».
+          Что мы поняли о рынке, продукте и работе агентств — и насколько надёжна каждая идея, на
+          которой держится направление. Что из этого пошатнулось при более внимательном взгляде, где
+          ещё слепые пятна — и что уже сделано. Это диагностика; сам план на квартал вынесен на
+          отдельную страницу <a href="plan-1-2.html">«Этапы 1 и 2 — одной очередью»</a>.
         </p>
         <div class="cta-row">
           <a class="btn btn--primary" href="plan-1-2.html">План на квартал</a>
-          <a class="btn" href="backlog.html">Список задач</a>
+          <a class="btn" href="nmt.html">Диагностика (метод)</a>
           <a class="btn" href="vision.html">Видение</a>
         </div>
       </div>
       <aside class="hero-goal">
-        <div class="num">11</div>
-        <div class="cap">главных выводов</div>
-        <div class="sub2">+ статус идей, риски и список вопросов к данным</div>
+        <div class="num">12</div>
+        <div class="cap">выводов</div>
+        <div class="sub2">+ статус идей, риски, слепые пятна и вопросы к данным</div>
       </aside>
     </section>
 
-    <!-- КАК ЧИТАТЬ СТАТУСЫ -->
-    <section class="section">
-      <p class="eyebrow">Как читать страницу</p>
-      <h2>У каждого вывода — метка, насколько он надёжен</h2>
-      <p class="section-note">Цифры даны там, где они есть; где данных не хватает — это честно
-      помечено. Метка показывает, на что опирается вывод.</p>
-      <div class="vy-legend">
-        <span class="it"><span class="ev-chip ev-ok">✓</span> <span><strong>Подтверждён данными</strong> — есть числа, держится на нескольких замерах</span></span>
-        <span class="it"><span class="ev-chip ev-part">~</span> <span><strong>Частично</strong> — данные есть, но один замер или с оговоркой</span></span>
-        <span class="it"><span class="ev-chip ev-muted">∅</span> <span><strong>Пока не доказан</strong> — есть наблюдения, но числом не проверено</span></span>
-        <span class="it"><span class="chip chip--copper">правило</span> <span><strong>Правило работы</strong> — наше решение о том, как работаем</span></span>
-      </div>
-      <nav class="toc" aria-label="Содержание страницы" style="margin-top:22px">
-        <span class="toc__lead">На этой странице:</span>
-        <a class="toc__chip" href="#vyvody">Главные выводы</a>
-        <a class="toc__chip" href="#sdelano">Что уже сделано</a>
-        <a class="toc__chip" href="#gipotezy">Насколько проверены идеи</a>
-        <a class="toc__chip" href="#riski">Риски</a>
-        <a class="toc__chip" href="#plan">План на квартал →</a>
-        <a class="toc__chip" href="#dozaprosy">Вопросы к данным</a>
-      </nav>
-    </section>
+    <div class="vy-shell">
+      <!-- ЛИПКИЙ БОКОВОЙ УКАЗАТЕЛЬ -->
+      <aside class="vy-rail" aria-label="Разделы страницы">
+        <p class="rlab">На странице</p>
+        <a href="#kak-chitat">Как читать</a>
+        <a href="#glavnoe">Главное одним взглядом</a>
+        <a href="#vyvody">Что мы поняли</a>
+        <a href="#gipotezy">Насколько проверено</a>
+        <a href="#sdelano">Что уже сделано</a>
+        <a href="#riski">Риски и слепые пятна</a>
+        <a href="#plan">План на квартал</a>
+        <a href="#dozaprosy">Вопросы к данным</a>
+      </aside>
 
-    <!-- ===================== 1. ГЛАВНЫЕ ВЫВОДЫ ===================== -->
-    <section class="section" id="vyvody">
-      <p class="eyebrow">Главные выводы</p>
-      <h2>Что мы поняли</h2>
-      <p class="sub" style="max-width:80ch">Фокус направления — помочь консультанту агентства
-      работать в продукте без лишних касаний: не мешать ему и снимать с него ручную нагрузку.
-      Ниже 11 выводов в трёх темах. Сначала — сводка одним взглядом, затем каждый вывод
-      раскрывается (нажмите строку): на чём держится и что из него следует.</p>
-
-      <h3 style="font-family:var(--f-display);font-size:19px;margin:26px 0 10px">Сводка</h3>
-      <div style="overflow-x:auto">
-      <table class="backlog">
-        <thead><tr><th>Вывод</th><th>Статус</th><th>Что делать</th></tr></thead>
-        <tbody>
-          <tr class="grp"><td colspan="3">Рынок и база агентств</td></tr>
-          <tr><td class="title">Направление растёт вглубь, а не вширь: «+20 агентств» — это вход в воронку, а не итоговый счётчик</td><td class="st"><span class="ev-chip ev-part">~ частично</span></td><td class="title">Углубление работы с действующими агентствами — отдельной строкой в Видение; цель «+20» вести с учётом оттока</td></tr>
-          <tr><td class="title">Рынок предельно концентрирован и хрупок: одно крупнейшее агентство — 63% объёма, три крупнейших — 86%</td><td class="st"><span class="ev-chip ev-ok">✓ подтверждён</span></td><td class="title">Помечать задачи, завязанные на пару крупнейших агентств; рост искать в средних и малых</td></tr>
-          <tr><td class="title">Удержание клиентов внутри агентств — скрытая проблема: половина сильных клиентов в зоне спада или ушли</td><td class="st"><span class="ev-chip ev-ok">✓ подтверждён</span></td><td class="title">Сделать замер; тему удержания клиентов поднять в следующем квартале</td></tr>
-          <tr><td class="title">Нагрузка на поддержку растёт сама и подключением новых агентств не лечится</td><td class="st"><span class="ev-chip ev-ok">✓ подтверждён</span></td><td class="title">Держать приоритет задач, снимающих нагрузку, — независимо от темы оттока</td></tr>
-          <tr><td class="title">«Один сценарий на всех» не работает: у разных сегментов агентств боль разная</td><td class="st"><span class="ev-chip ev-part">~ частично</span></td><td class="title">Решение под каждую задачу выбирать под сегмент, а не усреднять</td></tr>
-          <tr class="grp"><td colspan="3">Продукт и пользователь</td></tr>
-          <tr><td class="title">Доверие к продукту — отдельная хрупкая преграда: даже имеющимися функциями не пользуются после сбоя</td><td class="st"><span class="ev-chip ev-muted">∅ пока не доказан</span></td><td class="title">На входе важнее надёжность, чем количество функций</td></tr>
-          <tr><td class="title">Консультант финансово против оптимизации: его премия зависит от числа транзакций</td><td class="st"><span class="ev-chip ev-muted">∅ пока не доказан</span></td><td class="title">Сейчас — «ускорять транзакцию», а не «убирать» её у консультанта</td></tr>
-          <tr><td class="title">Конкуренция агентства — не то же, что конкуренция Ракеты: агентству угрожает уход клиента напрямую</td><td class="st"><span class="ev-chip ev-muted">∅ пока не доказан</span></td><td class="title">В разговорах с ушедшими разводить два разных сценария ухода</td></tr>
-          <tr><td class="title">Текущий фокус выбран не на вкус, а по структуре работы консультанта</td><td class="st"><span class="ev-chip ev-ok">✓ подтверждён</span></td><td class="title">Держать фокус; работа руководителя агентства — следующий горизонт, не сейчас</td></tr>
-          <tr class="grp"><td colspan="3">Как мы работаем и измеряем</td></tr>
-          <tr><td class="title">Дисциплина выбора приоритетов важнее любой отдельной функции</td><td class="st"><span class="chip chip--copper">правило</span></td><td class="title">Каждая задача обязана объяснять, на какую цель работает; иначе — на переработку</td></tr>
-          <tr><td class="title">Зазор в измерении: направление думает агентствами, а главная метрика считается по клиентам</td><td class="st"><span class="ev-chip ev-ok">✓ подтверждён</span></td><td class="title">Выгрузка, связывающая клиента с агентством, — задача №1 по данным</td></tr>
-        </tbody>
-      </table>
-      </div>
-
-      <h3 style="font-family:var(--f-display);font-size:19px;margin:34px 0 6px">Выводы по одному — на чём держатся</h3>
-      <p class="section-note" style="margin-bottom:14px">Каждая карточка раскрывается: в чём идея,
-      на каких данных, что делать и на что это влияет.</p>
-
-      <!-- 1 -->
-      <details class="vis-sect">
-        <summary><span class="ev-chip ev-part">~</span> Направление растёт вглубь, а не вширь</summary>
-        <div class="vis-sect__body vy-card">
-          <div class="scheme-sub">
-            <span class="chip chip--copper">тема: рынок</span>
-            <a class="chip" href="agencies.html">Агентства · цифры</a>
+      <div class="vy-flow">
+        <!-- КАК ЧИТАТЬ СТАТУСЫ -->
+        <section class="section" id="kak-chitat">
+          <p class="eyebrow">Как читать страницу</p>
+          <h2>У каждого вывода — метка, насколько он надёжен</h2>
+          <p class="section-note">Цифры даны там, где они есть; где данных не хватает — это честно
+          помечено. Метка показывает, на что опирается вывод. Дисциплина простая: всё, что не
+          «подтверждено», — это идея, а не факт.</p>
+          <div class="vy-legend">
+            <span class="it"><span class="ev-chip ev-ok">✓</span> <span><strong>Подтверждён данными</strong> — есть числа, держится на нескольких замерах</span></span>
+            <span class="it"><span class="ev-chip ev-part">~</span> <span><strong>Частично</strong> — данные есть, но один замер или с оговоркой</span></span>
+            <span class="it"><span class="ev-chip ev-muted">∅</span> <span><strong>Пока не доказан</strong> — есть наблюдения, но числом не проверено</span></span>
+            <span class="it"><span class="ev-chip ev-warn">⚠</span> <span><strong>Критично — требует решения</strong> — слепое пятно или развилка выше уровня продукта</span></span>
+            <span class="it"><span class="chip chip--copper">правило</span> <span><strong>Правило работы</strong> — наше решение о том, как работаем</span></span>
           </div>
-          <div class="vy-row"><div class="vy-k">В чём идея</div><p>Главный двигатель роста — это когда действующее агентство заводит в Ракету больше своих клиентов, а не только привлечение новых агентств.</p></div>
-          <div class="vy-row"><div class="vy-k">На чём держится</div><p><strong>82% прироста клиентов дали действующие агентства</strong>, новички — только 18%. Новое агентство стартует с 3–5 клиентов против примерно сотни у зрелого. За два года потеряно 9 агентств — то есть «+20» во многом лишь компенсирует уход.</p><p class="src">Это пока один замер, и переходы клиентов между агентствами в нём не отделены от настоящего ухода.</p></div>
-          <div class="vy-row"><div class="vy-k">Что делать</div><p>Записать углубление работы с действующими агентствами отдельной целью; цель «+20» считать честно — за вычетом ушедших агентств и с учётом того, что новички приводят мало клиентов.</p></div>
-          <div class="vy-row"><div class="vy-k">Почему это важно</div><p>Меняется смысл годовой цели: продукт превращает уже привлечённые агентства в реальных клиентов. Без этого само число «+20» рост не двигает.</p></div>
-        </div>
-      </details>
+          <nav class="toc vy-toc" aria-label="Содержание страницы" style="margin-top:22px">
+            <span class="toc__lead">На этой странице:</span>
+            <a class="toc__chip" href="#glavnoe">Главное одним взглядом</a>
+            <a class="toc__chip" href="#vyvody">Что мы поняли</a>
+            <a class="toc__chip" href="#gipotezy">Насколько проверено</a>
+            <a class="toc__chip" href="#sdelano">Что уже сделано</a>
+            <a class="toc__chip" href="#riski">Риски и слепые пятна</a>
+            <a class="toc__chip" href="#plan">План на квартал →</a>
+            <a class="toc__chip" href="#dozaprosy">Вопросы к данным</a>
+          </nav>
+        </section>
 
-      <!-- 2 -->
-      <details class="vis-sect">
-        <summary><span class="ev-chip ev-ok">✓</span> Рынок предельно концентрирован и хрупок</summary>
-        <div class="vis-sect__body vy-card">
-          <div class="scheme-sub">
-            <span class="chip chip--copper">тема: рынок</span>
-            <a class="chip" href="agencies.html">концентрация</a>
+        <!-- ===================== 0. ГЛАВНОЕ ОДНИМ ВЗГЛЯДОМ ===================== -->
+        <section class="section" id="glavnoe">
+          <p class="eyebrow">Главное одним взглядом</p>
+          <h2>К чему всё свелось</h2>
+          <div class="vy-resume">
+            <p><strong>Ракета для агентства — способ безболезненно перевести командировки в онлайн, не
+            теряя клиента и не наращивая нагрузку.</strong> Цель — стать стандартом ниши, а не ещё одним
+            окном бронирования. Главную метрику — число активных
+            <abbr class="gloss" title="не само агентство, а компания-заказчик, которую агентство обслуживает через Ракету">клиентов-компаний</abbr>
+            через агентства — растим прежде всего <strong>вглубь</strong>: углубляя и удерживая клиентов
+            внутри уже подключённых агентств. Само агентство при этом — не единица счёта, а
+            <strong>канал</strong> доставки клиентов и узел сети, который держит их рядом.</p>
+            <p>Цель года «+20 новых агентств» остаётся, но ведём её <strong>как воронку</strong>
+            (подписали → за вычетом ушедших → активировали → углубили → удержали), а не как счётчик
+            подписанных. Бо́льшая часть прироста и так идёт вглубь, а часть «+20» лишь замещает отток.</p>
+            <div class="vy-thread">
+              <span class="ic">1</span>
+              <p><strong>Сквозная нить:</strong> почти всё упирается в одну выгрузку данных — связь
+              клиента с его агентством (с пометками «исторический / выигранный на рынке», год прихода и «онлайн/оффлайн»). Это не одна из
+              задач аналитики, а <strong>узел</strong>: она переводит сразу половину выводов ниже из
+              «оценки» в «подтверждено» и чинит корень. Подробности — в разделе
+              <a href="#dozaprosy">«Вопросы к данным»</a>.</p>
+            </div>
           </div>
-          <div class="vy-row"><div class="vy-k">В чём идея</div><p>Крупнейшие агентства дают основной объём — но именно поэтому направление хрупкое: всё держится на немногих.</p></div>
-          <div class="vy-row"><div class="vy-k">На чём держится</div><p>Одно крупнейшее агентство — <strong>63% объёма</strong>, три крупнейших — <strong>86%</strong>, пять — 91%. «Универсальная» задача формально покрывает почти весь объём, но уход всего одного крупного агентства одномоментно обрушит результат. Цифры стабильны на замерах трёх месяцев подряд.</p></div>
-          <div class="vy-row"><div class="vy-k">Что делать</div><p>Помечать задачи, выгода которых держится на паре крупнейших агентств, и оценивать их осторожнее; рост искать в средних и малых агентствах, а от крупных ждать удержания, а не роста.</p></div>
-          <div class="vy-row"><div class="vy-k">Почему это важно</div><p>Влияет на выбор приоритетов, на то, для кого делаем задачу, и на оценку рисков всего направления.</p></div>
-        </div>
-      </details>
 
-      <!-- 3 -->
-      <details class="vis-sect">
-        <summary><span class="ev-chip ev-ok">✓</span> Удержание клиентов внутри агентств — скрытая проблема</summary>
-        <div class="vis-sect__body vy-card">
-          <div class="scheme-sub">
-            <span class="chip chip--copper">тема: рынок</span>
-            <a class="chip" href="metrics.html">метрики</a>
+          <p class="vy-dia-cap" style="margin-top:18px">Как растёт направление — две стороны одной метрики:</p>
+          <svg class="vy-dia" viewBox="0 0 720 246" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Схема: главная метрика растёт вширь (новые агентства) и вглубь (углубление), оба пути идут через продукт">
+            <style>
+              .vd-b{ fill:var(--panel); stroke:var(--line); stroke-width:1.5; }
+              .vd-f{ fill:var(--gold-dim); stroke:var(--gold); stroke-width:2; }
+              .vd-t{ fill:var(--cream); font-weight:600; }
+              .vd-s{ fill:var(--cream-soft); }
+              .vd-g{ fill:var(--gold); font-weight:600; }
+              .vd-a{ stroke:var(--cream-dim); stroke-width:1.5; fill:none; }
+            </style>
+            <defs><marker id="vah" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--cream-dim)"/></marker></defs>
+            <rect class="vd-b" x="230" y="10" width="260" height="50" rx="11"/>
+            <text x="360" y="32" text-anchor="middle" class="vd-t" font-size="13.5">Главная метрика</text>
+            <text x="360" y="50" text-anchor="middle" class="vd-s" font-size="11">активные клиенты-компании через агентства</text>
+            <line class="vd-a" x1="360" y1="60" x2="360" y2="90" marker-end="url(#vah)"/>
+            <rect class="vd-b" x="40" y="96" width="300" height="66" rx="11"/>
+            <text x="190" y="120" text-anchor="middle" class="vd-t" font-size="12.5">Вширь — новые агентства</text>
+            <text x="190" y="138" text-anchor="middle" class="vd-s" font-size="11">цель «+20» · двигают продажи</text>
+            <text x="190" y="154" text-anchor="middle" class="vd-s" font-size="11">≈18% прироста клиентов</text>
+            <rect class="vd-f" x="380" y="96" width="300" height="66" rx="11"/>
+            <text x="530" y="120" text-anchor="middle" class="vd-t" font-size="12.5">Вглубь — углубление и удержание</text>
+            <text x="530" y="138" text-anchor="middle" class="vd-s" font-size="11">двигает продукт через консультанта</text>
+            <text x="530" y="154" text-anchor="middle" class="vd-g" font-size="11">≈82% прироста · рычаг 2026</text>
+            <line class="vd-a" x1="190" y1="162" x2="190" y2="194" marker-end="url(#vah)"/>
+            <line class="vd-a" x1="530" y1="162" x2="530" y2="194" marker-end="url(#vah)"/>
+            <rect class="vd-b" x="40" y="200" width="640" height="40" rx="10" stroke-dasharray="5 4"/>
+            <text x="360" y="225" text-anchor="middle" class="vd-s" font-size="12">оба пути идут через продукт — этапы 1 «не мешать» и 2 «снять нагрузку»</text>
+          </svg>
+
+          <div class="vy-stats">
+            <div class="vy-stat"><div class="v">82<small>%</small></div><div class="k">прироста клиентов дают уже подключённые агентства, а не новые — рост идёт вглубь</div></div>
+            <div class="vy-stat"><div class="v">86<small>%</small></div><div class="k">объёма операций — на трёх крупнейших агентствах. Концентрация = хрупкость</div></div>
+            <div class="vy-stat"><div class="v">76<small>%</small></div><div class="k">объёма закрывшегося агентства за месяц-два перетекло в крупнейшее — переходы клиентов искажают счёт по агентствам (один кейс)</div></div>
+            <div class="vy-stat"><div class="v">1</div><div class="k">выгрузка по клиентам закрывает сразу половину «оценочных» выводов</div></div>
           </div>
-          <div class="vy-row"><div class="vy-k">В чём идея</div><p>Когда работать в продукте тяжело, клиент снижает объём и постепенно отваливается. Общая цифра удержания это маскирует.</p></div>
-          <div class="vy-row"><div class="vy-k">На чём держится</div><p>Разбор 143 сильных клиентов крупнейших агентств: растут 15%, стабильны 35%, в спаде 32%, потеряны 18% — то есть <strong>половина в зоне спада и потери</strong> за два года. Общее удержание 73% скрывает, что лишь половина работает на прежнем уровне.</p><p class="src">Оговорка: часть «потерь» — это переходы клиентов между агентствами, а не уход совсем.</p></div>
-          <div class="vy-row"><div class="vy-k">Что делать</div><p>Взять эти доли как точку отсчёта; тему удержания клиентов поднять в следующем квартале; разобрать с менеджером причины отвала сильных клиентов.</p></div>
-          <div class="vy-row"><div class="vy-k">Почему это важно</div><p>Задаёт предел того, чего можно добиться на текущем этапе, и обосновывает вынос темы удержания на следующий квартал.</p></div>
-        </div>
-      </details>
+        </section>
 
-      <!-- 4 -->
-      <details class="vis-sect">
-        <summary><span class="ev-chip ev-ok">✓</span> Нагрузка на поддержку растёт сама</summary>
-        <div class="vis-sect__body vy-card">
-          <div class="scheme-sub">
-            <span class="chip chip--copper">тема: рынок</span>
-            <a class="chip" href="support.html">нагрузка на поддержку</a>
+        <!-- ===================== 1. ЧТО МЫ ПОНЯЛИ ===================== -->
+        <section class="section" id="vyvody">
+          <p class="eyebrow">Что мы поняли</p>
+          <h2>Двенадцать выводов</h2>
+          <p class="sub" style="max-width:82ch">Фокус направления — помочь консультанту агентства
+          работать в продукте без лишних касаний: не мешать ему на входе и снимать ручную нагрузку.
+          Ниже 12 выводов в четырёх темах. У каждого — метка надёжности и суть в двух строках;
+          «Подробнее» раскрывает, на чём держится и что делать.</p>
+
+          <p class="vy-stats__lab">На ком держится база</p>
+          <div class="vy-stats">
+            <div class="vy-stat"><div class="v">16</div><div class="k">активных агентств: 11 зрелых + 5 новичков в разгоне</div></div>
+            <div class="vy-stat"><div class="v">63<small>%</small></div><div class="k">объёма — на одном крупнейшем агентстве. Уход любого крупного обрушит результат</div></div>
+            <div class="vy-stat"><div class="v">86→91<small>%</small></div><div class="k">на топ-3 и топ-5 агентствах</div></div>
+            <div class="vy-stat"><div class="v">9</div><div class="k">агентств потеряно за два года ≈ 5–6% объёма</div></div>
           </div>
-          <div class="vy-row"><div class="vy-k">В чём идея</div><p>Задержки идут на стыке консультанта и поддержки Ракеты. Возможность настраивать всё самому снижает зависимость от поддержки.</p></div>
-          <div class="vy-row"><div class="vy-k">На чём держится</div><p>Число обращений на объём транзакций не падает, а медленно <em>растёт</em> по мере подключения новых агентств — система сама себя не лечит. У худшего агентства нагрузка втрое выше средней.</p></div>
-          <div class="vy-row"><div class="vy-k">Что делать</div><p>Держать приоритет задач, снимающих эту нагрузку, независимо от темы оттока. Подробности и ограничения — на странице <a href="support.html">«Нагрузка на поддержку»</a>.</p></div>
-          <div class="vy-row"><div class="vy-k">Почему это важно</div><p>Обосновывает один из двух главных треков: рабочее место консультанта и снятие тормозов.</p></div>
-        </div>
-      </details>
 
-      <!-- 5 -->
-      <details class="vis-sect">
-        <summary><span class="ev-chip ev-part">~</span> «Один сценарий на всех» не работает</summary>
-        <div class="vis-sect__body vy-card">
-          <div class="scheme-sub">
-            <span class="chip chip--copper">тема: рынок</span>
-            <a class="chip" href="agencies.html">сегменты агентств</a>
+          <!-- ── группа: рынок ── -->
+          <p class="vy-grp">Рынок и база агентств</p>
+
+          <article class="vy-insight">
+            <div class="ico">1</div>
+            <div class="vy-insight__body">
+              <h4>Рост идёт вглубь, а не вширь <span class="ev-chip ev-part">~ частично</span></h4>
+              <p class="ess"><strong>82% прироста клиентов дают уже подключённые агентства</strong>, новички — 18%. «+20» — это вход в воронку, а не итоговый счётчик: часть его лишь замещает ушедших.</p>
+              <div class="scheme-sub">
+                <a class="chip" href="agencies.html#nsm">воронка роста</a>
+                <a class="chip" href="agencies.html">агентства · цифры</a>
+                <a class="chip" href="nmt.html#cel">диагностика метода →</a>
+              </div>
+              <details class="vy-more"><summary>Подробнее</summary>
+                <div class="vy-more__body">
+                  <div class="vy-row"><div class="vy-k">На чём держится</div><p>82% прироста клиентов (62 из 76) — действующие агентства. Новое агентство стартует с 3–5 клиентов против примерно сотни у зрелого. За два года потеряно 9 агентств — около 5–6% объёма.</p><p class="src">Это пока один замер, и переходы клиентов между агентствами в нём не отделены от настоящего ухода.</p></div>
+                  <div class="vy-row"><div class="vy-k">Что делать</div><p>Записать углубление работы с действующими агентствами отдельной целью; «+20» считать честно — за вычетом ушедших и с учётом того, что новички приводят мало клиентов.</p></div>
+                  <div class="vy-row"><div class="vy-k">Почему важно</div><p>Меняется смысл годовой цели: продукт превращает уже привлечённые агентства в реальных клиентов. Без этого само число «+20» рост не двигает.</p></div>
+                </div>
+              </details>
+            </div>
+          </article>
+
+          <article class="vy-insight">
+            <div class="ico">2</div>
+            <div class="vy-insight__body">
+              <h4>Концентрация — это хрупкость <span class="ev-chip ev-ok">✓ подтверждён</span></h4>
+              <p class="ess">Три крупнейших агентства — 86% объёма: уход любого обрушит результат, рост держится на немногих. Прежний вывод «и сила-то ненастоящая, объём не выигран, а структурный из-за холдинга» при проверке <strong>в основном не подтвердился</strong> — почти весь объём крупнейшего выигран на открытом рынке честно.</p>
+              <div class="scheme-sub">
+                <a class="chip" href="agencies.html">концентрация</a>
+              </div>
+              <details class="vy-more"><summary>Подробнее</summary>
+                <div class="vy-more__body">
+                  <div class="vy-row"><div class="vy-k">На чём держится</div><p>Одно крупнейшее агентство — <strong>63% объёма</strong>, три — <strong>86%</strong>, пять — 91%. Цифры стабильны на замерах трёх месяцев. Хрупкость от этого никуда не девается: всё держится на паре агентств.</p></div>
+                  <div class="vy-row"><div class="vy-k">Поправка про «своё» агентство</div><p>Крупнейшее агентство — из того же холдинга, что и Ракета, и раньше казалось, что его объём «не выигран». Но «по умолчанию» там обслуживается лишь небольшой
+                  <abbr class="gloss" title="клиенты, доставшиеся по наследству при запуске инструмента, плюс контрактно-обязанные. Большинство клиентов крупнейшего агентства выиграно на открытом рынке; размер исторического слоя ещё предстоит измерить выгрузкой">исторический слой</abbr>
+                  клиентов; большинство выиграно на рынке честно — и это засчитывается как реальное доказательство силы продукта.</p></div>
+                  <div class="vy-row"><div class="vy-k">Что делать</div><p>Помечать задачи, выгода которых держится на паре крупнейших агентств — хрупкость остаётся. А поправку на «своё» агентство делать только там, где оцениваем спрос канала (можно ли повторить успех на «+20» внешних), а не там, где крупнейшее агентство доказывает, что продукт удерживает. Размер исторического слоя измерить выгрузкой.</p></div>
+                  <div class="vy-row"><div class="vy-k">Почему важно</div><p>Чтобы и не переоценить хрупкость, и не списать настоящую силу продукта в «холдинговый» шум.</p></div>
+                </div>
+              </details>
+            </div>
+          </article>
+
+          <article class="vy-insight">
+            <div class="ico">3</div>
+            <div class="vy-insight__body">
+              <h4>Удержание клиентов внутри агентств — скрытая течь <span class="ev-chip ev-ok">✓ подтверждён</span></h4>
+              <p class="ess">Половина сильных клиентов крупнейших агентств за два года в зоне спада или потеряна. Общая цифра удержания это маскирует.</p>
+              <div class="scheme-sub">
+                <a class="chip" href="agencies.html">сегменты и удержание</a>
+                <a class="chip" href="metrics.html">метрики</a>
+              </div>
+              <details class="vy-more"><summary>Подробнее</summary>
+                <div class="vy-more__body">
+                  <div class="vy-row"><div class="vy-k">На чём держится</div><p>За два года: растут 15%, стабильны 35%, в спаде 32%, потеряны 18% — то есть <strong>половина в зоне спада и потери</strong>.</p><p class="src">Часть «потерь» — переходы клиентов между агентствами, а не уход совсем. Точно разделить можно только выгрузкой по клиентам.</p></div>
+                  <div class="vy-row"><div class="vy-k">Что делать</div><p>Взять эти доли как точку отсчёта; тему удержания поднять в следующем квартале; разобрать причины отвала сильных клиентов — спрашивая сначала «почему остаются».</p></div>
+                  <div class="vy-row"><div class="vy-k">Почему важно</div><p>Задаёт предел того, чего можно добиться на текущем этапе, и обосновывает вынос темы удержания дальше.</p></div>
+                </div>
+              </details>
+            </div>
+          </article>
+
+          <article class="vy-insight">
+            <div class="ico">4</div>
+            <div class="vy-insight__body">
+              <h4>Нагрузка на поддержку растёт сама <span class="ev-chip ev-ok">✓ подтверждён</span></h4>
+              <p class="ess">Число обращений на объём транзакций не падает, а медленно растёт по мере подключения новых агентств. Подключением новых это не лечится. Это единственная метрика с по-настоящему надёжной цифрой.</p>
+              <div class="scheme-sub">
+                <a class="chip" href="support.html">нагрузка на поддержку</a>
+              </div>
+              <details class="vy-more"><summary>Подробнее</summary>
+                <div class="vy-more__body">
+                  <div class="vy-row"><div class="vy-k">На чём держится</div><p>Задержки идут на стыке консультанта и поддержки Ракеты. У худшего агентства нагрузка втрое выше средней. Возможность настраивать всё самому снижает зависимость от поддержки.</p></div>
+                  <div class="vy-row"><div class="vy-k">Что делать</div><p>Держать приоритет задач, снимающих эту нагрузку, независимо от темы оттока. Подробности и ограничения — на странице <a href="support.html">«Нагрузка на поддержку»</a>.</p></div>
+                  <div class="vy-row"><div class="vy-k">Почему важно</div><p>Обосновывает один из двух главных треков: рабочее место консультанта и снятие тормозов.</p></div>
+                </div>
+              </details>
+            </div>
+          </article>
+
+          <!-- ── группа: продукт ── -->
+          <p class="vy-grp">Продукт и пользователь</p>
+
+          <article class="vy-insight">
+            <div class="ico">5</div>
+            <div class="vy-insight__body">
+              <h4>Защищённая зона есть, но оффлайн крайне сконцентрирован <span class="ev-chip ev-part">~ частично</span></h4>
+              <p class="ess">Защищаться надо там, где AI и самобукинг слабы: сложный трэвел, оффлайн, надёжность. Но <strong>92% всего оффлайна — на двух агентствах</strong>: это хрупко само по себе, независимо от того, чьи это агентства.</p>
+              <div class="scheme-sub">
+                <a class="chip" href="rynok.html">рынок и тренды</a>
+                <a class="chip" href="etapy.html#stage-2">этап «снять нагрузку»</a>
+              </div>
+              <details class="vy-more"><summary>Подробнее</summary>
+                <div class="vy-more__body">
+                  <div class="vy-row"><div class="vy-k">На чём держится</div><p>Бой за простую операцию проигран: самостоятельное бронирование догнало (+56%), сбор тает. Зарубеж растёт против тренда (+33%). Но оффлайн = <strong>17,8% операций</strong>, и 92% его дают всего два агентства. Среди внешних агентств оффлайн почти весь на одном (Global Air).</p><p class="src">Раньше формулировали жёстче — «рыночный оффлайн = одно агентство»; это переоценивало хрупкость: оффлайн крупнейшего агентства в основном выигран честно и считается реальным доказательством продукта. Что точно хрупко — концентрация 92% на двух. И это объём операций, а не маржа.</p></div>
+                  <div class="vy-row"><div class="vy-k">Что делать</div><p>Пилотировать оффлайн на этом агентстве, но строить так, чтобы ценность была <strong>воспроизводима по всему сегменту</strong> внешних агентств, а не выгодна одному.</p></div>
+                  <div class="vy-row"><div class="vy-k">Почему важно</div><p>Отличает настоящую защиту (дорогую к копированию по сегменту) от хрупкой зависимости от одного клиента.</p></div>
+                </div>
+              </details>
+            </div>
+          </article>
+
+          <article class="vy-insight">
+            <div class="ico">6</div>
+            <div class="vy-insight__body">
+              <h4>Доверие — отдельная хрупкая преграда <span class="ev-chip ev-muted">∅ пока не доказан</span></h4>
+              <p class="ess">Даже имеющимися функциями не пользуются после сбоя. Доверие ломается мгновенно, а возвращается долго — и под этой идеей нет ни задач, ни владельца.</p>
+              <div class="scheme-sub">
+                <a class="chip" href="etapy.html#stage-1">этап «не мешать»</a>
+                <a class="chip" href="tree.html">дерево работ</a>
+              </div>
+              <details class="vy-more"><summary>Подробнее</summary>
+                <div class="vy-more__body">
+                  <div class="vy-row"><div class="vy-k">На чём держится</div><p>Один сбой — и консультант решает, что старый терминал надёжнее.</p><p class="src">Наблюдение есть, числом пока не подтверждено. А на этой идее держится вся логика «дали функции → начали пользоваться».</p></div>
+                  <div class="vy-row"><div class="vy-k">Что делать</div><p>На входе важнее надёжность, понятность и возможность отменить действие, чем количество функций; завести отдельный трек надёжности с владельцем.</p></div>
+                  <div class="vy-row"><div class="vy-k">Почему важно</div><p>Меняет порядок приоритетов на входе: сначала стабильность, потом новые функции.</p></div>
+                </div>
+              </details>
+            </div>
+          </article>
+
+          <article class="vy-insight">
+            <div class="ico">7</div>
+            <div class="vy-insight__body">
+              <h4>Консультант финансово против оптимизации <span class="ev-chip ev-muted">∅ пока не доказан</span></h4>
+              <p class="ess">Премия консультанта зависит от числа транзакций. «Убрать» транзакцию бьёт по его доходу — поэтому сейчас целимся «ускорять», а не «уносить» к клиенту.</p>
+              <div class="scheme-sub">
+                <a class="chip" href="tree.html">дерево работ</a>
+              </div>
+              <details class="vy-more"><summary>Подробнее</summary>
+                <div class="vy-more__body">
+                  <div class="vy-row"><div class="vy-k">На чём держится</div><p>Конфликт не полный, и в этом рычаг: <em>ускорять</em> транзакцию консультанту выгодно, а <em>уносить</em> к клиенту — против его интереса.</p><p class="src">Как именно устроена премия в разных агентствах — пока не подтверждено.</p></div>
+                  <div class="vy-row"><div class="vy-k">Что делать</div><p>Сейчас целиться в «ускорить» и убрать рутину, не связанную с премией; перенос транзакций к клиенту — задача более поздняя и скорее для руководителя.</p></div>
+                  <div class="vy-row"><div class="vy-k">Почему важно</div><p>Объясняет, какие задачи встретят сопротивление, а какие — поддержку консультанта.</p></div>
+                </div>
+              </details>
+            </div>
+          </article>
+
+          <!-- ── группа: зрелость ── -->
+          <p class="vy-grp">Зрелость стратегии</p>
+
+          <article class="vy-insight">
+            <div class="ico">8</div>
+            <div class="vy-insight__body">
+              <h4>Считаем агентствами, а растём клиентами <span class="ev-chip ev-ok">✓ подтверждён</span></h4>
+              <p class="ess">Главную метрику растят клиенты-компании, а сегментируем мы агентства по объёму. Это разные единицы — и счёт по агентствам может искажать картину: при закрытии агентства его клиенты «переезжают» в другое и раздувают чужую долю.</p>
+              <div class="scheme-sub">
+                <a class="chip" href="agencies.html">агентства · цифры</a>
+                <a class="chip" href="nmt.html#cepochka">узкое место в корне →</a>
+              </div>
+              <details class="vy-more"><summary>Подробнее</summary>
+                <div class="vy-more__body">
+                  <div class="vy-row"><div class="vy-k">На чём держится</div><p>Живой кейс: когда одно агентство закрылось, <strong>76% его объёма за месяц-два перетекло в крупнейшее</strong> — это переезд клиентов, а не рост агентства.</p><p class="src">Прежняя прикидка «по клиентам крупнейшее ≈ 42% против 63% по операциям» — это вывод из одного кейса, а не замер: он показывает, что расхождение бывает, но не его размер. Точную цифру не якорим до выгрузки по клиентам.</p></div>
+                  <div class="vy-row"><div class="vy-k">Что делать</div><p>Сделать единицей измерения клиента-компанию, а агентство — каналом и узлом сети. Технически это даёт та же одна выгрузка.</p></div>
+                  <div class="vy-row"><div class="vy-k">Почему важно</div><p>Ошибка в единице каскадит вниз — в сегментацию, в оценку концентрации и в скоринг задач. Это корень, а не деталь.</p></div>
+                </div>
+              </details>
+            </div>
+          </article>
+
+          <article class="vy-insight">
+            <div class="ico">9</div>
+            <div class="vy-insight__body">
+              <h4>Два рычага, способных обнулить рост, не ведёт никто <span class="ev-chip ev-muted">∅ требует решения</span></h4>
+              <p class="ess">Весь ресурс — на текущем продукте. Оборону от прямого ухода клиента и дешёвый продукт «снизу» не держит никто. Это решение уровня руководства.</p>
+              <div class="scheme-sub">
+                <a class="chip" href="nmt.html#dilemma">подрыв снизу →</a>
+              </div>
+              <details class="vy-more"><summary>Подробнее</summary>
+                <div class="vy-more__body">
+                  <svg class="vy-dia" viewBox="0 0 720 198" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Схема трёх треков и владельцев: локальный ведёт продукт, два других без владельца">
+                    <style>
+                      .vt-b{ fill:var(--panel); stroke:var(--line); stroke-width:1.5; }
+                      .vt-f{ fill:var(--gold-dim); stroke:var(--gold); stroke-width:2; }
+                      .vt-t{ fill:var(--cream); font-weight:600; }
+                      .vt-s{ fill:var(--cream-soft); }
+                      .vt-tag-ok{ fill:var(--success); font-weight:600; }
+                      .vt-tag-no{ fill:var(--cream-dim); font-weight:600; }
+                    </style>
+                    <rect class="vt-f" x="8" y="8" width="486" height="50" rx="10"/>
+                    <text x="26" y="30" class="vt-t" font-size="12.5">Локальный — текущий продукт, этапы 1–2 и «+20»</text>
+                    <text x="26" y="48" class="vt-s" font-size="11">улучшаем то, что есть</text>
+                    <text x="512" y="38" class="vt-tag-ok" font-size="11.5">✓ владелец: продукт</text>
+                    <rect class="vt-b" x="8" y="72" width="486" height="50" rx="10"/>
+                    <text x="26" y="94" class="vt-t" font-size="12.5">Оборона — удержать клиента от прямого ухода</text>
+                    <text x="26" y="112" class="vt-s" font-size="11">когда его тянет покупать напрямую, минуя агентство</text>
+                    <text x="512" y="102" class="vt-tag-no" font-size="11.5">∅ нет → руководство</text>
+                    <rect class="vt-b" x="8" y="136" width="486" height="50" rx="10"/>
+                    <text x="26" y="158" class="vt-t" font-size="12.5">Дешёвый продукт «снизу» для микро-агентств</text>
+                    <text x="26" y="176" class="vt-s" font-size="11">рынок, которого у нас сейчас нет</text>
+                    <text x="512" y="166" class="vt-tag-no" font-size="11.5">∅ нет → отд. бюджет</text>
+                  </svg>
+                  <div class="vy-row"><div class="vy-k">Что делать</div><p>Это решение уровня руководства, а не продукта. Ход — <strong>сделать пробел видимым и адресным</strong>: карта угроз поимённо, фиксация «у риска нет владельца», заказ оценки нового рынка — и вынести наверх. Не строить самому: текущая команда структурно сопротивляется тому, что подрывает её же продукт.</p></div>
+                  <div class="vy-row"><div class="vy-k">Почему важно</div><p>Самые большие «угаснуть»-риски направления лежат вне текущего бэклога. Назвать их и назначить владельца — важнее любой отдельной функции.</p></div>
+                </div>
+              </details>
+            </div>
+          </article>
+
+          <article class="vy-insight">
+            <div class="ico">10</div>
+            <div class="vy-insight__body">
+              <h4>Снятие тормозов (2B) — не лекарство от оттока <span class="ev-chip ev-ok">✓ проверено</span></h4>
+              <p class="ess">Связь нагрузки на поддержку с главной метрикой оказалась слабой и обратной ожиданию. Блок 2B делаем ради сервиса и доверия; причину оттока искать выше — в ценности и сегменте.</p>
+              <div class="scheme-sub">
+                <a class="chip" href="support.html">нагрузка на поддержку</a>
+                <a class="chip" href="etapy.html#stage-2">этап «снять нагрузку»</a>
+              </div>
+              <details class="vy-more"><summary>Подробнее</summary>
+                <div class="vy-more__body">
+                  <div class="vy-row"><div class="vy-k">На чём держится</div><p>Было скрытое допущение «уберём трение → удержим клиента». Данные его <strong>опровергли</strong>: связь слабая и обратная. Снятие тормозов само по себе отток не лечит.</p></div>
+                  <div class="vy-row"><div class="vy-k">Что делать</div><p>Блок «убрать тормоза» делать ради сервиса и доверия — это ценно, — но не записывать ему удержание. Причину оттока разбирать отдельно, в разговорах с ушедшими.</p></div>
+                  <div class="vy-row"><div class="vy-k">Почему важно</div><p>Убирает ложное обоснование и не даёт переоценить эффект задач 2B. Честный статус важнее красивой истории.</p></div>
+                </div>
+              </details>
+            </div>
+          </article>
+
+          <!-- ── группа: как работаем ── -->
+          <p class="vy-grp">Как мы работаем и измеряем</p>
+
+          <article class="vy-insight">
+            <div class="ico">11</div>
+            <div class="vy-insight__body">
+              <h4>Дисциплина приоритетов важнее отдельной функции <span class="chip chip--copper">правило</span></h4>
+              <p class="ess">Каждая задача обязана объяснять, на какую цель работает и какую боль закрывает. Не объясняет — на переработку. Польза считается строго, по реальным агентствам, без «нам кажется».</p>
+              <div class="scheme-sub">
+                <a class="chip" href="backlog.html">список задач</a>
+              </div>
+              <details class="vy-more"><summary>Подробнее</summary>
+                <div class="vy-more__body">
+                  <div class="vy-row"><div class="vy-k">Как именно</div><p>Польза задачи считается только по реальным агентствам, поимённо, без натянутых обоснований. Применять без исключений — это защищает список задач от раздувания.</p></div>
+                  <div class="vy-row"><div class="vy-k">Почему важно</div><p>Обеспечивает качество и сопоставимость всех задач и помогает защищать приоритеты перед руководством.</p></div>
+                </div>
+              </details>
+            </div>
+          </article>
+
+          <article class="vy-insight" id="vyvod-segment">
+            <div class="ico">12</div>
+            <div class="vy-insight__body">
+              <h4>Зазор в измерении: думаем агентствами, считаем по клиентам <span class="ev-chip ev-ok">✓ подтверждён</span></h4>
+              <p class="ess">Инструменты работают на уровне агентства, а метрика растёт на уровне клиентов. Одна выгрузка — связь клиента с агентством — чинит это в корне. Это и есть сквозная нить всей страницы.</p>
+              <div class="scheme-sub">
+                <a class="chip" href="metrics.html">метрики</a>
+                <a class="chip" href="nmt.html#cepochka">диагностика поднимает это в корень →</a>
+              </div>
+              <details class="vy-more"><summary>Подробнее</summary>
+                <div class="vy-more__body">
+                  <div class="vy-row"><div class="vy-k">На чём держится</div><p>Переходы клиентов между агентствами искажают и отток, и концентрацию одновременно. Без отдельной выгрузки честно посчитать ни то, ни другое нельзя.</p></div>
+                  <div class="vy-row"><div class="vy-k">Что делать</div><p>Заказать выгрузку, которая связывает клиента с его агентством: она даст честный отток, честную концентрацию и точную главную метрику.</p></div>
+                  <div class="vy-row"><div class="vy-k">Почему важно</div><p>Эта одна выгрузка переводит сразу несколько выводов выше из «оценки» в «подтверждено».</p></div>
+                </div>
+              </details>
+            </div>
+          </article>
+        </section>
+
+        <!-- ===================== 2. СТАТУС ИДЕЙ ===================== -->
+        <section class="section" id="gipotezy">
+          <p class="eyebrow">Насколько проверены идеи</p>
+          <h2>Идеи по этапам — что доказано, а что нет</h2>
+          <p class="sub" style="max-width:82ch">Идеи текущего фокуса (вход и снятие нагрузки)
+          проверяемы на сегодняшних данных. Идеи поздних этапов пока в основном требуют отдельного
+          исследования — до вложений нужно проверить спрос.</p>
+          <div style="overflow-x:auto">
+          <table class="backlog">
+            <thead><tr><th>Идея</th><th>Статус</th><th>На чём держится</th><th>Что проверить</th></tr></thead>
+            <tbody>
+              <tr class="grp"><td colspan="4">Этап «Не мешать» — вход в продукт</td></tr>
+              <tr><td class="title">Привычка важнее «правильного» интерфейса</td><td class="st"><span class="ev-chip ev-muted">∅ спорно</span></td><td class="title">Новый вид документов восприняли как «больше кликов»</td><td class="title">Что осваивается быстрее: привычный ход или новый дизайн</td></tr>
+              <tr><td class="title">Сложный вход и перегруженность отпугивают</td><td class="st"><span class="ev-chip ev-ok">✓ подтв.</span></td><td class="title">Визуальный шум, уведомления вне истории, тяжёлый поиск клиента</td><td class="title">—</td></tr>
+              <tr><td class="title">Нехватка функций тормозит запуск</td><td class="st"><span class="ev-chip ev-part">~ частично</span></td><td class="title">Большинство сложных обращений — на 3–5 одинаковых сценариях</td><td class="title">Подтвердить состав этих сценариев на новых запусках</td></tr>
+              <tr><td class="title">Без доверия продуктом не пользуются (несущая идея, без задач и владельца)</td><td class="st"><span class="ev-chip ev-muted">∅ только наблюдение</span></td><td class="title">После сбоя работают в обход даже там, где функция есть</td><td class="title">Сравнить активность там, где меньше сбоев; завести владельца</td></tr>
+              <tr><td class="title">Тяжёлое подключение тормозит запуск</td><td class="st"><span class="ev-chip ev-muted">∅ пока не доказан</span></td><td class="title">Живой кейс: у нового агентства резкий спад в первый месяц</td><td class="title">Завести метрику «доля дошедших до первой услуги»</td></tr>
+              <tr class="grp"><td colspan="4">Этап «Снимать нагрузку» — экономия времени</td></tr>
+              <tr><td class="title">Структурированный оффлайн экономит время</td><td class="st"><span class="ev-chip ev-ok">✓ подтв.</span></td><td class="title">Оффлайн и доп-транзакции — самые трудозатратные; доля оффлайна (17,8%) посчитана</td><td class="title">Измерить выгоду в деньгах: маржа на оффлайн-операцию (доля ≠ маржа)</td></tr>
+              <tr><td class="title">Единое окно и общий чат экономят время</td><td class="st"><span class="ev-chip ev-ok">✓ подтв.</span></td><td class="title">Документы разбросаны, групповые заказы — ручная боль</td><td class="title">—</td></tr>
+              <tr><td class="title">Транзакции после продажи проще через прямую связь с поставщиком</td><td class="st"><span class="ev-chip ev-ok">✓ подтв.</span></td><td class="title">Обмен и возврат — трудозатратные</td><td class="title">—</td></tr>
+              <tr class="grp"><td colspan="4">Этап «Снимать нагрузку» — устранение тормозов</td></tr>
+              <tr><td class="title">Агентство настраивает всё само, без обращений в поддержку</td><td class="st"><span class="ev-chip ev-ok">✓ дословно</span></td><td class="title">Ключевые настройки сейчас меняет только поддержка; кейс админки — −59% обращений</td><td class="title">—</td></tr>
+              <tr><td class="title">Снятие тормозов удерживает клиента</td><td class="st"><span class="ev-chip ev-ok">✓ опровергнуто</span></td><td class="title">Связь нагрузки на поддержку с главной метрикой слабая и обратная</td><td class="title">Делать 2B ради сервиса/доверия; причину оттока искать выше по цепочке</td></tr>
+              <tr><td class="title">Общение рвётся из-за разрозненных каналов</td><td class="st"><span class="ev-chip ev-ok">✓ подтв.</span></td><td class="title">Много времени уходит на разбор «кто кому», переписка оторвана от заказа</td><td class="title">—</td></tr>
+              <tr class="grp"><td colspan="4">Поздние этапы — пока требуют исследования</td></tr>
+              <tr><td class="title">Часть денег теряется на сборах и оффлайне мимо Ракеты</td><td class="st"><span class="ev-chip ev-part">~ под вопросом</span></td><td class="title">Косвенный кейс, один источник</td><td class="title">Понять, какой механизм реален</td></tr>
+              <tr><td class="title">Клиент платит быстрее, когда сам видит баланс</td><td class="st"><span class="ev-chip ev-part">~ частично</span></td><td class="title">«Баланс» уже сделан, важность подтверждена</td><td class="title">Замерить, ускоряются ли платежи</td></tr>
+              <tr><td class="title">Самостоятельность клиента разгружает консультанта</td><td class="st"><span class="ev-chip ev-part">~ попутно</span></td><td class="title">Заметный рост самостоятельного оформления на рынке</td><td class="title">Понять, кто запускает транзакцию; учесть конфликт с премией</td></tr>
+              <tr><td class="title">Оцифрованный оффлайн даёт что продавать дополнительно</td><td class="st"><span class="ev-chip ev-muted">∅ не проверена</span></td><td class="title">—</td><td class="title">Проверить спрос на крупных агентствах до вложений</td></tr>
+              <tr><td class="title">Нишевые услуги легче продать после оцифровки</td><td class="st"><span class="ev-chip ev-muted">∅ кандидат</span></td><td class="title">Есть запросы на отдельные справки от нескольких агентств</td><td class="title">Проверить спрос на платный модуль</td></tr>
+            </tbody>
+          </table>
           </div>
-          <div class="vy-row"><div class="vy-k">В чём идея</div><p>Разным сегментам агентств нужны разные решения, а не одно усреднённое.</p></div>
-          <div class="vy-row"><div class="vy-k">На чём держится</div><p>Разбор обращений по сегментам: у <strong>зрелых</strong> — массовая рутина объёмом; у <strong>растущих</strong> — настройки и финансы; у <strong>новичков</strong> — вход и базовые транзакции. Боль у каждого своя.</p><p class="src">Профили видны в данных, но привязка «тип боли → решение» пока сделана автором и требует проверки.</p></div>
-          <div class="vy-row"><div class="vy-k">Что делать</div><p>Решение под задачу выбирать по тому, чью боль оно закрывает и совпадает ли с профилем сегмента; не усреднять.</p></div>
-          <div class="vy-row"><div class="vy-k">Почему это важно</div><p>Влияет на выбор решения и пометки на каждой задаче.</p></div>
-        </div>
-      </details>
+          <p class="section-note" style="margin-top:14px">Итог: текущий фокус стоит на подтверждённых
+          данными идеях. Самые мощные рычаги на входе (привычка, доверие, лёгкое подключение) пока не
+          доказаны числом — под них нужно отдельное исследование. Поздние этапы держатся на идеях,
+          которые ещё предстоит проверить.</p>
+        </section>
 
-      <!-- 6 -->
-      <details class="vis-sect">
-        <summary><span class="ev-chip ev-muted">∅</span> Доверие к продукту — отдельная хрупкая преграда</summary>
-        <div class="vis-sect__body vy-card">
-          <div class="scheme-sub">
-            <span class="chip chip--copper">тема: продукт</span>
-            <a class="chip" href="tree.html">дерево работ</a>
+        <!-- ===================== 3. ЧТО УЖЕ СДЕЛАНО ===================== -->
+        <section class="section" id="sdelano">
+          <p class="eyebrow">Что уже сделано</p>
+          <h2>Что собрано к этому моменту</h2>
+          <p class="sub" style="max-width:82ch">Главная задача квартала — собрать приоритизированный
+          список задач по входу и снятию нагрузки, с единым подходом к оценке. Сделана не только
+          сборка списка, но и вся рамка под ним: стратегия, понимание пользователя, метрики и
+          аналитика.</p>
+
+          <div class="vy-inv">
+            <article class="card">
+              <h3>Стратегия</h3>
+              <p>Видение направления (что и зачем растим), путь ценности из пяти этапов с критериями
+              успеха, семь подцелей и четыре способа помогать агентству после продажи.</p>
+              <div class="vy-go">
+                <a class="chip" href="vision.html">Видение</a>
+                <a class="chip" href="etapy.html">Этапы ценности</a>
+              </div>
+            </article>
+            <article class="card">
+              <h3>Приоритеты</h3>
+              <p>Единый список из <strong>216 задач</strong> с единой оценкой: что обязательно, что
+              желательно, что можно отложить. Около <strong>72 задач</strong> в фокусе квартала, ещё
+              ~144 — «потом, не сейчас».</p>
+              <div class="vy-go">
+                <a class="chip" href="backlog.html">Список задач</a>
+              </div>
+            </article>
+            <article class="card">
+              <h3>Понимание пользователя</h3>
+              <p>Карта ролей агентства и клиента, дерево работ консультанта, сводка исследований и
+              реестр находок — на чём держатся выводы о боли.</p>
+              <div class="vy-go">
+                <a class="chip" href="tree.html">Дерево работ</a>
+                <a class="chip" href="research.html">Исследования</a>
+              </div>
+            </article>
+            <article class="card">
+              <h3>Метрики</h3>
+              <p>Набор из 9 рабочих и 6 целевых метрик, привязанных к целям. Пока надёжно заполнена
+              одна (нагрузка на поддержку) — остальное достраиваем по клиентской стороне.</p>
+              <div class="vy-go">
+                <a class="chip" href="metrics.html">Метрики</a>
+              </div>
+            </article>
+            <article class="card">
+              <h3>Разбор веток до задач</h3>
+              <p>Семь крупных направлений разобраны до конкретных задач: админка, заказы,
+              предложения, оффлайн-услуги, онлайн-услуги, единый чат, рабочее место агентства.</p>
+              <div class="vy-go">
+                <a class="chip" href="levels.html">Каталог задач</a>
+                <a class="chip" href="backlog.html">Список задач</a>
+              </div>
+            </article>
+            <article class="card">
+              <h3>Аналитика данных</h3>
+              <p>Сегментация агентств и удержание клиентов, разбор обращений и нагрузки на поддержку,
+              доля и концентрация оффлайна, исследование рынка бизнес-тревела.</p>
+              <div class="vy-go">
+                <a class="chip" href="agencies.html">Агентства</a>
+                <a class="chip" href="support.html">Поддержка</a>
+                <a class="chip" href="rynok.html">Рынок</a>
+              </div>
+            </article>
           </div>
-          <div class="vy-row"><div class="vy-k">В чём идея</div><p>Полный набор функций нужен, но его мало: люди не начинают пользоваться продуктом, пока ему не доверяют.</p></div>
-          <div class="vy-row"><div class="vy-k">На чём держится</div><p>Консультант не пользуется даже теми функциями, что уже есть: один сбой — и он решает, что старый терминал надёжнее. Доверие легко потерять и долго возвращать.</p><p class="src">Наблюдение есть, числом пока не подтверждено.</p></div>
-          <div class="vy-row"><div class="vy-k">Что делать</div><p>На входе важнее надёжность, понятность и возможность отменить действие, чем количество функций; задачи с риском заметного сбоя при клиенте оценивать строже.</p></div>
-          <div class="vy-row"><div class="vy-k">Почему это важно</div><p>Меняет порядок приоритетов на входе: сначала стабильность, потом новые функции.</p></div>
-        </div>
-      </details>
 
-      <!-- 7 -->
-      <details class="vis-sect">
-        <summary><span class="ev-chip ev-muted">∅</span> Консультант финансово против оптимизации</summary>
-        <div class="vis-sect__body vy-card">
-          <div class="scheme-sub">
-            <span class="chip chip--copper">тема: продукт</span>
-            <a class="chip" href="tree.html">дерево работ</a>
+          <h3 style="font-family:var(--f-display);font-size:19px;margin:30px 0 10px">Готовность по целям квартала</h3>
+          <div style="overflow-x:auto">
+          <table class="backlog">
+            <thead><tr><th>Цель</th><th>Статус</th><th>Комментарий</th><th>Где смотреть</th></tr></thead>
+            <tbody>
+              <tr><td class="title">Единый список задач с единым подходом к оценке</td><td class="st"><span class="ev-chip ev-ok">✓ сделано</span></td><td class="title">216 задач, единая оценка приоритета</td><td class="title"><a href="backlog.html">Список задач</a></td></tr>
+              <tr><td class="title">Ветки разобраны до конкретных задач</td><td class="st"><span class="ev-chip ev-part">~ в основном</span></td><td class="title">7 веток разобраны; глубина по разным целям неравномерна</td><td class="title"><a href="levels.html">Каталог задач</a></td></tr>
+              <tr><td class="title">По каждому этапу: проблема, сценарий, идея, эффект, критерий</td><td class="st"><span class="ev-chip ev-part">~ частично</span></td><td class="title">Шаблон и карточки есть; замеры по входу пока неполные</td><td class="title"><a href="etapy.html">Этапы ценности</a></td></tr>
+              <tr><td class="title">Приоритетные задачи на квартал с обоснованием</td><td class="st"><span class="ev-chip ev-part">~ в работе</span></td><td class="title">План собран → см. «План на квартал»; финальное обоснование дозакрыть</td><td class="title"><a href="plan-1-2.html">План на квартал</a></td></tr>
+            </tbody>
+          </table>
           </div>
-          <div class="vy-row"><div class="vy-k">В чём идея</div><p>Премия консультанта зависит от числа транзакций. Поэтому «убрать транзакцию» бьёт по его доходу — и он сопротивляется, как бы удобно ни было.</p></div>
-          <div class="vy-row"><div class="vy-k">На чём держится</div><p>Конфликт не полный, и в этом рычаг: <em>ускорять</em> транзакцию консультанту выгодно (успевает больше — премия растёт), а <em>уносить</em> транзакцию к клиенту — против его интереса.</p><p class="src">Как именно устроена премия в разных агентствах — пока не подтверждено.</p></div>
-          <div class="vy-row"><div class="vy-k">Что делать</div><p>Сейчас целиться в «ускорить транзакцию» и убрать рутину, не связанную с премией; перенос транзакций к клиенту — задача более поздняя; уточнить устройство премии в разговорах.</p></div>
-          <div class="vy-row"><div class="vy-k">Почему это важно</div><p>Объясняет, какие задачи встретят сопротивление, а какие — поддержку консультанта.</p></div>
-        </div>
-      </details>
+        </section>
 
-      <!-- 8 -->
-      <details class="vis-sect">
-        <summary><span class="ev-chip ev-muted">∅</span> Конкуренция агентства ≠ конкуренция Ракеты</summary>
-        <div class="vis-sect__body vy-card">
-          <div class="scheme-sub">
-            <span class="chip chip--copper">тема: продукт</span>
-            <a class="chip" href="tree.html">дерево работ</a>
+        <!-- ===================== 4. РИСКИ И СЛЕПЫЕ ПЯТНА ===================== -->
+        <section class="section" id="riski">
+          <p class="eyebrow">Риски и слепые пятна</p>
+          <h2>Что может пошатнуть выводы или план</h2>
+          <p class="sub" style="max-width:82ch">Сначала — три вещи выше уровня отдельной задачи: одно
+          слепое пятно, одна развилка и одна хрупкость, от которых зависит вся рамка. Затем — обычные
+          риски, большинство из которых закрываются вопросами к данным из следующего раздела.</p>
+
+          <p class="vy-stats__lab">Где особенно хрупко — оффлайн</p>
+          <div class="vy-stats">
+            <div class="vy-stat"><div class="v">17,8<small>%</small></div><div class="k">доля оффлайна во всех операциях (посчитано)</div></div>
+            <div class="vy-stat"><div class="v">92<small>%</small></div><div class="k">всего оффлайна — на двух агентствах</div></div>
+            <div class="vy-stat"><div class="v">1</div><div class="k">среди внешних агентств оффлайн почти весь на одном</div></div>
           </div>
-          <div class="vy-row"><div class="vy-k">В чём идея</div><p>Другие платформы конкурируют с <em>Ракетой</em>. Самому агентству угрожает другое: что его клиент уйдёт напрямую в готовую платформу или к более технологичному агентству.</p></div>
-          <div class="vy-row"><div class="vy-k">На чём держится</div><p>Сильный продукт Ракеты — это оружие агентства в борьбе за своего клиента. Если Ракета отстаёт, агентство слабее и рискует потерять клиента.</p><p class="src">Это рамка для размышления, её надо проверить в разговорах с ушедшими.</p></div>
-          <div class="vy-row"><div class="vy-k">Что делать</div><p>В разговорах с ушедшими различать «вы сменили платформу» и «ваш клиент ушёл от вас напрямую»; это даёт второй смысл работе на входе — защита агентства от потери клиента.</p></div>
-          <div class="vy-row"><div class="vy-k">Почему это важно</div><p>Добавляет обоснование работе на входе и определяет, о чём спрашивать ушедших.</p></div>
-        </div>
-      </details>
 
-      <!-- 9 -->
-      <details class="vis-sect">
-        <summary><span class="ev-chip ev-ok">✓</span> Текущий фокус выбран по структуре работы, а не на вкус</summary>
-        <div class="vis-sect__body vy-card">
-          <div class="scheme-sub">
-            <span class="chip chip--copper">тема: продукт</span>
-            <a class="chip" href="tree.html">дерево работ</a>
+          <div class="vy-flags">
+            <div class="vy-flag is-crit">
+              <div class="lab"><span class="ev-chip ev-warn">⚠ слепое пятно</span> Сила поставщиков — единственный непокрытый фланг</div>
+              <p>Вся оборона направления выстроена <strong>вниз</strong> по цепочке — против тех, кто
+              ближе к клиенту: конкурентов, самостоятельного бронирования, новых игроков. Но билеты и
+              тарифы, на которых стоит вся продажа, даёт <strong>другая сторона</strong> — авиакомпании
+              и системы бронирования. И есть тренд, когда авиакомпании уводят продажу в свои
+              <strong>прямые каналы</strong>, минуя посредников. Если контент перетекает туда,
+              переговорная сила Ракеты падает <em>независимо</em> от того, насколько мы хороши со стороны
+              клиента. Один вопрос, если оставить только один: <strong>не строим ли мы оборону вниз по
+              цепочке, пока риск сидит вверху.</strong> Статус честный — это пока не картировано, а не
+              «угроза доказана». Что делать: отдельно оценить эту силу (см. вопрос про поставщиков ниже).</p>
+            </div>
+            <div class="vy-flag">
+              <div class="lab"><span class="ev-chip ev-part">~ развилка</span> Защита оффлайном — временное убежище или прочный фокус?</div>
+              <p>Сложный и зарубежный трэвел — реальная защищённая зона. Но непонятна её
+              <strong>природа</strong>, а от этого зависит объём вложений. Если это <em>временное
+              убежище</em> — вкладываем ровно столько, чтобы выиграть время на новый продукт. Если за
+              ним <em>прочные барьеры</em> (глубокая интеграция с 1С, требования соответствия,
+              доверие в кризис) — вкладываемся всерьёз и надолго. Вероятный ответ — «и то и другое»:
+              прочно для сегмента, но сегмент сжимается по мере роста AI. Развилку разрешают разговоры
+              с ушедшими клиентами (за какую работу они наняли замену).</p>
+            </div>
+            <div class="vy-flag">
+              <div class="lab"><span class="ev-chip ev-part">~ хрупкость</span> Оффлайн крайне сконцентрирован</div>
+              <p>92% всего оффлайна — на двух агентствах; это хрупко независимо от того, чьи это
+              агентства. Среди внешних агентств оффлайн почти весь на одном. Сейчас это не структурная
+              защита отрасли, а <strong>зависимость от пары аккаунтов</strong>: потеря одного обвалит
+              весь кейс. Чтобы стать настоящей защитой, оффлайн должен быть дорогим к повторению
+              <strong>по всему сегменту</strong> внешних агентств, а не держаться на паре. Цель —
+              «оффлайн, воспроизводимый по сегменту», а не «функция под одно агентство».</p>
+            </div>
           </div>
-          <div class="vy-row"><div class="vy-k">В чём идея</div><p>Текущие цели — это работа пользователя-консультанта. Остальные цели — работа руководителя агентства и его клиентов.</p></div>
-          <div class="vy-row"><div class="vy-k">На чём держится</div><p>У остальных целей просто нет задач на стороне консультанта — они лежат у клиента или руководителя. Закрывая текущий фокус, мы двигаем работу консультанта, но почти не двигаем работу руководителя. Это осознанный разрыв, а не недосмотр.</p></div>
-          <div class="vy-row"><div class="vy-k">Что делать</div><p>Держать текущий фокус; помнить, что продление договоров зависит от работы руководителя — это следующий горизонт.</p></div>
-          <div class="vy-row"><div class="vy-k">Почему это важно</div><p>Подтверждает, что нынешний набор задач выбран обоснованно, и разводит две разные группы рычагов.</p></div>
-        </div>
-      </details>
 
-      <!-- 10 -->
-      <details class="vis-sect">
-        <summary><span class="chip chip--copper" style="margin-right:6px">правило</span> Дисциплина приоритетов важнее отдельной функции</summary>
-        <div class="vis-sect__body vy-card">
-          <div class="scheme-sub">
-            <span class="chip chip--copper">тема: как работаем</span>
-            <a class="chip" href="backlog.html">список задач</a>
+          <div style="overflow-x:auto">
+          <table class="backlog">
+            <thead><tr><th>Риск</th><th>В чём</th><th>Что обрушит</th><th>Что делаем</th></tr></thead>
+            <tbody>
+              <tr><td class="title"><strong>Хрупкость концентрации</strong></td><td class="title">Объём держится на двух-трёх крупнейших агентствах</td><td class="title">Уход одного из них обрушит результат</td><td class="title">Помечать такие задачи, искать рост в средних и малых; поправку на «своё» агентство делать только в оценке спроса канала</td></tr>
+              <tr><td class="title"><strong>Два трека без владельца</strong></td><td class="title">Оборону от прямого ухода клиента и дешёвый продукт «снизу» не ведёт никто</td><td class="title">Через 3–5 лет направление рискует проспать подрыв</td><td class="title">Назвать риски поимённо, зафиксировать «нет владельца», вынести наверх как решение руководства</td></tr>
+              <tr><td class="title"><strong>Переходы клиентов искажают данные</strong></td><td class="title">Отток и концентрация одновременно завышены и занижены</td><td class="title">Часть выводов о рынке остаётся оценкой</td><td class="title">Заказать выгрузку, связывающую клиента с агентством</td></tr>
+              <tr><td class="title"><strong>Один замер и устаревание</strong></td><td class="title">Часть цифр — на одном срезе или за прошлые годы</td><td class="title">Выводы могут не держаться при смене рынка</td><td class="title">Повторять замеры каждый квартал</td></tr>
+              <tr><td class="title"><strong>Привязки не проверены</strong></td><td class="title">Связи «боль → решение», роли, устройство премии пока сделаны автором</td><td class="title">Поедут оценки и выбор решений</td><td class="title">Проверка автора и короткие интервью</td></tr>
+              <tr><td class="title"><strong>Доверие не измерено</strong></td><td class="title">Продуктом могут не начать пользоваться даже при полном наборе функций; у темы нет владельца</td><td class="title">«Сделали, но не пользуются»</td><td class="title">Сравнить активность там, где меньше сбоев; завести трек надёжности</td></tr>
+              <tr><td class="title"><strong>Конфликт с премией</strong></td><td class="title">Задачи, убирающие транзакцию, встретят сопротивление консультанта</td><td class="title">Продуктом не начнут пользоваться</td><td class="title">Сейчас только «ускорять», устройство премии подтвердить</td></tr>
+              <tr><td class="title"><strong>Вход без точки отсчёта</strong></td><td class="title">По большинству новичков нет данных обращений</td><td class="title">Не закрыть цель «по каждому этапу есть метрики»</td><td class="title">Собирать обращения по новичкам с момента подключения</td></tr>
+              <tr><td class="title"><strong>Что именно внутри оффлайна — неясно</strong></td><td class="title">Доля оффлайна измерена — <strong>17,8% операций</strong>, и 92% объёма дают два агентства. Но более половины оффлайна — «прочее» без расшифровки, нет разбивки по месяцам, и это объём, а не маржа</td><td class="title">Без расшифровки и маржи оффлайн-задачу можно нацелить не туда</td><td class="title">Разобрать «прочее»; запросить помесячные данные и стоимость оффлайн-операции</td></tr>
+              <tr><td class="title"><strong>Главная метрика приблизительна</strong></td><td class="title">Считаем по факту транзакций, а не по самостоятельной работе клиента</td><td class="title">Точная метрика пока не меряется</td><td class="title">Развести «логин/сам работает» и «факт операций» через выгрузку по клиентам</td></tr>
+            </tbody>
+          </table>
           </div>
-          <div class="vy-row"><div class="vy-k">В чём суть</div><p>Это наше решение о том, как ведём работу.</p></div>
-          <div class="vy-row"><div class="vy-k">Как именно</div><p>Каждая задача обязана объяснять, на какую цель направления она работает и какую боль закрывает; если не объясняет — возвращается на переработку. Польза задачи считается строго: только по реальным агентствам, без «нам кажется» и без натянутых обоснований.</p></div>
-          <div class="vy-row"><div class="vy-k">Что делать</div><p>Применять без исключений — это защищает список задач от раздувания и обоснований уровня «агентства так просят».</p></div>
-          <div class="vy-row"><div class="vy-k">Почему это важно</div><p>Обеспечивает качество и сопоставимость всех задач и помогает защищать приоритеты перед руководством.</p></div>
-        </div>
-      </details>
+          <p class="section-note" style="margin-top:14px">До дорогих решений всё спорное держим как живые
+          версии: причину оттока (ценность / сегмент / прямой уход / общий спад рынка) не схлопываем в
+          одну, пока нет выгрузки и разговоров с ушедшими. Общий спад рынка 2026 — это контекст, а не
+          объяснение структуры; не списывать на него всё подряд.</p>
+        </section>
 
-      <!-- 11 -->
-      <details class="vis-sect" id="vyvod-segment">
-        <summary><span class="ev-chip ev-ok">✓</span> Зазор в измерении: думаем агентствами, считаем по клиентам</summary>
-        <div class="vis-sect__body vy-card">
-          <div class="scheme-sub">
-            <span class="chip chip--copper">тема: как измеряем</span>
-            <a class="chip" href="metrics.html">метрики</a>
-            <a class="chip" href="nmt.html#cepochka">диагностика NMT поднимает это в корень →</a>
+        <!-- ===================== 5. ПЛАН → ССЫЛКА ===================== -->
+        <section class="section" id="plan">
+          <p class="eyebrow">План на квартал</p>
+          <div class="vy-cta">
+            <div>
+              <div class="k">План вынесен на отдельную страницу</div>
+              <h2>Рабочее место консультанта без лишних касаний</h2>
+              <p>Продолжение этой диагностики — что строим и что исследуем дальше: инициативы по входу
+              и снятию нагрузки в порядке зависимостей, замеры под них и разговоры с ушедшими.
+              Чтобы не дублировать, план собран на странице
+              <strong>«Этапы 1 и 2 — одной очередью»</strong>.</p>
+            </div>
+            <div class="acts">
+              <a class="btn btn--primary" href="plan-1-2.html">Открыть план →</a>
+              <a class="btn" href="q3.html">Что строим (кратко)</a>
+            </div>
           </div>
-          <div class="vy-row"><div class="vy-k">В чём суть</div><p>Большинство инструментов работают на уровне агентства, а главная метрика растёт на уровне клиентов. Сам переход от «привлекли агентство» к «получили его клиентов» почти не измеряется.</p></div>
-          <div class="vy-row"><div class="vy-k">На чём держится</div><p>Переходы клиентов между агентствами искажают и отток, и концентрацию одновременно. Без отдельной выгрузки честно посчитать ни то, ни другое нельзя.</p></div>
-          <div class="vy-row"><div class="vy-k">Что делать</div><p>Заказать выгрузку, которая связывает клиента с его агентством: она даст честный отток, честную концентрацию и точную главную метрику.</p></div>
-          <div class="vy-row"><div class="vy-k">Почему это важно</div><p>Эта одна выгрузка переводит сразу несколько выводов выше из «оценки» в «подтверждено».</p></div>
-        </div>
-      </details>
-    </section>
 
-    <!-- ===================== 2. ЧТО УЖЕ СДЕЛАНО ===================== -->
-    <section class="section" id="sdelano">
-      <p class="eyebrow">Что уже сделано</p>
-      <h2>Что собрано к этому моменту</h2>
-      <p class="sub" style="max-width:80ch">Главная задача квартала — собрать приоритизированный
-      список задач по входу и снятию нагрузки, с единым подходом к оценке. Сделана не только
-      сборка списка, но и вся рамка под ним: стратегия, понимание пользователя, метрики и
-      аналитика.</p>
+          <h3 style="font-family:var(--f-display);font-size:19px;margin:28px 0 8px">Что бить первым — два хода</h3>
+          <p class="vy-dia-cap">Оба дешёвые и идут параллельно. Подробный разбор — в <a href="nmt.html#fokus">диагностике направления</a>.</p>
+          <svg class="vy-dia" viewBox="0 0 720 196" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Схема: ход A измерение и ход B сборка идут параллельно и дают результат">
+            <style>
+              .vm-b{ fill:var(--panel); stroke:var(--line); stroke-width:1.5; }
+              .vm-f{ fill:var(--gold-dim); stroke:var(--gold); stroke-width:2; }
+              .vm-t{ fill:var(--cream); font-weight:600; }
+              .vm-s{ fill:var(--cream-soft); }
+              .vm-g{ fill:var(--gold); font-weight:600; }
+              .vm-a{ stroke:var(--cream-dim); stroke-width:1.5; fill:none; }
+            </style>
+            <defs><marker id="vmh" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--cream-dim)"/></marker></defs>
+            <rect class="vm-f" x="20" y="12" width="320" height="86" rx="11"/>
+            <text x="38" y="36" class="vm-g" font-size="12">Ход A · измерение</text>
+            <text x="38" y="58" class="vm-t" font-size="12.5">Выгрузка по клиентам + интервью</text>
+            <text x="38" y="76" class="vm-s" font-size="11">«почему остаются»</text>
+            <text x="38" y="92" class="vm-s" font-size="11">чинит корень: единица, отток, метрика</text>
+            <rect class="vm-b" x="380" y="12" width="320" height="86" rx="11"/>
+            <text x="398" y="36" class="vm-g" font-size="12">Ход B · сборка</text>
+            <text x="398" y="58" class="vm-t" font-size="12.5">Слайс надёжности на дорогих</text>
+            <text x="398" y="76" class="vm-s" font-size="11">агентствах, с замером принятия</text>
+            <text x="398" y="92" class="vm-s" font-size="11">заодно проверяет идею про доверие</text>
+            <line class="vm-a" x1="180" y1="98" x2="180" y2="132" marker-end="url(#vmh)"/>
+            <line class="vm-a" x1="540" y1="98" x2="540" y2="132" marker-end="url(#vmh)"/>
+            <rect class="vm-b" x="120" y="138" width="480" height="46" rx="10" stroke-dasharray="5 4"/>
+            <text x="360" y="160" text-anchor="middle" class="vm-t" font-size="12">Результат — честные цифры и первый доказанный кусок</text>
+            <text x="360" y="177" text-anchor="middle" class="vm-s" font-size="11">остальные ~144 задачи — «потом, не сейчас»</text>
+          </svg>
+        </section>
 
-      <div class="vy-inv">
-        <article class="card">
-          <h3>Стратегия</h3>
-          <p>Видение направления (что и зачем растим), путь ценности из пяти этапов с критериями
-          успеха, семь подцелей и четыре способа помогать агентству после продажи.</p>
-          <div class="vy-go">
-            <a class="chip" href="vision.html">Видение</a>
-            <a class="chip" href="etapy.html">Этапы ценности</a>
+        <!-- ===================== 6. ВОПРОСЫ К ДАННЫМ ===================== -->
+        <section class="section" id="dozaprosy">
+          <p class="eyebrow">Вопросы к данным</p>
+          <h2>Что дозапросить, чтобы закрыть пробелы</h2>
+          <p class="sub" style="max-width:82ch">Главный рычаг — одна выгрузка закрывает сразу половину
+          «оценочных» выводов выше. Порядок — по дешевизне проверки и цене ошибки. Полная карта
+          замеров со статусами и владельцами — на странице <a href="planned.html">«План исследований»</a>.</p>
+          <div style="overflow-x:auto">
+          <table class="backlog">
+            <thead><tr><th>Вопрос</th><th>Где взять</th><th>Что это даст</th></tr></thead>
+            <tbody>
+              <tr><td class="title">Связь клиента с его агентством (+ метки «исторический / выигранный на рынке», год прихода клиента, «онлайн/оффлайн»)</td><td class="title">Выгрузка из базы</td><td class="title">Честный отток вместо переходов; размер исторического слоя; верная единица, концентрация и метрика — корень всего</td></tr>
+              <tr><td class="title">Причины ухода сильных клиентов — и почему остаются те, кто остаётся</td><td class="title">Менеджер, ~15 интервью</td><td class="title">Какой из четырёх сценариев оттока реален; разрешает развилку «убежище или фокус»</td></tr>
+              <tr><td class="title">Сила поставщиков: доля контента под риском ухода в прямые каналы</td><td class="title">Отдельная оценка</td><td class="title">Закрывает единственное непокрытое слепое пятно (фланг поставщиков)</td></tr>
+              <tr><td class="title">Маржа на оффлайн-операцию и число консультантов в крупных агентствах</td><td class="title">Выгрузка + менеджер</td><td class="title">Доля оффлайна (17,8%) измерена — нужны деньги и реальные трудозатраты, а не оценка</td></tr>
+              <tr><td class="title">Оффлайн по месяцам и расшифровка «прочего»</td><td class="title">Выгрузка из базы</td><td class="title">Динамика и состав — чтобы не нацелить оффлайн-задачу не туда</td></tr>
+              <tr><td class="title">Как устроена премия консультанта</td><td class="title">Интервью, 3–5 агентств</td><td class="title">Понять, какие задачи встретят сопротивление; снять или подтвердить конфликт</td></tr>
+              <tr><td class="title">Обращения по новичкам с момента подключения</td><td class="title">Настройка сбора</td><td class="title">Точка отсчёта для этапа входа</td></tr>
+              <tr><td class="title">Замер рабочих метрик до начала работ</td><td class="title">Пилот, 2–3 агентства</td><td class="title">Возможность доказать эффект всего плана</td></tr>
+            </tbody>
+          </table>
           </div>
-        </article>
-        <article class="card">
-          <h3>Приоритеты</h3>
-          <p>Единый список из <strong>216 задач</strong> с единой оценкой: что обязательно,
-          что желательно, что можно отложить. Около 144 задач — на входе и снятии нагрузки.</p>
-          <div class="vy-go">
-            <a class="chip" href="backlog.html">Список задач</a>
-          </div>
-        </article>
-        <article class="card">
-          <h3>Понимание пользователя</h3>
-          <p>Карта ролей агентства и клиента, дерево работ консультанта, сводка исследований и
-          реестр находок — на чём держатся выводы о боли.</p>
-          <div class="vy-go">
-            <a class="chip" href="tree.html">Дерево работ</a>
-            <a class="chip" href="research.html">Исследования</a>
-          </div>
-        </article>
-        <article class="card">
-          <h3>Метрики</h3>
-          <p>Набор из 9 рабочих и 6 целевых метрик, привязанных к целям, с точками отсчёта на
-          текущий месяц.</p>
-          <div class="vy-go">
-            <a class="chip" href="metrics.html">Метрики</a>
-          </div>
-        </article>
-        <article class="card">
-          <h3>Разбор веток до задач</h3>
-          <p>Семь крупных направлений разобраны до конкретных задач: админка, заказы,
-          предложения, оффлайн-услуги, онлайн-услуги, единый чат, рабочее место агентства.</p>
-          <div class="vy-go">
-            <a class="chip" href="levels.html">Каталог задач</a>
-            <a class="chip" href="backlog.html">Список задач</a>
-          </div>
-        </article>
-        <article class="card">
-          <h3>Аналитика данных</h3>
-          <p>Сегментация агентств и удержание клиентов, разбор обращений и нагрузки на поддержку,
-          разбор главной метрики, исследование рынка бизнес-тревела.</p>
-          <div class="vy-go">
-            <a class="chip" href="agencies.html">Агентства</a>
-            <a class="chip" href="support.html">Поддержка</a>
-            <a class="chip" href="rynok.html">Рынок</a>
-          </div>
-        </article>
-      </div>
-
-      <h3 style="font-family:var(--f-display);font-size:19px;margin:30px 0 10px">Готовность по целям квартала</h3>
-      <div style="overflow-x:auto">
-      <table class="backlog">
-        <thead><tr><th>Цель</th><th>Статус</th><th>Комментарий</th><th>Где смотреть</th></tr></thead>
-        <tbody>
-          <tr><td class="title">Единый список задач с единым подходом к оценке</td><td class="st"><span class="ev-chip ev-ok">✓ сделано</span></td><td class="title">216 задач, единая оценка приоритета</td><td class="title"><a href="backlog.html">Список задач</a></td></tr>
-          <tr><td class="title">Ветки разобраны до конкретных задач</td><td class="st"><span class="ev-chip ev-part">~ в основном</span></td><td class="title">7 веток разобраны; глубина по разным целям неравномерна</td><td class="title"><a href="levels.html">Каталог задач</a></td></tr>
-          <tr><td class="title">По каждому этапу: проблема, сценарий, идея, эффект, критерий</td><td class="st"><span class="ev-chip ev-part">~ частично</span></td><td class="title">Шаблон и карточки есть; замеры по входу пока неполные</td><td class="title"><a href="etapy.html">Этапы ценности</a></td></tr>
-          <tr><td class="title">Приоритетные задачи на квартал с обоснованием</td><td class="st"><span class="ev-chip ev-part">~ в работе</span></td><td class="title">План собран → см. «План на квартал»; финальное обоснование дозакрыть</td><td class="title"><a href="plan-1-2.html">План на квартал</a></td></tr>
-        </tbody>
-      </table>
-      </div>
-    </section>
-
-    <!-- ===================== 3. СТАТУС ИДЕЙ ===================== -->
-    <section class="section" id="gipotezy">
-      <p class="eyebrow">Насколько проверены идеи</p>
-      <h2>Идеи по этапам — что доказано, а что нет</h2>
-      <p class="sub" style="max-width:80ch">Идеи текущего фокуса (вход и снятие нагрузки)
-      проверяемы на сегодняшних данных. Идеи поздних этапов пока в основном требуют отдельного
-      исследования — до вложений нужно проверить спрос.</p>
-      <div style="overflow-x:auto">
-      <table class="backlog">
-        <thead><tr><th>Идея</th><th>Статус</th><th>На чём держится</th><th>Что проверить</th></tr></thead>
-        <tbody>
-          <tr class="grp"><td colspan="4">Этап «Не мешать» — вход в продукт</td></tr>
-          <tr><td class="title">Привычка важнее «правильного» интерфейса</td><td class="st"><span class="ev-chip ev-muted">∅ спорно</span></td><td class="title">Новый вид документов восприняли как «больше кликов»</td><td class="title">Что осваивается быстрее: привычный ход или новый дизайн</td></tr>
-          <tr><td class="title">Сложный вход и перегруженность отпугивают</td><td class="st"><span class="ev-chip ev-ok">✓ подтв.</span></td><td class="title">Визуальный шум, уведомления вне истории, тяжёлый поиск клиента</td><td class="title">—</td></tr>
-          <tr><td class="title">Нехватка функций тормозит запуск</td><td class="st"><span class="ev-chip ev-part">~ частично</span></td><td class="title">Большинство сложных обращений — на 3–5 одинаковых сценариях</td><td class="title">Подтвердить состав этих сценариев на новых запусках</td></tr>
-          <tr><td class="title">Без доверия продуктом не пользуются</td><td class="st"><span class="ev-chip ev-muted">∅ только наблюдение</span></td><td class="title">После сбоя работают в обход даже там, где функция есть</td><td class="title">Сравнить: пользуются ли активнее, когда сбоев меньше</td></tr>
-          <tr><td class="title">Тяжёлое подключение тормозит запуск</td><td class="st"><span class="ev-chip ev-muted">∅ пока не доказан</span></td><td class="title">Живой кейс: у нового агентства резкий спад в первый месяц</td><td class="title">Завести метрику «доля дошедших до первой услуги»</td></tr>
-          <tr class="grp"><td colspan="4">Этап «Снимать нагрузку» — экономия времени</td></tr>
-          <tr><td class="title">Структурированный оффлайн экономит время</td><td class="st"><span class="ev-chip ev-ok">✓ подтв.</span></td><td class="title">Оффлайн и доп-транзакции — самые трудозатратные</td><td class="title">Измерить размер выгоды (запланировано)</td></tr>
-          <tr><td class="title">Единое окно и общий чат экономят время</td><td class="st"><span class="ev-chip ev-ok">✓ подтв.</span></td><td class="title">Документы разбросаны, групповые заказы — ручная боль</td><td class="title">—</td></tr>
-          <tr><td class="title">Транзакции после продажи проще через прямую связь с поставщиком</td><td class="st"><span class="ev-chip ev-ok">✓ подтв.</span></td><td class="title">Обмен и возврат — трудозатратные</td><td class="title">—</td></tr>
-          <tr class="grp"><td colspan="4">Этап «Снимать нагрузку» — устранение тормозов</td></tr>
-          <tr><td class="title">Агентство настраивает всё само, без обращений в поддержку</td><td class="st"><span class="ev-chip ev-ok">✓ дословно</span></td><td class="title">Сейчас ключевые настройки меняет только поддержка — каждая правка через заявку</td><td class="title">—</td></tr>
-          <tr><td class="title">Тормоза — на стыке с поддержкой Ракеты, а не внутри агентства</td><td class="st"><span class="ev-chip ev-part">~ открыт</span></td><td class="title">—</td><td class="title">Замерить, кого именно ждёт консультант</td></tr>
-          <tr><td class="title">Общение рвётся из-за разрозненных каналов</td><td class="st"><span class="ev-chip ev-ok">✓ подтв.</span></td><td class="title">Много времени уходит на разбор «кто кому», переписка оторвана от заказа</td><td class="title">—</td></tr>
-          <tr class="grp"><td colspan="4">Поздние этапы — пока требуют исследования</td></tr>
-          <tr><td class="title">Часть денег теряется на сборах и оффлайне мимо Ракеты</td><td class="st"><span class="ev-chip ev-part">~ под вопросом</span></td><td class="title">Косвенный кейс, один источник</td><td class="title">Понять, какой механизм реален</td></tr>
-          <tr><td class="title">Клиент платит быстрее, когда сам видит баланс</td><td class="st"><span class="ev-chip ev-part">~ частично</span></td><td class="title">«Баланс» уже сделан, важность подтверждена</td><td class="title">Замерить, ускоряются ли платежи</td></tr>
-          <tr><td class="title">Самостоятельность клиента разгружает консультанта</td><td class="st"><span class="ev-chip ev-part">~ попутно</span></td><td class="title">Заметный рост самостоятельного оформления на рынке</td><td class="title">Понять, кто запускает транзакцию; учесть конфликт с премией</td></tr>
-          <tr><td class="title">Оцифрованный оффлайн даёт что продавать дополнительно</td><td class="st"><span class="ev-chip ev-muted">∅ не проверена</span></td><td class="title">—</td><td class="title">Проверить спрос на крупных агентствах до вложений</td></tr>
-          <tr><td class="title">Нишевые услуги легче продать после оцифровки</td><td class="st"><span class="ev-chip ev-muted">∅ кандидат</span></td><td class="title">Есть запросы на отдельные справки от нескольких агентств</td><td class="title">Проверить спрос на платный модуль</td></tr>
-        </tbody>
-      </table>
-      </div>
-      <p class="section-note" style="margin-top:14px">Итог: текущий фокус стоит на подтверждённых
-      данными идеях. Самые мощные рычаги на входе (привычка, доверие, лёгкое подключение) пока не
-      доказаны числом — под них нужно отдельное исследование. Поздние этапы держатся на идеях,
-      которые ещё предстоит проверить.</p>
-    </section>
-
-    <!-- ===================== 4. РИСКИ ===================== -->
-    <section class="section" id="riski">
-      <p class="eyebrow">Риски</p>
-      <h2>Что может пошатнуть выводы или план</h2>
-      <p class="sub" style="max-width:80ch">Большинство рисков — следствие неполноты данных, а не
-      ошибок в рассуждении; почти всё закрывается вопросами к данным из следующего раздела.</p>
-      <div style="overflow-x:auto">
-      <table class="backlog">
-        <thead><tr><th>Риск</th><th>В чём</th><th>Что обрушит</th><th>Что делаем</th></tr></thead>
-        <tbody>
-          <tr><td class="title"><strong>Хрупкость концентрации</strong></td><td class="title">Объём держится на двух-трёх крупнейших агентствах</td><td class="title">Уход одного из них обрушит результат</td><td class="title">Помечать такие задачи, оценивать осторожнее, искать рост в средних и малых</td></tr>
-          <tr><td class="title"><strong>Переходы клиентов искажают данные</strong></td><td class="title">Отток и концентрация одновременно завышены и занижены</td><td class="title">Часть выводов о рынке остаётся оценкой</td><td class="title">Заказать выгрузку, связывающую клиента с агентством</td></tr>
-          <tr><td class="title"><strong>Один замер и устаревание</strong></td><td class="title">Часть цифр — на одном срезе или за прошлые годы</td><td class="title">Выводы могут не держаться при смене рынка</td><td class="title">Повторять замеры каждый квартал</td></tr>
-          <tr><td class="title"><strong>Привязки не проверены</strong></td><td class="title">Связи «боль → решение», роли, устройство премии пока сделаны автором</td><td class="title">Поедут оценки и выбор решений</td><td class="title">Проверка автора и короткие интервью</td></tr>
-          <tr><td class="title"><strong>Доверие не измерено</strong></td><td class="title">Продуктом могут не начать пользоваться даже при полном наборе функций</td><td class="title">«Сделали, но не пользуются»</td><td class="title">Сравнить активность там, где меньше сбоев</td></tr>
-          <tr><td class="title"><strong>Конфликт с премией</strong></td><td class="title">Задачи, убирающие транзакцию, встретят сопротивление консультанта</td><td class="title">Продуктом не начнут пользоваться</td><td class="title">Сейчас только «ускорять», устройство премии подтвердить</td></tr>
-          <tr><td class="title"><strong>Вход без точки отсчёта</strong></td><td class="title">По большинству новичков нет данных обращений</td><td class="title">Не закрыть цель «по каждому этапу есть метрики»</td><td class="title">Собирать обращения по новичкам с момента подключения</td></tr>
-          <tr><td class="title"><strong>Что именно внутри оффлайна — неясно</strong></td><td class="title">Доля оффлайна теперь измерена — <strong>18% всех услуг</strong>, и 92% этого объёма дают всего два крупнейших агентства. Но более половины оффлайна — категория «прочее» без расшифровки, и нет разбивки по месяцам</td><td class="title">Без расшифровки «прочего» оффлайн-задачу можно нацелить не туда</td><td class="title">Разобрать, что входит в «прочее»; запросить помесячные данные для тренда</td></tr>
-          <tr><td class="title"><strong>Главная метрика приблизительна</strong></td><td class="title">Считаем по факту транзакций, а не по самостоятельной работе клиента</td><td class="title">Точная метрика пока не меряется</td><td class="title">Посчитать долю онлайн-клиентов</td></tr>
-        </tbody>
-      </table>
-      </div>
-    </section>
-
-    <!-- ===================== 5. ПЛАН → ССЫЛКА ===================== -->
-    <section class="section" id="plan">
-      <p class="eyebrow">План на квартал</p>
-      <div class="vy-cta">
-        <div>
-          <div class="k">План вынесен на отдельную страницу</div>
-          <h2>Рабочее место консультанта без лишних касаний</h2>
-          <p>Продолжение этой диагностики — что строим и что исследуем дальше: инициативы по входу
-          и снятию нагрузки в порядке зависимостей, замеры под них и разговоры с ушедшими.
-          Чтобы не дублировать, план собран на странице
-          <strong>«Этапы 1 и 2 — одной очередью»</strong>.</p>
-        </div>
-        <div class="acts">
-          <a class="btn btn--primary" href="plan-1-2.html">Открыть план →</a>
-          <a class="btn" href="q3.html">Что строим (кратко)</a>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===================== 6. ВОПРОСЫ К ДАННЫМ ===================== -->
-    <section class="section" id="dozaprosy">
-      <p class="eyebrow">Вопросы к данным</p>
-      <h2>Что дозапросить, чтобы закрыть пробелы</h2>
-      <p class="sub" style="max-width:80ch">Главный рычаг — одна выгрузка закрывает сразу половину
-      «оценочных» выводов выше. Ниже — что и где спросить.</p>
-      <div style="overflow-x:auto">
-      <table class="backlog">
-        <thead><tr><th>Вопрос</th><th>Где взять</th><th>Что это даст</th></tr></thead>
-        <tbody>
-          <tr><td class="title">Связь клиента с его агентством</td><td class="title">Выгрузка из базы</td><td class="title">Честный отток вместо переходов; точная концентрация и главная метрика</td></tr>
-          <tr><td class="title">Причины ухода сильных клиентов</td><td class="title">Менеджер, интервью</td><td class="title">Был ли продуктовый фактор; уверенность по теме удержания</td></tr>
-          <tr><td class="title">Число консультантов в крупных агентствах</td><td class="title">Менеджер</td><td class="title">Реальные трудозатраты вместо приблизительной оценки</td></tr>
-          <tr><td class="title">Оффлайн по месяцам и его стоимость</td><td class="title">Выгрузка из базы</td><td class="title">Доля (18%) и категории уже измерены — нужны динамика и расшифровка «прочего»</td></tr>
-          <tr><td class="title">Как устроена премия консультанта</td><td class="title">Интервью</td><td class="title">Понять, какие задачи встретят сопротивление</td></tr>
-          <tr><td class="title">Обращения по новичкам с момента подключения</td><td class="title">Настройка сбора</td><td class="title">Точка отсчёта для этапа входа</td></tr>
-          <tr><td class="title">Замер рабочих метрик до начала работ</td><td class="title">Пилот, 2–3 агентства</td><td class="title">Возможность доказать эффект всего плана</td></tr>
-        </tbody>
-      </table>
-      </div>
-    </section>
+        </section>
+      </div><!-- /vy-flow -->
+    </div><!-- /vy-shell -->
   </main>
 
   <div data-footer></div>
 
   <script src="assets/app.js"></script>
+  <script>
+    // Локальный scrollspy для бокового указателя (не трогает общий app.js)
+    (function () {
+      var rail = document.querySelector(".vy-rail");
+      if (!rail) return;
+      var links = [].slice.call(rail.querySelectorAll("a"));
+      var map = {};
+      links.forEach(function (a) {
+        var id = a.getAttribute("href").slice(1);
+        var s = document.getElementById(id);
+        if (s) map[id] = a;
+      });
+      var obs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) {
+            links.forEach(function (l) { l.classList.remove("active"); });
+            var a = map[e.target.id];
+            if (a) a.classList.add("active");
+          }
+        });
+      }, { rootMargin: "-12% 0px -75% 0px", threshold: 0 });
+      Object.keys(map).forEach(function (id) { obs.observe(document.getElementById(id)); });
+    })();
+  </script>
 </body>
 </html>
