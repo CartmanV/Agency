@@ -1779,18 +1779,21 @@ a.ex-pyr__pillar--accent:hover { border-color: var(--gold-dk); }
 }
 a.ex-pyr__base:hover { border-color: var(--copper); color: var(--cream); text-decoration: none; }
 
-/* полоса базовых цифр (KPI) + строка «за последний месяц» */
-.ex-kpis { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
-.ex-kpi {
-  flex: 1 1 auto; padding: 8px 12px; border: 1px solid var(--line); border-radius: 999px;
-  background: rgba(255,255,255,.02); color: var(--cream-dim); font-size: .8rem; white-space: nowrap;
-  transition: border-color .15s;
+/* числовая полоса-статистика: big-число + короткая подпись */
+.ex-statwrap { margin-top: 16px; }
+.ex-stat__cap { display: block; font: 500 .7rem/1 var(--f-mono); letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.ex-stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.ex-stat {
+  display: flex; flex-direction: column; gap: 4px; padding: 11px 12px;
+  border: 1px solid var(--line); border-radius: 11px; background: rgba(255,255,255,.02);
+  transition: border-color .15s, transform .15s;
 }
-a.ex-kpi:hover { border-color: var(--copper); text-decoration: none; }
-.ex-kpi b { color: var(--cream); font-family: var(--f-mono); font-weight: 700; }
-.ex-pyr__month { color: var(--cream-soft); font-size: .84rem; line-height: 1.55; margin: 12px 0 0; }
-.ex-pyr__month .ex-pyr__ml { color: var(--muted); font-family: var(--f-mono); font-size: .74rem; text-transform: uppercase; letter-spacing: .03em; margin-right: 4px; }
-.ex-pyr__month b { color: var(--cream); font-family: var(--f-mono); }
+a.ex-stat:hover { border-color: var(--copper); transform: translateY(-1px); text-decoration: none; }
+.ex-stat__v { font: 700 1.5rem/1 var(--f-mono); color: var(--cream); font-variant-numeric: tabular-nums; }
+.ex-stat__v small { font-size: .95rem; font-weight: 500; color: var(--cream-dim); }
+.ex-stat__k { color: var(--muted); font-size: .74rem; line-height: 1.3; }
+@media (max-width: 860px) { .ex-stats { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 520px) { .ex-stats { grid-template-columns: repeat(2, 1fr); } }
 
 .ex-section { margin: 22px 0 0; }
 .ex-section__h {
@@ -1825,6 +1828,25 @@ a.ex-kpi:hover { border-color: var(--copper); text-decoration: none; }
 }
 .ex-drill:hover { color: var(--gold); text-decoration: underline; }
 .ex-note { color: var(--cream-soft); font-size: .88rem; line-height: 1.55; margin: 12px 0 0; max-width: 84ch; }
+.ex-note--emph { color: var(--cream); border-top: 1px solid var(--line-soft); padding-top: 10px; font-style: italic; }
+
+/* три трека и владельцы */
+.ex-tracks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.ex-track {
+  display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px;
+  border: 1px solid var(--line); border-radius: 11px; background: rgba(255,255,255,.02);
+  transition: border-color .15s, transform .15s;
+}
+a.ex-track:hover { border-color: var(--copper); transform: translateY(-1px); text-decoration: none; }
+.ex-track--focus { border-color: var(--gold); background: rgba(226,179,85,.06); }
+a.ex-track--focus:hover { border-color: var(--gold-dk); }
+.ex-track__n { flex: 0 0 auto; font: 700 1.1rem/1 var(--f-mono); color: var(--cream-dim); }
+.ex-track--focus .ex-track__n { color: var(--gold); }
+.ex-track__b { display: flex; flex-direction: column; gap: 4px; }
+.ex-track__name { color: var(--cream); font-size: .9rem; font-weight: 600; line-height: 1.3; }
+.ex-track__owner { color: var(--muted); font: 500 .74rem/1.3 var(--f-mono); }
+.ex-track--focus .ex-track__owner { color: var(--gold); }
+@media (max-width: 720px) { .ex-tracks { grid-template-columns: 1fr; } }
 
 /* ── Визуально разделённые панели: факты / сделано / риски / шаги ──
    Акцентная ось v4: сделано = изумруд (статус), риски = розовый (критично), факты/шаги = золото. */
@@ -1884,6 +1906,20 @@ details.ex-panel > summary .ex-count { margin-left: 0; }
   transition: border-color .15s, transform .15s;
 }
 .now-card:hover { transform: translateY(-2px); border-color: var(--gold-dk); text-decoration: none; }
+
+/* компактные карточки-входы (диагностика / выводы) — менее выделяющиеся, чем .now-card */
+.mini-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+.mini-card {
+  display: flex; flex-direction: column; gap: 4px; padding: 12px 14px;
+  border: 1px solid var(--line); border-radius: 10px; background: rgba(255,255,255,.015);
+  transition: border-color .15s, transform .15s;
+}
+.mini-card:hover { border-color: var(--copper); transform: translateY(-1px); text-decoration: none; }
+.mini-card__k { font: 600 .68rem/1 var(--f-mono); letter-spacing: .04em; text-transform: uppercase; color: var(--copper); }
+.mini-card__t { color: var(--cream-soft); font-size: .88rem; line-height: 1.4; }
+.mini-card__link { color: var(--copper); font: 500 .76rem/1 var(--f-mono); margin-top: 2px; }
+@media (max-width: 640px) { .mini-cards { grid-template-columns: 1fr; } }
+
 .now-card__head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-bottom: 8px; }
 .now-card__live {
   display: inline-flex; align-items: center; gap: 7px;

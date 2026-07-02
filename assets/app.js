@@ -3224,17 +3224,16 @@ async function mountExec() {
       <a class="ex-pyr__base" href="${esc((P.base && P.base.href) || "etapy.html")}">${esc((P.base && P.base.t) || "оба пути идут через продукт — этапы 1 и 2")} →</a>
     </div>`;
 
-  // Компактная полоса базовых цифр + строка «за последний месяц»
-  const chips = [];
-  if (m.agencies != null) chips.push(`<a class="ex-kpi" href="agencies.html"><b>${m.agencies}</b> активных агентств</a>`);
-  if (m.ibcPct != null) chips.push(`<a class="ex-kpi" href="agencies.html#nsm"><b>IBC ${m.ibcPct}%</b> объёма</a>`);
-  if (m.top3 != null && m.top5 != null) chips.push(`<a class="ex-kpi" href="agencies.html#nsm"><b>${m.top3}→${m.top5}%</b> на топ-3 и топ-5 · концентрация</a>`);
-  const kpiRow = chips.length ? `<div class="ex-kpis">${chips.join("")}</div>` : "";
-  const monthBits = [];
-  if (m.aClients != null && m.aOpsPct != null) monthBits.push(`<b>${m.aClients}</b> клиентов дают ≈${m.aOpsPct >= 45 && m.aOpsPct <= 55 ? "половину" : m.aOpsPct + "%"} объёма операций`);
-  if (P.month && P.month.offline) monthBits.push(esc(P.month.offline));
-  const monthLine = monthBits.length
-    ? `<p class="ex-pyr__month"><span class="ex-pyr__ml">За последний месяц (июнь 2026):</span> ${monthBits.join(" · ")}. <a class="ex-drill" href="${esc((P.month && P.month.href) || "agencies.html")}">агентства · цифры →</a></p>` : "";
+  // Числовая полоса-статистика: big-число + короткая подпись (меньше слов, больше цифр)
+  const stath = (P.href || "agencies.html");
+  const cells = [];
+  if (m.agencies != null) cells.push(`<a class="ex-stat" href="agencies.html"><span class="ex-stat__v">${m.agencies}</span><span class="ex-stat__k">активных агентств</span></a>`);
+  if (m.ibcPct != null) cells.push(`<a class="ex-stat" href="agencies.html#nsm"><span class="ex-stat__v">${m.ibcPct}<small>%</small></span><span class="ex-stat__k">объёма — у IBC</span></a>`);
+  if (m.top3 != null && m.top5 != null) cells.push(`<a class="ex-stat" href="agencies.html#nsm"><span class="ex-stat__v">${m.top3}→${m.top5}<small>%</small></span><span class="ex-stat__k">на топ-3 / топ-5</span></a>`);
+  if (m.aClients != null && m.aOpsPct != null) cells.push(`<a class="ex-stat" href="agencies.html"><span class="ex-stat__v">${m.aClients}<small> = ${m.aOpsPct >= 45 && m.aOpsPct <= 55 ? "½" : m.aOpsPct + "%"}</small></span><span class="ex-stat__k">клиентов = ${m.aOpsPct >= 45 && m.aOpsPct <= 55 ? "половина" : m.aOpsPct + "%"} объёма</span></a>`);
+  if (P.offlineVal) cells.push(`<a class="ex-stat" href="${esc(stath)}"><span class="ex-stat__v">${esc(P.offlineVal)}</span><span class="ex-stat__k">${esc(P.offlineLabel || "оффлайн-услуги")}</span></a>`);
+  const statsRow = cells.length
+    ? `<div class="ex-statwrap">${P.statsCaption ? `<span class="ex-stat__cap">${esc(P.statsCaption)}</span>` : ""}<div class="ex-stats">${cells.join("")}</div></div>` : "";
 
   const bc = (d.businessCase || []).map((x, i, a) => `
     <span class="bc-step">
@@ -3268,6 +3267,7 @@ async function mountExec() {
       <section class="ex-panel ex-panel--done">
         <h3 class="ex-panel__h">Сделано за квартал <span class="ex-count">${d.done.length}</span></h3>
         <ul class="ex-list">${d.done.map(plainItem).join("")}</ul>
+        ${d.doneNote ? `<p class="ex-note ex-note--emph">${gloss(esc(d.doneNote))}</p>` : ""}
       </section>` : "";
   const risksPanel = (d.risks || []).length ? `
       <details class="ex-panel ex-panel--risk">
@@ -3284,14 +3284,24 @@ async function mountExec() {
   host.innerHTML = `
     <div class="ex-card">
       ${pyramid}
-      ${kpiRow}
-      ${monthLine}
+      ${statsRow}
       ${P.note ? `<p class="ex-note">${gloss(esc(P.note))}</p>` : ""}
 
       <div class="ex-section">
         <div class="ex-section__h">Почему сейчас — одной цепочкой</div>
         <div class="bc">${bc}</div>
       </div>
+
+      ${d.tracks ? `<div class="ex-section">
+        <div class="ex-section__h">${esc(d.tracks.title)}</div>
+        <div class="ex-tracks">${(d.tracks.items || []).map((t) => `
+          <a class="ex-track${t.focus ? " ex-track--focus" : ""}" href="${esc(t.href)}">
+            <span class="ex-track__n">${esc(t.n)}</span>
+            <span class="ex-track__b"><span class="ex-track__name">${esc(t.name)}</span>
+            <span class="ex-track__owner">${t.focus ? "✓ " : "⚠ "}${esc(t.owner)}</span></span>
+          </a>`).join("")}</div>
+        ${d.tracks.note ? `<p class="ex-note">${gloss(esc(d.tracks.note))}</p>` : ""}
+      </div>` : ""}
 
       <div class="ex-panels">
         ${factsPanel}
