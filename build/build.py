@@ -266,22 +266,239 @@ def find_agencies_source():
     return sorted(cands)[-1] if cands else None
 
 
+# Соответствие «потерянное агентство» → тип оттока (кураторская классификация, лист
+# «3. Отток и миграции» даёт только сегмент Lost/Rising/…, не различает причину).
+# Источник классификации — прежние анализы 2026-04 («Удержание и сегментация»).
+CHURN_TYPE_MAP = {
+    "TUI Corporate FS Travel, ООО \"ТТ-Т": "уход к конкуренту",
+    "Да-Тревел": "уход к конкуренту",
+    "ATPI": "уход к конкуренту",
+    "Демлинк Атлас": "cross-agency миграция",
+    "Броневик TMC": "cross-agency миграция",
+    "Демо клиент": "прочее / демо",
+    "OBT Raketa Travel": "прочее / демо",
+    "Aeroglobus KZ": "прочее / демо",
+}
+
+# Клиентские помесячные листы «Общий отчёт …xlsx» (сырой транзакционный дамп: ID клиента ×
+# месяц) — по одному листу на активное агентство. Единый свод больше не содержит истории
+# клиентов (нет листа «Клиенты (NSM)»), поэтому NSM-историю разворачиваем из этого источника.
+CLIENT_SHEET_MAP = {
+    3156: "IBC. Помесячно",
+    399: "ATH. Помесячно",
+    32199: "Global Air. Помесячно",
+    33121: "ГСП-Сервис. Помесячно",
+    33504: "Интерсити Сервис (KMP Group)",
+    32356: "Corporate travel. Помесячно",
+    33261: "Aeroglobus. Помесячно",
+    33021: "KazTour Corporate. Помесячно",
+    32873: "Альбатрос. Помесячно",
+    33310: "Космос Тревел. Помесячно",
+    34500: "Симпл Флайт",
+    33590: "Аэротон",
+    34747: "Рейна-Тур",
+    34515: "Атланта БТК",
+    34723: "ИнТоп Консалтинг",
+    34917: "FCMT",
+    34774: "Иналекс",
+    34899: "CTS-travel",
+    34852: "Альянс Авиа",
+}
+
+
+def _anum(v):
+    """Общий числовой парсер для листов свода агентств (None/"" → None)."""
+    if v is None or v == "":
+        return None
+    try:
+        return round(float(v), 4)
+    except (TypeError, ValueError):
+        return None
+
+
+def _resolve_agency_id(nm, agencies):
+    """Короткое/неполное имя агентства (из вспомогательных листов) → id по подстроке в полном имени."""
+    low = str(nm).lower()
+    for a in agencies:
+        full = str(a["name"]).lower()
+        if low in full or full in low:
+            return a["id"]
+    return None
+
+
+def build_agencies_clients(agencies):
+    """История клиентов (NSM) по месяцам — из клиентских листов «Общий отчёт …xlsx» (ID клиента ×
+    месяц на агентство). Единый свод («Свод по агентствам …xlsx») эту историю больше не содержит —
+    разворачиваем активных клиентов из сырого дампа: клиент «активен» в месяце, если есть операции.
+    «Сейчас»/«3 мес. назад» — скользящее окно 3 месяца (см. пояснение NSM на странице), не месяц день-в-день."""
+    src = find_work_xlsx("общий отчет")
+    if not src:
+        return None
+    wb = openpyxl.load_workbook(src, data_only=True, read_only=True)
+
+    per_agency, all_months = {}, set()
+    for aid, sheet_name in CLIENT_SHEET_MAP.items():
+        if sheet_name not in wb.sheetnames:
+            continue
+        it = wb[sheet_name].iter_rows(values_only=True)
+        hdr = next(it)
+        month_idx = [(i, str(h).strip()) for i, h in enumerate(hdr)
+                     if h is not None and re.match(r"^\d{6}$", str(h).strip())]
+        months = [m for _, m in month_idx]
+        all_months.update(months)
+        active = {m: set() for m in months}
+        for r in it:
+            cid = r[0]
+            if cid is None:
+                continue
+            cid = str(cid)
+            for i, m in month_idx:
+                if i < len(r) and _anum(r[i]):
+                    active[m].add(cid)
+        per_agency[aid] = active
+
+    months_sorted = sorted(all_months)   # "YYYYMM" — лексикографический порядок = хронологический
+    if not months_sorted:
+        return None
+    latest_i = len(months_sorted) - 1
+
+    def window(end_i, span):
+        if end_i < 0:
+            return []
+        start_i = max(0, end_i - span + 1)
+        return months_sorted[start_i:end_i + 1]
+
+    def active_union(aid, months):
+        active = per_agency.get(aid, {})
+        s = set()
+        for m in months:
+            s |= active.get(m, set())
+        return s
+
+    now_w, ago_w, l6_w = window(latest_i, 3), window(latest_i - 3, 3), window(latest_i, 6)
+
+    by_id, totals = {}, {"l6m": 0, "activeMo": 0, "ago": 0, "now": 0, "new": 0, "lost": 0}
+    for a in agencies:
+        aid = a["id"]
+        now_s, ago_s, l6_s = active_union(aid, now_w), active_union(aid, ago_w), active_union(aid, l6_w)
+        active_mo = len(per_agency.get(aid, {}).get(months_sorted[latest_i], set()))
+        new_s, lost_s = now_s - ago_s, ago_s - now_s
+        rec = {
+            "clActiveMo": active_mo, "clNow": len(now_s), "clAgo": len(ago_s),
+            "clNew": len(new_s), "clLost": len(lost_s), "clNet": len(now_s) - len(ago_s),
+            "clL6m": len(l6_s),
+        }
+        by_id[aid] = rec
+        for k in ("l6m", "activeMo", "ago", "now"):
+            totals[k] += rec["cl" + k[0].upper() + k[1:]] if k != "l6m" else rec["clL6m"]
+        totals["new"] += rec["clNew"]
+        totals["lost"] += rec["clLost"]
+    totals["net"] = totals["now"] - totals["ago"]
+
+    # Помесячный ряд (до 13 точек, аналог ops L13M) — активных клиентов в месяц, всего и по id.
+    win13 = months_sorted[-13:]
+    by_id_series, total_series = {str(a["id"]): [] for a in agencies}, []
+    for m in win13:
+        tot = 0
+        for a in agencies:
+            n = len(per_agency.get(a["id"], {}).get(m, set()))
+            by_id_series[str(a["id"])].append(n)
+            tot += n
+        total_series.append(tot)
+    months_disp = [f"{m[4:6]}.{m[:4]}" for m in win13]
+
+    return {
+        "source": src.name,
+        "nsm": totals,
+        "byId": by_id,
+        "monthlyClients": {"months": months_disp, "total": total_series, "byId": by_id_series},
+    }
+
+
+def build_agencies_abcdx(agencies):
+    """ABCDX — сегментация клиентов по объёму (Парето: A ≤50% накопл. / B 50–80% / C 80–95% /
+    D 95–100% / X ≤2 опер/мес). Источник — вкладки «1. Клиенты ABCDX» (сводно по буквам, БЕЗ
+    имён клиентов — только агрегаты) и «Клиенты по агентствам (ABCDX)» (разбивка по агентствам)
+    единого свода. Полный клиентский список (лист «1.…», с именами компаний) на сайт не идёт —
+    приватность (см. CLAUDE.md)."""
+    src = find_agencies_source()
+    if not src:
+        return None
+    wb = openpyxl.load_workbook(src, data_only=True, read_only=True)
+
+    segments = []
+    if "1. Клиенты ABCDX" in wb.sheetnames:
+        started = False
+        for r in wb["1. Клиенты ABCDX"].iter_rows(values_only=True):
+            c0 = clean(r[0])
+            if c0 == "Сегмент" and clean(r[1]) == "Клиентов":
+                started = True; continue
+            if not started:
+                continue
+            if c0 not in ("A", "B", "C", "D", "X"):
+                break
+            segments.append({"seg": c0, "clients": _anum(r[1]), "ops": _anum(r[2]), "opsPct": _anum(r[3])})
+
+    by_agency, total = [], None
+    sheet2 = "Клиенты по агентствам (ABCDX)"
+    if sheet2 in wb.sheetnames:
+        for r in list(wb[sheet2].iter_rows(values_only=True))[1:]:
+            nm = clean(r[0])
+            if not nm:
+                continue
+            rec = {"name": nm, "clients": _anum(r[1]), "ops": _anum(r[2]),
+                   "a": _anum(r[3]), "b": _anum(r[4]), "c": _anum(r[5]),
+                   "d": _anum(r[6]), "x": _anum(r[7])}
+            if str(nm).startswith("ИТОГО"):
+                total = rec; continue
+            rec["id"] = _resolve_agency_id(nm, agencies)
+            by_agency.append(rec)
+
+    return {"segments": segments, "byAgency": by_agency, "total": total}
+
+
+def build_agencies_churn():
+    """Отток/рост/миграции по агентствам — лист «3. Отток и миграции» (H1'25 vs H1'26 по
+    транзакциям): сегменты Rising/Stable/Declining/Lost/New + список потерянных/новых с типом
+    (тип — кураторская метка CHURN_TYPE_MAP, в самом листе её нет)."""
+    src = find_agencies_source()
+    if not src or "3. Отток и миграции" not in openpyxl.load_workbook(
+            src, read_only=True).sheetnames:
+        return None
+    wb = openpyxl.load_workbook(src, data_only=True, read_only=True)
+
+    counts, detail, mode = {}, [], None
+    for r in wb["3. Отток и миграции"].iter_rows(values_only=True):
+        c0 = clean(r[0])
+        if c0 == "Сегмент" and clean(r[1]) == "Агентств":
+            mode = "counts"; continue
+        if c0 == "Агентство" and clean(r[1]) == "H1-2025":
+            mode = "detail"; continue
+        if not c0:
+            continue
+        if mode == "counts" and c0 in ("Rising", "Stable", "Declining", "Lost", "New"):
+            counts[c0] = int(_anum(r[1]) or 0)
+        elif mode == "detail":
+            detail.append({"name": c0, "h1_2025": _anum(r[1]), "h1_2026": _anum(r[2]),
+                           "yoy": _anum(r[3]), "segment": clean(r[4])})
+
+    lost = [{**d, "type": CHURN_TYPE_MAP.get(d["name"])} for d in detail if d["segment"] == "Lost"]
+    return {
+        "window": "H1 2025 (янв–июн) → H1 2026, по транзакциям",
+        "counts": counts, "lost": lost,
+        "newAgencies": [d for d in detail if d["segment"] == "New"],
+    }
+
+
 def build_agencies():
     """Свод по агентствам (срез) → agencies.json: на агентство + агрегаты направления."""
     src = find_agencies_source()
     if not src:
         return None
     wb = openpyxl.load_workbook(src, data_only=True, read_only=True)
-    sheet = next((s for s in wb.sheetnames if "свод" in s.lower()), wb.sheetnames[0])
+    sheet = next((s for s in wb.sheetnames if s.lower().startswith("свод")), wb.sheetnames[0])
     rows = list(wb[sheet].iter_rows(values_only=True))
-
-    def num(v):
-        if v is None or v == "":
-            return None
-        try:
-            return round(float(v), 4)
-        except (TypeError, ValueError):
-            return None
+    num = _anum
 
     agencies, total = [], None
     for r in rows[1:]:
@@ -292,10 +509,12 @@ def build_agencies():
             "name": name, "segment": clean(r[2]),
             "may": num(r[3]), "apr": num(r[4]), "momPct": num(r[5]),
             "l3m": num(r[6]), "l6m": num(r[7]), "may25": num(r[8]), "yoyPct": num(r[9]),
-            "sharePct": num(r[10]), "band": clean(r[11]),
-            # Оффлайн L6M (лист «Свод», колонки M/N/O): сколько услуг за 6 мес. оформлено
-            # вручную, а не онлайн. Источник — те же данные, что и объёмы; окно — 6 мес.
-            "offlineN": num(r[12]), "offlineTotal": num(r[13]), "offlinePct": num(r[14]),
+            "sharePct": num(r[10]),
+            # Оффлайн (лист «Свод», колонки L/M): доля операций месяца среза, оформленных
+            # вручную (не онлайн). ВАЖНО: с 2026-06 это снимок месяца среза, а не накопление
+            # за 6 мес., как считалось раньше — базы разных месяцев напрямую не сравнивать.
+            "offlineN": num(r[11]), "offlinePct": num(r[12]),
+            "band": clean(r[13]),
         }
         if str(name).startswith("ИТОГО"):
             total = {"may": rec["may"], "apr": rec["apr"], "momPct": rec["momPct"], "count": len(agencies)}
@@ -303,44 +522,7 @@ def build_agencies():
         rec["id"] = clean(r[0])
         agencies.append(rec)
 
-    # --- лист «Клиенты (NSM)»: число активных клиентов на агентство — прокси North Star Metric ---
-    # Колонки: ID · Агентство · Активных L6M · Активных (посл. мес.) · Клиентов 3 мес. назад ·
-    #          Клиентов сейчас · Новые · Ушедшие · Чистая дельта (NSM). Сливаем по id в агентство.
-    def to_int(v):
-        n = num(v)
-        return int(round(n)) if n is not None else None
-
-    nsm_total = None
-    cl_name2id = {}   # короткое имя из «Клиенты (NSM)» (IBC, ATH…) → id — для клиентских помесячных листов
-    nsm_sheet = next((s for s in wb.sheetnames
-                      if "клиент" in s.lower() and "(nsm)" in s.lower()), None) \
-        or next((s for s in wb.sheetnames if "клиент" in s.lower() and "помесяч" not in s.lower()), None)
-    if nsm_sheet:
-        by_id = {a["id"]: a for a in agencies}
-        for r in wb[nsm_sheet].iter_rows(min_row=2, values_only=True):
-            cname = clean(r[1]) if len(r) > 1 else None
-            if not cname:
-                continue
-            cl = {
-                "clL6m": to_int(r[2]), "clActiveMo": to_int(r[3]),
-                "clAgo": to_int(r[4]), "clNow": to_int(r[5]),
-                "clNew": to_int(r[6]), "clLost": to_int(r[7]), "clNet": to_int(r[8]),
-            }
-            if str(cname).startswith("ИТОГО"):
-                nsm_total = {
-                    "l6m": cl["clL6m"], "activeMo": cl["clActiveMo"],
-                    "ago": cl["clAgo"], "now": cl["clNow"],
-                    "new": cl["clNew"], "lost": cl["clLost"], "net": cl["clNet"],
-                }
-                continue
-            aid = clean(r[0])
-            if aid is not None:
-                cl_name2id[cname] = aid
-            rec_cl = by_id.get(aid)
-            if rec_cl:
-                rec_cl.update(cl)
-
-    # --- помесячные ряды по месяцам (для графиков динамики и спарклайнов) ---
+    # --- помесячные ряды по транзакциям (для графиков динамики и спарклайнов) ---
     # Только колонки вида «MM.YYYY» (служебные «Δ …» отбрасываем).
     def parse_monthly(sheet_name, resolve):
         rows_m = list(wb[sheet_name].iter_rows(values_only=True))
@@ -352,6 +534,9 @@ def build_agencies():
             nm = clean(r[0])
             if not nm:
                 continue
+            def to_int(v):
+                n = num(v)
+                return int(round(n)) if n is not None else None
             series = [to_int(r[1 + i]) for i in keep]
             if str(nm).startswith("ИТОГО"):
                 total_m = series
@@ -361,28 +546,20 @@ def build_agencies():
                 by_id_m[str(aid)] = series
         return {"months": months_m, "total": total_m, "byId": by_id_m}
 
-    # Операции: лист «Помесячно L13M» (13 точек), имена полные → id агентства.
     name2id_full = {a["name"]: a["id"] for a in agencies}
-    mon_ops_sheet = next((s for s in wb.sheetnames if "помесячно l13m" in s.lower()), None)
+    mon_ops_sheet = next((s for s in wb.sheetnames if "операции l13m" in s.lower()), None)
     monthly = parse_monthly(mon_ops_sheet, name2id_full.get) if mon_ops_sheet else None
 
-    # Клиенты: лист «Клиенты помесячно L12M» (12 точек). Короткие имена расходятся между листами
-    # («KazTour» vs «KazTour Corporate»…) — сопоставляем по точной карте, затем по подстроке.
-    def resolve_client_id(nm):
-        if nm in cl_name2id:
-            return cl_name2id[nm]
-        low = str(nm).lower()
+    # --- клиенты (NSM): история по месяцам разворачивается из «Общий отчёт …xlsx» (сырой дамп) ---
+    cl = build_agencies_clients(agencies)
+    if cl:
         for a in agencies:
-            full = str(a["name"]).lower()
-            if low in full or full in low:
-                return a["id"]
-        for k, v in cl_name2id.items():
-            kl = str(k).lower()
-            if low in kl or kl in low:
-                return v
-        return None
-    mon_cl_sheet = next((s for s in wb.sheetnames if "клиент" in s.lower() and "помесяч" in s.lower()), None)
-    monthly_clients = parse_monthly(mon_cl_sheet, resolve_client_id) if mon_cl_sheet else None
+            rec = cl["byId"].get(a["id"])
+            if rec:
+                a.update(rec)
+        nsm_total, monthly_clients = cl["nsm"], cl["monthlyClients"]
+    else:
+        nsm_total, monthly_clients = None, None
 
     shares = sorted((a["sharePct"] or 0) for a in agencies)[::-1]
     top3 = round(sum(shares[:3]), 4)
@@ -396,13 +573,15 @@ def build_agencies():
                 note = clean(r[1]); break
 
     return {
-        "source": src.name, "cut": "31.05.2026", "metric": "операции (ops)",
+        "source": src.name, "cut": "30.06.2026", "metric": "операции (ops)",
         "note": note, "total": total,
         "concentration": {"top3": top3, "top5": top5},
         "nsm": nsm_total,
         "monthly": monthly,
         "monthlyClients": monthly_clients,
         "agencies": agencies,
+        "abcdx": build_agencies_abcdx(agencies),
+        "churn": build_agencies_churn(),
     }
 
 
