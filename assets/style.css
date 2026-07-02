@@ -1737,24 +1737,60 @@ abbr.gloss:hover, abbr.assume-mark:hover { border-bottom-color: var(--copper); }
   border: 1px solid var(--copper); border-radius: 16px;
   background: var(--panel); padding: 22px 24px;
 }
-.ex-progress {
-  border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin: 0 0 22px;
-  background: rgba(255,255,255,.02);
+/* ── Пирамида метрик: главная метрика → ширина / глубина → через продукт ── */
+.ex-pyr { display: flex; flex-direction: column; align-items: center; gap: 0; }
+.ex-pyr__apex {
+  width: 100%; max-width: 460px; text-align: center; display: block;
+  border: 2px solid var(--gold); border-radius: 12px; padding: 12px 16px;
+  background: rgba(226,179,85,.07); transition: transform .15s, border-color .15s;
 }
-.ex-progress__head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; }
-.ex-progress__lbl { color: var(--cream-soft); font-size: .9rem; }
-.ex-progress__num { font-family: var(--f-mono); color: var(--cream-dim); font-size: .95rem; }
-.ex-progress__num b { color: var(--copper); font-size: 1.4rem; font-weight: 700; margin-right: 4px; }
-.ex-progress__pct { color: var(--cream-dim); margin-left: 8px; font-weight: 600; }
-.ex-progress__bar { height: 8px; border-radius: 999px; background: var(--bg-2); margin: 10px 0 8px; overflow: hidden; }
-.ex-progress__fill { height: 100%; background: var(--gold); border-radius: 999px; transition: width .4s ease; }
-.ex-progress__sub { color: var(--muted); font-size: .82rem; }
-.ex-facts { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
-.ex-fact { flex: 1 1 180px; display: flex; flex-direction: column; gap: 2px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,255,255,.02); transition: border-color .15s, transform .15s; }
-a.ex-fact:hover { border-color: var(--copper); transform: translateY(-1px); text-decoration: none; }
-.ex-fact b { font-family: var(--f-mono); font-size: 1.25rem; font-weight: 700; color: var(--cream); line-height: 1.1; }
-.ex-fact__vs { color: var(--cream-dim); font-weight: 500; font-size: .95rem; }
-.ex-fact > span { color: var(--muted); font-size: .76rem; }
+a.ex-pyr__apex:hover { transform: translateY(-1px); border-color: var(--gold-dk); text-decoration: none; }
+.ex-pyr__k { display: block; font: 600 .68rem/1 var(--f-mono); letter-spacing: .05em; text-transform: uppercase; color: var(--gold); }
+.ex-pyr__num { display: flex; align-items: baseline; justify-content: center; gap: 10px; font: 700 2.1rem/1.1 var(--f-mono); color: var(--cream); margin: 6px 0 4px; font-variant-numeric: tabular-nums; }
+.ex-pyr__delta { font: 500 .8rem/1 var(--f-mono); color: var(--muted); }
+.ex-pyr__delta.is-up { color: var(--emerald); }
+.ex-pyr__delta.is-down { color: var(--cream-dim); }
+.ex-pyr__lbl { display: block; color: var(--cream-soft); font-size: .82rem; line-height: 1.4; }
+.ex-pyr__split { width: 2px; height: 18px; background: var(--line); }
+.ex-pyr__pillars { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
+.ex-pyr__pillar {
+  display: block; border: 1px solid var(--line); border-radius: 11px; padding: 13px 15px;
+  background: rgba(255,255,255,.02); transition: border-color .15s, transform .15s;
+}
+a.ex-pyr__pillar:hover { border-color: var(--copper); transform: translateY(-1px); text-decoration: none; }
+.ex-pyr__pillar--accent { border-color: var(--gold); background: rgba(226,179,85,.06); }
+a.ex-pyr__pillar--accent:hover { border-color: var(--gold-dk); }
+.ex-pyr__ph { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.ex-pyr__pk { font: 600 .74rem/1 var(--f-mono); letter-spacing: .04em; text-transform: uppercase; color: var(--copper); }
+.ex-pyr__share { font: 500 .72rem/1 var(--f-mono); color: var(--muted); }
+.ex-pyr__share--gold { color: var(--gold); }
+.ex-pyr__pname { font: 600 1rem/1.25 var(--f-display); color: var(--cream); margin: 5px 0 8px; }
+.ex-pyr__goal { font: 500 .84rem/1 var(--f-mono); color: var(--cream-dim); }
+.ex-pyr__goal b { color: var(--gold); font-size: 1.15rem; }
+.ex-pyr__goal span { color: var(--muted); font-size: .78rem; }
+.ex-pyr__bar { height: 6px; border-radius: 999px; background: var(--bg-2); margin: 6px 0 8px; overflow: hidden; }
+.ex-pyr__fill { height: 100%; background: var(--gold); border-radius: 999px; }
+.ex-pyr__lever { font: 600 .72rem/1 var(--f-mono); color: var(--gold); margin: 0 0 8px; }
+.ex-pyr__pt { color: var(--cream-dim); font-size: .82rem; line-height: 1.45; margin: 0; }
+.ex-pyr__base {
+  display: block; width: 100%; text-align: center; margin-top: 12px;
+  border: 1px dashed var(--line); border-radius: 10px; padding: 9px 14px;
+  color: var(--cream-soft); font-size: .82rem; transition: border-color .15s, color .15s;
+}
+a.ex-pyr__base:hover { border-color: var(--copper); color: var(--cream); text-decoration: none; }
+
+/* полоса базовых цифр (KPI) + строка «за последний месяц» */
+.ex-kpis { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.ex-kpi {
+  flex: 1 1 auto; padding: 8px 12px; border: 1px solid var(--line); border-radius: 999px;
+  background: rgba(255,255,255,.02); color: var(--cream-dim); font-size: .8rem; white-space: nowrap;
+  transition: border-color .15s;
+}
+a.ex-kpi:hover { border-color: var(--copper); text-decoration: none; }
+.ex-kpi b { color: var(--cream); font-family: var(--f-mono); font-weight: 700; }
+.ex-pyr__month { color: var(--cream-soft); font-size: .84rem; line-height: 1.55; margin: 12px 0 0; }
+.ex-pyr__month .ex-pyr__ml { color: var(--muted); font-family: var(--f-mono); font-size: .74rem; text-transform: uppercase; letter-spacing: .03em; margin-right: 4px; }
+.ex-pyr__month b { color: var(--cream); font-family: var(--f-mono); }
 
 .ex-section { margin: 22px 0 0; }
 .ex-section__h {
@@ -1780,6 +1816,64 @@ a.ex-fact:hover { border-color: var(--copper); transform: translateY(-1px); text
 .bet__aim { color: var(--cream-dim); font-size: .85rem; line-height: 1.45; margin: 6px 0 10px; }
 .bet__metric { color: var(--cream-dim); font-size: .82rem; }
 .bet__mh { color: var(--muted); margin-right: 6px; font-family: var(--f-mono); font-size: .74rem; text-transform: uppercase; letter-spacing: .04em; }
+
+/* провал «→» к развёрнутому ответу — единый вид на всех строках */
+.ex-drill {
+  display: inline-block; margin-top: 4px;
+  font: 500 .78rem/1.3 var(--f-mono); color: var(--copper);
+  white-space: nowrap;
+}
+.ex-drill:hover { color: var(--gold); text-decoration: underline; }
+.ex-note { color: var(--cream-soft); font-size: .88rem; line-height: 1.55; margin: 12px 0 0; max-width: 84ch; }
+
+/* ── Визуально разделённые панели: факты / сделано / риски / шаги ──
+   Акцентная ось v4: сделано = изумруд (статус), риски = розовый (критично), факты/шаги = золото. */
+.ex-panels { display: flex; flex-direction: column; gap: 14px; margin-top: 22px; }
+.ex-panel {
+  border: 1px solid var(--line); border-left: 3px solid var(--copper);
+  border-radius: 12px; padding: 16px 18px; background: rgba(255,255,255,.015);
+}
+.ex-panel__h {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 0;
+  font: 600 1.02rem/1.25 var(--f-display); color: var(--cream);
+}
+.ex-panel__sub { font: 500 .74rem/1 var(--f-mono); color: var(--muted); text-transform: none; letter-spacing: 0; }
+details.ex-panel > summary { cursor: pointer; list-style: none; }
+details.ex-panel > summary::-webkit-details-marker { display: none; }
+details.ex-panel > summary::after {
+  content: "▸"; margin-left: auto; color: var(--copper); font-size: .82rem; transition: transform .15s;
+}
+details.ex-panel[open] > summary::after { transform: rotate(90deg); }
+/* цветовое кодирование панелей */
+.ex-panel--facts { border-left-color: var(--gold); }
+.ex-panel--done  { border-left-color: var(--emerald); }
+.ex-panel--done .ex-panel__h::before { content: "✓"; color: var(--emerald); font: 700 .95rem/1 var(--f-mono); }
+.ex-panel--risk  { border-left-color: var(--pink); background: var(--pink-dim); }
+.ex-panel--risk .ex-panel__h::before { content: "⚠"; color: var(--pink); font: 700 .95rem/1 var(--f-mono); }
+.ex-panel--risk.ex-panel > summary::after { color: var(--pink); }
+.ex-panel--step  { border-left-color: var(--gold); }
+.ex-panel--step .ex-panel__h::before { content: "→"; color: var(--gold); font: 700 .95rem/1 var(--f-mono); }
+
+/* списки фактов/сделано/рисков/шагов */
+.ex-list { list-style: none; margin: 12px 0 0; padding: 0; }
+.ex-item { display: flex; gap: 10px; align-items: flex-start; padding: 10px 0; border-top: 1px solid var(--line-soft); }
+.ex-item:first-child { border-top: 0; padding-top: 4px; }
+.ex-item .ev-chip { flex: 0 0 auto; margin-top: 2px; }
+.ex-item__body { display: flex; flex-direction: column; gap: 2px; }
+.ex-item__t { color: var(--cream-soft); font-size: .9rem; line-height: 1.55; }
+.ex-list--step { counter-reset: exstep; }
+.ex-list--step .ex-item { counter-increment: exstep; }
+.ex-list--step .ex-item::before {
+  content: counter(exstep); flex: 0 0 auto;
+  font: 600 .8rem/1.5 var(--f-mono); color: var(--gold);
+  min-width: 1.4em; text-align: right;
+}
+.ex-count { font: 600 .7rem/1 var(--f-mono); color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 2px 7px; margin-left: auto; }
+details.ex-panel > summary .ex-count { margin-left: 0; }
+
+@media (max-width: 640px) {
+  .ex-pyr__pillars { grid-template-columns: 1fr; }
+}
 
 /* сейчас в работе — отдельный блок-карточка под саммари */
 /* v4: «Сейчас в работе» — активный/важный блок → золото (главный акцент), не розовый */
@@ -1884,7 +1978,6 @@ a.mleg:hover { color: var(--gold); text-decoration: none; }
 }
 @media (max-width: 720px) {
   .bc-arr { display: none; }
-  .ex-progress__head { flex-direction: column; align-items: flex-start; gap: 4px; }
 }
 
 /* ===================== Видение-путеводитель ===================== */

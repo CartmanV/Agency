@@ -10,6 +10,7 @@ const NAV = [
   { href: "q3.html",       label: "Планы Q3", group: "Обзор" },
   { href: "plan-1-2.html", label: "Общий план 1+2", short: "План 1+2", group: "Обзор" },
   { href: "vision.html",   label: "Видение", group: "Обзор" },
+  { href: "strategy.html", label: "Стратегия (v5)", short: "Стратегия", group: "Обзор" },
   { href: "etapy.html",    label: "Этапы ценности", group: "Проекции" },
   { href: "tree.html",     label: "Дерево (JTBD)", group: "Проекции" },
   { href: "levels.html",   label: "Каталог задач", group: "Работа" },
@@ -3167,22 +3168,73 @@ async function mountExec() {
   catch (e) { host.innerHTML = `<div class="error">${esc(e.message)}</div>`; return; }
 
   const pct = Math.min(100, Math.round((d.progress.done / d.progress.goal) * 100));
-  const remaining = d.progress.goal - d.progress.done;
 
-  // Цифры клиентской базы — живьём из agencies.json (не дублируем в exec.json).
-  let factsBlock = "";
+  // ── Живые цифры базы из agencies.json → пирамида метрик (не дублируем в exec.json) ──
+  let m = {};
   try {
     const ag = await loadJSON("data/agencies.json");
     const ags = ag.agencies || [];
-    const clients = (ag.nsm && ag.nsm.now) || null;
-    const lead = ags.reduce((m, a) => ((a.may || 0) > (m.may || 0) ? a : m), ags[0] || {});
+    const nsm = ag.nsm || {};
+    const lead = ags.reduce((x, a) => ((a.may || 0) > (x.may || 0) ? a : x), ags[0] || {});
     const totalMay = ags.reduce((s, a) => s + (a.may || 0), 0);
-    const leadPct = totalMay ? Math.round((lead.may || 0) / totalMay * 100) : null;
-    const facts = [];
-    if (clients != null) facts.push(`<a class="ex-fact" href="agencies.html"><b>${fmtInt(clients)}</b><span>активных клиентов · NSM</span></a>`);
-    if (leadPct != null) facts.push(`<a class="ex-fact" href="agencies.html#nsm"><b>IBC ${leadPct}% <span class="ex-fact__vs">/ остальные ${100 - leadPct}%</span></b><span>доля транзакций · ${ags.length} агентств</span></a>`);
-    if (facts.length) factsBlock = `<div class="ex-facts">${facts.join("")}</div>`;
-  } catch (e) { /* agencies.json необязателен — без строки фактов */ }
+    const mc = ag.monthlyClients || {};
+    const tot = mc.total || [];
+    const conc = ag.concentration || {};
+    const aSeg = ((ag.abcdx && ag.abcdx.segments) || []).find((s) => s.seg === "A");
+    m = {
+      apex: nsm.activeMo != null ? nsm.activeMo : nsm.now,
+      apexMonth: (mc.months || []).slice(-1)[0] || null,
+      momDelta: tot.length >= 2 ? tot[tot.length - 1] - tot[tot.length - 2] : null,
+      agencies: ags.length || null,
+      ibcPct: totalMay ? Math.round((lead.may || 0) / totalMay * 100) : null,
+      top3: conc.top3 != null ? Math.round(conc.top3 * 100) : null,
+      top5: conc.top5 != null ? Math.round(conc.top5 * 100) : null,
+      aClients: aSeg ? Math.round(aSeg.clients) : null,
+      aOpsPct: aSeg ? Math.round(aSeg.opsPct) : null,
+    };
+  } catch (e) { /* agencies.json необязателен — пирамида упростится */ }
+
+  // Пирамида метрик: главная метрика → ширина / глубина → через продукт
+  const P = d.pyramid || {};
+  const deltaTxt = m.momDelta != null
+    ? `<span class="ex-pyr__delta ${m.momDelta < 0 ? "is-down" : m.momDelta > 0 ? "is-up" : ""}">${m.momDelta > 0 ? "+" : m.momDelta < 0 ? "−" : "±"}${Math.abs(m.momDelta)} за месяц</span>` : "";
+  const pyramid = `
+    <div class="ex-pyr">
+      <a class="ex-pyr__apex" href="agencies.html#nsm">
+        <span class="ex-pyr__k">Главная метрика · NSM направления</span>
+        <span class="ex-pyr__num">${m.apex != null ? fmtInt(m.apex) : "—"}${deltaTxt}</span>
+        <span class="ex-pyr__lbl">${esc(P.apexLabel || "активные клиенты-компании через агентства")}</span>
+      </a>
+      <div class="ex-pyr__split" aria-hidden="true"></div>
+      <div class="ex-pyr__pillars">
+        <a class="ex-pyr__pillar" href="${esc((P.width && P.width.href) || "agencies.html")}">
+          <div class="ex-pyr__ph"><span class="ex-pyr__pk">${esc((P.width && P.width.k) || "Ширина")}</span><span class="ex-pyr__share">${esc((P.width && P.width.share) || "")}</span></div>
+          <div class="ex-pyr__pname">${esc((P.width && P.width.name) || "сколько у нас агентств")}</div>
+          <div class="ex-pyr__goal"><b>${d.progress.done}</b>/${d.progress.goal} <span>цель «+20» · ${pct}%</span></div>
+          <div class="ex-pyr__bar"><div class="ex-pyr__fill" style="width:${pct}%"></div></div>
+          <p class="ex-pyr__pt">${gloss(esc((P.width && P.width.t) || ""))}</p>
+        </a>
+        <a class="ex-pyr__pillar ex-pyr__pillar--accent" href="${esc((P.depth && P.depth.href) || "vyvody.html")}">
+          <div class="ex-pyr__ph"><span class="ex-pyr__pk">${esc((P.depth && P.depth.k) || "Глубина")}</span><span class="ex-pyr__share ex-pyr__share--gold">${esc((P.depth && P.depth.share) || "")}</span></div>
+          <div class="ex-pyr__pname">${esc((P.depth && P.depth.name) || "клиентов на агентство")}</div>
+          <div class="ex-pyr__lever">главный рычаг 2026</div>
+          <p class="ex-pyr__pt">${gloss(esc((P.depth && P.depth.t) || ""))}</p>
+        </a>
+      </div>
+      <a class="ex-pyr__base" href="${esc((P.base && P.base.href) || "etapy.html")}">${esc((P.base && P.base.t) || "оба пути идут через продукт — этапы 1 и 2")} →</a>
+    </div>`;
+
+  // Компактная полоса базовых цифр + строка «за последний месяц»
+  const chips = [];
+  if (m.agencies != null) chips.push(`<a class="ex-kpi" href="agencies.html"><b>${m.agencies}</b> активных агентств</a>`);
+  if (m.ibcPct != null) chips.push(`<a class="ex-kpi" href="agencies.html#nsm"><b>IBC ${m.ibcPct}%</b> объёма</a>`);
+  if (m.top3 != null && m.top5 != null) chips.push(`<a class="ex-kpi" href="agencies.html#nsm"><b>${m.top3}→${m.top5}%</b> на топ-3 и топ-5 · концентрация</a>`);
+  const kpiRow = chips.length ? `<div class="ex-kpis">${chips.join("")}</div>` : "";
+  const monthBits = [];
+  if (m.aClients != null && m.aOpsPct != null) monthBits.push(`<b>${m.aClients}</b> клиентов дают ≈${m.aOpsPct >= 45 && m.aOpsPct <= 55 ? "половину" : m.aOpsPct + "%"} объёма операций`);
+  if (P.month && P.month.offline) monthBits.push(esc(P.month.offline));
+  const monthLine = monthBits.length
+    ? `<p class="ex-pyr__month"><span class="ex-pyr__ml">За последний месяц (июнь 2026):</span> ${monthBits.join(" · ")}. <a class="ex-drill" href="${esc((P.month && P.month.href) || "agencies.html")}">агентства · цифры →</a></p>` : "";
 
   const bc = (d.businessCase || []).map((x, i, a) => `
     <span class="bc-step">
@@ -3190,21 +3242,62 @@ async function mountExec() {
       <span class="bc-t">${gloss(esc(x.t))}</span>
     </span>${i < a.length - 1 ? `<span class="bc-arr" aria-hidden="true">→</span>` : ""}`).join("");
 
+  // Ссылка «провалиться к развёрнутому ответу» — единый вид на всех строках саммари.
+  const drill = (href, label) => href
+    ? `<a class="ex-drill" href="${esc(href)}">${esc(label || "подробнее")} →</a>` : "";
+
+  // Строка-факт со статусом достоверности (.ev-chip) + провал к подтверждению/гипотезе.
+  const factItem = (f) => {
+    const ev = f.ev ? evChip(f.ev) : null;
+    return `<li class="ex-item">
+      ${ev ? `<span class="ev-chip ${ev.cls}" title="${esc(ev.label)}" aria-label="статус: ${esc(ev.label)}">${ev.sign}</span>` : ""}
+      <span class="ex-item__body"><span class="ex-item__t">${gloss(esc(f.t))}</span>${drill(f.href, f.linkLabel)}</span>
+    </li>`;
+  };
+  const plainItem = (f) => `<li class="ex-item ex-item--plain">
+      <span class="ex-item__body"><span class="ex-item__t">${gloss(esc(f.t))}</span>${drill(f.href, f.linkLabel)}</span>
+    </li>`;
+
+  // ── Визуально разделённые панели: факты / сделано / риски / шаги ──
+  const factsPanel = (d.facts || []).length ? `
+      <section class="ex-panel ex-panel--facts">
+        <h3 class="ex-panel__h">Ключевые факты <span class="ex-panel__sub">куда провалиться за подтверждением</span></h3>
+        <ul class="ex-list">${d.facts.map(factItem).join("")}</ul>
+      </section>` : "";
+  const donePanel = (d.done || []).length ? `
+      <section class="ex-panel ex-panel--done">
+        <h3 class="ex-panel__h">Сделано за квартал <span class="ex-count">${d.done.length}</span></h3>
+        <ul class="ex-list">${d.done.map(plainItem).join("")}</ul>
+      </section>` : "";
+  const risksPanel = (d.risks || []).length ? `
+      <details class="ex-panel ex-panel--risk">
+        <summary class="ex-panel__h">Главные риски <span class="ex-count">${d.risks.length}</span></summary>
+        <ul class="ex-list">${d.risks.map(plainItem).join("")}</ul>
+      </details>` : "";
+  const stepsPanel = (d.steps || []).length ? `
+      <details class="ex-panel ex-panel--step">
+        <summary class="ex-panel__h">Следующие шаги — по приоритету <span class="ex-count">${d.steps.length}</span></summary>
+        <ol class="ex-list ex-list--step">${d.steps.map(plainItem).join("")}</ol>
+        <p class="ex-note"><a class="ex-drill" href="strategy.html#plan">полный порядок проверок — в стратегии →</a></p>
+      </details>` : "";
+
   host.innerHTML = `
     <div class="ex-card">
-      <div class="ex-progress" role="img" aria-label="Прогресс к цели">
-        <div class="ex-progress__head">
-          <span class="ex-progress__lbl">${esc(d.progress.krLabel)} · ${esc(d.progress.label)}</span>
-          <span class="ex-progress__num"><b>${d.progress.done}</b> / ${d.progress.goal} <span class="ex-progress__pct">${pct}%</span></span>
-        </div>
-        <div class="ex-progress__bar"><div class="ex-progress__fill" style="width:${pct}%"></div></div>
-        <div class="ex-progress__sub">осталось привлечь: ${remaining} · период: ${esc(d.progress.period)}</div>
-        ${factsBlock}
-      </div>
+      ${pyramid}
+      ${kpiRow}
+      ${monthLine}
+      ${P.note ? `<p class="ex-note">${gloss(esc(P.note))}</p>` : ""}
 
       <div class="ex-section">
-        <div class="ex-section__h">Бизнес-кейс одной цепочкой</div>
+        <div class="ex-section__h">Почему сейчас — одной цепочкой</div>
         <div class="bc">${bc}</div>
+      </div>
+
+      <div class="ex-panels">
+        ${factsPanel}
+        ${donePanel}
+        ${risksPanel}
+        ${stepsPanel}
       </div>
     </div>`;
 }
