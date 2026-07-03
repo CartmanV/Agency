@@ -3322,16 +3322,16 @@ async function mountExec() {
 
   // ── Визуально разделённые панели: факты / сделано / риски / шаги ──
   const factsPanel = (d.facts || []).length ? `
-      <section class="ex-panel ex-panel--facts">
-        <h3 class="ex-panel__h">Ключевые факты <span class="ex-panel__sub">куда провалиться за подтверждением</span></h3>
+      <details class="ex-panel ex-panel--facts" open>
+        <summary class="ex-panel__h">Ключевые факты <span class="ex-panel__sub">куда провалиться за подтверждением</span></summary>
         <ul class="ex-list">${d.facts.map(factItem).join("")}</ul>
-      </section>` : "";
+      </details>` : "";
   const donePanel = (d.done || []).length ? `
-      <section class="ex-panel ex-panel--done">
-        <h3 class="ex-panel__h">Сделано за квартал <span class="ex-count">${d.done.length}</span></h3>
+      <details class="ex-panel ex-panel--done" open>
+        <summary class="ex-panel__h">Сделано за квартал <span class="ex-count">${d.done.length}</span></summary>
         <ul class="ex-list">${d.done.map(plainItem).join("")}</ul>
         ${d.doneNote ? `<p class="ex-note ex-note--emph">${gloss(esc(d.doneNote))}</p>` : ""}
-      </section>` : "";
+      </details>` : "";
   const risksPanel = (d.risks || []).length ? `
       <details class="ex-panel ex-panel--risk">
         <summary class="ex-panel__h">Главные риски <span class="ex-count">${d.risks.length}</span></summary>
