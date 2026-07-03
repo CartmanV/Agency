@@ -3460,6 +3460,7 @@ async function mountDashboards() {
           </div>
         </div>
         ${dlinks([
+          { href: "strategy.html", label: "Полная стратегия (v5)" },
           { href: "vision.html", label: "Видение (портал)" },
           { href: "vision.html#karta", label: "Карта связей" },
         ])}
