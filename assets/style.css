@@ -915,6 +915,15 @@ table.backlog td.spark-cell { padding: 4px 8px; }
   text-transform: uppercase; color: var(--gold); background: var(--gold-dim); border-radius: 20px; padding: 2px 9px; margin-bottom: 7px; }
 .nsm-tk__head { font-size: 14.5px; font-weight: 600; color: var(--cream); line-height: 1.3; margin-bottom: 5px; }
 .nsm-tk__body { font-size: 12.5px; color: var(--cream-soft); line-height: 1.5; margin: 0; }
+/* Свёрнутые блоки на metrics («Где этапы 3–5», «Как это измерить») — раскрываются по клику */
+.nsm-fold { border: 1px solid var(--line); border-radius: 12px; background: var(--panel); padding: 2px 18px 16px; }
+.nsm-fold > summary { list-style: none; cursor: pointer; font-family: var(--f-display); font-size: 19px; color: var(--cream); padding: 12px 0 8px; display: flex; flex-direction: column; gap: 2px; }
+.nsm-fold > summary::-webkit-details-marker { display: none; }
+.nsm-fold > summary::after { content: "▸ развернуть"; font-family: var(--f-mono); font-size: 11px; color: var(--gold); font-weight: 400; margin-top: 2px; }
+.nsm-fold[open] > summary::after { content: "▾ свернуть"; }
+.nsm-fold > summary:focus-visible { outline: 2px solid var(--copper); outline-offset: 2px; }
+.nsm-fold__eye { font-family: var(--f-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--gold); }
+
 /* «Где этапы 3–5» — лестница к двум вершинам */
 .nsm-ladder { margin-top: 24px; }
 .nsm-lg { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin: 12px 0 14px; }
@@ -967,6 +976,15 @@ table.backlog td.spark-cell { padding: 4px 8px; }
 /* Остальное — для информации, приглушённо. */
 .m-group--info { margin-top: 40px; opacity: .72; }
 .m-group--info h2 { font-size: 15px; color: var(--cream-dim); }
+
+/* Открытые вопросы (кандидаты стратегии v5) — полная читаемость, но «не в наборе» задаёт eyebrow/статус */
+.m-oq { opacity: 1; }
+.m-oq .eyebrow { margin-bottom: 2px; }
+.m-oq__list { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+.m-oq__it { background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 11px 14px; }
+.m-oq__h { color: var(--cream); font-weight: 600; font-size: 14px; margin-bottom: 4px; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.m-oq__it p { font-size: 13px; color: var(--cream-soft); line-height: 1.55; margin: 0 0 6px; max-width: 88ch; }
+.m-oq__st { font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); }
 
 .m-card { border: 1px solid var(--line); border-radius: 12px; background: var(--panel); padding: 16px 18px; display: flex; flex-direction: column; }
 .m-card.is-act { border-top: 3px solid var(--emerald); }
@@ -2173,6 +2191,55 @@ a.guide__row:hover { border-color: var(--copper); transform: translateY(-2px); t
 .e-sub li { margin: 3px 0; }
 .e-mechs li { margin: 4px 0; }
 .e-crit { font-size: 13px; color: var(--cream); background: var(--panel-2); border-radius: 8px; padding: 10px 12px; margin: 8px 0 0; line-height: 1.55; }
+
+/* Врезка «Через призму NMT» — свёрнутый комментарий директора внутри этапа/сквозного слоя.
+   Verdict несёт глиф (✅ success / ⚠️ gold / 👁 muted), не рамка — акцентная ось не задействована. */
+.e-nmt { border: 1px solid var(--line); border-radius: 10px; background: var(--panel-2); margin-top: 16px; overflow: hidden; }
+.e-nmt__sum { list-style: none; cursor: pointer; font-family: var(--f-mono); font-size: 12px; color: var(--gold); padding: 10px 13px; }
+.e-nmt__sum::-webkit-details-marker { display: none; }
+.e-nmt__sum:hover { color: var(--gold-dk); }
+.e-nmt__sum:focus-visible { outline: 2px solid var(--copper); outline-offset: -2px; }
+.e-nmt__list { list-style: none; margin: 0; padding: 0 13px 12px; display: flex; flex-direction: column; gap: 8px; }
+.e-nmt__it { display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px; color: var(--cream-soft); line-height: 1.55; max-width: 96ch; }
+.e-nmt__m { flex: 0 0 auto; font-size: 13px; line-height: 1.5; }
+.e-nmt__it--ok  .e-nmt__m { color: var(--success); }
+.e-nmt__it--warn .e-nmt__m { color: var(--gold); }
+.e-nmt__it--eye .e-nmt__m { color: var(--muted); }
+
+/* Верхний блок «Рамка v5» — сверка с NMT/стратегией над лестницей */
+.e-frame { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); padding: 6px 20px 20px; margin: 0 0 22px; }
+.e-frame__intro { font-size: 14px; color: var(--cream-soft); line-height: 1.6; margin: 6px 0 0; max-width: 92ch; }
+.e-frame__plain { font-size: 13px; color: var(--cream-soft); background: var(--panel-2); border-left: 2px solid var(--gold); border-radius: 8px; padding: 9px 12px; margin: 10px 0 0; line-height: 1.55; max-width: 92ch; }
+.e-frame__grid { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+.e-fold { border: 1px solid var(--line); border-radius: 10px; background: var(--panel-2); overflow: hidden; }
+.e-fold > summary { list-style: none; cursor: pointer; font-family: var(--f-mono); font-size: 12px; color: var(--gold); padding: 10px 13px; }
+.e-fold > summary::-webkit-details-marker { display: none; }
+.e-fold > summary:hover { color: var(--gold-dk); }
+.e-fold > summary:focus-visible { outline: 2px solid var(--copper); outline-offset: -2px; }
+.e-fold > *:not(summary) { margin-left: 13px; margin-right: 13px; }
+.e-fold > *:last-child { margin-bottom: 12px; }
+.e-frame__ok { margin: 4px 0 0; padding-left: 20px; font-size: 13.5px; color: var(--cream-soft); line-height: 1.55; }
+.e-frame__ok li { margin: 3px 0; }
+/* Воронка */
+.e-fun { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 8px 0 0; }
+.e-fun__step { font-family: var(--f-mono); font-size: 11.5px; color: var(--cream); background: var(--panel); border: 1px solid var(--line-soft); border-radius: 999px; padding: 3px 10px; }
+.e-fun__arr { color: var(--muted); font-size: 12px; }
+/* Три трека */
+.e-trks { display: flex; flex-direction: column; gap: 8px; margin: 8px 0 0; }
+.e-trk { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 9px 12px; }
+.e-trk__name { color: var(--cream); font-size: 13.5px; font-weight: 600; }
+.e-trk__body { font-size: 13px; color: var(--cream-soft); line-height: 1.55; margin: 3px 0; }
+.e-trk__owner { font-family: var(--f-mono); font-size: 11px; color: var(--muted); }
+.e-trk__owner b { color: var(--cream-dim); }
+/* Расхождения B1–B7 / коды правок */
+.e-div__c, .e-fix__n { font-family: var(--f-mono); font-size: 11.5px; color: var(--gold); white-space: nowrap; }
+.e-div__t, .e-fix__t, .e-fix__w { font-family: var(--f-mono); font-size: 11px; color: var(--muted); white-space: nowrap; }
+/* Портер */
+.e-pors { display: flex; flex-direction: column; gap: 8px; margin: 8px 0 0; }
+.e-por { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 9px 12px; }
+.e-por__h { color: var(--cream); font-size: 13.5px; font-weight: 600; margin-bottom: 3px; }
+.e-por__c { font-family: var(--f-mono); font-size: 11.5px; color: var(--gold); margin-right: 4px; }
+.e-por p { font-size: 13px; color: var(--cream-soft); line-height: 1.55; margin: 0; max-width: 96ch; }
 
 /* Группы гипотез (2A/2B) */
 .e-hgrp { margin-top: 10px; }

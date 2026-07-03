@@ -290,7 +290,7 @@ const GLOSS_TERMS = [
   ["Time-to-cash", "время от оказанной услуги до денег на счёте агентства"],
   ["Hidden-work", "скрытая ручная работа, не видимая в системе"],
   ["Steps-per-task", "сколько шагов уходит на одну задачу"],
-  ["Operations per consultant", "сколько транзакций обслуживает один консультант"],
+  ["Operations per consultant", "сколько ручных операций делает один консультант (нагрузка, стремимся ↓)"],
   ["adoption", "приживаемость: реально ли команда начала пользоваться продуктом"],
   ["паритет", "паритет функций: в Ракете есть всё, к чему команда привыкла"],
   ["GDS", "глобальная система бронирования (Amadeus, Sabre и т.п.)"],
@@ -1937,6 +1937,63 @@ async function mountEtapy() {
     return `<div class="e-hyp__ev"><span class="e-hyp__evh">Доказательства</span><div class="e-hyp__evchips">${chips}</div></div>`;
   }
 
+  // ——— Врезка «Через призму NMT» (свёрнутая, ✅ подтверждает / ⚠️ оспаривает / 👁 наблюдение) ———
+  const NMT_CLS = { "✅": "ok", "⚠️": "warn", "👁": "eye" };
+  function nmtLens(arr) {
+    if (!(arr || []).length) return "";
+    const items = arr.map((x) =>
+      `<li class="e-nmt__it e-nmt__it--${NMT_CLS[x.mark] || "eye"}"><span class="e-nmt__m" aria-hidden="true">${esc(x.mark)}</span><span>${gloss(esc(x.text))}</span></li>`
+    ).join("");
+    return `<details class="e-nmt">
+      <summary class="e-nmt__sum">👁 Через призму NMT</summary>
+      <ul class="e-nmt__list">${items}</ul>
+    </details>`;
+  }
+
+  // ——— Верхний блок «Рамка v5» (сверка с NMT и стратегией) ———
+  function frameworkBlock() {
+    const f = data.framework;
+    if (!f) return "";
+    const li = (arr) => (arr || []).map((x) => `<li>${gloss(esc(x))}</li>`).join("");
+    const funnelSteps = (f.funnel.steps || []).map((s) => `<span class="e-fun__step">${esc(s)}</span>`).join('<span class="e-fun__arr" aria-hidden="true">→</span>');
+    const tracks = (f.tracks.items || []).map((t) => `
+      <div class="e-trk">
+        <div class="e-trk__name">${esc(t.name)}</div>
+        <div class="e-trk__body">${gloss(esc(t.body))}</div>
+        <div class="e-trk__owner">владелец: <b>${esc(t.owner)}</b></div>
+      </div>`).join("");
+    const divRows = (f.divergences || []).map((d) => `
+      <tr><td class="e-div__c">${esc(d.code)}</td>
+      <td>${gloss(esc(d.v51))}</td><td>${gloss(esc(d.nmt))}</td>
+      <td class="e-div__t">${esc(d.type)}</td></tr>`).join("");
+    const porter = (f.porter || []).map((p) => `
+      <div class="e-por"><div class="e-por__h"><span class="e-por__c">${esc(p.code)}</span> ${esc(p.title)}</div>
+      <p>${gloss(esc(p.body))}</p></div>`).join("");
+    const fixRows = (arr) => (arr || []).map((x) =>
+      `<tr><td class="e-fix__n">${esc(x.n)}</td><td>${gloss(esc(x.what))}</td><td class="e-fix__w">${esc(x.where)}</td><td class="e-fix__t">${esc(x.type)}</td></tr>`).join("");
+    return `
+    <section class="e-frame">
+      <h3 class="e-h3">${esc(f.title)}</h3>
+      <p class="e-frame__intro">${gloss(esc(f.intro))}</p>
+      ${f.plain ? `<p class="e-frame__plain"><span aria-hidden="true">🗣</span> ${gloss(esc(f.plain))}</p>` : ""}
+      <div class="e-frame__grid">
+        <details class="e-fold"><summary>Что подтвердилось (менять нечего)</summary><ul class="e-frame__ok">${li(f.confirmed)}</ul></details>
+        <details class="e-fold"><summary>${esc(f.funnel.title)}</summary>
+          <div class="e-fun">${funnelSteps}</div>
+          <p class="e-note">${gloss(esc(f.funnel.note))}</p></details>
+        <details class="e-fold"><summary>${esc(f.tracks.title)}</summary>
+          <div class="e-trks">${tracks}</div>
+          <p class="e-note">${gloss(esc(f.tracks.note))}</p></details>
+        <details class="e-fold"><summary>Расхождения рамки (B1–B7)</summary>
+          <div class="table-wrap"><table class="e-table"><thead><tr><th>#</th><th>Что в v5.1</th><th>Что говорит NMT</th><th>Тип</th></tr></thead><tbody>${divRows}</tbody></table></div></details>
+        <details class="e-fold"><summary>Слой Портера (П1–П5)</summary><div class="e-pors">${porter}</div></details>
+        <details class="e-fold"><summary>Что править: 7 правок NMT + 5 Портера</summary>
+          <div class="table-wrap"><table class="e-table"><thead><tr><th>#</th><th>Что</th><th>Где</th><th>Тип</th></tr></thead><tbody>${fixRows(f.fixes.nmt)}${fixRows(f.fixes.porter)}</tbody></table></div>
+          <p class="e-note">${gloss(esc(f.fixes.note))}</p></details>
+      </div>
+    </section>`;
+  }
+
   // ——— Краткий обзор сверху ———
   // Цвет этапа — категориальный канон v4 (1=cat-1, 2=cat-3, 3–5=muted), просто опознавание этапа.
   const stageChip = (n) => `<span class="stage-tag s-${n === "2" ? "2a" : n}">${esc(n)}</span>`;
@@ -2094,6 +2151,7 @@ async function mountEtapy() {
           ${tasksTable(s)}
           ${research(s)}
           ${metrics(s)}
+          ${nmtLens(s.nmtLens)}
         </div>
       </details>`;
   }
@@ -2123,6 +2181,7 @@ async function mountEtapy() {
   const crossLayer = `
     <h2 class="e-h2">${esc(cl.title || "Сквозной слой")}</h2>
     ${churn}
+    ${nmtLens(cl.nmtLens)}
     ${cl.i0 ? `<p class="e-i0">${gloss(esc(cl.i0))}</p>` : ""}
     <div class="e-sub"><span class="e-sub__h">Сводная карта исследований → этапы</span>
       <p class="e-muted">Полная карта планируемых замеров со статусами и владельцами → <a href="planned.html">План исследований</a>.</p>
@@ -2134,6 +2193,7 @@ async function mountEtapy() {
 
   host.innerHTML = `
     ${overview}
+    ${frameworkBlock()}
     <div class="lad-controls">
       <button type="button" class="btn" data-e-expand>Раскрыть все этапы</button>
       <button type="button" class="btn" data-e-collapse>Свернуть все</button>
@@ -2838,7 +2898,7 @@ async function mountMetrics() {
     const stats = (n.stats || []).map((st) =>
       `<div class="nsm-stat nsm-stat--${esc(st.tone || "plain")}"><div class="nsm-stat__num">${esc(st.num)}</div><div class="nsm-stat__lab">${esc(st.lab)}</div></div>`).join("");
 
-    const eq = n.equation ? `<div class="nsm-eq"><b>${esc(n.equation.formula)}</b><span>${esc(n.equation.note)}</span></div>` : "";
+    const eq = n.equation ? `<div class="nsm-eq"><b>${esc(n.equation.formula)}</b>${n.equation.note ? `<span>${esc(n.equation.note)}</span>` : ""}</div>` : "";
 
     // «Где этапы 3–5» — лестница ведёт к двум вершинам; этапы 3–5 кормят маржу/выручку, не NSM.
     let ladder = "";
@@ -2863,13 +2923,13 @@ async function mountMetrics() {
             <p class="nsm-lstage__bridge">${esc(s.bridge)}</p>
           </div>`;
       }).join("");
-      ladder = `<section class="nsm-ladder">
-        <div class="nsm-tk__h">${esc(ld.title)}</div>
+      ladder = `<details class="nsm-ladder nsm-fold">
+        <summary class="nsm-fold__sum">${esc(ld.title)}</summary>
         ${ld.intro ? `<p class="nsm-tk__sub">${esc(ld.intro)}</p>` : ""}
         ${legend ? `<div class="nsm-lg">${legend}</div>` : ""}
         <div class="nsm-lstages">${rows}</div>
         ${ld.note ? `<p class="nsm-guardnote">${esc(ld.note)}</p>` : ""}
-      </section>`;
+      </details>`;
     }
 
     // «Что из этого следует» — практические выводы из пирамиды метрик (акцент-карточки).
@@ -2938,9 +2998,8 @@ async function mountMetrics() {
     const order = (ins.order || []).length
       ? `<div class="instr-order"><span class="instr-sub__h">Порядок запуска — 3 тикета вместо 11</span><ol>${ins.order.map((o) => `<li>${esc(o)}</li>`).join("")}</ol></div>` : "";
 
-    return `<section class="instr-hero" id="instr">
-      ${ins.eyebrow ? `<p class="eyebrow">${esc(ins.eyebrow)}</p>` : ""}
-      <h2 class="instr-h2">${esc(ins.title)}</h2>
+    return `<details class="instr-hero nsm-fold" id="instr">
+      <summary class="nsm-fold__sum">${ins.eyebrow ? `<span class="nsm-fold__eye">${esc(ins.eyebrow)}</span>` : ""}${esc(ins.title)}</summary>
       ${ins.lede ? `<p class="lede">${esc(ins.lede)}</p>` : ""}
       ${ticket0}
       ${legendBlock}
@@ -2948,7 +3007,7 @@ async function mountMetrics() {
       ${order}
       ${ins.note ? `<p class="nsm-guardnote">${esc(ins.note)}</p>` : ""}
       ${ins.source ? `<p class="nsm-foot">${esc(ins.source)}</p>` : ""}
-    </section>`;
+    </details>`;
   }
 
   const active = metrics.filter((m) => m.type === "active").sort(byStage);
@@ -2998,6 +3057,22 @@ async function mountMetrics() {
       ${calcMetrics.map(calcItem).join("")}
     </section>` : "";
 
+  const oq = data.openQuestions;
+  const openQ = oq ? `
+    <section class="m-group m-group--info m-oq">
+      <p class="eyebrow">${esc(oq.eyebrow)}</p>
+      <h2>${esc(oq.title)}</h2>
+      <p class="m-group__sub">${esc(oq.lede)}</p>
+      <div class="m-oq__list">
+        ${(oq.items || []).map((q) => `
+          <div class="m-oq__it">
+            <div class="m-oq__h"><span class="m-code">${esc(q.code)}</span> ${esc(q.title)}</div>
+            <p>${esc(q.body)}</p>
+            <div class="m-oq__st">→ ${esc(q.status)}</div>
+          </div>`).join("")}
+      </div>
+    </section>` : "";
+
   host.innerHTML = `
     ${nsmHero(data.nsm)}
     <div class="m-intro">
@@ -3009,6 +3084,7 @@ async function mountMetrics() {
     ${instrHero(data.instrumentation)}
     ${primary}
     ${secondary}
+    ${openQ}
     ${calc}`;
 
   // Доскролл к метрике/методике, если пришли по ссылке #m-<код> или #calc-<код> (рендер асинхронный).
@@ -3017,6 +3093,8 @@ async function mountMetrics() {
     const el = document.getElementById(location.hash.slice(1));
     if (!el) return;
     if (el.tagName === "DETAILS") el.open = true;          // раскрыть блок методики
+    const det = el.closest("details");                     // якорь внутри свёрнутого блока — раскрыть родителя
+    if (det) det.open = true;
     el.scrollIntoView({ block: "center" });
     el.classList.add("is-target");
   };
