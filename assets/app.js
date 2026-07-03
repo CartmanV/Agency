@@ -1,20 +1,26 @@
 /* Сайт направления «Агентства» — общий JS (итерации 0–1).
    Хедер + бэклог как инструмент: фильтры, сортировка, поиск, бейджи; срез Must. */
 
+// Единый источник навигации. Поле group = дропдаун-меню, к которому относится
+// страница (см. NAV_MENUS — оно ВЫВОДИТСЯ отсюда, отдельного списка пунктов больше нет).
+// Порядок внутри «Обзора» = маршрут чтения: что за направление → видение → стратегия →
+// диагностика → выводы → план → текущее состояние → планы дальше.
 const NAV = [
+  // Обзор — стратегия и статус
   { href: "index.html",    label: "Направление", group: "Обзор" },
-  { href: "now.html",      label: "Сейчас в работе", group: "Обзор" },
-  { href: "vyvody.html",   label: "Выводы и статус", short: "Выводы", group: "Обзор" },
-  { href: "voprosy.html",  label: "Вопросы стейкхолдеров", short: "Вопросы", group: "Обзор" },
-  { href: "nmt.html",      label: "Диагностика (NMT)", short: "Диагностика", group: "Обзор" },
-  { href: "q3.html",       label: "Планы Q3", group: "Обзор" },
-  { href: "plan-1-2.html", label: "Общий план 1+2", short: "План 1+2", group: "Обзор" },
   { href: "vision.html",   label: "Видение", group: "Обзор" },
   { href: "strategy.html", label: "Стратегия (v5)", short: "Стратегия", group: "Обзор" },
-  { href: "etapy.html",    label: "Этапы ценности", group: "Проекции" },
-  { href: "tree.html",     label: "Дерево (JTBD)", group: "Проекции" },
+  { href: "nmt.html",      label: "Диагностика (NMT)", short: "Диагностика", group: "Обзор" },
+  { href: "vyvody.html",   label: "Выводы и статус", short: "Выводы", group: "Обзор" },
+  { href: "plan-1-2.html", label: "Общий план 1+2", short: "План 1+2", group: "Обзор" },
+  { href: "now.html",      label: "Сейчас в работе", group: "Обзор" },
+  { href: "q3.html",       label: "Планы Q3", group: "Обзор" },
+  // Работа — проекции стратегии + реестры задач
+  { href: "etapy.html",    label: "Этапы ценности", group: "Работа" },
+  { href: "tree.html",     label: "Дерево (JTBD)", group: "Работа" },
   { href: "levels.html",   label: "Каталог задач", group: "Работа" },
   { href: "backlog.html",  label: "Бэклог", group: "Работа" },
+  // Данные — доказательная база + справка
   { href: "research.html", label: "Исследования", group: "Данные" },
   { href: "sootvetstvie.html", label: "Доказательная база", short: "Доказательства", group: "Данные" },
   { href: "planned.html", label: "План исследований", short: "План ресёрча", group: "Данные" },
@@ -22,7 +28,8 @@ const NAV = [
   { href: "support.html",  label: "Нагрузка на саппорт", short: "Саппорт", group: "Данные" },
   { href: "rynok.html",    label: "Рынок", group: "Данные" },
   { href: "metrics.html",  label: "Метрики", group: "Данные" },
-  { href: "legend.html",   label: "Легенды", group: "Справка" },
+  { href: "legend.html",   label: "Легенды", group: "Данные" },
+  // voprosy.html выведена из навигации 2026-07-03 как неактуальная (файл оставлен, но не линкуется).
 ];
 
 // Единственный источник правды по актуальности данных сайта.
@@ -42,12 +49,13 @@ function mountFooter() {
 }
 
 // Навигация v4 (Design Guide · 06): 3 группы-дропдауна в один ряд вместо 14 пунктов в рядах.
-const NAV_MENUS = [
-  { label: "Обзор",  items: ["index.html", "now.html", "vyvody.html", "nmt.html", "q3.html", "vision.html"] },
-  { label: "Работа", items: ["etapy.html", "tree.html", "levels.html", "backlog.html"] },
-  { label: "Данные", items: ["research.html", "sootvetstvie.html", "planned.html",
-                             "agencies.html", "support.html", "rynok.html", "metrics.html", "legend.html"] },
-];
+// Меню выводится из NAV по полю group — единого списка страниц. Порядок групп фиксирован;
+// порядок пунктов внутри группы = порядок в NAV. Так ни одна страница не «теряется» из меню.
+const NAV_GROUP_ORDER = ["Обзор", "Работа", "Данные"];
+const NAV_MENUS = NAV_GROUP_ORDER.map((label) => ({
+  label,
+  items: NAV.filter((n) => n.group === label).map((n) => n.href),
+}));
 
 function mountHeader() {
   const host = document.querySelector("[data-header]");
@@ -68,10 +76,10 @@ function mountHeader() {
     }).join("");
     return `<div class="navm" data-navm>
         <button class="navm__btn${hasActive ? " is-active" : ""}" type="button"
-                aria-expanded="false" aria-haspopup="true" data-navm-btn id="navm-btn-${mi}">
+                aria-expanded="false" aria-controls="navm-pop-${mi}" data-navm-btn id="navm-btn-${mi}">
           ${esc(m.label)}<span class="navm__caret" aria-hidden="true">▾</span>
         </button>
-        <div class="navm__pop" role="menu" aria-labelledby="navm-btn-${mi}" data-navm-pop hidden>${links}</div>
+        <div class="navm__pop" id="navm-pop-${mi}" aria-labelledby="navm-btn-${mi}" data-navm-pop hidden>${links}</div>
       </div>`;
   }).join("");
 
@@ -83,8 +91,11 @@ function mountHeader() {
         <div class="gsearch" data-gsearch>
           <input type="search" class="gsearch__input ctl" data-gsearch-input autocomplete="off"
                  spellcheck="false" aria-label="Поиск по сайту"
+                 role="combobox" aria-expanded="false" aria-controls="gsearch-results"
+                 aria-haspopup="listbox" aria-autocomplete="list"
                  placeholder="Поиск…  (/ или ⌘K)" />
-          <div class="gsearch__results" data-gsearch-results role="listbox" hidden></div>
+          <div class="gsearch__results" id="gsearch-results" data-gsearch-results
+               role="listbox" aria-label="Результаты поиска" hidden></div>
         </div>
       </div>
     </header>`;
@@ -92,15 +103,26 @@ function mountHeader() {
   mountGlobalSearch();
 }
 
-// Контроллер дропдаунов навигации: клик открывает/закрывает, клик вне/Escape — закрывают.
+// Контроллер дропдаунов навигации (disclosure-паттерн, 2026-07-03).
+// Клик/Enter — открыть/закрыть; ↓/↑ на кнопке — открыть и увести фокус в список;
+// в списке ↓/↑/Home/End двигают фокус, Escape закрывает и ВОЗВРАЩАЕТ фокус на кнопку,
+// Tab уходит из меню штатно; клик вне — закрывает всё.
 function mountNavDropdowns() {
   const menus = [...document.querySelectorAll("[data-navm]")];
   if (!menus.length) return;
-  const closeAll = (except) => menus.forEach((m) => {
-    if (m === except) return;
-    m.querySelector("[data-navm-btn]").setAttribute("aria-expanded", "false");
-    m.querySelector("[data-navm-pop]").hidden = true;
-  });
+  const itemsOf = (m) => [...m.querySelectorAll("[data-navm-pop] a")];
+  const setOpen = (m, open) => {
+    m.querySelector("[data-navm-btn]").setAttribute("aria-expanded", String(open));
+    m.querySelector("[data-navm-pop]").hidden = !open;
+  };
+  const closeAll = (except) => menus.forEach((m) => { if (m !== except) setOpen(m, false); });
+  const close = (m, focusBtn) => {
+    setOpen(m, false);
+    if (focusBtn) m.querySelector("[data-navm-btn]").focus();
+  };
+  const openMenu = () => menus.find((m) =>
+    m.querySelector("[data-navm-btn]").getAttribute("aria-expanded") === "true");
+
   menus.forEach((m) => {
     const btn = m.querySelector("[data-navm-btn]");
     const pop = m.querySelector("[data-navm-pop]");
@@ -108,14 +130,33 @@ function mountNavDropdowns() {
       e.stopPropagation();
       const open = btn.getAttribute("aria-expanded") === "true";
       closeAll(m);
-      btn.setAttribute("aria-expanded", String(!open));
-      pop.hidden = open;
+      setOpen(m, !open);
+    });
+    btn.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        closeAll(m); setOpen(m, true);
+        const it = itemsOf(m);
+        (e.key === "ArrowDown" ? it[0] : it[it.length - 1])?.focus();
+      }
+    });
+    pop.addEventListener("keydown", (e) => {
+      const it = itemsOf(m);
+      const i = it.indexOf(document.activeElement);
+      if (e.key === "ArrowDown") { e.preventDefault(); (it[i + 1] || it[0])?.focus(); }
+      else if (e.key === "ArrowUp") { e.preventDefault(); (it[i - 1] || it[it.length - 1])?.focus(); }
+      else if (e.key === "Home") { e.preventDefault(); it[0]?.focus(); }
+      else if (e.key === "End") { e.preventDefault(); it[it.length - 1]?.focus(); }
+      else if (e.key === "Escape") { e.preventDefault(); close(m, true); }
+      else if (e.key === "Tab") { setOpen(m, false); }
     });
   });
   document.addEventListener("click", (e) => {
     if (!menus.some((m) => m.contains(e.target))) closeAll();
   });
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeAll(); });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") { const m = openMenu(); if (m) close(m, true); }
+  });
 }
 
 // Глобальный поиск по сайту (ТЗ 08): один индекс data/search.json по находкам/метрикам/
@@ -133,26 +174,38 @@ function mountGlobalSearch() {
     try { const d = await loadJSON("data/search.json"); index = d.index || []; }
     catch (e) { index = []; }
   }
+  const collapse = () => {
+    results.hidden = true; input.setAttribute("aria-expanded", "false");
+    input.removeAttribute("aria-activedescendant"); active = -1;
+  };
   function render(q) {
     const query = q.trim().toLowerCase();
-    if (!query) { results.hidden = true; results.innerHTML = ""; active = -1; return; }
+    if (!query) { results.innerHTML = ""; collapse(); return; }
     const hits = (index || []).filter((r) =>
       (`${r.title} ${r.snippet} ${r.kind}`).toLowerCase().includes(query)).slice(0, 30);
     active = -1;
+    input.removeAttribute("aria-activedescendant");
     results.innerHTML = hits.length
       ? hits.map((r, i) =>
-          `<a class="gsearch__item" role="option" data-i="${i}" href="${esc(r.href)}">
+          `<a class="gsearch__item" role="option" id="gsearch-opt-${i}" aria-selected="false"
+              data-i="${i}" href="${esc(r.href)}">
              <span class="gsearch__row"><span class="gsearch__kind">${esc(r.kind)}</span>
              <span class="gsearch__t">${esc(r.title)}</span></span>
              ${r.snippet ? `<span class="gsearch__s">${esc(r.snippet)}</span>` : ""}</a>`).join("")
       : `<div class="empty" style="padding:16px">Ничего не найдено</div>`;
     results.hidden = false;
+    input.setAttribute("aria-expanded", "true");
   }
   const opts = () => [...results.querySelectorAll(".gsearch__item")];
   const setActive = (i) => {
     const o = opts(); if (!o.length) return;
     active = (i + o.length) % o.length;
-    o.forEach((el, k) => el.classList.toggle("is-active", k === active));
+    o.forEach((el, k) => {
+      const on = k === active;
+      el.classList.toggle("is-active", on);
+      el.setAttribute("aria-selected", String(on));
+    });
+    input.setAttribute("aria-activedescendant", o[active].id);
     o[active].scrollIntoView({ block: "nearest" });
   };
 
@@ -162,9 +215,13 @@ function mountGlobalSearch() {
     if (e.key === "Escape") { input.value = ""; render(""); input.blur(); }
     else if (e.key === "ArrowDown") { e.preventDefault(); setActive(active + 1); }
     else if (e.key === "ArrowUp") { e.preventDefault(); setActive(active - 1); }
-    else if (e.key === "Enter") { const o = opts(); if (active >= 0 && o[active]) location.href = o[active].getAttribute("href"); }
+    else if (e.key === "Enter") {
+      // без явного выбора — переходим к первому результату (ожидаемое поведение combobox)
+      const o = opts(); const target = (active >= 0 && o[active]) ? o[active] : o[0];
+      if (target) location.href = target.getAttribute("href");
+    }
   });
-  document.addEventListener("click", (e) => { if (!box.contains(e.target)) results.hidden = true; });
+  document.addEventListener("click", (e) => { if (!box.contains(e.target)) collapse(); });
   document.addEventListener("keydown", (e) => {
     const tag = (document.activeElement && document.activeElement.tagName) || "";
     if ((e.key === "k" || e.key === "K") && (e.metaKey || e.ctrlKey)) { e.preventDefault(); input.focus(); }
@@ -197,7 +254,7 @@ function esc(s) {
 }
 
 // Пометка «редакторское допущение» — вместо сырого [*] (тултип вместо непонятного знака).
-const ASSUME = `<abbr class="assume-mark" title="редакторское допущение по сборке — не подтверждено данными">*</abbr>`;
+const ASSUME = `<abbr class="assume-mark" tabindex="0" data-tip="редакторское допущение по сборке — не подтверждено данными" aria-label="редакторское допущение по сборке — не подтверждено данными">*</abbr>`;
 
 // Канон цвета этапа v4: идентичность 1=--cat-1, 2A/2B=--cat-3, 3/4/5=muted; «фокус» — золото.
 // Принимает строку вида "этап 2A", "2A (+2B)", "этап 4 «Увеличить маржу»", "1" — извлекает первый код.
@@ -240,15 +297,17 @@ const GLOSS_TERMS = [
 ];
 function gloss(s) {
   if (!s) return s;
+  // tabindex+data-tip+aria-label вместо title: расшифровка доступна с клавиатуры и на таче,
+  // не только по наведению мышью (2026-07-03). Всплывашка рисуется CSS из data-tip.
   let out = String(s)
     .replace(/\b(H\d+(?:\.\d+){1,2})\b/g,
-      `<abbr class="gloss" title="проверяемая гипотеза ценности — раскрыта в «Пути агентства» и Легендах">$1</abbr>`)
+      `<abbr class="gloss" tabindex="0" data-tip="проверяемая гипотеза ценности — раскрыта в «Пути агентства» и Легендах" aria-label="$1 — проверяемая гипотеза ценности">$1</abbr>`)
     .replace(/\b(E\.\d)\b/g,
-      `<abbr class="gloss" title="находка анализа дерева работ — см. Дерево (JTBD)">$1</abbr>`);
+      `<abbr class="gloss" tabindex="0" data-tip="находка анализа дерева работ — см. Дерево (JTBD)" aria-label="$1 — находка анализа дерева работ">$1</abbr>`);
   for (const [t, def] of GLOSS_TERMS) {
     const esc_t = t.replace(/[-]/g, "\\-");
     out = out.replace(new RegExp(`(?<![\\wА-Яа-я-])(${esc_t})(?![\\wА-Яа-я-])`, "g"),
-      `<abbr class="gloss" title="${def}">$1</abbr>`);
+      `<abbr class="gloss" tabindex="0" data-tip="${def}" aria-label="$1 — ${def}">$1</abbr>`);
   }
   return out;
 }
@@ -3166,6 +3225,10 @@ async function mountExec() {
   let d;
   try { d = await loadJSON("data/exec.json"); }
   catch (e) { host.innerHTML = `<div class="error">${esc(e.message)}</div>`; return; }
+
+  // Дата обновления сводки — из данных, не из HTML (иначе протухает при рассинхроне). ТЗ 09.
+  const eb = document.querySelector("[data-exec-date]");
+  if (eb && d._updated) eb.textContent = `Направление «Агентства» · обновлено ${d._updated}`;
 
   const pct = Math.min(100, Math.round((d.progress.done / d.progress.goal) * 100));
 
