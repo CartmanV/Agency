@@ -1857,6 +1857,9 @@ a.ex-stat:hover { border-color: var(--copper); transform: translateY(-1px); text
 }
 .bc-k { font: 600 .72rem/1 var(--f-mono); letter-spacing: .05em; text-transform: uppercase; color: var(--copper); }
 .bc-t { color: var(--cream-soft); font-size: .88rem; line-height: 1.45; }
+.bc-step--link { text-decoration: none; transition: border-color .15s, background .15s; }
+.bc-step--link:hover { border-color: var(--gold-line); background: rgba(255,255,255,.045); }
+.bc-link { margin-top: auto; font: 600 .72rem/1 var(--f-mono); letter-spacing: .03em; color: var(--gold); }
 .bc-arr { align-self: center; color: var(--copper); font-size: 1.2rem; flex: 0 0 auto; }
 
 /* ставки */

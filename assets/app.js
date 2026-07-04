@@ -3376,11 +3376,16 @@ async function mountExec() {
   const statsRow = cells.length
     ? `<div class="ex-statwrap">${P.statsCaption ? `<span class="ex-stat__cap">${esc(P.statsCaption)}</span>` : ""}<div class="ex-stats">${cells.join("")}</div></div>` : "";
 
-  const bc = (d.businessCase || []).map((x, i, a) => `
-    <span class="bc-step">
-      <span class="bc-k">${esc(x.k)}</span>
+  // Каждое звено цепочки «почему сейчас» ведёт на страницу-доказательство (rynok/strategy).
+  const bc = (d.businessCase || []).map((x, i, a) => {
+    const inner = `<span class="bc-k">${esc(x.k)}</span>
       <span class="bc-t">${gloss(esc(x.t))}</span>
-    </span>${i < a.length - 1 ? `<span class="bc-arr" aria-hidden="true">→</span>` : ""}`).join("");
+      ${x.href ? `<span class="bc-link">${esc(x.linkLabel || "подробнее")} →</span>` : ""}`;
+    const step = x.href
+      ? `<a class="bc-step bc-step--link" href="${esc(x.href)}">${inner}</a>`
+      : `<span class="bc-step">${inner}</span>`;
+    return `${step}${i < a.length - 1 ? `<span class="bc-arr" aria-hidden="true">→</span>` : ""}`;
+  }).join("");
 
   // Ссылка «провалиться к развёрнутому ответу» — единый вид на всех строках саммари.
   const drill = (href, label) => href
