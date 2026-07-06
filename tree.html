@@ -9,6 +9,31 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400;1,600&family=Manrope:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/style.css" />
+  <style>
+    /* --- локальные стили страницы графа работ (v2.0, модель NMT) --- */
+    .jtbd-model{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin:6px 0 26px; }
+    @media(max-width:860px){ .jtbd-model{ grid-template-columns:repeat(2,1fr); } }
+    .nmt-node{ border:1px solid var(--line); background:var(--panel); border-radius:11px; padding:14px 15px; border-top:3px solid var(--line); }
+    .nmt-node.n-big{ border-top-color:var(--cream-dim); }
+    .nmt-node.n-core{ border-top-color:var(--gold); }
+    .nmt-node.n-small{ border-top-color:var(--pink); }
+    .nmt-node.n-micro{ border-top-color:var(--blue); }
+    .nmt-node .nk{ font-family:var(--f-mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; margin-bottom:7px; }
+    .nmt-node.n-big .nk{ color:var(--cream-dim); }
+    .nmt-node.n-core .nk{ color:var(--gold); }
+    .nmt-node.n-small .nk{ color:var(--pink-soft); }
+    .nmt-node.n-micro .nk{ color:var(--blue); }
+    .nmt-node .nd{ font-size:12.5px; line-height:1.5; color:var(--cream-soft); }
+    .nmt-node .nx{ display:block; margin-top:7px; font-size:11.5px; color:var(--cream-dim); font-style:italic; }
+    .model-note{ border:1px solid var(--gold-line); background:var(--gold-dim); border-radius:9px; padding:13px 17px; margin-bottom:30px; font-size:13px; line-height:1.6; color:var(--cream-soft); }
+    .model-note b{ color:var(--cream); }
+    /* чип типа узла на листе */
+    .nt{ display:inline-block; margin-left:6px; font-family:var(--f-mono); font-size:9.5px; letter-spacing:.1em; text-transform:uppercase; padding:1px 6px; border-radius:4px; vertical-align:middle; }
+    .nt-core{ background:var(--gold); color:var(--bg); }
+    .nt-small{ background:var(--pink); color:var(--bg); }
+    .nt-micro{ background:var(--blue); color:var(--bg); }
+    .node-name .sg{ font-family:var(--f-mono); font-weight:400; font-size:11px; color:var(--cream-dim); text-transform:none; letter-spacing:.02em; }
+  </style>
 </head>
 <body>
   <a class="skip-link" href="#main">К содержанию</a>
@@ -18,28 +43,58 @@
 
   <main id="main">
     <div data-projbar="tree"></div>
-    <p class="eyebrow">Как устроена работа направления</p>
+    <p class="eyebrow">Как устроена работа направления · модель NMT</p>
     <h1>Дерево работ <em style="font-style:italic;color:var(--copper)">«Агентства»</em></h1>
     <p class="jtbd-sub">
-      Читается сверху вниз: большая задача роли → её подцели → конкретные работы.
-      Три ветки — три роли в агентстве. Пометка «этап 1–5» показывает, к какому шагу
-      стратегии относится работа.
+      Работы собраны не в лестницу, а в граф из четырёх узлов вокруг того, что продукт делает
+      целиком. Big — зачем. Core — что делаем мы. Small — соседняя работа, которую пока не делаем
+      (там рост). Micro — как это делается внутри. Три ветки — три роли в агентстве.
     </p>
 
-    <div class="jtbd-tools">
+    <!-- МОДЕЛЬ: 4 узла графа -->
+    <div class="jtbd-model">
+      <div class="nmt-node n-big">
+        <div class="nk">Big — зачем</div>
+        <div class="nd">Мотивация роли. Продукт ей только помогает.<span class="nx">«не косячить, держать SLA, не выгорать»</span></div>
+      </div>
+      <div class="nmt-node n-core">
+        <div class="nk">Core — что делаем мы</div>
+        <div class="nd">То, что продукт выполняет целиком. Его надо делать быстрее и надёжнее.<span class="nx">оформить бронь / обмен / оффлайн-услугу</span></div>
+      </div>
+      <div class="nmt-node n-small">
+        <div class="nk">Small — рост</div>
+        <div class="nd">Соседняя работа того же Big, которую продукт пока НЕ делает. Главный источник роста.<span class="nx">согласование, закрывающие, аналитика клиенту</span></div>
+      </div>
+      <div class="nmt-node n-micro">
+        <div class="nk">Micro — как</div>
+        <div class="nd">Опыт использования: как именно делается Core внутри продукта.<span class="nx">заполнить форму услуги, проставить сбор</span></div>
+      </div>
+    </div>
+
+    <div class="model-note">
+      <b>Пересборка v2.0 (2026-07-04).</b> Раньше было два дерева на разных языках: JTBD-док на
+      Big/Medium/Small и сайт на графе NMT. Слово «Small» значило в них противоположное. Теперь
+      единый канон — граф NMT. <b>7 подцелей — это проекция</b> (ярлык «п.1–7» на листе), а не
+      уровень графа. Прежний «Small = рутина» расщеплён на <b>Core</b> (что делаем) и <b>Micro</b>
+      (как), а имя Small отдано соседним недоделанным работам — вектору роста вглубь (находка E.8).
+    </div>
+
+    <!-- KOРЕНЬ -->
+    <div class="jtbd-root">
+      <div class="tag">Big job агентства · корень</div>
+      <div class="txt">«Оставаться нужным корпоративному клиенту: зарабатывать больше и обслуживать больше — не раздувая штат.»</div>
+      <div class="sub">Отвечает за неё руководитель агентства; остальные роли своими Big job работают на эту же цель. Главная угроза — что клиент уйдёт обслуживаться в платформу напрямую (SmartWay, OneTwoTrip для бизнеса, банк-экосистемы) или к более технологичному агентству. Ракета помогает агентству его удержать.</div>
+      <div class="pin"><b>E.7</b>У Ракеты и у агентства разные конкуренты: SmartWay и Corteos борются с Ракетой за платформу, а агентство теряет клиента, если тот уходит в платформу напрямую.</div>
+    </div>
+
+    <div class="jtbd-tools" style="margin-top:22px">
       <span class="leg"><span class="dot blue"></span>Консультант</span>
       <span class="leg"><span class="dot orange"></span>Супервизор</span>
       <span class="leg"><span class="dot green"></span>Руководитель / бухгалтерия / IT</span>
-      <span class="leg leg--star">★ — над этим работаем сейчас</span>
-      <span class="leg leg--dash">— — наблюдение-вывод</span>
-    </div>
-
-    <!-- КОРЕНЬ -->
-    <div class="jtbd-root">
-      <div class="tag">Главная цель агентства</div>
-      <div class="txt">«Оставаться нужным корпоративному клиенту: зарабатывать больше и обслуживать больше — не раздувая штат.»</div>
-      <div class="sub">Отвечает за неё руководитель агентства; остальные роли своими задачами работают на эту же цель. Главная угроза — что клиент уйдёт обслуживаться в платформу напрямую (SmartWay, OneTwoTrip для бизнеса, банк-экосистемы) или к более технологичному агентству. Ракета помогает агентству его удержать.</div>
-      <div class="pin"><b>E.7</b>У Ракеты и у агентства разные конкуренты: SmartWay и Corteos борются с Ракетой за платформу, а агентство теряет клиента, если тот уходит в платформу напрямую.</div>
+      <span class="leg"><span class="nt nt-core" style="margin:0">Core</span></span>
+      <span class="leg"><span class="nt nt-micro" style="margin:0">Micro</span></span>
+      <span class="leg"><span class="nt nt-small" style="margin:0">Small · рост</span></span>
+      <span class="leg leg--dash">«п.N» — проекция подцели · «этап N» — шаг стратегии</span>
     </div>
 
     <!-- ВЕТВЛЕНИЕ -->
@@ -53,37 +108,39 @@
         <header class="tcol-head">
           <span class="tcol-role">Консультант</span>
           <span class="tcol-title">«Не косячить, успевать в срок, нравиться клиенту — и не выгорать.»</span>
-          <span class="tcol-sub">От него зависит, начнут ли в агентстве реально пользоваться Ракетой. Если работать в ней неудобно — он вернётся к старой программе бронирования.</span>
+          <span class="tcol-sub">От него зависит, начнут ли в агентстве реально пользоваться Ракетой. Если работать неудобно — вернётся к старой программе бронирования. Бонус завязан на число операций → Core ускоряем, а не забираем.</span>
         </header>
 
         <div class="node">
-          <div class="node-head"><span class="node-num">7</span><span class="node-name">Меньше нагрузки на агента</span><span class="med-stage s1">★ этап 1</span></div>
-          <div class="leaf">Не терять привычный ход работы на старте, не бегать в поддержку<span class="leaf-br">привычные функции</span></div>
-          <div class="leaf">Привычный вид корзины, списка и карточки заказа (паритет)<a class="leaf-br" href="backlog.html?theme=Заказы">Заказы</a></div>
+          <div class="node-head"><span class="node-num nt-core" style="background:var(--gold);color:var(--bg)">Core</span><span class="node-name">Что Ракета делает целиком</span></div>
+          <div class="leaf">Готовый запрос на доп. услуги: багаж, VIP, смена даты<a class="leaf-br" href="backlog.html?theme=Оффлайн%204.0">Оффлайн 4.0</a><span class="leaf-tag">п.1 · 2A</span></div>
+          <div class="leaf">Запрос в свободной форме → структурированная услуга<a class="leaf-br" href="backlog.html?theme=Оффлайн%204.0">Оффлайн 4.0</a><span class="leaf-tag">п.1 · 2A</span></div>
+          <div class="leaf">Обменять или вернуть авиабилет самому, без поддержки<a class="leaf-br" href="backlog.html?theme=Онлайн-услуги">Онлайн-транзакции</a><span class="leaf-tag">п.1 · 2A</span></div>
+          <div class="leaf">Оформлять оффлайн-услуги и сборы прямо в заказе<a class="leaf-br" href="backlog.html?theme=Заказы">Заказы</a><span class="leaf-tag">п.2 · 2B</span></div>
+          <div class="leaf">Собрать предложение клиенту (КП) за пару кликов<a class="leaf-br" href="backlog.html?theme=Предложения%202.0">Предложения 2.0</a><span class="leaf-tag">этап 5 · вне Q2</span><span class="pin pin--inline"><b>сверка v10</b>узел Core, но вся тема Won't/этап 5; 2A-итерации КП в бэклоге нет</span></div>
         </div>
 
         <div class="node">
-          <div class="node-head"><span class="node-num">1</span><span class="node-name">Освободить время</span><span class="med-stage">★ этап 2A</span></div>
-          <div class="leaf">Собрать полный запрос клиента<a class="leaf-br" href="backlog.html?theme=Заказы">Заказы</a></div>
-          <div class="leaf">Сделать предложение клиенту за пару кликов<a class="leaf-br" href="backlog.html?theme=Предложения%202.0">Предложения 2.0</a></div>
-          <div class="leaf">Видеть всё по заказу в одном окне<a class="leaf-br" href="backlog.html?theme=Заказы">Заказы</a></div>
-          <div class="leaf">Готовый запрос на доп. услуги: багаж, VIP, смена даты<a class="leaf-br" href="backlog.html?theme=Оффлайн%204.0">Оффлайн 4.0</a></div>
-          <div class="leaf">Отправить все документы одной ссылкой<a class="leaf-br" href="backlog.html?theme=Сервис%20для%20клиента">Сервис клиенту</a></div>
-          <div class="leaf">Обменять или вернуть авиабилет самому, без поддержки<a class="leaf-br" href="backlog.html?theme=Онлайн-услуги">Онлайн-транзакции</a></div>
+          <div class="node-head"><span class="node-num nt-micro" style="background:var(--blue);color:var(--bg)">Micro</span><span class="node-name">Как это делается внутри</span></div>
+          <div class="leaf">Не терять привычный флоу на старте, не бегать в поддержку<span class="leaf-br">паритет</span><span class="leaf-tag">п.7 · этап 1</span></div>
+          <div class="leaf">Привычный вид корзины, списка и карточки заказа<a class="leaf-br" href="backlog.html?theme=Заказы">Заказы</a><span class="leaf-tag">п.7 · этап 1</span></div>
+          <div class="leaf">Быстро собрать полный запрос клиента<a class="leaf-br" href="backlog.html?theme=Заказы">Заказы</a><span class="leaf-tag">п.1 · 2A</span></div>
+          <div class="leaf">Видеть всё по заказу в одном окне<a class="leaf-br" href="backlog.html?theme=Заказы">Заказы</a><span class="leaf-tag">п.1 · 2A</span></div>
+          <div class="leaf">Видеть и показывать клиенту статус по заказам<a class="leaf-br" href="backlog.html?theme=Заказы">Заказы</a><span class="leaf-tag">п.2 · 2B</span></div>
         </div>
 
         <div class="node">
-          <div class="node-head"><span class="node-num">2</span><span class="node-name">Убрать тормоза в работе</span><span class="med-stage s2b">★ этап 2B</span></div>
-          <div class="leaf">Единая переписка, привязанная к заказу<a class="leaf-br" href="backlog.html?theme=Единый%20чат">Единый чат</a></div>
-          <div class="leaf">Показывать клиенту новости Ракеты → меньше вопросов в поддержку<span class="leaf-br">Виджеты</span><span class="pin pin--inline"><b>E.4</b>повтор у супервизора</span></div>
-          <div class="leaf">Видеть и показывать клиенту статус по своим заказам<a class="leaf-br" href="backlog.html?theme=Заказы">Заказы</a></div>
-          <div class="leaf">Оформлять оффлайн-услуги и сборы прямо в заказе<a class="leaf-br" href="backlog.html?theme=Заказы">Заказы</a></div>
+          <div class="node-head"><span class="node-num nt-small" style="background:var(--pink);color:var(--bg)">Small</span><span class="node-name">Соседняя работа — <span class="sg">пока не делаем, здесь рост</span></span></div>
+          <div class="leaf">Единая переписка, привязанная к заказу<a class="leaf-br" href="backlog.html?theme=Единый%20чат">Единый чат</a><span class="leaf-tag">п.2 · 2B</span></div>
+          <div class="leaf">Собрать документы и отправить одной ссылкой<a class="leaf-br" href="backlog.html?theme=Сервис%20для%20клиента">Сервис клиенту</a><span class="leaf-tag">п.6 · 2A/4</span></div>
+          <div class="leaf">Показывать клиенту новости → меньше вопросов<span class="leaf-br">Виджеты</span><span class="pin pin--inline"><b>E.4</b>повтор у супервизора</span></div>
+          <div class="leaf">Согласование КП и аналитика поездок на стороне клиента<a class="leaf-br" href="backlog.html?theme=Сервис%20для%20клиента">Сервис клиенту</a><span class="leaf-tag">п.3 · этап 4 · вне Q2</span></div>
         </div>
 
         <div class="node node--direct">
-          <div class="node-head"><span class="node-name">↑ Напрямую к главной цели</span></div>
+          <div class="node-head"><span class="node-name">↑ Напрямую к Big job</span></div>
           <div class="leaf">Чтобы клиент был доволен и отношения крепли<span class="leaf-tag">после поездки</span></div>
-          <div class="pin"><b>E.3</b>пока нет показателя на итог (доволен ли клиент) — мы измеряем сам процесс, а не результат. Достройка клиентских метрик — правка 5 NMT, запланированная работа.</div>
+          <div class="pin"><b>E.3</b>пока нет показателя на итог (доволен ли клиент) — мы измеряем процесс, а не результат. Достройка клиентских метрик — правка 5 NMT.</div>
         </div>
       </section>
 
@@ -92,23 +149,23 @@
         <header class="tcol-head">
           <span class="tcol-role">Супервизор</span>
           <span class="tcol-title">«Держать уровень сервиса и сроки всей команды, когда нагрузка скачет.»</span>
-          <span class="tcol-sub">Следит, чтобы вся команда держала сервис при скачках нагрузки. Распределение работы между консультантами пока закрываем не напрямую — через подцель «убрать тормоза».</span>
+          <span class="tcol-sub">Следит, чтобы вся команда держала сервис при скачках нагрузки. Балансировку нагрузки закрываем не напрямую — через подцель «убрать тормоза».</span>
         </header>
 
         <div class="node">
-          <div class="node-head"><span class="node-num">7</span><span class="node-name">Базовый набор функций</span><span class="med-stage s1">★ этап 1</span></div>
-          <div class="leaf">Настроить нового клиента<a class="leaf-br" href="backlog.html?theme=Агентская%20админка">Агентская админка</a></div>
-          <div class="leaf">Чтобы клиент видел новые возможности</div>
+          <div class="node-head"><span class="node-num nt-micro" style="background:var(--blue);color:var(--bg)">Micro</span><span class="node-name">Настройка и паритет</span></div>
+          <div class="leaf">Настроить нового клиента<a class="leaf-br" href="backlog.html?theme=Агентская%20админка">Агентская админка</a><span class="leaf-tag">п.7 · этап 1</span></div>
+          <div class="leaf">Чтобы клиент видел новые возможности<span class="leaf-tag">п.7 · этап 1</span></div>
         </div>
 
         <div class="node">
-          <div class="node-head"><span class="node-num">2</span><span class="node-name">Убрать тормоза в работе</span><span class="med-stage s2b">★ этап 2B</span></div>
-          <div class="leaf">Открыть всю историю кейса в один клик при жалобе<a class="leaf-br" href="backlog.html?theme=Заказы">Заказы / История</a></div>
-          <div class="leaf">Отчёт: где чаще всего возникают ошибки<span class="leaf-br">Рабочее место</span></div>
+          <div class="node-head"><span class="node-num nt-small" style="background:var(--pink);color:var(--bg)">Small</span><span class="node-name">История, разбор, нагрузка</span></div>
+          <div class="leaf">Открыть всю историю кейса в один клик при жалобе<a class="leaf-br" href="backlog.html?theme=Заказы">Заказы / История</a><span class="leaf-tag">п.2 · 2B</span></div>
+          <div class="leaf">Отчёт: где чаще всего возникают ошибки<span class="leaf-br">Рабочее место</span><span class="leaf-tag">п.2 · 2B</span></div>
         </div>
 
         <div class="node node--orphan">
-          <div class="node-head"><span class="node-name">Распределять нагрузку команды</span><span class="med-stage sx">пока вне 7 подцелей</span></div>
+          <div class="node-head"><span class="node-name">Распределять нагрузку команды</span><span class="med-stage sx">ядро супервизора · вне 7 подцелей</span></div>
           <div class="leaf">Видеть по каждому консультанту: заявки, время, «зависшие»<span class="leaf-br">Панель загрузки</span></div>
           <div class="leaf">Сигнал «не успеваем в срок» + перераспределить заявки<span class="leaf-br">Панель загрузки</span></div>
           <div class="pin"><b>E.1</b>эта работа не попадает ни в одну из 7 подцелей; закрываем её через подцель «убрать тормоза».</div>
@@ -120,36 +177,36 @@
         <header class="tcol-head">
           <span class="tcol-role">Руководитель / бухгалтерия / IT</span>
           <span class="tcol-title">Больше прибыли с клиента · деньги без ошибок · обмен данными без ручного ввода</span>
-          <span class="tcol-sub">Пока не в фокусе. Их задачи мы набросали только по верхам — разберём детально, когда дойдём до этих этапов (понадобятся отдельные интервью).</span>
+          <span class="tcol-sub">Пока не в фокусе. Почти всё здесь — Small: продукт этих работ ещё не делает, это вектор роста для renewal. Разберём детально на этапах 3–5 (нужны интервью).</span>
         </header>
 
         <div class="node">
-          <div class="node-head"><span class="node-num">6</span><span class="node-name">Бухгалтерия · быстрее получать деньги</span><span class="med-stage sx">этап 3</span></div>
+          <div class="node-head"><span class="node-num nt-small" style="background:var(--pink);color:var(--bg)">Small</span><span class="node-name">Бухгалтерия · <span class="sg">быстрее получать деньги</span></span><span class="med-stage sx">этап 3</span></div>
           <div class="leaf">Сверять платежи и остатки без ручной выгрузки<span class="leaf-br">Баланс / мультивалюта</span><span class="leaf-tag">предположение</span></div>
           <div class="leaf">Закрывающие документы без ручного ввода в 1С<span class="leaf-br">Мидофис</span><span class="leaf-tag">предположение</span></div>
         </div>
 
         <div class="node">
-          <div class="node-head"><span class="node-num">4·5</span><span class="node-name">Руководитель · больше прибыли и клиентов</span><span class="med-stage sx">этапы 4–5</span></div>
-          <div class="leaf">Самому настраивать сборы и правила оформления<a class="leaf-br" href="backlog.html?theme=Агентская%20админка">Агентская админка</a><span class="leaf-tag">предположение</span></div>
+          <div class="node-head"><span class="node-num nt-small" style="background:var(--pink);color:var(--bg)">Small</span><span class="node-name">Руководитель · <span class="sg">больше прибыли и клиентов</span></span><span class="med-stage sx">этапы 4–5</span></div>
+          <div class="leaf">Самому настраивать сборы и правила оформления<a class="leaf-br" href="backlog.html?theme=Агентская%20админка">Агентская админка</a><span class="leaf-tag">→ Core при переносе в продукт</span></div>
           <div class="leaf">Больше клиентов тем же штатом — клиент обслуживает себя сам<a class="leaf-br" href="backlog.html?theme=Сервис%20для%20клиента">Сервис клиенту</a><span class="leaf-tag">предположение</span></div>
         </div>
 
         <div class="node">
-          <div class="node-head"><span class="node-num">5</span><span class="node-name">IT · обмен данными без сбоев</span><span class="med-stage sx">этап 4</span></div>
+          <div class="node-head"><span class="node-num nt-small" style="background:var(--pink);color:var(--bg)">Small</span><span class="node-name">IT · <span class="sg">обмен данными без сбоев</span></span><span class="med-stage sx">этап 4</span></div>
           <div class="leaf">Связь с 1С и бухгалтерией без ручного ввода<span class="leaf-br">Мидофис</span><span class="leaf-tag">предположение</span></div>
-          <div class="pin">У Мидофиса двойная привязка: часть работает уже на этап 1 (H1.5 — паритет обмена данными) и 2A, не только на этапы 3–4.</div>
+          <div class="pin">У Мидофиса двойная привязка: часть работает уже на этап 1 (H1.5 — паритет обмена данными) и 2A. <b>Сверка v10:</b> тема не декомпозирована в бэклоге (0 итераций L3) — gap, кандидат в Q3.</div>
         </div>
 
-        <div class="pin pin--col"><b>E.2</b>У этих подцелей нет задач рядового сотрудника на ближайший период — это задачи руководителя и бухгалтерии. Значит, наш текущий фокус выбран верно.</div>
+        <div class="pin pin--col"><b>E.2</b>У этих подцелей нет Core/Micro рядового сотрудника на ближайший период — это Small-работы руководителя и бухгалтерии. Значит, текущий фокус выбран верно.</div>
       </section>
     </div>
 
     <!-- ЧТО МЕШАЕТ ВНЕДРЕНИЮ -->
     <section class="friction">
-      <div class="fh">⚠ Что мешает внедрению · этап 1 — тормозит, даже когда функции уже готовы</div>
-      <div class="fitem"><strong>Подорванное доверие.</strong> Один сбой Ракеты — и консультант решает «в старой программе надёжнее», перестаёт пользоваться даже готовыми функциями. Дать функции мало — нужно ещё вернуть доверие. Задач и владельца под это пока нет (gap R4/R11, единственный такой в бэклоге); первый шаг — снять baseline Adoption-in-AA.<span class="pin pin--inline"><b>E.5</b></span></div>
-      <div class="fitem"><strong>Бонус против автоматизации.</strong> Бонус консультанта зависит от числа транзакций — допущение: структура бонуса варьируется по агентствам, проверяем интервью 3–5 агентств (R5). Пока правило: транзакцию <em>ускорять</em> (он успевает больше — бонус растёт), а не <em>забирать</em> у него к клиенту (тогда он против).<span class="pin pin--inline"><b>E.6</b></span></div>
+      <div class="fh">⚠ Что мешает внедрению · этап 1 — тормозит, даже когда Core уже готов</div>
+      <div class="fitem"><strong>Подорванное доверие.</strong> Один сбой Ракеты — и консультант решает «в старой программе надёжнее», перестаёт пользоваться даже готовым Core. Дать функции мало — нужно вернуть доверие. Задач и владельца под это пока нет (gap R4/R11); первый шаг — снять baseline Adoption-in-AA.<span class="pin pin--inline"><b>E.5</b></span></div>
+      <div class="fitem"><strong>Бонус против автоматизации.</strong> Бонус консультанта зависит от числа транзакций (допущение, проверяем интервью 3–5 агентств, R5). Правило: Core-операцию <em>ускорять</em> (успевает больше — бонус растёт), а не <em>забирать</em> к клиенту.<span class="pin pin--inline"><b>E.6</b></span></div>
     </section>
 
     <!-- СВОД НАБЛЮДЕНИЙ -->
@@ -157,17 +214,18 @@
       <summary class="findings-sum">
         <span class="findings-chev">▶</span>
         <span class="findings-ttl">Что мы заметили</span>
-        <span class="findings-cnt">7</span>
-        <span class="findings-hint">— те же выводы E.1–E.7, что отмечены пунктиром выше</span>
+        <span class="findings-cnt">8</span>
+        <span class="findings-hint">— выводы E.1–E.8, часть отмечена пунктиром выше</span>
       </summary>
       <div class="findings-body">
-        <div class="frow"><span class="fk">E.1</span><p>Распределение нагрузки супервизора не попадает ни в одну из 7 подцелей. Закрываем его не напрямую — через подцель «убрать тормоза».</p></div>
-        <div class="frow"><span class="fk">E.2</span><p>У части подцелей нет задач рядового сотрудника на ближайший период — это задачи руководителя и бухгалтерии. Значит, фокус выбран верно.</p></div>
+        <div class="frow"><span class="fk">E.1</span><p>Распределение нагрузки супервизора не попадает ни в одну из 7 подцелей. Закрываем через подцель «убрать тормоза».</p></div>
+        <div class="frow"><span class="fk">E.2</span><p>У части подцелей нет Core/Micro рядового сотрудника на ближайший период — это Small-работы руководителя и бухгалтерии. Значит, фокус выбран верно.</p></div>
         <div class="frow"><span class="fk">E.3</span><p>У того, доволен ли клиент в итоге, пока нет показателя. Мы измеряем процесс, а не результат; достройка клиентских метрик — правка 5 NMT.</p></div>
         <div class="frow"><span class="fk">E.4</span><p>«Новости клиенту» встречается и у консультанта, и у супервизора. При проработке сведём в одну задачу с двумя авторами.</p></div>
-        <div class="frow"><span class="fk">E.5</span><p>Доверие важнее набора функций: один сбой — и консультант возвращается к старой программе. Рядом с функциями нужна отдельная работа «вернуть доверие» — задач и владельца под неё пока нет (gap R4/R11); первый шаг — baseline Adoption-in-AA.</p></div>
-        <div class="frow"><span class="fk">E.6</span><p>Консультанту автоматизация невыгодна — его бонус зависит от числа транзакций (допущение, проверяем интервью R5). Поэтому транзакцию ускоряем (бонус растёт), а не забираем у него.</p></div>
+        <div class="frow"><span class="fk">E.5</span><p>Доверие важнее набора функций: один сбой — и консультант возвращается к старой программе. Рядом с Core нужна работа «вернуть доверие» — владельца пока нет (gap R4/R11); первый шаг — baseline Adoption-in-AA.</p></div>
+        <div class="frow"><span class="fk">E.6</span><p>Консультанту автоматизация невыгодна — бонус зависит от числа транзакций (допущение, проверяем R5). Core-операцию ускоряем (бонус растёт), а не забираем.</p></div>
         <div class="frow"><span class="fk">E.7</span><p>У Ракеты и у агентства разные конкуренты. Угроза агентству — что клиент уйдёт в платформу напрямую; Ракета помогает его удержать.</p></div>
+        <div class="frow"><span class="fk">E.8</span><p>Пересборка на граф NMT сделала явным недоинструментированный узел <strong>Small</strong> — соседние работы (коммуникация, закрывающие, аналитика клиенту), которые продукт пока не делает. Совпадает с главным выводом диагностики: рост вглубь. Раньше этот слой растворялся в «Small = рутина» и терялся.</p></div>
       </div>
     </details>
   </main>
