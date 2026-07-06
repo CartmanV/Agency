@@ -284,6 +284,9 @@ h3 { text-wrap: balance; }
 .section-note { font-family: var(--f-body); font-size: 15px; line-height: 1.7; color: var(--cream-soft); max-width: 72ch; margin: -4px 0 20px; }
 /* мелкие оговорки в скобках внутри прозы остаются тише */
 .section-note .dim, .section-note small { color: var(--cream-dim); }
+/* списки внутри прозы — единый интерлиньяж/отступ/мера, вместо инлайна */
+.prose-list { color: var(--cream-soft); line-height: 1.7; max-width: 72ch; margin: 10px 0 0; padding-left: 22px; }
+.prose-list li + li { margin-top: 4px; }
 
 /* --- входы в разделы --- */
 .entries { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
