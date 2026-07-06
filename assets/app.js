@@ -20,6 +20,7 @@ const NAV = [
   { href: "tree.html",     label: "Дерево (JTBD)", group: "Работа" },
   { href: "levels.html",   label: "Каталог задач", group: "Работа" },
   { href: "backlog.html",  label: "Бэклог", group: "Работа" },
+  { href: "metod.html",    label: "Метод оценки задач", short: "Метод оценки", group: "Работа" },
   // Данные — доказательная база + справка
   { href: "research.html", label: "Исследования", group: "Данные" },
   { href: "sootvetstvie.html", label: "Доказательная база", short: "Доказательства", group: "Данные" },
@@ -3592,6 +3593,9 @@ async function mountDashboards() {
             <div class="proj2-card__sub">${(W.themes || []).length} тем · ${fmtInt(W.total)} задач</div>
           </div>
         </div>
+        ${dlinks([
+          { href: "metod.html", label: "Как оцениваем задачи (метод)" },
+        ])}
       </div>`;
   }
 
