@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  html, body { margin:0; padding:0; }
+  body { background:#0A1F16; }
+  ::selection { background:rgba(226,179,85,0.28); }
+</style>
+</helmet>
+
+<div style="background:#0A1F16; min-height:100vh; font-family:'Manrope',sans-serif; color:#D6C9A6; line-height:1.6; background-image: radial-gradient(circle at 12% 8%, rgba(226,179,85,0.05), transparent 38%), radial-gradient(circle at 92% 92%, rgba(226,179,85,0.035), transparent 42%);">
+<div style="max-width:1080px; margin:0 auto; padding:72px 44px 140px;">
+
+  <!-- ── HEADER ───────────────────────────── -->
+  <div style="font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:0.22em; text-transform:uppercase; color:#E2B355; display:flex; align-items:center; gap:12px; margin-bottom:20px;">
+    <span style="font-size:8px;">◆</span> Design Guide · v4 · веб-издание · направление «Агентства»
+  </div>
+  <h1 style="font-family:'Playfair Display',serif; font-weight:700; font-size:clamp(42px,5.6vw,70px); line-height:1.0; letter-spacing:-0.01em; color:#F2EAD3; margin:0 0 22px; text-wrap:balance;">Гайд для <em style="font-style:italic; color:#E2B355;">веба</em>,<br>а не переделка сайта</h1>
+  <p style="font-family:'Playfair Display',serif; font-style:italic; font-size:21px; line-height:1.5; color:#D6C9A6; max-width:680px; margin:0 0 28px;">v4 узаконивает то, что уже сложилось на плотном многостраничном сайте, и наводит порядок: одна акцентная ось, отдельная шкала ролей, один паттерн заголовка, дисциплина рамок. v3 остаётся гайдом для слайдов.</p>
+  <div style="display:flex; gap:10px; flex-wrap:wrap; padding-bottom:40px; margin-bottom:56px; border-bottom:1px solid #244A38;">
+    <span style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.06em; color:#9FB3A4; border:1px solid #336B4E; padding:7px 13px; border-radius:999px;">источник правды · веб</span>
+    <span style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.06em; color:#9FB3A4; border:1px solid #336B4E; padding:7px 13px; border-radius:999px;">следует из аудита консистентности</span>
+    <span style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.06em; color:#9FB3A4; border:1px solid #336B4E; padding:7px 13px; border-radius:999px;">v3 → слайды · v4 → веб</span>
+  </div>
+
+  <!-- ── CONTENTS ───────────────────────────── -->
+  <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:0; border:1px solid #244A38; border-radius:14px; overflow:hidden; margin-bottom:80px; background:#102A1F;">
+    <a href="#p00" style="text-decoration:none; padding:20px 22px; border-right:1px solid #244A38; border-bottom:1px solid #244A38; display:block;"><div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.2em; color:#E2B355; margin-bottom:8px;">00</div><div style="font-family:'Playfair Display',serif; font-size:17px; color:#F2EAD3;">Принцип двух контекстов</div></a>
+    <a href="#p01" style="text-decoration:none; padding:20px 22px; border-right:1px solid #244A38; border-bottom:1px solid #244A38; display:block;"><div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.2em; color:#E2B355; margin-bottom:8px;">01</div><div style="font-family:'Playfair Display',serif; font-size:17px; color:#F2EAD3;">Палитра по ролям</div></a>
+    <a href="#p02" style="text-decoration:none; padding:20px 22px; border-right:1px solid #244A38; border-bottom:1px solid #244A38; display:block;"><div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.2em; color:#E2B355; margin-bottom:8px;">02</div><div style="font-family:'Playfair Display',serif; font-size:17px; color:#F2EAD3;">Токены честно</div></a>
+    <a href="#p03" style="text-decoration:none; padding:20px 22px; border-bottom:1px solid #244A38; display:block;"><div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.2em; color:#E2B355; margin-bottom:8px;">03</div><div style="font-family:'Playfair Display',serif; font-size:17px; color:#F2EAD3;">Типографика</div></a>
+    <a href="#p04" style="text-decoration:none; padding:20px 22px; border-right:1px solid #244A38; display:block;"><div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.2em; color:#E2B355; margin-bottom:8px;">04</div><div style="font-family:'Playfair Display',serif; font-size:17px; color:#F2EAD3;">Плотность и рамки</div></a>
+    <a href="#p05" style="text-decoration:none; padding:20px 22px; border-right:1px solid #244A38; display:block;"><div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.2em; color:#E2B355; margin-bottom:8px;">05</div><div style="font-family:'Playfair Display',serif; font-size:17px; color:#F2EAD3;">Компоненты веба</div></a>
+    <a href="#p06" style="text-decoration:none; padding:20px 22px; border-right:1px solid #244A38; display:block;"><div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.2em; color:#E2B355; margin-bottom:8px;">06</div><div style="font-family:'Playfair Display',serif; font-size:17px; color:#F2EAD3;">Навигация</div></a>
+    <a href="#p07" style="text-decoration:none; padding:20px 22px; display:block;"><div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.2em; color:#E2B355; margin-bottom:8px;">07</div><div style="font-family:'Playfair Display',serif; font-size:17px; color:#F2EAD3;">Источник правды</div></a>
+  </div>
+
+  <!-- ══════════ 00 ПРИНЦИП ══════════ -->
+  <div id="p00" style="margin-bottom:88px; scroll-margin-top:24px;">
+    <div style="padding-bottom:18px; margin-bottom:34px; border-bottom:1px solid #244A38;">
+      <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.26em; color:#E2B355; font-weight:500; margin-bottom:12px;">◆&nbsp;&nbsp;00</div>
+      <div style="font-family:'Playfair Display',serif; font-size:32px; color:#F2EAD3; line-height:1.05;">Один бренд, <em style="font-style:italic; color:#E2B355;">два контекста</em></div>
+    </div>
+    <p style="font-size:16px; color:#D6C9A6; max-width:760px; margin:0 0 32px;">Корень «пестроты» — в том, что к плотному справочнику применяли гайд, написанный для слайдов. v4 не отменяет v3, а ставит рядом: <em style="font-style:italic; font-family:'Playfair Display',serif; color:#E2B355;">одна тёплая ось «Treasure»</em>, но разные правила плотности, палитры и компонентов для двух поверхностей.</p>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+      <div style="border:1px solid #244A38; border-radius:14px; padding:26px 28px; background:#102A1F;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:#9FB3A4; margin-bottom:14px;">v3 · слайды</div>
+        <div style="font-family:'Playfair Display',serif; font-size:21px; color:#F2EAD3; margin-bottom:12px;">Рабочие презентации</div>
+        <div style="font-size:14px; color:#9FB3A4; line-height:1.8;">1920×1080 · один экран · мало данных · «звёздная пыль» и рамка по периметру · максимум 3 цвета на графике · парадная подача</div>
+      </div>
+      <div style="border:1px solid #E2B355; border-radius:14px; padding:26px 28px; background:linear-gradient(160deg,#1B3528,#102A1F);">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:#E2B355; margin-bottom:14px;">v4 · веб &nbsp;←&nbsp; этот документ</div>
+        <div style="font-family:'Playfair Display',serif; font-size:21px; color:#F2EAD3; margin-bottom:12px;">Плотный справочник</div>
+        <div style="font-size:14px; color:#D6C9A6; line-height:1.8;">15+ страниц · таблицы, дерево JTBD, бэклог, реестр · категории данных · навигация · доступность · служебная подача без парадности</div>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:18px; padding:22px 26px; border-left:3px solid #E2B355; background:#102A1F; border-radius:0 10px 10px 0; margin-top:24px;">
+      <span style="font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.14em; text-transform:uppercase; color:#E2B355; flex-shrink:0; padding-top:3px; width:72px;">правило 0</span>
+      <div style="font-size:15px; line-height:1.6; color:#D6C9A6;"><strong style="color:#F2EAD3; font-weight:600;">Сначала спроси «слайд или экран?».</strong> На слайде царит парадность и воздух одного экрана; в вебе — плотность, повторяемость и доступность. Общими остаются только шрифты и тёплая ось цвета. Всё остальное в этом гайде — про веб.</div>
+    </div>
+  </div>
+
+  <!-- ══════════ 01 ПАЛИТРА ══════════ -->
+  <div id="p01" style="margin-bottom:88px; scroll-margin-top:24px;">
+    <div style="padding-bottom:18px; margin-bottom:34px; border-bottom:1px solid #244A38;">
+      <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.26em; color:#E2B355; font-weight:500; margin-bottom:12px;">◆&nbsp;&nbsp;01</div>
+      <div style="font-family:'Playfair Display',serif; font-size:32px; color:#F2EAD3; line-height:1.05;">Две шкалы, <em style="font-style:italic; color:#E2B355;">разные задачи</em></div>
+    </div>
+    <p style="font-size:16px; color:#D6C9A6; max-width:760px; margin:0 0 36px;">Главная путаница сайта — смешение «акцента» и «кодирования данных» в одной палитре. v4 разводит их: <em style="font-style:italic; font-family:'Playfair Display',serif; color:#E2B355;">акцентная</em> ось управляет вниманием (3 цвета, жёстко), <em style="font-style:italic; font-family:'Playfair Display',serif; color:#E2B355;">категориальная</em> кодирует роли и этапы (только в данных, всегда с легендой).</p>
+
+    <!-- ACCENT SCALE -->
+    <div style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:#9FB3A4; margin:0 0 18px; display:flex; align-items:center; gap:12px;"><span style="color:#E2B355; font-size:8px;">◆</span> Акцентная ось · управляет вниманием</div>
+    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:18px;">
+      <div style="background:#102A1F; border:1px solid #244A38; border-radius:12px; overflow:hidden;">
+        <div style="height:88px; background:#E2B355;"></div>
+        <div style="padding:16px 18px;">
+          <div style="font-size:15px; font-weight:700; color:#F2EAD3; margin-bottom:2px;">Золото — главный</div>
+          <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#E2B355;">#E2B355 · --gold</div>
+          <div style="font-size:13px; color:#9FB3A4; margin-top:8px; line-height:1.5;">Ссылки, действия, акцентное слово в заголовке, eyebrow, активная навигация. Цвет «по умолчанию» для всего акцентного.</div>
+        </div>
+      </div>
+      <div style="background:#102A1F; border:1px solid #244A38; border-radius:12px; overflow:hidden;">
+        <div style="height:88px; background:#FF5C8A;"></div>
+        <div style="padding:16px 18px;">
+          <div style="font-size:15px; font-weight:700; color:#F2EAD3; margin-bottom:2px;">Розовый — внимание</div>
+          <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#FF5C8A;">#FF5C8A · --attention</div>
+          <div style="font-size:13px; color:#9FB3A4; margin-top:8px; line-height:1.5;">Только «критично / срочно / требует решения». Редкий контр-акцент — не более одного места в поле зрения.</div>
+        </div>
+      </div>
+      <div style="background:#102A1F; border:1px solid #244A38; border-radius:12px; overflow:hidden;">
+        <div style="height:88px; background:#3DA372;"></div>
+        <div style="padding:16px 18px;">
+          <div style="font-size:15px; font-weight:700; color:#F2EAD3; margin-bottom:2px;">Изумруд — успех</div>
+          <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#3DA372;">#3DA372 · --success</div>
+          <div style="font-size:13px; color:#9FB3A4; margin-top:8px; line-height:1.5;">«Выполнено / готово / в норме». Семантика статуса — не используется для кодирования ролей.</div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex; gap:18px; padding:18px 24px; border-left:3px solid #FF5C8A; background:#102A1F; border-radius:0 10px 10px 0; margin-bottom:40px;">
+      <span style="font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.14em; text-transform:uppercase; color:#FF5C8A; flex-shrink:0; padding-top:3px; width:72px;">разворот</span>
+      <div style="font-size:15px; line-height:1.6; color:#D6C9A6;"><strong style="color:#F2EAD3; font-weight:600;">Розовый возвращается в «специи».</strong> Сайт сделал его «основным акцентом» — отсюда 70% пестроты. В v4 главный акцент снова золото, розовый — только «внимание». Это самый дешёвый и заметный шаг.</div>
+    </div>
+
+    <!-- CATEGORICAL SCALE -->
+    <div style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:#9FB3A4; margin:0 0 18px; display:flex; align-items:center; gap:12px;"><span style="color:#E2B355; font-size:8px;">◆</span> Категориальная шкала · кодирует роли и этапы</div>
+    <p style="font-size:15px; color:#9FB3A4; max-width:760px; margin:0 0 22px; line-height:1.6;">Синий и оранжевый из сайта <strong style="color:#D6C9A6;">узаконены</strong>, но перенастроены под тёплую ось — приглушены и сдвинуты к земляным тонам, чтобы не выбиваться. Используются <strong style="color:#D6C9A6;">только</strong> для кодирования категорий в данных (дерево JTBD, таблицы), всегда рядом с легендой, максимум 4 одновременно.</p>
+    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:18px;">
+      <div style="background:#102A1F; border:1px solid #244A38; border-radius:12px; overflow:hidden;">
+        <div style="height:64px; background:#6E97C0;"></div>
+        <div style="padding:14px 16px;">
+          <div style="font-size:14px; font-weight:700; color:#F2EAD3;">Категория 1</div>
+          <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#6E97C0; margin-top:3px;">#6E97C0 · --cat-1</div>
+          <div style="font-size:12px; color:#879A8C; margin-top:7px; line-height:1.45;">синий, приглушён к тёплой оси · напр. «консультант»</div>
+        </div>
+      </div>
+      <div style="background:#102A1F; border:1px solid #244A38; border-radius:12px; overflow:hidden;">
+        <div style="height:64px; background:#CF8350;"></div>
+        <div style="padding:14px 16px;">
+          <div style="font-size:14px; font-weight:700; color:#F2EAD3;">Категория 2</div>
+          <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#CF8350; margin-top:3px;">#CF8350 · --cat-2</div>
+          <div style="font-size:12px; color:#879A8C; margin-top:7px; line-height:1.45;">терракота вместо неон-оранжа · напр. «супервизор»</div>
+        </div>
+      </div>
+      <div style="background:#102A1F; border:1px solid #244A38; border-radius:12px; overflow:hidden;">
+        <div style="height:64px; background:#7FA86A;"></div>
+        <div style="padding:14px 16px;">
+          <div style="font-size:14px; font-weight:700; color:#F2EAD3;">Категория 3</div>
+          <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#7FA86A; margin-top:3px;">#7FA86A · --cat-3</div>
+          <div style="font-size:12px; color:#879A8C; margin-top:7px; line-height:1.45;">шалфейный, отдельно от изумруда-успеха · напр. «руководитель»</div>
+        </div>
+      </div>
+      <div style="background:#102A1F; border:1px solid #244A38; border-radius:12px; overflow:hidden;">
+        <div style="height:64px; background:#B083A8;"></div>
+        <div style="padding:14px 16px;">
+          <div style="font-size:14px; font-weight:700; color:#F2EAD3;">Категория 4</div>
+          <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#B083A8; margin-top:3px;">#B083A8 · --cat-4</div>
+          <div style="font-size:12px; color:#879A8C; margin-top:7px; line-height:1.45;">приглушённая слива, родственник розового · резерв на 4-ю роль</div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex; gap:18px; padding:18px 24px; border-left:3px solid #E2B355; background:#102A1F; border-radius:0 10px 10px 0; margin-bottom:18px;">
+      <span style="font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.14em; text-transform:uppercase; color:#E2B355; flex-shrink:0; padding-top:3px; width:72px;">было →</span>
+      <div style="font-size:15px; line-height:1.6; color:#D6C9A6;">Холодный <span style="font-family:'JetBrains Mono',monospace; font-size:13px; color:#6BA8E6;">#6BA8E6</span> противоречил тёплой оси сильнее всего — перенастроен в <span style="font-family:'JetBrains Mono',monospace; font-size:13px; color:#6E97C0;">#6E97C0</span> (приглушён, чуть теплее). Неон-оранж <span style="font-family:'JetBrains Mono',monospace; font-size:13px; color:#E08A4B;">#E08A4B</span> → земляная терракота <span style="font-family:'JetBrains Mono',monospace; font-size:13px; color:#CF8350;">#CF8350</span>.</div>
+    </div>
+    <div style="display:flex; gap:18px; padding:18px 24px; border-left:3px solid #879A8C; background:#102A1F; border-radius:0 10px 10px 0;">
+      <span style="font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.14em; text-transform:uppercase; color:#879A8C; flex-shrink:0; padding-top:3px; width:72px;">граница</span>
+      <div style="font-size:15px; line-height:1.6; color:#D6C9A6;"><strong style="color:#F2EAD3; font-weight:600;">Категориальные цвета ≠ акцентные.</strong> Никогда не красьте ссылку или кнопку категориальным цветом, и не кодируйте роль золотом/розовым/изумрудом. Две шкалы не пересекаются — это и держит систему читаемой.</div>
+    </div>
+  </div>
+
+  <!-- ══════════ 02 ТОКЕНЫ ══════════ -->
+  <div id="p02" style="margin-bottom:88px; scroll-margin-top:24px;">
+    <div style="padding-bottom:18px; margin-bottom:34px; border-bottom:1px solid #244A38;">
+      <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.26em; color:#E2B355; font-weight:500; margin-bottom:12px;">◆&nbsp;&nbsp;02</div>
+      <div style="font-family:'Playfair Display',serif; font-size:32px; color:#F2EAD3; line-height:1.05;">Имена токенов <em style="font-style:italic; color:#E2B355;">не должны врать</em></div>
+    </div>
+    <p style="font-size:16px; color:#D6C9A6; max-width:760px; margin:0 0 32px;">Переменная зовётся <span style="font-family:'JetBrains Mono',monospace; font-size:14px; color:#E2B355;">--copper</span>, а хранит золото; рядом дубль <span style="font-family:'JetBrains Mono',monospace; font-size:14px;">--gold</span>; роли заданы хардкод-хексами прямо в разметке. v4 переименовывает токены <em style="font-style:italic; font-family:'Playfair Display',serif; color:#E2B355;">по роли, а не по оттенку</em>, и заводит категории в переменные.</p>
+
+    <div style="border:1px solid #244A38; border-radius:14px; overflow:hidden; background:#102A1F; margin-bottom:28px;">
+      <div style="display:grid; grid-template-columns:1.4fr 1fr 1.3fr; gap:24px; padding:14px 24px; background:#0A1F16; border-bottom:1px solid #244A38; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:#9FB3A4;">
+        <span>Было · сайт</span><span>Значение</span><span>Стало · v4</span>
+      </div>
+      <div style="display:grid; grid-template-columns:1.4fr 1fr 1.3fr; gap:24px; padding:16px 24px; border-bottom:1px solid #1a3526; align-items:center;">
+        <span style="font-family:'JetBrains Mono',monospace; font-size:13px; color:#D6C9A6;">--copper <span style="color:#879A8C;">/ --gold</span></span>
+        <span style="display:flex; align-items:center; gap:9px;"><span style="width:22px; height:22px; border-radius:5px; background:#E2B355; flex-shrink:0;"></span><span style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#9FB3A4;">#E2B355</span></span>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:13px; color:#E2B355;">--gold</span>
+      </div>
+      <div style="display:grid; grid-template-columns:1.4fr 1fr 1.3fr; gap:24px; padding:16px 24px; border-bottom:1px solid #1a3526; align-items:center;">
+        <span style="font-family:'JetBrains Mono',monospace; font-size:13px; color:#D6C9A6;">--pink <span style="color:#879A8C;">«основной»</span></span>
+        <span style="display:flex; align-items:center; gap:9px;"><span style="width:22px; height:22px; border-radius:5px; background:#FF5C8A; flex-shrink:0;"></span><span style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#9FB3A4;">#FF5C8A</span></span>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:13px; color:#FF5C8A;">--attention</span>
+      </div>
+      <div style="display:grid; grid-template-columns:1.4fr 1fr 1.3fr; gap:24px; padding:16px 24px; border-bottom:1px solid #1a3526; align-items:center;">
+        <span style="font-family:'JetBrains Mono',monospace; font-size:13px; color:#D6C9A6;">--emerald</span>
+        <span style="display:flex; align-items:center; gap:9px;"><span style="width:22px; height:22px; border-radius:5px; background:#3DA372; flex-shrink:0;"></span><span style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#9FB3A4;">#3DA372</span></span>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:13px; color:#3DA372;">--success</span>
+      </div>
+      <div style="display:grid; grid-template-columns:1.4fr 1fr 1.3fr; gap:24px; padding:16px 24px; border-bottom:1px solid #1a3526; align-items:center;">
+        <span style="font-family:'JetBrains Mono',monospace; font-size:13px; color:#FF5C8A;">#6BA8E6 <span style="color:#879A8C;">хардкод</span></span>
+        <span style="display:flex; align-items:center; gap:9px;"><span style="width:22px; height:22px; border-radius:5px; background:#6E97C0; flex-shrink:0;"></span><span style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#9FB3A4;">#6E97C0</span></span>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:13px; color:#6E97C0;">--cat-1</span>
+      </div>
+      <div style="display:grid; grid-template-columns:1.4fr 1fr 1.3fr; gap:24px; padding:16px 24px; align-items:center;">
+        <span style="font-family:'JetBrains Mono',monospace; font-size:13px; color:#FF5C8A;">#E08A4B <span style="color:#879A8C;">хардкод</span></span>
+        <span style="display:flex; align-items:center; gap:9px;"><span style="width:22px; height:22px; border-radius:5px; background:#CF8350; flex-shrink:0;"></span><span style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#9FB3A4;">#CF8350</span></span>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:13px; color:#CF8350;">--cat-2</span>
+      </div>
+    </div>
+
+    <div style="background:#08190F; border:1px solid #244A38; border-radius:12px; padding:24px 28px; overflow-x:auto;">
+      <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:#9FB3A4; margin-bottom:16px;">:root · v4 web tokens</div>
+      <pre style="margin:0; font-family:'JetBrains Mono',monospace; font-size:12.5px; line-height:1.85; color:#D6C9A6; white-space:pre;"><span style="color:#6F8475;">/* акцентная ось — управляет вниманием */</span>
+--gold:       <span style="color:#E2B355;">#E2B355</span>;   <span style="color:#6F8475;">/* главный акцент */</span>
+--gold-dk:    <span style="color:#E2B355;">#C99537</span>;   <span style="color:#6F8475;">/* hover */</span>
+--attention:  <span style="color:#FF5C8A;">#FF5C8A</span>;   <span style="color:#6F8475;">/* редкий контр-акцент */</span>
+--success:    <span style="color:#3DA372;">#3DA372</span>;   <span style="color:#6F8475;">/* статус «готово» */</span>
+
+<span style="color:#6F8475;">/* категориальная шкала — только данные, с легендой */</span>
+--cat-1:      <span style="color:#6E97C0;">#6E97C0</span>;
+--cat-2:      <span style="color:#CF8350;">#CF8350</span>;
+--cat-3:      <span style="color:#7FA86A;">#7FA86A</span>;
+--cat-4:      <span style="color:#B083A8;">#B083A8</span>;
+
+<span style="color:#6F8475;">/* каркас — фоны, линии, текст */</span>
+--bg: <span style="color:#3DA372;">#0A1F16</span>; --panel: <span style="color:#3DA372;">#102A1F</span>; --panel-2: <span style="color:#3DA372;">#163A2A</span>;
+--line: <span style="color:#3DA372;">#244A38</span>; --line-soft: <span style="color:#3DA372;">#336B4E</span>;
+--cream: <span style="color:#3DA372;">#F2EAD3</span>; --cream-soft: <span style="color:#3DA372;">#D6C9A6</span>; --cream-dim: <span style="color:#3DA372;">#9FB3A4</span>;</pre>
+    </div>
+  </div>
+
+  <!-- ══════════ 03 ТИПОГРАФИКА ══════════ -->
+  <div id="p03" style="margin-bottom:88px; scroll-margin-top:24px;">
+    <div style="padding-bottom:18px; margin-bottom:34px; border-bottom:1px solid #244A38;">
+      <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.26em; color:#E2B355; font-weight:500; margin-bottom:12px;">◆&nbsp;&nbsp;03</div>
+      <div style="font-family:'Playfair Display',serif; font-size:32px; color:#F2EAD3; line-height:1.05;">Один паттерн <em style="font-style:italic; color:#E2B355;">заголовка</em></div>
+    </div>
+    <p style="font-size:16px; color:#D6C9A6; max-width:760px; margin:0 0 32px;">Шрифты остаются: <em style="font-style:italic; font-family:'Playfair Display',serif; color:#E2B355;">Playfair Display</em> для заголовков, <em style="font-style:italic; font-family:'Playfair Display',serif; color:#E2B355;">Manrope</em> для текста, <em style="font-style:italic; font-family:'Playfair Display',serif; color:#E2B355;">JetBrains Mono</em> для меток. Меняется подача: одна структура «eyebrow → H1 → лид» на всех страницах, акцентное слово — всегда золотом.</p>
+
+    <!-- canonical pattern -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:32px;">
+      <div style="border:1px solid #E2B355; border-radius:14px; padding:30px 30px 28px; background:linear-gradient(160deg,#1B3528,#102A1F);">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:#3DA372; margin-bottom:18px;">✓ Канон v4 · одинаково везде</div>
+        <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.22em; text-transform:uppercase; color:#E2B355; margin-bottom:12px;"><span style="font-size:7px;">◆</span>&nbsp;&nbsp;eyebrow</div>
+        <div style="font-family:'Playfair Display',serif; font-weight:700; font-size:30px; line-height:1.05; color:#F2EAD3;">Стать <span style="color:#E2B355; font-style:italic;">рабочим местом</span></div>
+        <div style="font-family:'Playfair Display',serif; font-style:italic; font-size:15px; color:#D6C9A6; margin-top:12px; line-height:1.45;">Лид-абзац курсивом задаёт тон раздела.</div>
+      </div>
+      <div style="border:1px solid #244A38; border-radius:14px; padding:30px 30px 28px; background:#102A1F;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:#FF5C8A; margin-bottom:18px;">✗ Сайт сейчас · два режима</div>
+        <div style="font-family:'Playfair Display',serif; font-weight:700; font-size:24px; line-height:1.1; color:#F2EAD3; opacity:0.5;">Метрики направления</div>
+        <div style="height:1px; background:#244A38; margin:16px 0;"></div>
+        <div style="font-family:'Playfair Display',serif; font-weight:700; font-size:24px; line-height:1.1; color:#F2EAD3;">Дерево <span style="color:#E2B355; font-style:italic;">задач</span> <span style="font-size:11px; color:#FF5C8A; font-family:'JetBrains Mono',monospace; font-style:normal;">← золотой акцент</span></div>
+        <div style="font-size:13px; color:#9FB3A4; margin-top:14px; line-height:1.5;">Где-то нет eyebrow, где-то акцент розовый, где-то золотой. Один приём — разные цвета.</div>
+      </div>
+    </div>
+
+    <!-- type scale -->
+    <div style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:#9FB3A4; margin:0 0 8px; display:flex; align-items:center; gap:12px;"><span style="color:#E2B355; font-size:8px;">◆</span> Шкала размеров · добавлена ступень между 34 и 56</div>
+    <div style="border:1px solid #244A38; border-radius:14px; overflow:hidden; background:#102A1F;">
+      <div style="display:flex; align-items:baseline; gap:28px; padding:22px 28px; border-bottom:1px solid #1a3526;">
+        <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#879A8C; width:150px; flex-shrink:0; letter-spacing:0.1em; text-transform:uppercase;">Hero · лендинг</span>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#879A8C; width:180px; flex-shrink:0; text-align:right;">Playfair 700 · 56–64px</span>
+        <span style="flex:1; min-width:0; font-family:'Playfair Display',serif; font-weight:700; font-size:40px; color:#F2EAD3; line-height:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Стать <em style="color:#E2B355;">местом</em></span>
+      </div>
+      <div style="display:flex; align-items:baseline; gap:28px; padding:22px 28px; border-bottom:1px solid #1a3526; background:rgba(226,179,85,0.04);">
+        <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#E2B355; width:150px; flex-shrink:0; letter-spacing:0.1em; text-transform:uppercase;">Page · новая ★</span>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#879A8C; width:180px; flex-shrink:0; text-align:right;">Playfair 700 · 42px</span>
+        <span style="flex:1; min-width:0; font-family:'Playfair Display',serif; font-weight:700; font-size:32px; color:#F2EAD3; line-height:1;">Заголовок <em style="color:#E2B355;">страницы</em></span>
+      </div>
+      <div style="display:flex; align-items:baseline; gap:28px; padding:22px 28px; border-bottom:1px solid #1a3526;">
+        <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#879A8C; width:150px; flex-shrink:0; letter-spacing:0.1em; text-transform:uppercase;">Section</span>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#879A8C; width:180px; flex-shrink:0; text-align:right;">Playfair 400 · 32px</span>
+        <span style="flex:1; min-width:0; font-family:'Playfair Display',serif; font-weight:400; font-size:26px; color:#F2EAD3; line-height:1;">Раздел документа</span>
+      </div>
+      <div style="display:flex; align-items:baseline; gap:28px; padding:22px 28px; border-bottom:1px solid #1a3526;">
+        <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#879A8C; width:150px; flex-shrink:0; letter-spacing:0.1em; text-transform:uppercase;">Lead</span>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#879A8C; width:180px; flex-shrink:0; text-align:right;">Playfair italic · 20px</span>
+        <span style="flex:1; min-width:0; font-family:'Playfair Display',serif; font-style:italic; font-size:19px; color:#D6C9A6; line-height:1.3;">Лид-абзац задаёт тон.</span>
+      </div>
+      <div style="display:flex; align-items:baseline; gap:28px; padding:22px 28px; border-bottom:1px solid #1a3526;">
+        <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#879A8C; width:150px; flex-shrink:0; letter-spacing:0.1em; text-transform:uppercase;">Body</span>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#879A8C; width:180px; flex-shrink:0; text-align:right;">Manrope 400 · 16px</span>
+        <span style="flex:1; min-width:0; font-size:16px; color:#D6C9A6; line-height:1.5;">Основной текст страницы — спокойный и читаемый.</span>
+      </div>
+      <div style="display:flex; align-items:baseline; gap:28px; padding:22px 28px;">
+        <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#879A8C; width:150px; flex-shrink:0; letter-spacing:0.1em; text-transform:uppercase;">Eyebrow · мета</span>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#879A8C; width:180px; flex-shrink:0; text-align:right;">Mono 500 · 11px · caps</span>
+        <span style="flex:1; min-width:0; font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.22em; text-transform:uppercase; color:#E2B355;">◆&nbsp;&nbsp;надзаголовок · метка</span>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:12px; margin-top:24px;">
+      <div style="display:flex; gap:18px; padding:18px 24px; border-left:3px solid #E2B355; background:#102A1F; border-radius:0 10px 10px 0;">
+        <span style="font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.14em; text-transform:uppercase; color:#E2B355; flex-shrink:0; padding-top:3px; width:72px;">правило</span>
+        <div style="font-size:15px; line-height:1.6; color:#D6C9A6;"><strong style="color:#F2EAD3; font-weight:600;">Акцентное слово в заголовке — всегда золото.</strong> Никогда розовое. Розовый в тексте означает «внимание», а не «важное слово».</div>
+      </div>
+      <div style="display:flex; gap:18px; padding:18px 24px; border-left:3px solid #E2B355; background:#102A1F; border-radius:0 10px 10px 0;">
+        <span style="font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.14em; text-transform:uppercase; color:#E2B355; flex-shrink:0; padding-top:3px; width:72px;">правило</span>
+        <div style="font-size:15px; line-height:1.6; color:#D6C9A6;"><strong style="color:#F2EAD3; font-weight:600;">Eyebrow обязателен на каждой странице.</strong> Структура «метка → заголовок → лид» выдержана и на лендингах, и на документных страницах — это и есть единая система.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ 04 ПЛОТНОСТЬ ══════════ -->
+  <div id="p04" style="margin-bottom:88px; scroll-margin-top:24px;">
+    <div style="padding-bottom:18px; margin-bottom:34px; border-bottom:1px solid #244A38;">
+      <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.26em; color:#E2B355; font-weight:500; margin-bottom:12px;">◆&nbsp;&nbsp;04</div>
+      <div style="font-family:'Playfair Display',serif; font-size:32px; color:#F2EAD3; line-height:1.05;">Меньше рамок, <em style="font-style:italic; color:#E2B355;">больше воздуха</em></div>
+    </div>
+    <p style="font-size:16px; color:#D6C9A6; max-width:760px; margin:0 0 32px;">«Нагружено» — это шум рамок: вложенные обведённые блоки, пять оттенков, два стиля границ и три формы чипов на одном экране. v4 вводит дисциплину: <em style="font-style:italic; font-family:'Playfair Display',serif; color:#E2B355;">одна граница на уровень вложенности</em>, разделение фоном, а не линиями.</p>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:32px;">
+      <!-- BEFORE -->
+      <div style="border:1px solid #244A38; border-radius:14px; padding:24px 26px; background:#102A1F;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:#FF5C8A; margin-bottom:16px;">✗ До · шум</div>
+        <div style="border:1px dashed #336B4E; border-radius:10px; padding:16px;">
+          <div style="border:1px solid #336B4E; border-radius:8px; padding:12px; margin-bottom:10px;">
+            <div style="border:1px solid #244A38; border-radius:6px; padding:10px;">
+              <div style="display:flex; flex-wrap:wrap; gap:7px;">
+                <span style="font-family:'JetBrains Mono',monospace; font-size:10px; color:#0A1F16; background:#FF5C8A; padding:5px 9px; border-radius:5px;">ЭТАП</span>
+                <span style="font-family:'JetBrains Mono',monospace; font-size:10px; color:#0A1F16; background:#3DA372; padding:5px 9px; border-radius:5px;">ГОТОВО</span>
+                <span style="font-family:'JetBrains Mono',monospace; font-size:10px; color:#E2B355; border:1px dashed #336B4E; padding:5px 9px; border-radius:5px;">тулбар</span>
+                <span style="font-family:'JetBrains Mono',monospace; font-size:10px; color:#E2B355; border:1px solid #E2B355; padding:5px 9px; border-radius:999px;">◆ цель</span>
+                <span style="font-family:'JetBrains Mono',monospace; font-size:10px; color:#D6C9A6; border:1px solid #336B4E; padding:5px 9px; border-radius:5px;"><span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#6BA8E6; margin-right:5px;"></span>роль</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:13px; color:#9FB3A4; margin-top:14px; line-height:1.5;">3 вложенные рамки + 2 стиля + 3 формы + 5 оттенков.</div>
+      </div>
+      <!-- AFTER -->
+      <div style="border:1px solid #244A38; border-radius:14px; padding:24px 26px; background:#102A1F;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:#3DA372; margin-bottom:16px;">✓ После · воздух</div>
+        <div style="padding:18px; background:#0E2419; border-radius:10px;">
+          <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
+            <span style="font-family:'JetBrains Mono',monospace; font-size:10px; color:#E2B355; background:rgba(226,179,85,0.12); padding:5px 10px; border-radius:6px;">ЭТАП 3</span>
+            <span style="font-family:'JetBrains Mono',monospace; font-size:10px; color:#3DA372; background:rgba(61,163,114,0.14); padding:5px 10px; border-radius:6px;">готово</span>
+            <span style="display:inline-flex; align-items:center; gap:6px; font-family:'JetBrains Mono',monospace; font-size:10px; color:#9FB3A4;"><span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#6E97C0;"></span>консультант</span>
+          </div>
+          <div style="height:1px; background:#244A38; margin:14px 0;"></div>
+          <div style="font-size:13px; color:#9FB3A4;">Один контейнер, фон вместо рамок, чипы-заливки.</div>
+        </div>
+        <div style="font-size:13px; color:#9FB3A4; margin-top:14px; line-height:1.5;">0 вложенных рамок · разделение фоном и линией-волоском.</div>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      <div style="display:flex; gap:18px; padding:18px 24px; border-left:3px solid #E2B355; background:#102A1F; border-radius:0 10px 10px 0;">
+        <span style="font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.14em; text-transform:uppercase; color:#E2B355; flex-shrink:0; padding-top:3px; width:72px;">правило 1</span>
+        <div style="font-size:15px; line-height:1.6; color:#D6C9A6;"><strong style="color:#F2EAD3; font-weight:600;">Одна граница на уровень.</strong> Обведённый блок внутри обведённой секции — стоп. Вложенный блок отделяется заливкой фона или отступом, не второй рамкой.</div>
+      </div>
+      <div style="display:flex; gap:18px; padding:18px 24px; border-left:3px solid #E2B355; background:#102A1F; border-radius:0 10px 10px 0;">
+        <span style="font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.14em; text-transform:uppercase; color:#E2B355; flex-shrink:0; padding-top:3px; width:72px;">правило 2</span>
+        <div style="font-size:15px; line-height:1.6; color:#D6C9A6;"><strong style="color:#F2EAD3; font-weight:600;">Пунктир = ровно один смысл.</strong> Только «черновик / план / в работе». Везде остальное — сплошная линия-волосок <span style="font-family:'JetBrains Mono',monospace; font-size:13px; color:#244A38;">#244A38</span>.</div>
+      </div>
+      <div style="display:flex; gap:18px; padding:18px 24px; border-left:3px solid #E2B355; background:#102A1F; border-radius:0 10px 10px 0;">
+        <span style="font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.14em; text-transform:uppercase; color:#E2B355; flex-shrink:0; padding-top:3px; width:72px;">правило 3</span>
+        <div style="font-size:15px; line-height:1.6; color:#D6C9A6;"><strong style="color:#F2EAD3; font-weight:600;">Одна форма — один смысл.</strong> Скруглённый прямоугольник = статус/этап; точка + подпись = роль. Не смешивать квадрат, пилюлю и круг в одной группе.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ 05 КОМПОНЕНТЫ ══════════ -->
+  <div id="p05" style="margin-bottom:88px; scroll-margin-top:24px;">
+    <div style="padding-bottom:18px; margin-bottom:34px; border-bottom:1px solid #244A38;">
+      <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.26em; color:#E2B355; font-weight:500; margin-bottom:12px;">◆&nbsp;&nbsp;05</div>
+      <div style="font-family:'Playfair Display',serif; font-size:32px; color:#F2EAD3; line-height:1.05;">Компоненты <em style="font-style:italic; color:#E2B355;">веба</em></div>
+    </div>
+    <p style="font-size:16px; color:#D6C9A6; max-width:760px; margin:0 0 36px;">То, чего у слайдов не бывает: чипы, бейджи статуса, точки ролей с легендой, таблицы, кнопки. Канонические образцы — собирайте страницы из них, а не из произвольных обведённых блоков.</p>
+
+    <!-- buttons -->
+    <div style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:#9FB3A4; margin:0 0 16px; display:flex; align-items:center; gap:12px;"><span style="color:#E2B355; font-size:8px;">◆</span> Кнопки</div>
+    <div style="display:flex; gap:14px; flex-wrap:wrap; align-items:center; padding:24px 26px; border:1px solid #244A38; border-radius:14px; background:#102A1F; margin-bottom:32px;">
+      <span style="font-family:'Manrope',sans-serif; font-weight:600; font-size:14px; color:#0A1F16; background:#E2B355; padding:11px 22px; border-radius:9px;">Главное действие</span>
+      <span style="font-family:'Manrope',sans-serif; font-weight:600; font-size:14px; color:#E2B355; background:transparent; border:1px solid #336B4E; padding:11px 22px; border-radius:9px;">Вторичное</span>
+      <span style="font-family:'Manrope',sans-serif; font-weight:600; font-size:14px; color:#9FB3A4; background:transparent; padding:11px 16px; border-radius:9px;">Тихое</span>
+      <span style="font-family:'Manrope',sans-serif; font-weight:600; font-size:14px; color:#FF5C8A; background:transparent; border:1px solid rgba(255,92,138,0.4); padding:11px 22px; border-radius:9px;">Опасное · внимание</span>
+      <span style="font-size:13px; color:#879A8C; margin-left:auto;">золото = действие · розовый только для деструктива</span>
+    </div>
+
+    <!-- chips + badges + roles -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:32px;">
+      <div style="border:1px solid #244A38; border-radius:14px; padding:24px 26px; background:#102A1F;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:#9FB3A4; margin-bottom:18px; display:flex; align-items:center; gap:12px;"><span style="color:#E2B355; font-size:8px;">◆</span> Чипы статуса · заливка</div>
+        <div style="display:flex; flex-wrap:wrap; gap:9px;">
+          <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#E2B355; background:rgba(226,179,85,0.12); padding:6px 12px; border-radius:6px;">в работе</span>
+          <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#3DA372; background:rgba(61,163,114,0.14); padding:6px 12px; border-radius:6px;">готово</span>
+          <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#FF5C8A; background:rgba(255,92,138,0.12); padding:6px 12px; border-radius:6px;">блокер</span>
+          <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#9FB3A4; background:#1B3528; padding:6px 12px; border-radius:6px;">план</span>
+        </div>
+        <div style="font-size:13px; color:#879A8C; margin-top:16px; line-height:1.5;">Скруглённый прямоугольник, цвет-заливка ≈12% от акцента. Без обводки.</div>
+      </div>
+      <div style="border:1px solid #244A38; border-radius:14px; padding:24px 26px; background:#102A1F;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:#9FB3A4; margin-bottom:18px; display:flex; align-items:center; gap:12px;"><span style="color:#E2B355; font-size:8px;">◆</span> Роли · точка + легенда</div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <span style="display:inline-flex; align-items:center; gap:9px; font-size:13px; color:#D6C9A6;"><span style="width:9px; height:9px; border-radius:50%; background:#6E97C0; flex-shrink:0;"></span>Консультант</span>
+          <span style="display:inline-flex; align-items:center; gap:9px; font-size:13px; color:#D6C9A6;"><span style="width:9px; height:9px; border-radius:50%; background:#CF8350; flex-shrink:0;"></span>Супервизор</span>
+          <span style="display:inline-flex; align-items:center; gap:9px; font-size:13px; color:#D6C9A6;"><span style="width:9px; height:9px; border-radius:50%; background:#7FA86A; flex-shrink:0;"></span>Руководитель</span>
+        </div>
+        <div style="font-size:13px; color:#879A8C; margin-top:16px; line-height:1.5;">Категориальный цвет — только точкой, подпись текстом. Легенда рядом обязательна.</div>
+      </div>
+    </div>
+
+    <!-- table -->
+    <div style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:#9FB3A4; margin:0 0 16px; display:flex; align-items:center; gap:12px;"><span style="color:#E2B355; font-size:8px;">◆</span> Таблица · линии-волоски, зебра фоном</div>
+    <div style="border:1px solid #244A38; border-radius:14px; overflow:hidden; background:#102A1F; margin-bottom:0;">
+      <div style="display:grid; grid-template-columns:1.4fr 1fr 1fr 0.9fr; gap:16px; padding:13px 24px; background:#0A1F16; border-bottom:1px solid #244A38; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.16em; text-transform:uppercase; color:#9FB3A4;">
+        <span>Задача</span><span>Роль</span><span>Этап</span><span>Статус</span>
+      </div>
+      <div style="display:grid; grid-template-columns:1.4fr 1fr 1fr 0.9fr; gap:16px; padding:15px 24px; align-items:center; border-bottom:1px solid #1a3526;">
+        <span style="font-size:14px; color:#F2EAD3;">Онбординг клиента</span>
+        <span style="display:inline-flex; align-items:center; gap:8px; font-size:13px; color:#D6C9A6;"><span style="width:8px; height:8px; border-radius:50%; background:#6E97C0;"></span>Консультант</span>
+        <span style="font-size:13px; color:#9FB3A4;">Этап 1</span>
+        <span><span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#3DA372; background:rgba(61,163,114,0.14); padding:5px 10px; border-radius:6px;">готово</span></span>
+      </div>
+      <div style="display:grid; grid-template-columns:1.4fr 1fr 1fr 0.9fr; gap:16px; padding:15px 24px; align-items:center; border-bottom:1px solid #1a3526; background:rgba(255,255,255,0.012);">
+        <span style="font-size:14px; color:#F2EAD3;">Сверка реестра</span>
+        <span style="display:inline-flex; align-items:center; gap:8px; font-size:13px; color:#D6C9A6;"><span style="width:8px; height:8px; border-radius:50%; background:#CF8350;"></span>Супервизор</span>
+        <span style="font-size:13px; color:#9FB3A4;">Этап 2</span>
+        <span><span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#E2B355; background:rgba(226,179,85,0.12); padding:5px 10px; border-radius:6px;">в работе</span></span>
+      </div>
+      <div style="display:grid; grid-template-columns:1.4fr 1fr 1fr 0.9fr; gap:16px; padding:15px 24px; align-items:center;">
+        <span style="font-size:14px; color:#F2EAD3;">Квартальный обзор</span>
+        <span style="display:inline-flex; align-items:center; gap:8px; font-size:13px; color:#D6C9A6;"><span style="width:8px; height:8px; border-radius:50%; background:#7FA86A;"></span>Руководитель</span>
+        <span style="font-size:13px; color:#9FB3A4;">Этап 3</span>
+        <span><span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#FF5C8A; background:rgba(255,92,138,0.12); padding:5px 10px; border-radius:6px;">блокер</span></span>
+      </div>
+    </div>
+    <div style="font-size:13px; color:#879A8C; margin-top:14px; line-height:1.5;">Внешняя рамка одна · строки разделены линией-волоском и лёгкой зеброй · никаких вертикальных линий между колонками.</div>
+  </div>
+
+  <!-- ══════════ 06 НАВИГАЦИЯ ══════════ -->
+  <div id="p06" style="margin-bottom:88px; scroll-margin-top:24px;">
+    <div style="padding-bottom:18px; margin-bottom:34px; border-bottom:1px solid #244A38;">
+      <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.26em; color:#E2B355; font-weight:500; margin-bottom:12px;">◆&nbsp;&nbsp;06</div>
+      <div style="font-family:'Playfair Display',serif; font-size:32px; color:#F2EAD3; line-height:1.05;">Навигацию — <em style="font-style:italic; color:#E2B355;">сгруппировать</em></div>
+    </div>
+    <p style="font-size:16px; color:#D6C9A6; max-width:760px; margin:0 0 32px;">13 пунктов в липкой шапке переносятся в 4 рваных ряда — это читается как сбой вёрстки и задаёт перегруз ещё до контента. v4: <em style="font-style:italic; font-family:'Playfair Display',serif; color:#E2B355;">2–3 группы + «ещё»</em>, шапка в один ряд.</p>
+
+    <!-- before -->
+    <div style="border:1px solid #244A38; border-radius:14px; padding:18px 22px; background:#102A1F; margin-bottom:16px;">
+      <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:#FF5C8A; margin-bottom:14px;">✗ До · 13 пунктов в 4 ряда</div>
+      <div style="display:flex; flex-wrap:wrap; gap:6px;">
+        <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#9FB3A4; background:#163A2A; padding:6px 11px; border-radius:6px;">index</span>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#9FB3A4; background:#163A2A; padding:6px 11px; border-radius:6px;">now</span>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#9FB3A4; background:#163A2A; padding:6px 11px; border-radius:6px;">q3</span>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#9FB3A4; background:#163A2A; padding:6px 11px; border-radius:6px;">rynok</span>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#9FB3A4; background:#163A2A; padding:6px 11px; border-radius:6px;">tree</span>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#9FB3A4; background:#163A2A; padding:6px 11px; border-radius:6px;">vision</span>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#9FB3A4; background:#163A2A; padding:6px 11px; border-radius:6px;">metrics</span>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#9FB3A4; background:#163A2A; padding:6px 11px; border-radius:6px;">etapy</span>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#9FB3A4; background:#163A2A; padding:6px 11px; border-radius:6px;">legend</span>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#9FB3A4; background:#163A2A; padding:6px 11px; border-radius:6px;">backlog</span>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#9FB3A4; background:#163A2A; padding:6px 11px; border-radius:6px;">research</span>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#9FB3A4; background:#163A2A; padding:6px 11px; border-radius:6px;">roles</span>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#9FB3A4; background:#163A2A; padding:6px 11px; border-radius:6px;">guide</span>
+      </div>
+    </div>
+
+    <!-- after -->
+    <div style="border:1px solid #E2B355; border-radius:14px; padding:18px 22px; background:linear-gradient(160deg,#1B3528,#102A1F);">
+      <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:#3DA372; margin-bottom:14px;">✓ После · 3 группы в один ряд</div>
+      <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
+        <span style="font-family:'JetBrains Mono',monospace; font-size:11.5px; color:#F2EAD3; background:#163A2A; padding:8px 14px; border-radius:7px;">Обзор ▾</span>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:11.5px; color:#F2EAD3; background:#163A2A; padding:8px 14px; border-radius:7px;">Планы ▾</span>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:11.5px; color:#F2EAD3; background:#163A2A; padding:8px 14px; border-radius:7px;">Справочник ▾</span>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:11.5px; color:#9FB3A4; padding:8px 12px;">ещё…</span>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:11.5px; color:#0A1F16; background:#E2B355; padding:8px 14px; border-radius:7px; margin-left:auto;">⌘K поиск</span>
+      </div>
+      <div style="font-size:13px; color:#9FB3A4; margin-top:14px; line-height:1.5;">Обзор: index · now · q3 · rynok&nbsp;&nbsp;·&nbsp;&nbsp;Планы: vision · etapy · backlog&nbsp;&nbsp;·&nbsp;&nbsp;Справочник: tree · metrics · legend · research · roles · guide</div>
+    </div>
+  </div>
+
+  <!-- ══════════ 07 ИСТОЧНИК ПРАВДЫ ══════════ -->
+  <div id="p07" style="margin-bottom:40px; scroll-margin-top:24px;">
+    <div style="padding-bottom:18px; margin-bottom:34px; border-bottom:1px solid #244A38;">
+      <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.26em; color:#E2B355; font-weight:500; margin-bottom:12px;">◆&nbsp;&nbsp;07</div>
+      <div style="font-family:'Playfair Display',serif; font-size:32px; color:#F2EAD3; line-height:1.05;">Источник правды и <em style="font-style:italic; color:#E2B355;">чек-лист</em></div>
+    </div>
+    <p style="font-size:16px; color:#D6C9A6; max-width:760px; margin:0 0 32px;">v4 — единый гайд для обоих контекстов с явным разделением. Перед публикацией страницы пройдитесь по чек-листу.</p>
+
+    <!-- two-context table -->
+    <div style="border:1px solid #244A38; border-radius:14px; overflow:hidden; background:#102A1F; margin-bottom:32px;">
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; padding:14px 24px; background:#0A1F16; border-bottom:1px solid #244A38; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.16em; text-transform:uppercase; color:#9FB3A4;">
+        <span>Вопрос</span><span>Слайд · v3</span><span>Веб · v4</span>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; padding:15px 24px; border-bottom:1px solid #1a3526; align-items:center;">
+        <span style="font-size:14px; color:#F2EAD3;">Главный акцент</span><span style="font-size:13px; color:#9FB3A4;">медь / золото</span><span style="font-size:13px; color:#E2B355;">золото</span>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; padding:15px 24px; border-bottom:1px solid #1a3526; align-items:center;">
+        <span style="font-size:14px; color:#F2EAD3;">Розовый</span><span style="font-size:13px; color:#9FB3A4;">редкая специя</span><span style="font-size:13px; color:#FF5C8A;">только «внимание»</span>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; padding:15px 24px; border-bottom:1px solid #1a3526; align-items:center;">
+        <span style="font-size:14px; color:#F2EAD3;">Категории / роли</span><span style="font-size:13px; color:#879A8C;">не нужны</span><span style="font-size:13px; color:#9FB3A4;">шкала --cat-1…4</span>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; padding:15px 24px; border-bottom:1px solid #1a3526; align-items:center;">
+        <span style="font-size:14px; color:#F2EAD3;">Плотность</span><span style="font-size:13px; color:#9FB3A4;">воздух, рамка по краю</span><span style="font-size:13px; color:#9FB3A4;">1 граница / уровень</span>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; padding:15px 24px; align-items:center;">
+        <span style="font-size:14px; color:#F2EAD3;">Заголовок</span><span style="font-size:13px; color:#9FB3A4;">парадный hero</span><span style="font-size:13px; color:#9FB3A4;">eyebrow→H1→лид</span>
+      </div>
+    </div>
+
+    <!-- checklist -->
+    <div style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:#9FB3A4; margin:0 0 16px; display:flex; align-items:center; gap:12px;"><span style="color:#E2B355; font-size:8px;">◆</span> Чек-лист страницы</div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+      <div style="display:flex; gap:13px; padding:16px 20px; border:1px solid #244A38; border-radius:11px; background:#102A1F;"><span style="color:#3DA372; font-size:16px; flex-shrink:0; line-height:1.3;">✓</span><span style="font-size:14px; color:#D6C9A6; line-height:1.5;">Главный акцент — золото; розовый встречается ≤1 раза в поле зрения</span></div>
+      <div style="display:flex; gap:13px; padding:16px 20px; border:1px solid #244A38; border-radius:11px; background:#102A1F;"><span style="color:#3DA372; font-size:16px; flex-shrink:0; line-height:1.3;">✓</span><span style="font-size:14px; color:#D6C9A6; line-height:1.5;">Есть eyebrow → H1 → лид; акцентное слово золотое</span></div>
+      <div style="display:flex; gap:13px; padding:16px 20px; border:1px solid #244A38; border-radius:11px; background:#102A1F;"><span style="color:#3DA372; font-size:16px; flex-shrink:0; line-height:1.3;">✓</span><span style="font-size:14px; color:#D6C9A6; line-height:1.5;">Категориальный цвет — только в данных и только с легендой</span></div>
+      <div style="display:flex; gap:13px; padding:16px 20px; border:1px solid #244A38; border-radius:11px; background:#102A1F;"><span style="color:#3DA372; font-size:16px; flex-shrink:0; line-height:1.3;">✓</span><span style="font-size:14px; color:#D6C9A6; line-height:1.5;">Нет вложенных рамок; блоки разделены фоном и отступом</span></div>
+      <div style="display:flex; gap:13px; padding:16px 20px; border:1px solid #244A38; border-radius:11px; background:#102A1F;"><span style="color:#3DA372; font-size:16px; flex-shrink:0; line-height:1.3;">✓</span><span style="font-size:14px; color:#D6C9A6; line-height:1.5;">Пунктир — только «план/черновик»; одна форма чипа на смысл</span></div>
+      <div style="display:flex; gap:13px; padding:16px 20px; border:1px solid #244A38; border-radius:11px; background:#102A1F;"><span style="color:#3DA372; font-size:16px; flex-shrink:0; line-height:1.3;">✓</span><span style="font-size:14px; color:#D6C9A6; line-height:1.5;">Никаких хардкод-хексов — только токены v4 из style.css</span></div>
+    </div>
+
+    <!-- footer -->
+    <div style="margin-top:60px; padding-top:28px; border-top:1px solid #244A38; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+      <div style="font-family:'Playfair Display',serif; font-style:italic; font-size:16px; color:#D6C9A6;">Design Guide v4 · веб-издание · следует из аудита консистентности</div>
+      <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.2em; text-transform:uppercase; color:#9FB3A4;">Агентства · 2026</div>
+    </div>
+  </div>
+
+</div>
+</div>
+</x-dc>
+</body>
+</html>

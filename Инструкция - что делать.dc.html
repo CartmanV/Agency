@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,600&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *{box-sizing:border-box}
+    html,body{margin:0}
+    body{background:#0A1F16}
+    ::selection{background:rgba(255,92,138,.26)}
+    code{font-family:'JetBrains Mono',monospace}
+  </style>
+</helmet>
+
+<div style="background:#0A1F16;position:relative;color:#D6C9A6;font-family:'Manrope',system-ui,sans-serif;min-height:100vh;padding:0 24px 120px;">
+  <div style="position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(820px 460px at 12% -6%, rgba(255,92,138,.10), transparent 60%), radial-gradient(900px 620px at 92% 0%, rgba(226,179,85,.08), transparent 55%), radial-gradient(1100px 820px at 50% 116%, rgba(61,163,114,.12), transparent 62%);"></div>
+  <div style="max-width:1080px;margin:0 auto;position:relative;z-index:1;">
+
+    <header style="display:flex;align-items:baseline;justify-content:space-between;gap:24px;flex-wrap:wrap;padding:38px 0 30px;border-bottom:1px solid #244A38;">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#E2B355;">Направление «Агентства» · Ракета</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.12em;color:#9FB3A4;">Playbook · по реальному коду</div>
+    </header>
+
+    <!-- HERO -->
+    <section style="padding:60px 0 26px;max-width:920px;">
+      <p style="font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#FF5C8A;margin:0 0 22px;">Пошаговая инструкция</p>
+      <h1 style="font-family:'Playfair Display',serif;font-weight:700;font-size:clamp(36px,5.5vw,62px);line-height:1.05;letter-spacing:-.01em;color:#F2EAD3;margin:0 0 24px;">Что делать дальше —<br><span style="font-style:italic;color:#FF5C8A;">по шагам, с файлами</span></h1>
+      <p style="font-size:18px;line-height:1.62;color:#D6C9A6;margin:0 0 14px;max-width:78ch;">9 задач без PDF и ленты «Что изменилось». Каждая — что чиним, какие <b style="color:#F2EAD3;">файлы трогаем</b>, шаги по порядку и критерий <b style="color:#F2EAD3;">«готово когда»</b>. Формулировки привязаны к реальным функциям и классам — можно отдать разработчику или в Claude Code как ТЗ.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:18px;">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#FF5C8A;border:1px solid rgba(255,92,138,.4);border-radius:999px;padding:5px 12px;">P1 · пустоты — 2</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#E2B355;border:1px solid rgba(226,179,85,.4);border-radius:999px;padding:5px 12px;">P2 · единообразие — 4</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#3DA372;border:1px solid rgba(61,163,114,.45);border-radius:999px;padding:5px 12px;">P3 · новое — 3</span>
+      </div>
+    </section>
+
+    <!-- LEGEND of how to read -->
+    <section style="margin:26px 0 0;background:#102A1F;border:1px solid #244A38;border-radius:12px;padding:16px 20px;">
+      <p style="margin:0;font-size:13.5px;line-height:1.6;color:#9FB3A4;"><b style="color:#E2B355;">Как читать карточку:</b> <code style="font-size:12px;color:#FF5C8A;">Файлы</code> — где править · <code style="font-size:12px;color:#E2B355;">Шаги</code> — по порядку · <code style="font-size:12px;color:#3DA372;">Готово когда</code> — как проверить, что задача закрыта. Порядок задач = рекомендованная очередь.</p>
+    </section>
+
+    <!-- ============ P1 ============ -->
+    <div style="display:flex;align-items:center;gap:12px;margin:60px 0 18px;"><span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#2A0512;background:#FF5C8A;border-radius:6px;padding:5px 12px;font-weight:600;">P1</span><span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#9FB3A4;letter-spacing:.08em;">ЗАКРЫТЬ ПУСТОТЫ — СНАЧАЛА</span></div>
+
+    <!-- Task 1 -->
+    <section style="background:#102A1F;border:1px solid #244A38;border-left:3px solid #FF5C8A;border-radius:14px;padding:26px 28px;margin-bottom:16px;">
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:14px;"><span style="font-family:'JetBrains Mono',monospace;font-size:22px;color:#FF5C8A;">01</span><h3 style="font-family:'Playfair Display',serif;font-size:22px;color:#F2EAD3;margin:0;">Построить слой L3-карточек (<code style="font-size:.72em;color:#FF5C8A;">data/cards/</code> пуст)</h3></div>
+      <p style="font-size:14.5px;line-height:1.6;color:#D6C9A6;margin:0 0 16px;max-width:86ch;">Глубина детализации обрывается на строке бэклога: в коде <code style="font-size:12.5px;color:#E2B355;">cardPath</code> ведёт в пустую папку, поэтому клик «вглубь» некуда не раскрывается.</p>
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:10px 16px;align-items:start;font-size:14px;line-height:1.55;">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#FF5C8A;text-transform:uppercase;letter-spacing:.06em;padding-top:2px;">Файлы</span>
+        <span style="color:#D6C9A6;"><code style="font-size:12.5px;color:#E2B355;">data/cards/*.json</code> · <code style="font-size:12.5px;color:#E2B355;">backlog.json</code> (id-связь) · <code style="font-size:12.5px;color:#E2B355;">app.js</code> (рендер карточки) · <code style="font-size:12.5px;color:#E2B355;">style.css</code> (<code style="font-size:12px;">.b-card</code> уже есть)</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#E2B355;text-transform:uppercase;letter-spacing:.06em;padding-top:2px;">Шаги</span>
+        <ol style="margin:0;padding-left:18px;color:#D6C9A6;">
+          <li style="margin-bottom:5px;">Определи минимальную схему карточки: <code style="font-size:12px;color:#E2B355;">id, title, path, problem, hypothesis, evidence[], status, links[]</code> — повтори словарь полей бэклога, чтобы не плодить новые.</li>
+          <li style="margin-bottom:5px;">Сгенерируй по одному <code style="font-size:12px;color:#E2B355;">data/cards/&lt;id&gt;.json</code> на каждую итерацию, у которой в <code style="font-size:12px;color:#E2B355;">backlog.json</code> проставлен <code style="font-size:12px;color:#E2B355;">cardPath</code>. Начни с 5–10 ключевых, не со всех 214.</li>
+          <li style="margin-bottom:5px;">В <code style="font-size:12px;color:#E2B355;">app.js</code> сними заглушку <code style="font-size:12px;color:#E2B355;">cardPath = null</code>: подгружай json по клику (lazy fetch), рендери в существующий <code style="font-size:12px;color:#E2B355;">.b-card</code>.</li>
+          <li>Добавь дип-линк <code style="font-size:12px;color:#E2B355;">?id=&lt;id&gt;</code> для прямой ссылки на карточку (механика popstate уже в коде).</li>
+        </ol>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#3DA372;text-transform:uppercase;letter-spacing:.06em;padding-top:2px;">Готово когда</span>
+        <span style="color:#D6C9A6;">Клик по строке с <code style="font-size:12px;color:#E2B355;">cardPath</code> раскрывает заполненную карточку; ссылка <code style="font-size:12px;color:#E2B355;">?id=…</code> открывает её напрямую; пустых <code style="font-size:12px;color:#E2B355;">cardPath</code> в данных не осталось (или они помечены «later»).</span>
+      </div>
+    </section>
+
+    <!-- Task 2 -->
+    <section style="background:#102A1F;border:1px solid #244A38;border-left:3px solid #FF5C8A;border-radius:14px;padding:26px 28px;margin-bottom:16px;">
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:14px;"><span style="font-family:'JetBrains Mono',monospace;font-size:22px;color:#FF5C8A;">02</span><h3 style="font-family:'Playfair Display',serif;font-size:22px;color:#F2EAD3;margin:0;">Положить пайплайн сборки <code style="font-size:.72em;color:#FF5C8A;">build/</code> в репозиторий</h3></div>
+      <p style="font-size:14.5px;line-height:1.6;color:#D6C9A6;margin:0 0 16px;max-width:86ch;"><code style="font-size:12.5px;color:#E2B355;">README.md</code> и <code style="font-size:12.5px;color:#E2B355;">CLAUDE.md</code> ссылаются на <code style="font-size:12.5px;color:#E2B355;">python3 build/build.py</code> (xlsx → <code style="font-size:12.5px;color:#E2B355;">data/*.json</code>), но папки <code style="font-size:12.5px;color:#E2B355;">build/</code> в проекте нет — данные нельзя пересобрать, репозиторий несамодостаточен.</p>
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:10px 16px;align-items:start;font-size:14px;line-height:1.55;">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#FF5C8A;text-transform:uppercase;letter-spacing:.06em;padding-top:2px;">Файлы</span>
+        <span style="color:#D6C9A6;"><code style="font-size:12.5px;color:#E2B355;">build/build.py</code> · <code style="font-size:12.5px;color:#E2B355;">README.md</code> · <code style="font-size:12.5px;color:#E2B355;">requirements.txt</code></span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#E2B355;text-transform:uppercase;letter-spacing:.06em;padding-top:2px;">Шаги</span>
+        <ol style="margin:0;padding-left:18px;color:#D6C9A6;">
+          <li style="margin-bottom:5px;">Найди скрипт (вероятно в родительской <code style="font-size:12px;color:#E2B355;">My work</code>) и перенеси <code style="font-size:12px;color:#E2B355;">build/</code> внутрь репозитория сайта.</li>
+          <li style="margin-bottom:5px;">Зафиксируй зависимости (<code style="font-size:12px;color:#E2B355;">openpyxl</code> и т.п.) в <code style="font-size:12px;color:#E2B355;">requirements.txt</code>.</li>
+          <li style="margin-bottom:5px;">Пропиши в README: путь к исходному xlsx, команду запуска, какие json перезаписываются.</li>
+          <li>Если скрипт держать вне репо нельзя по соображениям данных — добавь README-заметку «источник сборки: …», чтобы пустоты не выглядели потерей.</li>
+        </ol>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#3DA372;text-transform:uppercase;letter-spacing:.06em;padding-top:2px;">Готово когда</span>
+        <span style="color:#D6C9A6;">Из чистого клона <code style="font-size:12px;color:#E2B355;">python3 build/build.py</code> пересобирает <code style="font-size:12px;color:#E2B355;">data/*.json</code> без ручных доустановок.</span>
+      </div>
+    </section>
+
+    <!-- ============ P2 ============ -->
+    <div style="display:flex;align-items:center;gap:12px;margin:54px 0 18px;"><span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#2A0512;background:#E2B355;border-radius:6px;padding:5px 12px;font-weight:600;">P2</span><span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#9FB3A4;letter-spacing:.08em;">ЕДИНООБРАЗИЕ И ДОСТУПНОСТЬ</span></div>
+
+    <!-- Task 3 -->
+    <section style="background:#102A1F;border:1px solid #244A38;border-left:3px solid #E2B355;border-radius:14px;padding:26px 28px;margin-bottom:16px;">
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:14px;"><span style="font-family:'JetBrains Mono',monospace;font-size:22px;color:#E2B355;">03</span><h3 style="font-family:'Playfair Display',serif;font-size:22px;color:#F2EAD3;margin:0;">Свести словари статусов в один канон</h3></div>
+      <p style="font-size:14.5px;line-height:1.6;color:#D6C9A6;margin:0 0 14px;max-width:86ch;">В CSS живут <b style="color:#F2EAD3;">шесть</b> параллельных систем статуса: <code style="font-size:12px;color:#E2B355;">.badge</code>, <code style="font-size:12px;color:#E2B355;">.ev-chip</code>, <code style="font-size:12px;color:#E2B355;">.mo-badge</code>, <code style="font-size:12px;color:#E2B355;">.rf-stat</code>, <code style="font-size:12px;color:#E2B355;">.vbadge</code>, <code style="font-size:12px;color:#E2B355;">.churn-type</code>. Они говорят про близкое (готовность / достоверность / MoSCoW), но читателю приходится учить язык заново на каждой странице.</p>
+      <div style="background:rgba(61,163,114,.07);border:1px solid rgba(61,163,114,.28);border-radius:10px;padding:12px 16px;margin-bottom:16px;"><p style="margin:0;font-size:13.5px;line-height:1.55;color:#D6C9A6;"><b style="color:#3DA372;">Канон уже есть:</b> <code style="font-size:12px;color:#E2B355;">.ev-chip</code> (комментарий «Канон чип-доказательство, ТЗ 14–18») — сделай его единственным источником статуса, остальные приведи к нему.</p></div>
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:10px 16px;align-items:start;font-size:14px;line-height:1.55;">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#FF5C8A;text-transform:uppercase;letter-spacing:.06em;padding-top:2px;">Файлы</span>
+        <span style="color:#D6C9A6;"><code style="font-size:12.5px;color:#E2B355;">style.css</code> (строки ~278–290, 821–862) · <code style="font-size:12.5px;color:#E2B355;">app.js</code> (где генерятся классы) · <code style="font-size:12.5px;color:#E2B355;">legend.html</code> (описать канон)</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#E2B355;text-transform:uppercase;letter-spacing:.06em;padding-top:2px;">Шаги</span>
+        <ol style="margin:0;padding-left:18px;color:#D6C9A6;">
+          <li style="margin-bottom:5px;">Зафиксируй матрицу значений: <code style="font-size:12px;color:#E2B355;">ok / part / warn / plan / muted / closed</code> — это и есть набор <code style="font-size:12px;color:#E2B355;">.ev-chip</code>.</li>
+          <li style="margin-bottom:5px;">Сопоставь чужие модификаторы канону: <code style="font-size:12px;color:#E2B355;">badge--ok → ev-ok</code>, <code style="font-size:12px;color:#E2B355;">badge--review → ev-part</code>, <code style="font-size:12px;color:#E2B355;">badge--must → ev-warn</code>, <code style="font-size:12px;color:#E2B355;">mo-* / rf-stat → …</code>.</li>
+          <li style="margin-bottom:5px;">MoSCoW (<code style="font-size:12px;color:#E2B355;">must/should/could/wont</code>) — это <b style="color:#F2EAD3;">не</b> достоверность; оставь отдельным, но тоже сведи к одному классу <code style="font-size:12px;color:#E2B355;">.prio--*</code> вместо трёх дублей.</li>
+          <li style="margin-bottom:5px;">Замени старые классы в шаблонах/рендере. Не удаляй сразу — на переходный период оставь алиасы в CSS.</li>
+          <li>Опиши итоговый канон в <code style="font-size:12px;color:#E2B355;">legend.html</code>: значение, цвет, иконка, когда использовать.</li>
+        </ol>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#3DA372;text-transform:uppercase;letter-spacing:.06em;padding-top:2px;">Готово когда</span>
+        <span style="color:#D6C9A6;">Статус достоверности рисуется одним компонентом на всех страницах; приоритет — другим; в <code style="font-size:12px;color:#E2B355;">legend.html</code> есть таблица «значение → вид».</span>
+      </div>
+    </section>
+
+    <!-- Task 4 -->
+    <section style="background:#102A1F;border:1px solid #244A38;border-left:3px solid #E2B355;border-radius:14px;padding:26px 28px;margin-bottom:16px;">
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:14px;"><span style="font-family:'JetBrains Mono',monospace;font-size:22px;color:#E2B355;">04</span><h3 style="font-family:'Playfair Display',serif;font-size:22px;color:#F2EAD3;margin:0;">Статус не только цветом — добавить форму/иконку</h3></div>
+      <p style="font-size:14.5px;line-height:1.6;color:#D6C9A6;margin:0 0 16px;max-width:86ch;">Часть бейджей различается лишь цветом рамки (<code style="font-size:12px;color:#E2B355;">ev-ok</code> emerald vs <code style="font-size:12px;color:#E2B355;">ev-part</code> gold). Для дальтоников это неразличимо. У <code style="font-size:12px;color:#E2B355;">.ev-chip</code> уже есть <code style="font-size:12px;color:#E2B355;">gap:4px</code> и <code style="font-size:12px;color:#E2B355;">inline-flex</code> — место под значок заложено.</p>
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:10px 16px;align-items:start;font-size:14px;line-height:1.55;">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#FF5C8A;text-transform:uppercase;letter-spacing:.06em;padding-top:2px;">Файлы</span>
+        <span style="color:#D6C9A6;"><code style="font-size:12.5px;color:#E2B355;">style.css</code> (<code style="font-size:12px;">.ev-chip::before</code>) · <code style="font-size:12.5px;color:#E2B355;">app.js</code> (если значок в разметке)</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#E2B355;text-transform:uppercase;letter-spacing:.06em;padding-top:2px;">Шаги</span>
+        <ol style="margin:0;padding-left:18px;color:#D6C9A6;">
+          <li style="margin-bottom:5px;">Назначь каждому значению глиф: <code style="font-size:12px;color:#E2B355;">ok ✓ · part ◐ · warn ⚠ · plan ◷ · muted ·</code>.</li>
+          <li style="margin-bottom:5px;">Добавь его через <code style="font-size:12px;color:#E2B355;">::before</code> на класс-модификатор — без правки разметки.</li>
+          <li>Продублируй смысл в <code style="font-size:12px;color:#E2B355;">aria-label</code> / <code style="font-size:12px;color:#E2B355;">title</code>, чтобы скринридер читал «подтверждено», а не «галочка».</li>
+        </ol>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#3DA372;text-transform:uppercase;letter-spacing:.06em;padding-top:2px;">Готово когда</span>
+        <span style="color:#D6C9A6;">Статус читается в чёрно-белом скриншоте; у каждого чипа есть текстовый <code style="font-size:12px;color:#E2B355;">aria-label</code>.</span>
+      </div>
+    </section>
+
+    <!-- Task 5 -->
+    <section style="background:#102A1F;border:1px solid #244A38;border-left:3px solid #E2B355;border-radius:14px;padding:26px 28px;margin-bottom:16px;">
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:14px;"><span style="font-family:'JetBrains Mono',monospace;font-size:22px;color:#E2B355;">05</span><h3 style="font-family:'Playfair Display',serif;font-size:22px;color:#F2EAD3;margin:0;">Проверить контраст мелкого текста</h3></div>
+      <p style="font-size:14.5px;line-height:1.6;color:#D6C9A6;margin:0 0 16px;max-width:86ch;"><code style="font-size:12px;color:#E2B355;">--cream-dim #9FB3A4</code> и <code style="font-size:12px;color:#E2B355;">--muted #7E9384</code> на тёмном фоне в подписях 9.5–11px (<code style="font-size:12px;color:#E2B355;">.ch-xlab</code>, <code style="font-size:12px;color:#E2B355;">.l</code>, <code style="font-size:12px;color:#E2B355;">.sv-cnt</code>) — у нижней границы WCAG AA.</p>
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:10px 16px;align-items:start;font-size:14px;line-height:1.55;">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#FF5C8A;text-transform:uppercase;letter-spacing:.06em;padding-top:2px;">Файлы</span>
+        <span style="color:#D6C9A6;"><code style="font-size:12.5px;color:#E2B355;">style.css</code> (<code style="font-size:12px;">:root</code> токены 14–16)</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#E2B355;text-transform:uppercase;letter-spacing:.06em;padding-top:2px;">Шаги</span>
+        <ol style="margin:0;padding-left:18px;color:#D6C9A6;">
+          <li style="margin-bottom:5px;">Прогони <code style="font-size:12px;color:#E2B355;">--cream-dim</code>/<code style="font-size:12px;color:#E2B355;">--muted</code> на фоне <code style="font-size:12px;color:#E2B355;">--panel #102A1F</code> через контраст-чекер (цель ≥ 4.5:1 для мелкого).</li>
+          <li style="margin-bottom:5px;">Если не проходит — подними светлоту на 1–2 ступени <b style="color:#F2EAD3;">только для текста ≤12px</b> (заведи <code style="font-size:12px;color:#E2B355;">--cream-dim-2</code>), крупный не трогай.</li>
+          <li>Перепроверь связки на тёмных панелях графиков (<code style="font-size:12px;color:#E2B355;">.ch-ylab/.ch-xlab fill</code>).</li>
+        </ol>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#3DA372;text-transform:uppercase;letter-spacing:.06em;padding-top:2px;">Готово когда</span>
+        <span style="color:#D6C9A6;">Все подписи ≤12px дают ≥4.5:1 на своём фоне (проверено чекером, а не на глаз).</span>
+      </div>
+    </section>
+
+    <!-- Task 6 -->
+    <section style="background:#102A1F;border:1px solid #244A38;border-left:3px solid #E2B355;border-radius:14px;padding:26px 28px;margin-bottom:16px;">
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:14px;"><span style="font-family:'JetBrains Mono',monospace;font-size:22px;color:#E2B355;">06</span><h3 style="font-family:'Playfair Display',serif;font-size:22px;color:#F2EAD3;margin:0;">Инлайн-цвета чипов → классы-модификаторы</h3></div>
+      <p style="font-size:14.5px;line-height:1.6;color:#D6C9A6;margin:0 0 16px;max-width:86ch;">В разметке встречается <code style="font-size:12px;color:#E2B355;">style="color:var(--copper)"</code> / <code style="font-size:12px;color:#E2B355;">var(--pink)</code> на ссылках-чипах. Не баг (токен живой), но единообразнее — модификатор. <b style="color:#F2EAD3;">Низкий риск, делается за один проход.</b></p>
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:10px 16px;align-items:start;font-size:14px;line-height:1.55;">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#FF5C8A;text-transform:uppercase;letter-spacing:.06em;padding-top:2px;">Файлы</span>
+        <span style="color:#D6C9A6;"><code style="font-size:12.5px;color:#E2B355;">*.html</code> (now/q3/vision/rynok) · <code style="font-size:12.5px;color:#E2B355;">style.css</code></span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#E2B355;text-transform:uppercase;letter-spacing:.06em;padding-top:2px;">Шаги</span>
+        <ol style="margin:0;padding-left:18px;color:#D6C9A6;">
+          <li style="margin-bottom:5px;">Заведи <code style="font-size:12px;color:#E2B355;">.chip--copper</code>, <code style="font-size:12px;color:#E2B355;">.chip--pink</code> в CSS рядом с базовым <code style="font-size:12px;color:#E2B355;">.chip</code>.</li>
+          <li style="margin-bottom:5px;">Найди по проекту <code style="font-size:12px;color:#E2B355;">grep "style=\"color:var(--"</code> и замени на класс.</li>
+          <li>Зафиксируй правило в гайде: «цвет чипа — модификатором, не инлайном».</li>
+        </ol>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#3DA372;text-transform:uppercase;letter-spacing:.06em;padding-top:2px;">Готово когда</span>
+        <span style="color:#D6C9A6;"><code style="font-size:12px;color:#E2B355;">grep</code> по инлайн-цветам в шаблонах ничего не находит.</span>
+      </div>
+    </section>
+
+    <!-- ============ P3 ============ -->
+    <div style="display:flex;align-items:center;gap:12px;margin:54px 0 18px;"><span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#0A1F16;background:#3DA372;border-radius:6px;padding:5px 12px;font-weight:600;">P3</span><span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#9FB3A4;letter-spacing:.08em;">НОВЫЕ ВОЗМОЖНОСТИ</span></div>
+
+    <!-- Task 7 -->
+    <section style="background:#102A1F;border:1px solid #244A38;border-left:3px solid #3DA372;border-radius:14px;padding:26px 28px;margin-bottom:16px;">
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:14px;"><span style="font-family:'JetBrains Mono',monospace;font-size:22px;color:#3DA372;">07</span><h3 style="font-family:'Playfair Display',serif;font-size:22px;color:#F2EAD3;margin:0;">Память фильтров и поиска в бэклоге</h3></div>
+      <p style="font-size:14.5px;line-height:1.6;color:#D6C9A6;margin:0 0 16px;max-width:86ch;">Сейчас в <code style="font-size:12px;color:#E2B355;">localStorage</code> хранится только видимость колонок (<code style="font-size:12px;color:#E2B355;">COLS_STORAGE</code>, app.js:253/472). Активные фильтры, поиск и сортировка теряются при уходе со страницы.</p>
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:10px 16px;align-items:start;font-size:14px;line-height:1.55;">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#FF5C8A;text-transform:uppercase;letter-spacing:.06em;padding-top:2px;">Файлы</span>
+        <span style="color:#D6C9A6;"><code style="font-size:12.5px;color:#E2B355;">app.js</code> (рядом с <code style="font-size:12px;">COLS_STORAGE</code>)</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#E2B355;text-transform:uppercase;letter-spacing:.06em;padding-top:2px;">Шаги</span>
+        <ol style="margin:0;padding-left:18px;color:#D6C9A6;">
+          <li style="margin-bottom:5px;">Заведи <code style="font-size:12px;color:#E2B355;">FILTERS_STORAGE</code> по образцу <code style="font-size:12px;color:#E2B355;">COLS_STORAGE</code>: сохраняй <code style="font-size:12px;color:#E2B355;">{q, theme, sort, sel}</code>.</li>
+          <li style="margin-bottom:5px;">Приоритет источника: URL-параметры <code style="font-size:12px;color:#E2B355;">?q ?theme</code> важнее localStorage (поделились ссылкой — она побеждает).</li>
+          <li>У кнопки <code style="font-size:12px;color:#E2B355;">.ctl--reset</code> — чистить и сохранённое состояние.</li>
+        </ol>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#3DA372;text-transform:uppercase;letter-spacing:.06em;padding-top:2px;">Готово когда</span>
+        <span style="color:#D6C9A6;">Вернулся на бэклог без параметров в URL — фильтры и поиск восстановились; ссылка с <code style="font-size:12px;color:#E2B355;">?q</code> перекрывает сохранённое.</span>
+      </div>
+    </section>
+
+    <!-- Task 8 -->
+    <section style="background:#102A1F;border:1px solid #244A38;border-left:3px solid #3DA372;border-radius:14px;padding:26px 28px;margin-bottom:16px;">
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:14px;"><span style="font-family:'JetBrains Mono',monospace;font-size:22px;color:#3DA372;">08</span><h3 style="font-family:'Playfair Display',serif;font-size:22px;color:#F2EAD3;margin:0;">Глобальный поиск по сайту</h3></div>
+      <p style="font-size:14.5px;line-height:1.6;color:#D6C9A6;margin:0 0 16px;max-width:86ch;">Поиск сейчас только внутри бэклога. Один поиск по находкам, метрикам, легендам и темам превратит сайт в «командную строку» по направлению.</p>
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:10px 16px;align-items:start;font-size:14px;line-height:1.55;">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#FF5C8A;text-transform:uppercase;letter-spacing:.06em;padding-top:2px;">Файлы</span>
+        <span style="color:#D6C9A6;"><code style="font-size:12.5px;color:#E2B355;">app.js</code> (хедер) · <code style="font-size:12.5px;color:#E2B355;">data/*.json</code> (индекс) · <code style="font-size:12.5px;color:#E2B355;">style.css</code></span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#E2B355;text-transform:uppercase;letter-spacing:.06em;padding-top:2px;">Шаги</span>
+        <ol style="margin:0;padding-left:18px;color:#D6C9A6;">
+          <li style="margin-bottom:5px;">Собери лёгкий индекс на сборке (<code style="font-size:12px;color:#E2B355;">build/</code>): <code style="font-size:12px;color:#E2B355;">data/search.json</code> = <code style="font-size:12px;color:#E2B355;">[{title, page, anchor, snippet}]</code>.</li>
+          <li style="margin-bottom:5px;">В хедер добавь поле + выпадашку результатов (переиспользуй стили <code style="font-size:12px;color:#E2B355;">.ctl</code>), переход по <code style="font-size:12px;color:#E2B355;">page#anchor</code>.</li>
+          <li>Горячая клавиша <code style="font-size:12px;color:#E2B355;">/</code> или <code style="font-size:12px;color:#E2B355;">Cmd/Ctrl-K</code> для фокуса.</li>
+        </ol>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#3DA372;text-transform:uppercase;letter-spacing:.06em;padding-top:2px;">Готово когда</span>
+        <span style="color:#D6C9A6;">Запрос из хедера на любой странице находит результаты со всех разделов и ведёт к нужному якорю.</span>
+      </div>
+    </section>
+
+    <!-- Task 9 -->
+    <section style="background:#102A1F;border:1px solid #244A38;border-left:3px solid #3DA372;border-radius:14px;padding:26px 28px;margin-bottom:16px;">
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:14px;"><span style="font-family:'JetBrains Mono',monospace;font-size:22px;color:#3DA372;">09</span><h3 style="font-family:'Playfair Display',serif;font-size:22px;color:#F2EAD3;margin:0;">Состояние «пусто» для data-блоков + петля «гипотеза→факт»</h3></div>
+      <p style="font-size:14.5px;line-height:1.6;color:#D6C9A6;margin:0 0 16px;max-width:86ch;">В CSS есть <code style="font-size:12px;color:#E2B355;">.loading</code> и <code style="font-size:12px;color:#E2B355;">.error</code>, но нет «пусто» (0 строк после фильтра / пустой источник). Заодно — у гипотез H-кодов есть статус, но нет фактической дельты метрики после релиза.</p>
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:10px 16px;align-items:start;font-size:14px;line-height:1.55;">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#FF5C8A;text-transform:uppercase;letter-spacing:.06em;padding-top:2px;">Файлы</span>
+        <span style="color:#D6C9A6;"><code style="font-size:12.5px;color:#E2B355;">style.css</code> (<code style="font-size:12px;">.empty</code>) · <code style="font-size:12.5px;color:#E2B355;">app.js</code> (рендер) · <code style="font-size:12.5px;color:#E2B355;">metrics.json</code> (поле факта)</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#E2B355;text-transform:uppercase;letter-spacing:.06em;padding-top:2px;">Шаги</span>
+        <ol style="margin:0;padding-left:18px;color:#D6C9A6;">
+          <li style="margin-bottom:5px;">Добавь класс <code style="font-size:12px;color:#E2B355;">.empty</code> (по образцу <code style="font-size:12px;color:#E2B355;">.loading</code>) и показывай его, когда выборка пустая — с подсказкой «сбросить фильтр».</li>
+          <li style="margin-bottom:5px;">В <code style="font-size:12px;color:#E2B355;">metrics.json</code> добавь к гипотезе поля <code style="font-size:12px;color:#E2B355;">factDelta</code> и <code style="font-size:12px;color:#E2B355;">checkedAt</code>; на карточке метрики покажи «план vs факт».</li>
+          <li>Свяжи статус гипотезы со статус-каноном (задача 03): подтверждена / частично / опровергнута.</li>
+        </ol>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#3DA372;text-transform:uppercase;letter-spacing:.06em;padding-top:2px;">Готово когда</span>
+        <span style="color:#D6C9A6;">Пустая выборка показывает понятное состояние, а не ломает блок; у проверенных гипотез видна фактическая дельта.</span>
+      </div>
+    </section>
+
+    <!-- РЕКОМЕНДОВАННЫЙ ПОРЯДОК -->
+    <section style="margin:54px 0 0;background:#102A1F;border:1px solid #336B4E;border-radius:18px;padding:36px;">
+      <p style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#E2B355;margin:0 0 14px;">Рекомендованный порядок</p>
+      <h2 style="font-family:'Playfair Display',serif;font-weight:700;font-size:clamp(22px,2.6vw,30px);line-height:1.15;color:#F2EAD3;margin:0 0 18px;">С чего начать</h2>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;gap:14px;align-items:baseline;"><span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#FF5C8A;min-width:60px;">Шаг 1</span><span style="font-size:15px;color:#D6C9A6;">Задачи <b style="color:#F2EAD3;">03 + 04</b> (канон статусов + иконки) — быстро, видно на всех страницах, разблокирует задачу 09.</span></div>
+        <div style="display:flex;gap:14px;align-items:baseline;"><span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#FF5C8A;min-width:60px;">Шаг 2</span><span style="font-size:15px;color:#D6C9A6;">Задачи <b style="color:#F2EAD3;">06 + 05</b> — мелкая полировка единообразия и контраста, низкий риск.</span></div>
+        <div style="display:flex;gap:14px;align-items:baseline;"><span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#FF5C8A;min-width:60px;">Шаг 3</span><span style="font-size:15px;color:#D6C9A6;">Задача <b style="color:#F2EAD3;">02</b> (вернуть <code style="font-size:12px;color:#E2B355;">build/</code>) — нужна перед задачей 08 (поиск строит индекс на сборке).</span></div>
+        <div style="display:flex;gap:14px;align-items:baseline;"><span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#FF5C8A;min-width:60px;">Шаг 4</span><span style="font-size:15px;color:#D6C9A6;">Задачи <b style="color:#F2EAD3;">01, 07, 08, 09</b> — содержательные фичи, по мере приоритета направления.</span></div>
+      </div>
+      <p style="margin:22px 0 0;font-size:14px;line-height:1.6;color:#9FB3A4;">Скажи, с какой задачи начинаем — соберу её прямо в твоих файлах и классах (например, канон статусов 03+04 с миграцией старых бейджей).</p>
+    </section>
+
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
