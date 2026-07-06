@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0A1F16" />
+  <title>Свод по масштабу — направление «Агентства»</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Manrope:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/style.css" />
+  <style>
+    /* Свод по масштабу — та же диагностика, что «Выводы», но по оси «масштаб последствий».
+       Токены v4, золото — единственный акцент; розовый --attention — только на уровне 0
+       (обнуляющие риски, честно «критично/развилка»); типы [В/Р/Г/П] — нейтральная ось. */
+
+    /* раскладка: липкий боковой указатель + поток (как на «Выводах») */
+    .vy-shell{ display:grid; grid-template-columns:206px 1fr; gap:34px; align-items:start; }
+    .vy-rail{ position:sticky; top:14px; align-self:start; }
+    .vy-rail .rlab{ font-family:var(--f-mono); font-size:10px; letter-spacing:.14em;
+      text-transform:uppercase; color:var(--muted); margin:0 0 8px 12px; }
+    .vy-rail a{ display:block; font-family:var(--f-mono); font-size:11.5px; color:var(--cream-dim);
+      text-decoration:none; padding:6px 12px; border-left:2px solid var(--line); line-height:1.35; }
+    .vy-rail a:hover{ color:var(--cream); border-left-color:var(--line-soft); }
+    .vy-rail a.active{ color:var(--gold); border-left-color:var(--gold); }
+    .vy-flow{ min-width:0; }
+    .vy-flow .section:first-child{ padding-top:0; }
+    @media(max-width:980px){ .vy-shell{ grid-template-columns:1fr; gap:0; } .vy-rail{ display:none; } }
+    @media(min-width:981px){ .vy-toc{ display:none; } }
+
+    /* резюме-плашка «Главное одним взглядом» */
+    .vy-resume{ background:var(--gold-dim); border:1px solid var(--gold-line);
+      border-radius:14px; padding:22px 24px; margin-top:8px; }
+    .vy-resume p{ margin:0; color:var(--cream-soft); font-size:15px; line-height:1.7; max-width:84ch; }
+    .vy-resume p + p{ margin-top:10px; }
+    .vy-resume strong{ color:var(--cream); }
+
+    /* таблица четырёх уровней */
+    .svd-lvltab{ width:100%; border-collapse:collapse; margin:14px 0 4px; font-size:13.5px; }
+    .svd-lvltab th, .svd-lvltab td{ text-align:left; padding:10px 12px; vertical-align:top;
+      border-top:1px solid var(--line); line-height:1.5; color:var(--cream-soft); }
+    .svd-lvltab thead th{ border-top:none; font-family:var(--f-mono); font-size:10.5px;
+      letter-spacing:.1em; text-transform:uppercase; color:var(--gold); font-weight:600; }
+    .svd-lvltab td.lv{ white-space:nowrap; }
+    .svd-lvltab .lvb{ display:inline-flex; align-items:center; justify-content:center;
+      width:26px; height:26px; border-radius:7px; font-family:var(--f-mono); font-weight:600;
+      font-size:13px; background:var(--gold-dim); border:1px solid var(--gold-line); color:var(--gold); }
+    .svd-lvltab tr td strong{ color:var(--cream); }
+
+    /* мини-схема «шкала масштаба» (SVG) */
+    .vy-dia{ width:100%; height:auto; display:block; margin:16px 0 4px; }
+    .vy-dia-cap{ font-size:12.5px; color:var(--cream-dim); margin:0 0 4px; }
+
+    /* легенда типов [В/Р/Г/П] */
+    .svd-tlegend{ display:flex; flex-wrap:wrap; gap:8px 18px; margin:14px 0 2px; }
+    .svd-tlegend .it{ display:flex; align-items:center; gap:8px; font-size:13px; color:var(--cream-soft); }
+    .svd-tlegend strong{ color:var(--cream); }
+
+    /* тип-тег — отдельная ось (не статус, не роль): квадратный мини-бейдж */
+    .svd-t{ display:inline-flex; align-items:center; justify-content:center; min-width:18px; height:18px;
+      padding:0 4px; border-radius:5px; border:1px solid var(--line-soft); background:var(--bg-2);
+      color:var(--cream-dim); font-family:var(--f-mono); font-size:10.5px; font-weight:600;
+      letter-spacing:.02em; cursor:help; }
+
+    /* врезка-вступление к уровню */
+    .svd-intro{ font-size:13.5px; color:var(--cream-dim); line-height:1.65; margin:2px 0 8px; max-width:86ch; }
+
+    /* список-инсайты (как на «Выводах») */
+    .vy-insight{ display:flex; gap:14px; padding:15px 0; border-top:1px dashed var(--line); }
+    .vy-insight:first-of-type{ border-top:none; }
+    .vy-insight .ico{ flex:0 0 auto; min-width:38px; height:34px; padding:0 6px; border-radius:9px;
+      background:var(--gold-dim); border:1px solid var(--gold-line); color:var(--gold);
+      font-family:var(--f-mono); font-weight:600; font-size:14px;
+      display:flex; align-items:center; justify-content:center; }
+    .vy-insight__body{ min-width:0; flex:1; }
+    .vy-insight h4{ font-family:var(--f-display); font-size:17.5px; margin:2px 0 6px; color:var(--cream);
+      display:flex; gap:9px; align-items:baseline; flex-wrap:wrap; line-height:1.3; }
+    .vy-insight h4 .ev-chip, .vy-insight h4 .svd-t{ flex-shrink:0; }
+    .vy-insight .ess{ margin:0; color:var(--cream-soft); font-size:14px; line-height:1.6; max-width:82ch; }
+    .vy-insight .ess strong{ color:var(--cream); }
+
+    /* вложенные подпункты внутри инсайта */
+    .svd-sub{ margin:10px 0 0; padding:0; list-style:none; }
+    .svd-sub li{ padding:8px 0; border-top:1px dashed var(--line); font-size:13.5px;
+      line-height:1.6; color:var(--cream-soft); max-width:86ch; }
+    .svd-sub li:first-child{ border-top:none; }
+    .svd-sub strong{ color:var(--cream); }
+    .svd-sub .src{ color:var(--cream-dim); font-size:12px; }
+
+    /* раскрытие «Подробнее» */
+    .vy-more{ margin-top:9px; }
+    .vy-more > summary{ cursor:pointer; font-family:var(--f-mono); font-size:11px; letter-spacing:.06em;
+      text-transform:uppercase; color:var(--gold); list-style:none; display:inline-block; }
+    .vy-more > summary::-webkit-details-marker{ display:none; }
+    .vy-more > summary::before{ content:"▸ "; }
+    .vy-more[open] > summary::before{ content:"▾ "; }
+    .vy-more__body{ padding:8px 0 4px; }
+    .vy-row{ margin:11px 0 0; }
+    .vy-k{ font-family:var(--f-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.12em;
+      color:var(--gold); margin-bottom:4px; }
+    .vy-row p{ color:var(--cream-soft); font-size:14px; line-height:1.6; margin:0; max-width:82ch; }
+    .vy-row strong{ color:var(--cream); }
+    .vy-row .src{ font-size:12.5px; color:var(--cream-dim); margin-top:5px; }
+    .vy-go{ display:flex; flex-wrap:wrap; gap:6px; margin-top:11px; }
+    a.chip:hover{ border-color:var(--gold); color:var(--cream); text-decoration:none; }
+
+    /* врезка-правило (золото) / критично (розово, только уровень 0) */
+    .vy-flag{ background:var(--panel); border:1px solid var(--line);
+      border-left:3px solid var(--gold); border-radius:10px; padding:15px 18px; margin:16px 0 4px; }
+    .vy-flag .lab{ display:flex; align-items:center; gap:8px; font-family:var(--f-mono);
+      font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:var(--gold); margin-bottom:7px; }
+    .vy-flag p{ margin:0; color:var(--cream-soft); font-size:14px; line-height:1.65; max-width:84ch; }
+    .vy-flag strong{ color:var(--cream); }
+
+    /* «уже закрыто» */
+    .vy-closed{ background:var(--panel); border:1px solid var(--line); border-radius:10px;
+      padding:15px 18px; margin-top:16px; }
+    .vy-closed .lab{ font-family:var(--f-mono); font-size:11px; letter-spacing:.1em;
+      text-transform:uppercase; color:var(--success); margin-bottom:6px; }
+    .vy-closed p{ margin:0; color:var(--cream-soft); font-size:13.5px; line-height:1.7; max-width:88ch; }
+    .vy-closed strong{ color:var(--cream); }
+
+    /* финальная плашка «как пользоваться» */
+    .svd-use{ margin:6px 0 2px; padding:0; list-style:none; counter-reset:u; }
+    .svd-use li{ position:relative; padding:11px 0 11px 40px; border-top:1px dashed var(--line);
+      color:var(--cream-soft); font-size:14px; line-height:1.65; max-width:86ch; }
+    .svd-use li:first-child{ border-top:none; }
+    .svd-use li::before{ counter-increment:u; content:counter(u); position:absolute; left:0; top:10px;
+      width:26px; height:26px; border-radius:7px; background:var(--gold-dim); border:1px solid var(--gold-line);
+      color:var(--gold); font-family:var(--f-mono); font-weight:600; font-size:12px;
+      display:flex; align-items:center; justify-content:center; }
+    .svd-use strong{ color:var(--cream); }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">К содержанию</a>
+  <div data-header></div>
+
+  <div class="crumbs"><a href="index.html">Направление</a> <span>›</span> Свод по масштабу</div>
+
+  <main id="main" data-masshtab>
+    <!-- ГЕРОЙ -->
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Свод по направлению · по масштабу последствий · срез 2026-07-04</p>
+        <h1>Что решать раньше: направление по <span class="accent">масштабу последствий</span></h1>
+        <p class="sub">
+          Единый свод направления: что мы поняли о рынке, продукте и работе агентств, что может это
+          пошатнуть, какие идеи ещё предстоит проверить и какие боли стоят за планом. Пункты собраны
+          по одной оси — <strong>масштабу последствий</strong>: на каком уровне принимается решение и
+          что рушится, если пункт проигнорировать. Крупнейшее — вверху, вниз по нисходящей. Правило
+          чтения: чем выше пункт, тем раньше ему нужен владелец, — цена ошибки наверху несопоставима с
+          ценой ошибки внизу. Это диагностика; сам план на квартал — на странице
+          <a href="plan-1-2.html">«Этапы 1 и 2 — одной очередью»</a>.
+        </p>
+        <div class="cta-row">
+          <a class="btn btn--primary" href="plan-1-2.html">План на квартал</a>
+          <a class="btn" href="nmt.html">Диагностика (метод)</a>
+          <a class="btn" href="strategy.html">Полная стратегия</a>
+        </div>
+      </div>
+      <aside class="hero-goal">
+        <div class="num">4</div>
+        <div class="cap">уровня масштаба</div>
+        <div class="sub2">0 обнуляющие · 1 системные · 2 блоковые (фокус Q2) · 3 операционные</div>
+      </aside>
+    </section>
+
+    <div class="vy-shell">
+      <!-- ЛИПКИЙ БОКОВОЙ УКАЗАТЕЛЬ -->
+      <aside class="vy-rail" aria-label="Разделы страницы">
+        <p class="rlab">На странице</p>
+        <a href="#kak-chitat">Как читать</a>
+        <a href="#glavnoe">Главное одним взглядом</a>
+        <a href="#u0">Уровень 0 — обнуляющие</a>
+        <a href="#u1">Уровень 1 — системные</a>
+        <a href="#u2">Уровень 2 — блоковые (Q2)</a>
+        <a href="#u3">Уровень 3 — операционные</a>
+        <a href="#kak-polzovatsya">Как этим пользоваться</a>
+      </aside>
+
+      <div class="vy-flow">
+        <!-- КАК ЧИТАТЬ -->
+        <section class="section" id="kak-chitat">
+          <p class="eyebrow">Как читать страницу</p>
+          <h2>Единая ось — масштаб последствий</h2>
+          <p class="section-note">Исходный свод шёл снизу вверх — от точечной боли к стратегии.
+          Здесь порядок обратный: единая ось — <strong>масштаб последствий</strong>. Тип пункта
+          (вывод / риск / гипотеза / боль) вынесен в мелкий тег, чтобы масштаб оставался главной осью,
+          а не тип. У каждого пункта — метка, насколько он надёжен.</p>
+
+          <table class="svd-lvltab">
+            <thead>
+              <tr><th>Уровень</th><th>Что на нём</th><th>Кто решает</th><th>Что ломается при ошибке</th><th>Обратимость</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="lv"><span class="lvb">0</span></td>
+                <td><strong>Обнуляющие направление</strong></td>
+                <td>Руководство компании</td>
+                <td>Всё направление через 3–5 лет</td>
+                <td>Необратимо</td>
+              </tr>
+              <tr>
+                <td class="lv"><span class="lvb">1</span></td>
+                <td><strong>Системные</strong> (модель, метрика, сегмент)</td>
+                <td>Продакт + руководство</td>
+                <td>Вся сегментация, скоринг, чтение оттока</td>
+                <td>Дорого</td>
+              </tr>
+              <tr>
+                <td class="lv"><span class="lvb">2</span></td>
+                <td><strong>Блоковые</strong> (этап / механизм&nbsp;Q2)</td>
+                <td>Продакт</td>
+                <td>Приоритеты и отдача квартала</td>
+                <td>Обратимо</td>
+              </tr>
+              <tr>
+                <td class="lv"><span class="lvb">3</span></td>
+                <td><strong>Операционные</strong> (роль / сценарий)</td>
+                <td>Продакт + команда</td>
+                <td>Одна фича, одна боль</td>
+                <td>Дёшево</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- ШКАЛА МАСШТАБА (SVG) -->
+          <svg class="vy-dia" viewBox="0 0 720 210" role="img"
+               aria-label="Шкала масштаба: сверху вниз последствия сужаются от «всё направление» до «одна боль», а обратимость растёт от «необратимо» до «дёшево».">
+            <defs>
+              <marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                <path d="M0,0 L6,3 L0,6 Z" fill="var(--muted)"></path>
+              </marker>
+            </defs>
+            <!-- бары, сужаются книзу -->
+            <g font-family="var(--f-mono)" font-size="12">
+              <rect x="70" y="14"  width="560" height="40" rx="7" fill="var(--gold-dim)" stroke="var(--gold-line)"></rect>
+              <text x="82" y="39" fill="var(--gold)">0 · обнуляющие — рушится всё направление (3–5 лет)</text>
+
+              <rect x="110" y="62" width="480" height="40" rx="7" fill="var(--panel)" stroke="var(--line-soft)"></rect>
+              <text x="122" y="87" fill="var(--cream-soft)">1 · системные — модель, метрика, сегментация</text>
+
+              <rect x="150" y="110" width="400" height="40" rx="7" fill="var(--panel)" stroke="var(--line)"></rect>
+              <text x="162" y="135" fill="var(--cream-soft)">2 · блоковые — приоритеты и отдача квартала (фокус Q2)</text>
+
+              <rect x="190" y="158" width="320" height="40" rx="7" fill="var(--panel)" stroke="var(--line)"></rect>
+              <text x="202" y="183" fill="var(--cream-dim)">3 · операционные — одна фича, одна боль</text>
+            </g>
+            <!-- ось обратимости справа -->
+            <line x1="650" y1="20" x2="650" y2="192" stroke="var(--muted)" stroke-width="1" marker-end="url(#ah)"></line>
+            <text x="662" y="30"  font-family="var(--f-mono)" font-size="10.5" fill="var(--muted)">необратимо</text>
+            <text x="662" y="188" font-family="var(--f-mono)" font-size="10.5" fill="var(--muted)">дёшево</text>
+          </svg>
+          <p class="vy-dia-cap">Чем выше уровень, тем раньше пункту нужен владелец и решение: последствия шире, а откатить ошибку дороже.</p>
+
+          <!-- ЛЕГЕНДА СТАТУСОВ -->
+          <div class="vy-legend" style="margin-top:22px">
+            <span class="it"><span class="ev-chip ev-ok">✓</span> <span><strong>Подтверждён</strong> — есть числа, держится на нескольких замерах</span></span>
+            <span class="it"><span class="ev-chip ev-part">~</span> <span><strong>Частично</strong> — данные есть, но один замер или с оговоркой</span></span>
+            <span class="it"><span class="ev-chip ev-muted">∅</span> <span><strong>Не доказан</strong> — есть наблюдения, но числом не проверено</span></span>
+            <span class="it"><span class="ev-chip ev-warn">⚠</span> <span><strong>Критично — развилка</strong> — слепое пятно или решение выше уровня продукта</span></span>
+            <span class="it"><span class="ev-chip ev-closed">✅</span> <span><strong>Закрыто</strong> — уже сделано, заново не берём</span></span>
+            <span class="it"><span class="ev-chip ev-ok">✓ проверено</span> <span><strong>Проверено, в т.ч. опровергнуто</strong> — опровержение тоже валидный результат</span></span>
+          </div>
+
+          <!-- ЛЕГЕНДА ТИПОВ -->
+          <div class="svd-tlegend">
+            <span class="it"><span class="svd-t">В</span> <span><strong>вывод</strong> — что поняли</span></span>
+            <span class="it"><span class="svd-t">Р</span> <span><strong>риск</strong> — что может пошатнуть</span></span>
+            <span class="it"><span class="svd-t">Г</span> <span><strong>гипотеза</strong> — что предстоит проверить</span></span>
+            <span class="it"><span class="svd-t">П</span> <span><strong>проблема</strong> — боль пользователя</span></span>
+          </div>
+
+          <nav class="toc vy-toc" aria-label="Содержание страницы" style="margin-top:22px">
+            <span class="toc__lead">На этой странице:</span>
+            <a class="toc__chip" href="#glavnoe">Главное одним взглядом</a>
+            <a class="toc__chip" href="#u0">Уровень 0</a>
+            <a class="toc__chip" href="#u1">Уровень 1</a>
+            <a class="toc__chip" href="#u2">Уровень 2</a>
+            <a class="toc__chip" href="#u3">Уровень 3</a>
+            <a class="toc__chip" href="#kak-polzovatsya">Как пользоваться</a>
+          </nav>
+        </section>
+
+        <!-- ГЛАВНОЕ ОДНИМ ВЗГЛЯДОМ -->
+        <section class="section" id="glavnoe">
+          <p class="eyebrow">Главное одним взглядом</p>
+          <h2>Наверху — три нерешённых вопроса без владельца</h2>
+          <div class="vy-resume">
+            <p><strong>Уровень 0.</strong> Два подрывных трека (прямой уход клиентов и дешёвый продукт
+            «снизу»), слепое пятно поставщиков (авиакомпании уводят продажу в прямые каналы) и неясная
+            природа защиты. Сегодня ни у одного пункта нет владельца — а решаются они наверху и необратимо.</p>
+            <p><strong>Уровень 1.</strong> Считаем не то: растим клиентов, а сегментируем агентства.
+            Концентрация огромна (крупнейшее агентство — 63% объёма, топ-3 — 84%) и это хрупкость.
+            Снятие тормозов (2B) данные опровергли как лекарство от оттока. Половину пунктов
+            разблокирует одна выгрузка — <strong>Д0a</strong>.</p>
+            <p><strong>Уровень 2 — рабочий фокус квартала.</strong> Центр тяжести — этапы 2A/2B:
+            три доказанных источника лишней ручной работы, потолок эффекта (9,6% решает только
+            поставщик) и «чинимые» категории с максимальной отдачей самообслуживания.
+            <strong>Уровень 3</strong> — исполнение: боли по ролям, они тянутся из бэклога.</p>
+          </div>
+        </section>
+
+        <!-- УРОВЕНЬ 0 -->
+        <section class="section" id="u0">
+          <p class="eyebrow">Уровень 0 · обнуляющие направление</p>
+          <h2>Решается наверху, необратимо, горизонт 3–5 лет</h2>
+          <p class="svd-intro">Внутри команды это не строится — структурный конфликт.
+          Сегодня ни у одного пункта нет владельца.</p>
+
+          <div class="vy-insight" id="treki">
+            <div class="ico">0.1</div>
+            <div class="vy-insight__body">
+              <h4><span class="svd-t" title="риск">Р</span> <span class="ev-chip ev-warn">⚠</span> Два трека без владельца — риск «проспать подрыв»</h4>
+              <p class="ess">Прямой уход клиента мимо агентства и дешёвый продукт «снизу» для
+              микро-агентств не ведёт <strong>никто</strong>. Через 3–5 лет направление рискует
+              проспать подрыв.</p>
+              <details class="vy-more"><summary>Подробнее</summary>
+                <div class="vy-more__body">
+                  <div class="vy-row"><div class="vy-k">Что делать</div>
+                    <p>Назвать риски поимённо, зафиксировать «нет владельца», вынести на уровень
+                    руководства, заказать оценку нового рынка.</p>
+                    <p class="src">Источник: риск 2.3.12; вывод 22.</p></div>
+                  <div class="vy-go"><a class="chip" href="strategy.html">Стратегия (v5)</a><a class="chip" href="nmt.html">Диагностика (NMT)</a></div>
+                </div>
+              </details>
+            </div>
+          </div>
+
+          <div class="vy-insight" id="postavshiki">
+            <div class="ico">0.2</div>
+            <div class="vy-insight__body">
+              <h4><span class="svd-t" title="риск">Р</span> <span class="ev-chip ev-warn">⚠</span> Слепое пятно поставщиков (NDC)</h4>
+              <p class="ess">Вся оборона выстроена <strong>вниз</strong> по цепочке (конкуренты,
+              самобукинг), а билеты и тарифы даёт <strong>верх</strong> — авиакомпании и системы
+              бронирования. Тренд: продажу уводят в прямые каналы мимо посредников → переговорная сила
+              Ракеты падает независимо от качества продукта для клиента.</p>
+              <details class="vy-more"><summary>Подробнее</summary>
+                <div class="vy-more__body">
+                  <div class="vy-row"><div class="vy-k">Что делать</div>
+                    <p>Долю контента под этим риском пока не оценивали. Нужна отдельная оценка силы
+                    поставщиков (R8).</p>
+                    <p class="src">Источник: риск 2.3.10.</p></div>
+                  <div class="vy-go"><a class="chip" href="rynok.html">Рынок</a><a class="chip" href="strategy.html">Стратегия (v5)</a></div>
+                </div>
+              </details>
+            </div>
+          </div>
+
+          <div class="vy-insight" id="zashita">
+            <div class="ico">0.3</div>
+            <div class="vy-insight__body">
+              <h4><span class="svd-t" title="риск">Р</span><span class="svd-t" title="гипотеза">Г</span> <span class="ev-chip ev-part">~</span> Природа защиты неясна — убежище или прочный ров</h4>
+              <p class="ess">Сложный и зарубежный трэвел — защищённая зона, но неизвестно, барьер это
+              (интеграция с 1С, комплаенс, доверие в кризис) или временное укрытие, которое сожмётся с
+              ростом ИИ. От ответа зависит объём инвестиций. Вероятный ответ — «и то и другое».</p>
+              <details class="vy-more"><summary>Подробнее</summary>
+                <div class="vy-more__body">
+                  <div class="vy-row"><div class="vy-k">Что делать</div>
+                    <p>Разрешают интервью с ушедшими агентствами (за какую работу наняли замену) —
+                    гипотеза <strong>Д6</strong>.</p>
+                    <p class="src">Источник: риск 2.3.11; гипотеза Д6.</p></div>
+                </div>
+              </details>
+            </div>
+          </div>
+
+          <div class="vy-flag">
+            <div class="lab">Правило</div>
+            <p><strong>Причину оттока не схлопывать в одну.</strong> До дорогих решений держим 4 живые
+            версии: ценность / сегмент / прямой уход / общий спад рынка. Спад-2026 — контекст, а не
+            объяснение структуры.</p>
+          </div>
+        </section>
+
+        <!-- УРОВЕНЬ 1 -->
+        <section class="section" id="u1">
+          <p class="eyebrow">Уровень 1 · системные</p>
+          <h2>Меняют модель, единицу счёта, чтение метрик</h2>
+          <p class="svd-intro">Ошибка здесь каскадит вниз — в сегментацию, концентрацию и весь скоринг.</p>
+
+          <div class="vy-insight" id="edinica">
+            <div class="ico">1.1</div>
+            <div class="vy-insight__body">
+              <h4><span class="svd-t" title="вывод">В</span> <span class="ev-chip ev-ok">✓</span> Единица счёта — клиент-компания, а не агентство</h4>
+              <p class="ess">Главную метрику растят клиенты, а сегментируем мы агентства по объёму —
+              это разные единицы. Живой кейс: агентство закрылось → 76% его объёма за 1–2 месяца
+              перетекло в крупнейшее (переезд клиентов, не рост агентства).</p>
+              <details class="vy-more"><summary>Подробнее</summary>
+                <div class="vy-more__body">
+                  <div class="vy-row"><div class="vy-k">Почему корневой</div>
+                    <p>Ошибка в единице каскадит в сегментацию, концентрацию и скоринг — это корневой
+                    системный пункт: агентство правильнее считать каналом или узлом сети, а не носителем
+                    ценности.</p>
+                    <p class="src">Источник: выводы 21, 24.</p></div>
+                  <div class="vy-go"><a class="chip" href="agencies.html">Агентства</a></div>
+                </div>
+              </details>
+            </div>
+          </div>
+
+          <div class="vy-insight" id="hrupkost">
+            <div class="ico">1.2</div>
+            <div class="vy-insight__body">
+              <h4><span class="svd-t" title="вывод">В</span><span class="svd-t" title="риск">Р</span> <span class="ev-chip ev-ok">✓</span> Концентрация = хрупкость</h4>
+              <p class="ess">Крупнейшее агентство — 63% объёма, топ-3 — 84%, топ-5 — 90% (30.06.2026).
+              Оффлайн ещё острее: 92% на двух агентствах, среди внешних — почти весь на одном.
+              Уход одного обрушит результат.</p>
+              <details class="vy-more"><summary>Подробнее</summary>
+                <div class="vy-more__body">
+                  <div class="vy-row"><div class="vy-k">Уточнение</div>
+                    <p>Тезис «объём холдинговый, не выигран» в основном <strong>не</strong> подтвердился —
+                    почти весь выигран на рынке. Хрупкость от этого не уходит.</p></div>
+                  <div class="vy-row"><div class="vy-k">Что делать</div>
+                    <p>Помечать такие задачи; искать рост в средних и малых; оффлайн строить
+                    воспроизводимым по сегменту, а не на одном агентстве.</p>
+                    <p class="src">Источник: выводы 16, 19; риск 2.3.9.</p></div>
+                  <div class="vy-go"><a class="chip" href="agencies.html">Агентства</a></div>
+                </div>
+              </details>
+            </div>
+          </div>
+
+          <div class="vy-insight" id="nagruzka">
+            <div class="ico">1.3</div>
+            <div class="vy-insight__body">
+              <h4><span class="svd-t" title="вывод">В</span> <span class="ev-chip ev-ok">✓</span> Нагрузка на поддержку растёт сама — единственная надёжная метрика</h4>
+              <p class="ess">Обращений на объём транзакций не падает, а медленно растёт
+              (+0,2 на тыс. транзакций в месяц; растёт у 6 из 8) по мере подключения агентств.
+              Подключением новых не лечится; у худшего агентства нагрузка втрое выше средней.</p>
+              <details class="vy-more"><summary>Подробнее</summary>
+                <div class="vy-more__body">
+                  <div class="vy-row"><div class="vy-k">Смысл</div>
+                    <p>Это и есть настоящее обоснование работы над тормозами — не удержание.</p>
+                    <p class="src">Источник: вывод 18.</p></div>
+                  <div class="vy-go"><a class="chip" href="support.html">Нагрузка на саппорт</a></div>
+                </div>
+              </details>
+            </div>
+          </div>
+
+          <div class="vy-insight">
+            <div class="ico">1.4</div>
+            <div class="vy-insight__body">
+              <h4><span class="svd-t" title="вывод">В</span> <span class="ev-chip ev-ok">✓</span> Удержание внутри агентств — скрытая течь</h4>
+              <p class="ess">У сильных клиентов крупнейших агентств за 2 года: растут 15%, стабильны 35%,
+              в спаде 32%, потеряны 18% — половина в зоне спада или потери. Общая цифра удержания это
+              маскирует.</p>
+              <details class="vy-more"><summary>Подробнее</summary>
+                <div class="vy-more__body">
+                  <div class="vy-row"><p class="src">Источник: вывод 17.</p></div>
+                </div>
+              </details>
+            </div>
+          </div>
+
+          <div class="vy-insight" id="glubina">
+            <div class="ico">1.5</div>
+            <div class="vy-insight__body">
+              <h4><span class="svd-t" title="вывод">В</span> <span class="ev-chip ev-part">~</span> Рост идёт вглубь, а не вширь</h4>
+              <p class="ess">82% прироста клиентов (62 из 76) дают уже подключённые агентства; новичок
+              стартует с 3–5 клиентов против ~сотни у зрелого. «+20» — это <strong>вход в воронку,
+              а не счётчик</strong>: часть лишь замещает отток.</p>
+              <details class="vy-more"><summary>Подробнее</summary>
+                <div class="vy-more__body">
+                  <div class="vy-row"><p class="src">Источник: вывод 15.</p></div>
+                </div>
+              </details>
+            </div>
+          </div>
+
+          <div class="vy-insight" id="tormoza-2b">
+            <div class="ico">1.6</div>
+            <div class="vy-insight__body">
+              <h4><span class="svd-t" title="вывод">В</span> <span class="ev-chip ev-ok">✓ проверено</span> Снятие тормозов (2B) — НЕ лекарство от оттока</h4>
+              <p class="ess">Скрытое допущение «уберём трение → удержим клиента» данные
+              <strong>опровергли</strong>: связь слабая и обратная (держится на одном агентстве, против —
+              агентства с +50% клиентов). Блок 2B делаем ради сервиса и доверия; причину оттока искать
+              выше — в ценности и сегменте.</p>
+              <details class="vy-more"><summary>Подробнее</summary>
+                <div class="vy-more__body">
+                  <div class="vy-row"><p class="src">Источник: выводы 8, 14.</p></div>
+                  <div class="vy-go"><a class="chip" href="plan-1-2.html">Этапы 1 и 2</a></div>
+                </div>
+              </details>
+            </div>
+          </div>
+
+          <div class="vy-insight" id="doverie">
+            <div class="ico">1.7</div>
+            <div class="vy-insight__body">
+              <h4><span class="svd-t" title="гипотеза">Г</span><span class="svd-t" title="риск">Р</span> <span class="ev-chip ev-muted">∅</span> Доверие (H1.4) — несущая опора плана, без владельца</h4>
+              <p class="ess">Даже полным набором функций могут не начать пользоваться: один заметный сбой
+              ломает доверие надолго, возвращается оно медленно. Под допущением нет ни задач, ни владельца.</p>
+              <details class="vy-more"><summary>Подробнее</summary>
+                <div class="vy-more__body">
+                  <div class="vy-row"><div class="vy-k">Что делать</div>
+                    <p>Завести трек надёжности; задачи с риском сбоя при клиенте оценивать строже;
+                    сравнить активность там, где меньше сбоев.</p>
+                    <p class="src">Источник: вывод 12; риск 2.2.6; H1.4.</p></div>
+                </div>
+              </details>
+            </div>
+          </div>
+
+          <div class="vy-insight">
+            <div class="ico">1.8</div>
+            <div class="vy-insight__body">
+              <h4><span class="svd-t" title="гипотеза">Г</span> <span class="ev-chip ev-muted">∅</span> Корневая discovery-гипотеза Д0a — один узел кормит полсписка</h4>
+              <p class="ess">Часть «оттока» — перетоки клиентов между агентствами, а не уход из Ракеты;
+              лучшие клиенты различимы по марже. Одна выгрузка (связь клиента с агентством, метки
+              «исторический/выигранный», год прихода, «онлайн/оффлайн») переводит отток, концентрацию
+              и главную метрику из «оценки» в «факт».</p>
+              <details class="vy-more"><summary>Подробнее</summary>
+                <div class="vy-more__body">
+                  <div class="vy-row"><div class="vy-k">Критерий фейла</div>
+                    <p>Деление по марже даёт тот же разрез, что объём агентств → сегментация в порядке.</p></div>
+                  <div class="vy-row"><div class="vy-k">Что разблокирует</div>
+                    <p>Честный отток, концентрацию, KR-2, отбор агентств для интервью Д6.</p>
+                    <p class="src">Источник: гипотеза Д0a; вывод 24.</p></div>
+                  <div class="vy-go"><a class="chip" href="agencies.html">Агентства</a></div>
+                </div>
+              </details>
+            </div>
+          </div>
+
+          <div class="vy-insight">
+            <div class="ico">1.9</div>
+            <div class="vy-insight__body">
+              <h4><span class="svd-t" title="риск">Р</span> <span class="ev-chip ev-part">~</span> Миграции между агентствами искажают данные</h4>
+              <p class="ess">Часть «потерь» — перенос клиента между агентствами Ракеты (кейс: один клиент —
+              76% объёма — переехал за 1–2 месяца). Концентрацию топ-3 брать с поправкой «возможно
+              завышена на 5–15%»; косвенную оценку скрытой ручной работы считать верхней границей.</p>
+              <details class="vy-more"><summary>Подробнее</summary>
+                <div class="vy-more__body">
+                  <div class="vy-row"><p class="src">Источник: риск 2.2.8.</p></div>
+                </div>
+              </details>
+            </div>
+          </div>
+        </section>
+
+        <!-- УРОВЕНЬ 2 -->
+        <section class="section" id="u2">
+          <p class="eyebrow">Уровень 2 · блоковые (этап / механизм Q2)</p>
+          <h2>Двигают приоритеты и отдачу квартала</h2>
+          <p class="svd-intro">Обратимо, решает продакт. Здесь живёт фокус Q2 — этапы 2A/2B.</p>
+
+          <div class="vy-insight">
+            <div class="ico">2.1</div>
+            <div class="vy-insight__body">
+              <h4><span class="svd-t" title="вывод">В</span> Центр тяжести Q2 — этапы 2A/2B</h4>
+              <p class="ess">Самый плотный кластер боли (авторизация + обмены + документы) сидит в
+              постбронированном контуре и закрывается тремя ветками сразу: <strong>Заказы</strong>
+              (UX страницы), <strong>Единый чат</strong> (коммуникации), <strong>Онлайн-автоматизация</strong>
+              (вторичные транзакции). Этап 1 — в основном паритет и миграция настроек из Планеты.</p>
+              <details class="vy-more"><summary>Подробнее</summary>
+                <div class="vy-more__body">
+                  <div class="vy-row"><p class="src">Источник: вывод 20.</p></div>
+                  <div class="vy-go"><a class="chip" href="etapy.html">Этапы ценности</a><a class="chip" href="plan-1-2.html">Общий план 1+2</a></div>
+                </div>
+              </details>
+            </div>
+          </div>
+
+          <div class="vy-insight" id="offline">
+            <div class="ico">2.2</div>
+            <div class="vy-insight__body">
+              <h4><span class="svd-t" title="вывод">В</span> <span class="ev-chip ev-ok">✓</span> Три доказанных источника лишней ручной работы (этап 2A)</h4>
+              <p class="ess">У операционных тормозов 2A три подтверждённых корня — каждый закрывается
+              отдельным механизмом.</p>
+              <ul class="svd-sub">
+                <li><strong>Структурированный оффлайн</strong> — самое трудозатратное на операцию (H2.1 ✓).
+                Выгоду мерить в деньгах: доля плавает 9–18% и это объём, а не маржа.</li>
+                <li><strong>Навигационный налог</strong> — Ракета ↔ почта ↔ система бронирования ↔ Excel ↔
+                мессенджер; единое окно и общий чат сокращают время операции независимо от оффлайна (H2.4 ✓).</li>
+                <li><strong>Недозревшие вторичные транзакции</strong> — обмен / возврат / аннуляция, где
+                поставщик умеет онлайн, а интерфейса в админке нет; двойной выигрыш — уходит и транзакция,
+                и ожидание (H2.6 ✓).</li>
+              </ul>
+              <details class="vy-more"><summary>Подробнее</summary>
+                <div class="vy-more__body">
+                  <div class="vy-row"><p class="src">Источник: выводы 9, 10, 11.</p></div>
+                  <div class="vy-go"><a class="chip" href="etapy.html">Этапы ценности</a><a class="chip" href="metrics.html">Метрики</a></div>
+                </div>
+              </details>
+            </div>
+          </div>
+
+          <div class="vy-insight">
+            <div class="ico">2.3</div>
+            <div class="vy-insight__body">
+              <h4><span class="svd-t" title="вывод">В</span> <span class="ev-chip ev-ok">✓</span> У эффекта 2B есть потолок: 9,6% обращений решает только поставщик</h4>
+              <p class="ess">886 обращений эскалированы поставщику — не снять ни админкой, ни
+              самообслуживанием. Поставщик-боль концентрируется в бронировании (40% наружу) и выдаче (30%) —
+              это ожидание, а не тормоза саппорта Ракеты. Из «чинимого» честно вычитаем эту долю.</p>
+              <details class="vy-more"><summary>Подробнее</summary>
+                <div class="vy-more__body">
+                  <div class="vy-row"><div class="vy-k">Уточняется</div>
+                    <p>H2.3 уточняется замером Д4.</p>
+                    <p class="src">Источник: выводы 2, 3.</p></div>
+                  <div class="vy-go"><a class="chip" href="support.html">Нагрузка на саппорт</a></div>
+                </div>
+              </details>
+            </div>
+          </div>
+
+          <div class="vy-insight">
+            <div class="ico">2.4</div>
+            <div class="vy-insight__body">
+              <h4><span class="svd-t" title="вывод">В</span> <span class="ev-chip ev-ok">✓</span> «Ракета-fixable» категории — кандидаты №1 в самообслуживание</h4>
+              <p class="ess">Профили сотрудников (789 обращений, 0% поставщик), Политики авторизации
+              (501, 0%), Агентская админка (197, 0%), Коррекция суммы и строк (187, 0%) — полностью в зоне
+              контроля Ракеты → максимальная отдача самообслуживания.</p>
+              <details class="vy-more"><summary>Подробнее</summary>
+                <div class="vy-more__body">
+                  <div class="vy-row"><p>Основа для H2.2 (админка снижает зависимость от саппорта, ✓ дословно).</p>
+                    <p class="src">Источник: вывод 4; H2.2.</p></div>
+                  <div class="vy-go"><a class="chip" href="backlog.html">Бэклог</a></div>
+                </div>
+              </details>
+            </div>
+          </div>
+
+          <div class="vy-insight">
+            <div class="ico">2.5</div>
+            <div class="vy-insight__body">
+              <h4><span class="svd-t" title="вывод">В</span> Пилот 2B — на дорогих агентствах с болью в наших руках</h4>
+              <p class="ess">«Дорогой на транзакцию» ≠ «чинимый продуктом». Пилот — на Альбатросе и
+              Корпорейт Трэвел («права и согласования», 0% поставщику), <strong>не</strong> на IBC
+              (отлажен) и <strong>не</strong> на Интерсити (боль у поставщика).</p>
+              <details class="vy-more"><summary>Подробнее</summary>
+                <div class="vy-more__body">
+                  <div class="vy-row"><p>Дорогие на транзакцию: Корп.Тревел 29,8 · Интерсити 27,4 ·
+                    Альбатрос 36,1 · Аэроглобус 22,0.</p>
+                    <p class="src">Источник: вывод 5.</p></div>
+                </div>
+              </details>
+            </div>
+          </div>
+
+          <div class="vy-insight">
+            <div class="ico">2.6</div>
+            <div class="vy-insight__body">
+              <h4><span class="svd-t" title="гипотеза">Г</span> Discovery-гипотезы, разблокирующие волны</h4>
+              <p class="ess">У каждой — критерий фейла заранее, до данных.</p>
+              <ul class="svd-sub">
+                <li><strong>Д3·Г2</strong> — зарубежный оффлайн растёт и маржа выше внутренней.
+                Фейл: доля плоская или падает → оффлайн в разряд «может быть». <span class="src">(волна 7)</span></li>
+                <li><strong>Д3·Г3</strong> — растёт доля клиент-инициированных стандартных транзакций.
+                Фейл: не растёт → стандартная транзакция остаётся защищаемой. <span class="src">(фон оффлайна)</span></li>
+                <li><strong>Д4</strong> — ожидание теряется на стыке консультант ↔ саппорт Ракеты.
+                Фейл: в основном внутри агентства → автономия не главный рычаг. <span class="src">(волна 10)</span></li>
+                <li><strong>Д1</strong> — новые агентства застревают на 3–5 типовых шагах.
+                Фейл: застревания размазаны → топ-функции остаются допущением. <span class="src">(волны 3, 4)</span></li>
+                <li><strong>Д5</strong> — при закрытом паритете переход тормозит нехватка доверия (H1.4).
+                Фейл: приживаемость зависит только от числа функций → надёжность = чек-лист, не волна. <span class="src">(волна 9)</span></li>
+                <li><strong>Д2</strong> — расширенное окно «Документы на странице заказа» перекрывает
+                издержку лишнего клика. Фейл: клик перевешивает. <span class="src">(волны 1, 8)</span></li>
+              </ul>
+              <details class="vy-more"><summary>Подробнее</summary>
+                <div class="vy-more__body">
+                  <div class="vy-row"><p class="src">Источник: раздел discovery-гипотез по волнам.</p></div>
+                  <div class="vy-go"><a class="chip" href="planned.html">План исследований</a></div>
+                </div>
+              </details>
+            </div>
+          </div>
+
+          <div class="vy-insight">
+            <div class="ico">2.7</div>
+            <div class="vy-insight__body">
+              <h4><span class="svd-t" title="гипотеза">Г</span> <span class="ev-chip ev-part">~</span> Гипотезы вне фокуса Q2 (этапы 3–5) — держим как кандидаты</h4>
+              <p class="ess">H3.1 (маржа через выпавший оффлайн, ~), H3.2 (деньги ← закрывающие
+              документы и баланс, ∅), H3.4 («Запрос на услугу», ~), H4.1 (сборы и правила в админке, ~),
+              H4.2 (самообслуживание клиента, конфликт с премией), H5.1–H5.3 (монетизация поверх
+              оффлайна, ∅).</p>
+              <details class="vy-more"><summary>Подробнее</summary>
+                <div class="vy-more__body">
+                  <div class="vy-row"><p class="src">Источник: раздел гипотез 3.2.</p></div>
+                  <div class="vy-go"><a class="chip" href="etapy.html">Этапы ценности</a></div>
+                </div>
+              </details>
+            </div>
+          </div>
+        </section>
+
+        <!-- УРОВЕНЬ 3 -->
+        <section class="section" id="u3">
+          <p class="eyebrow">Уровень 3 · операционные (роль / сценарий)</p>
+          <h2>Точечное, дёшево, обратимо — одна фича, одна боль</h2>
+          <p class="svd-intro">Ценность каждого пункта наследуется от блока уровня 2, к которому он
+          привязан. Полный реестр болей — в бэклоге.</p>
+
+          <div class="vy-insight" id="metod">
+            <div class="ico">3.1</div>
+            <div class="vy-insight__body">
+              <h4><span class="svd-t" title="вывод">В</span> Методические уточнения по данным</h4>
+              <ul class="svd-sub">
+                <li>Атрибуция обращений стала точной: baseline 12,1 → 13,6 (смена метода + новые агентства,
+                не ухудшение). Сравнения с 19.06 — через эту поправку.</li>
+                <li>Аэроглобус −59% нагрузки <strong>отозван</strong> как доказательство эффекта фич —
+                вероятная причина в сильной 1-й линии агентства; доказанных кейсов «фича → метрика» пока ноль.</li>
+                <li>Аэротон — крупный источник обращений (581, 3-е место), но в оттоке → кейс для
+                retention-интервью (KR-2), не для продуктовых задач.</li>
+                <li>Консультант финансово против оптимизации (∅): премия завязана на число транзакций →
+                в Q2 «ускоряем», а не «уносим» работу к клиенту.</li>
+              </ul>
+              <details class="vy-more"><summary>Подробнее</summary>
+                <div class="vy-more__body">
+                  <div class="vy-row"><p class="src">Источник: выводы 1, 6, 7, 13; риск 2.2.7.</p></div>
+                </div>
+              </details>
+            </div>
+          </div>
+
+          <div class="vy-insight">
+            <div class="ico">3.2</div>
+            <div class="vy-insight__body">
+              <h4><span class="svd-t" title="проблема">П</span> Кластеры боли консультанта (этапы 2A/2B)</h4>
+              <ul class="svd-sub">
+                <li><strong>Авторизация и выписка:</strong> срыв срока авторизации, ручная петля
+                пересоздания, аннуляция-«чёрный ящик», нечитаемый статус «В обработке».</li>
+                <li><strong>Оффлайн-услуги:</strong> нет «запроса на услугу из выдачи», услуга не связана
+                с поставщиком, справки о перелёте спрятаны, багаж и места не синхронизируются.</li>
+                <li><strong>Командировка и документы:</strong> ручное дробление на путешественников,
+                нет привязки билета к ФИО, нет цветовых статусов, нет единого окна документов,
+                нет выгрузки одним архивом, юрлицо спрятано для 1С, визуальный шум.</li>
+                <li><strong>Коммуникации / единый чат:</strong> ручная пересылка писем, нет привязки
+                к услуге, нет единого инбокса, нет автомаршрутизации и режима 24/7, один email на услугу,
+                нет шаблонов.</li>
+                <li><strong>Обмены и вторичные:</strong> ручной обмен (подбор → в чат), нет напоминания
+                о связанных услугах.</li>
+              </ul>
+              <details class="vy-more"><summary>Подробнее</summary>
+                <div class="vy-more__body">
+                  <div class="vy-row"><p class="src">Источник: реестр болей, разделы 4.1–4.5.</p></div>
+                  <div class="vy-go"><a class="chip" href="tree.html">Дерево (JTBD)</a><a class="chip" href="backlog.html">Бэклог</a></div>
+                </div>
+              </details>
+            </div>
+          </div>
+
+          <div class="vy-insight">
+            <div class="ico">3.3</div>
+            <div class="vy-insight__body">
+              <h4><span class="svd-t" title="проблема">П</span> Настройки, уведомления, мобайл</h4>
+              <p class="ess">Денежные настройки только через техподдержку Ракеты (H2.2 дословно),
+              чёрно-белые списки не переносятся из Планеты, нет истории изменений с причиной; уведомления
+              не в истории; трудно определить клиента; мобильная админка ≠ веб.</p>
+              <details class="vy-more"><summary>Подробнее</summary>
+                <div class="vy-more__body">
+                  <div class="vy-row"><p class="src">Источник: реестр болей (настройки/уведомления/мобайл), этапы 1 и 2B.</p></div>
+                </div>
+              </details>
+            </div>
+          </div>
+
+          <div class="vy-insight">
+            <div class="ico">3.4</div>
+            <div class="vy-insight__body">
+              <h4><span class="svd-t" title="проблема">П</span> Клиентские роли (вне Q2)</h4>
+              <p class="ess">Аппруверы (даты в мобилке, нет единого окна «ждут авторизации», пачечная
+              авторизация → срыв срока); путешественники и селфбукеры (статусы, время в поиске, коды
+              систем бронирования, фичи конкурентов); отчётность и виджеты (конструктор отчётов,
+              выгрузка в 1С, схлопывание отелей).</p>
+              <details class="vy-more"><summary>Подробнее</summary>
+                <div class="vy-more__body">
+                  <div class="vy-row"><p class="src">Источник: реестр болей, разделы 4.8–4.9.</p></div>
+                </div>
+              </details>
+            </div>
+          </div>
+
+          <div class="vy-insight">
+            <div class="ico">3.5</div>
+            <div class="vy-insight__body">
+              <h4><span class="svd-t" title="риск">Р</span> Точечные риски данных</h4>
+              <p class="ess">Один замер и устаревание → повторять поквартально; авторские привязки
+              «боль → решение» не проверены → интервью; вход без точки отсчёта по новичкам; состав оффлайна
+              неясен (больше половины — «прочее»); главная метрика приблизительна (факт транзакций ≠
+              самостоятельная работа клиента).</p>
+              <details class="vy-more"><summary>Подробнее</summary>
+                <div class="vy-more__body">
+                  <div class="vy-row"><p class="src">Источник: раздел 2.1.</p></div>
+                </div>
+              </details>
+            </div>
+          </div>
+
+          <div class="vy-closed">
+            <div class="lab">✅ Уже закрыто — заново не берём</div>
+            <p><strong>A3, A6 · E2 · F1, F2 · G1, G2 · I1 · K2, K3 · L4, L5 · M3, M4 · N1, N2, N4 · O2.</strong></p>
+          </div>
+        </section>
+
+        <!-- КАК ПОЛЬЗОВАТЬСЯ -->
+        <section class="section" id="kak-polzovatsya">
+          <p class="eyebrow">Как этим пользоваться</p>
+          <h2>Разные уровни — разные действия</h2>
+          <ol class="svd-use">
+            <li><strong>Уровни 0–1 — не продуктовые задачи, а решения для руководства и discovery.</strong>
+            Их нельзя «сделать фичей»; их надо назвать, дать владельца и снять неизвестность — в первую
+            очередь выгрузка Д0a, которая кормит половину пунктов уровня 1.</li>
+            <li><strong>Уровень 2 — рабочий фокус квартала.</strong> Здесь считаем оценку задач и выбираем волны.</li>
+            <li><strong>Уровень 3 — исполнение.</strong> Тянется из бэклога; ценность каждого пункта
+            наследуется от блока уровня 2, к которому он привязан.</li>
+            <li><strong>Проверка масштаба при новой находке:</strong> <em>кто это решает и что рушится,
+            если ошиблись?</em> «Руководство / всё направление» → уровень 0; «продакт / модель и метрика»
+            → 1; «продакт / квартал» → 2; «команда / одна боль» → 3.</li>
+          </ol>
+          <div class="cta-row" style="margin-top:22px">
+            <a class="btn btn--primary" href="plan-1-2.html">План на квартал</a>
+            <a class="btn" href="backlog.html">Открыть бэклог</a>
+          </div>
+        </section>
+      </div><!-- /vy-flow -->
+    </div><!-- /vy-shell -->
+  </main>
+
+  <div data-footer></div>
+
+  <script src="assets/app.js"></script>
+  <script>
+    // Локальный scrollspy для бокового указателя (не трогает общий app.js)
+    (function () {
+      var rail = document.querySelector(".vy-rail");
+      if (!rail) return;
+      var links = [].slice.call(rail.querySelectorAll("a"));
+      var map = {};
+      links.forEach(function (a) {
+        var id = a.getAttribute("href").slice(1);
+        var s = document.getElementById(id);
+        if (s) map[id] = a;
+      });
+      var obs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) {
+            links.forEach(function (l) { l.classList.remove("active"); });
+            var a = map[e.target.id];
+            if (a) a.classList.add("active");
+          }
+        });
+      }, { rootMargin: "-12% 0px -75% 0px", threshold: 0 });
+      Object.keys(map).forEach(function (id) { obs.observe(document.getElementById(id)); });
+    })();
+  </script>
+</body>
+</html>

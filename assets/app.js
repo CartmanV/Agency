@@ -11,7 +11,7 @@ const NAV = [
   { href: "vision.html",   label: "Видение", group: "Обзор" },
   { href: "strategy.html", label: "Стратегия (v5)", short: "Стратегия", group: "Обзор" },
   { href: "nmt.html",      label: "Диагностика (NMT)", short: "Диагностика", group: "Обзор" },
-  { href: "vyvody.html",   label: "Выводы и статус", short: "Выводы", group: "Обзор" },
+  { href: "masshtab.html", label: "Свод по масштабу", short: "Свод", group: "Обзор" },
   { href: "plan-1-2.html", label: "Общий план 1+2", short: "План 1+2", group: "Обзор" },
   { href: "now.html",      label: "Сейчас в работе", group: "Обзор" },
   { href: "q3.html",       label: "Планы Q3", group: "Обзор" },
@@ -3355,7 +3355,7 @@ async function mountExec() {
           <div class="ex-pyr__bar"><div class="ex-pyr__fill" style="width:${pct}%"></div></div>
           <p class="ex-pyr__pt">${gloss(esc((P.width && P.width.t) || ""))}</p>
         </a>
-        <a class="ex-pyr__pillar ex-pyr__pillar--accent" href="${esc((P.depth && P.depth.href) || "vyvody.html")}">
+        <a class="ex-pyr__pillar ex-pyr__pillar--accent" href="${esc((P.depth && P.depth.href) || "masshtab.html")}">
           <div class="ex-pyr__ph"><span class="ex-pyr__pk">${esc((P.depth && P.depth.k) || "Глубина")}</span><span class="ex-pyr__share ex-pyr__share--gold">${esc((P.depth && P.depth.share) || "")}</span></div>
           <div class="ex-pyr__pname">${esc((P.depth && P.depth.name) || "клиентов на агентство")}</div>
           <div class="ex-pyr__lever">главный рычаг 2026</div>
@@ -3746,6 +3746,12 @@ function mountVyvody() {
   glossifyDOM(document.getElementById("main"));
 }
 
+// Свод по масштабу (masshtab.html) — та же диагностика по оси масштаба; расшифровка жаргона
+function mountMasshtab() {
+  if (!document.querySelector("[data-masshtab]")) return;
+  glossifyDOM(document.getElementById("main"));
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   mountHeader();
   mountFooter();
@@ -3754,6 +3760,7 @@ document.addEventListener("DOMContentLoaded", () => {
   mountJtbd();
   mountPlan12();
   mountVyvody();
+  mountMasshtab();
   mountLegend();
   mountAgencies();
   mountSupport();
