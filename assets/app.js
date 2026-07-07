@@ -2815,6 +2815,11 @@ async function mountMetrics() {
     // Компактная формула в карточке; подробности «как считается и почему» — в секции ниже.
     const formula = m.formula ? `<div class="m-formula"><span class="m-formula__h">формула</span> <code>${esc(m.formula)}</code></div>` : "";
     const calcLink = (m.howCalc || (m.why && m.why.length)) ? `<a class="m-calc-link" href="#calc-${mid}">как считается ↓</a>` : "";
+    // На лице карточки — суть (число + к чему привязано). Полная инструментовка и оговорка —
+    // в один fold «подробнее» внизу (паттерн support-ratio: не грузить карточку сразу всем).
+    const more = (note || instr)
+      ? `<details class="m-more"><summary>подробнее ↓</summary><div class="m-more__body">${note}${instr}</div></details>`
+      : "";
     return `
       <article id="m-${mid}" class="m-card ${m.type === "active" ? "is-act" : "is-tgt"}">
         <div class="m-card__top">
@@ -2829,7 +2834,7 @@ async function mountMetrics() {
           <span>подцель ${esc(m.subgoal)}</span>
           <span>${esc(m.hypothesis)}</span>
         </div>
-        ${base}${formula}${fact}${note}${instr}
+        ${base}${formula}${fact}${more}
         <div class="m-links">
           <a class="m-link" href="backlog.html?q=${encodeURIComponent(m.code)}">итерации с метрикой →</a>
           ${calcLink}
@@ -3014,17 +3019,18 @@ async function mountMetrics() {
   const active = metrics.filter((m) => m.type === "active").sort(byStage);
   const target = metrics.filter((m) => m.type === "target").sort(byStage);
 
-  // Основное визуальное разделение — Целевые и Активные.
+  // Основное визуальное разделение — Активные (что двигаем) и Целевые (куда идём).
+  // Активные первыми: сначала то, на что влияем прямо, потом косвенная цель направления.
   const primary = `
-    <section class="m-group m-group--primary m-group--tgt">
-      <h2>Целевые <span class="m-h-cnt">${target.length}</span></h2>
-      <p class="m-group__sub">Куда хотим прийти. Влияем косвенно — показывают, сдвигается ли цель направления.</p>
-      <div class="m-grid">${target.map(card).join("")}</div>
-    </section>
     <section class="m-group m-group--primary m-group--act">
       <h2>Активные <span class="m-h-cnt">${active.length}</span></h2>
       <p class="m-group__sub">На них влияем прямо и планируем считать в Q2. По каждой — одна ведущая метрика.</p>
       <div class="m-grid">${active.map(card).join("")}</div>
+    </section>
+    <section class="m-group m-group--primary m-group--tgt">
+      <h2>Целевые <span class="m-h-cnt">${target.length}</span></h2>
+      <p class="m-group__sub">Куда хотим прийти. Влияем косвенно — показывают, сдвигается ли цель направления.</p>
+      <div class="m-grid">${target.map(card).join("")}</div>
     </section>`;
 
   const leadHTML = Object.entries(data.leading || {}).map(([blk, arr]) =>
@@ -3074,18 +3080,18 @@ async function mountMetrics() {
       </div>
     </section>` : "";
 
+  // Порядок повествования: главная цифра (NSM) → что это за метрики (лид) → сами метрики
+  // (активные → целевые) → ведущие по блокам → открытые вопросы → служебное «как» (fold).
+  const intro = data.intro
+    ? `<div class="m-intro"><p class="lede">${esc(data.intro)}</p></div>`
+    : "";
   host.innerHTML = `
     ${nsmHero(data.nsm)}
-    <div class="m-intro">
-      <div class="stats">
-        <div class="stat"><div class="v">${target.length}</div><div class="l">целевых</div></div>
-        <div class="stat"><div class="v">${active.length}</div><div class="l">активных</div></div>
-      </div>
-    </div>
-    ${instrHero(data.instrumentation)}
+    ${intro}
     ${primary}
     ${secondary}
     ${openQ}
+    ${instrHero(data.instrumentation)}
     ${calc}`;
 
   // Доскролл к метрике/методике, если пришли по ссылке #m-<код> или #calc-<код> (рендер асинхронный).
