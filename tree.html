@@ -16,23 +16,21 @@
     .nmt-node{ border:1px solid var(--line); background:var(--panel); border-radius:11px; padding:14px 15px; border-top:3px solid var(--line); }
     .nmt-node.n-big{ border-top-color:var(--cream-dim); }
     .nmt-node.n-core{ border-top-color:var(--gold); }
-    .nmt-node.n-small{ border-top-color:var(--pink); }
-    .nmt-node.n-micro{ border-top-color:var(--blue); }
+    .nmt-node.n-small{ border-top-color:var(--cream-soft); }
+    .nmt-node.n-micro{ border-top-color:var(--muted); }
     .nmt-node .nk{ font-family:var(--f-mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; margin-bottom:7px; }
     .nmt-node.n-big .nk{ color:var(--cream-dim); }
     .nmt-node.n-core .nk{ color:var(--gold); }
-    .nmt-node.n-small .nk{ color:var(--pink-soft); }
-    .nmt-node.n-micro .nk{ color:var(--blue); }
+    .nmt-node.n-small .nk{ color:var(--cream-soft); }
+    .nmt-node.n-micro .nk{ color:var(--muted); }
     .nmt-node .nd{ font-size:12.5px; line-height:1.5; color:var(--cream-soft); }
     .nmt-node .nx{ display:block; margin-top:7px; font-size:11.5px; color:var(--cream-dim); font-style:italic; }
-    .model-note{ border:1px solid var(--gold-line); background:var(--gold-dim); border-radius:9px; padding:13px 17px; margin-bottom:30px; font-size:13px; line-height:1.6; color:var(--cream-soft); }
-    .model-note b{ color:var(--cream); }
     /* чип типа узла на листе */
     .nt{ display:inline-block; margin-left:6px; font-family:var(--f-mono); font-size:9.5px; letter-spacing:.1em; text-transform:uppercase; padding:1px 6px; border-radius:4px; vertical-align:middle; }
     .nt-core{ background:var(--gold); color:var(--bg); }
-    .nt-small{ background:var(--pink); color:var(--bg); }
-    .nt-micro{ background:var(--blue); color:var(--bg); }
-    .node-name .sg{ font-family:var(--f-mono); font-weight:400; font-size:11px; color:var(--cream-dim); text-transform:none; letter-spacing:.02em; }
+    .nt-small{ background:var(--cream-soft); color:var(--bg); }
+    .nt-micro{ background:var(--muted); color:var(--bg); }
+    .node-name .sg{ font-family:var(--f-body); font-weight:400; font-size:12px; color:var(--cream-dim); text-transform:none; letter-spacing:.01em; }
   </style>
 </head>
 <body>
@@ -71,20 +69,11 @@
       </div>
     </div>
 
-    <div class="model-note">
-      <b>Пересборка v2.0 (2026-07-04).</b> Раньше было два дерева на разных языках: JTBD-док на
-      Big/Medium/Small и сайт на графе NMT. Слово «Small» значило в них противоположное. Теперь
-      единый канон — граф NMT. <b>7 подцелей — это проекция</b> (ярлык «п.1–7» на листе), а не
-      уровень графа. Прежний «Small = рутина» расщеплён на <b>Core</b> (что делаем) и <b>Micro</b>
-      (как), а имя Small отдано соседним недоделанным работам — вектору роста вглубь (находка E.8).
-    </div>
-
     <!-- KOРЕНЬ -->
     <div class="jtbd-root">
       <div class="tag">Big job агентства · корень</div>
       <div class="txt">«Оставаться нужным корпоративному клиенту: зарабатывать больше и обслуживать больше — не раздувая штат.»</div>
       <div class="sub">Отвечает за неё руководитель агентства; остальные роли своими Big job работают на эту же цель. Главная угроза — что клиент уйдёт обслуживаться в платформу напрямую (SmartWay, OneTwoTrip для бизнеса, банк-экосистемы) или к более технологичному агентству. Ракета помогает агентству его удержать.</div>
-      <div class="pin"><b>E.7</b>У Ракеты и у агентства разные конкуренты: SmartWay и Corteos борются с Ракетой за платформу, а агентство теряет клиента, если тот уходит в платформу напрямую.</div>
     </div>
 
     <div class="jtbd-tools" style="margin-top:22px">
@@ -94,7 +83,6 @@
       <span class="leg"><span class="nt nt-core" style="margin:0">Core</span></span>
       <span class="leg"><span class="nt nt-micro" style="margin:0">Micro</span></span>
       <span class="leg"><span class="nt nt-small" style="margin:0">Small · рост</span></span>
-      <span class="leg leg--dash">«п.N» — проекция подцели · «этап N» — шаг стратегии</span>
     </div>
 
     <!-- ВЕТВЛЕНИЕ -->
@@ -112,35 +100,34 @@
         </header>
 
         <div class="node">
-          <div class="node-head"><span class="node-num nt-core" style="background:var(--gold);color:var(--bg)">Core</span><span class="node-name">Что Ракета делает целиком</span></div>
-          <div class="leaf">Готовый запрос на доп. услуги: багаж, VIP, смена даты<a class="leaf-br" href="backlog.html?theme=Оффлайн%204.0">Оффлайн 4.0</a><span class="leaf-tag">п.1 · 2A</span></div>
-          <div class="leaf">Запрос в свободной форме → структурированная услуга<a class="leaf-br" href="backlog.html?theme=Оффлайн%204.0">Оффлайн 4.0</a><span class="leaf-tag">п.1 · 2A</span></div>
-          <div class="leaf">Обменять или вернуть авиабилет самому, без поддержки<a class="leaf-br" href="backlog.html?theme=Онлайн-услуги">Онлайн-транзакции</a><span class="leaf-tag">п.1 · 2A</span></div>
-          <div class="leaf">Оформлять оффлайн-услуги и сборы прямо в заказе<a class="leaf-br" href="backlog.html?theme=Заказы">Заказы</a><span class="leaf-tag">п.2 · 2B</span></div>
-          <div class="leaf">Собрать предложение клиенту (КП) за пару кликов<a class="leaf-br" href="backlog.html?theme=Предложения%202.0">Предложения 2.0</a><span class="leaf-tag">этап 5 · вне Q2</span><span class="pin pin--inline"><b>сверка v10</b>узел Core, но вся тема Won't/этап 5; 2A-итерации КП в бэклоге нет</span></div>
+          <div class="node-head"><span class="node-num nt-core">Core</span><span class="node-name">Что Ракета делает целиком</span></div>
+          <div class="leaf">Готовый запрос на доп. услуги: багаж, VIP, смена даты<a class="leaf-br" href="backlog.html?theme=Оффлайн%204.0">Оффлайн 4.0</a></div>
+          <div class="leaf">Запрос в свободной форме → структурированная услуга<a class="leaf-br" href="backlog.html?theme=Оффлайн%204.0">Оффлайн 4.0</a></div>
+          <div class="leaf">Обменять или вернуть авиабилет самому, без поддержки<a class="leaf-br" href="backlog.html?theme=Онлайн-услуги">Онлайн-транзакции</a></div>
+          <div class="leaf">Оформлять оффлайн-услуги и сборы прямо в заказе<a class="leaf-br" href="backlog.html?theme=Заказы">Заказы</a></div>
+          <div class="leaf">Собрать предложение клиенту (КП) за пару кликов<a class="leaf-br" href="backlog.html?theme=Предложения%202.0">Предложения 2.0</a></div>
         </div>
 
         <div class="node">
-          <div class="node-head"><span class="node-num nt-micro" style="background:var(--blue);color:var(--bg)">Micro</span><span class="node-name">Как это делается внутри</span></div>
-          <div class="leaf">Не терять привычный флоу на старте, не бегать в поддержку<span class="leaf-br">паритет</span><span class="leaf-tag">п.7 · этап 1</span></div>
-          <div class="leaf">Привычный вид корзины, списка и карточки заказа<a class="leaf-br" href="backlog.html?theme=Заказы">Заказы</a><span class="leaf-tag">п.7 · этап 1</span></div>
-          <div class="leaf">Быстро собрать полный запрос клиента<a class="leaf-br" href="backlog.html?theme=Заказы">Заказы</a><span class="leaf-tag">п.1 · 2A</span></div>
-          <div class="leaf">Видеть всё по заказу в одном окне<a class="leaf-br" href="backlog.html?theme=Заказы">Заказы</a><span class="leaf-tag">п.1 · 2A</span></div>
-          <div class="leaf">Видеть и показывать клиенту статус по заказам<a class="leaf-br" href="backlog.html?theme=Заказы">Заказы</a><span class="leaf-tag">п.2 · 2B</span></div>
+          <div class="node-head"><span class="node-num nt-micro">Micro</span><span class="node-name">Как это делается внутри</span></div>
+          <div class="leaf">Не терять привычный флоу на старте, не бегать в поддержку<span class="leaf-br">паритет</span></div>
+          <div class="leaf">Привычный вид корзины, списка и карточки заказа<a class="leaf-br" href="backlog.html?theme=Заказы">Заказы</a></div>
+          <div class="leaf">Быстро собрать полный запрос клиента<a class="leaf-br" href="backlog.html?theme=Заказы">Заказы</a></div>
+          <div class="leaf">Видеть всё по заказу в одном окне<a class="leaf-br" href="backlog.html?theme=Заказы">Заказы</a></div>
+          <div class="leaf">Видеть и показывать клиенту статус по заказам<a class="leaf-br" href="backlog.html?theme=Заказы">Заказы</a></div>
         </div>
 
         <div class="node">
-          <div class="node-head"><span class="node-num nt-small" style="background:var(--pink);color:var(--bg)">Small</span><span class="node-name">Соседняя работа — <span class="sg">пока не делаем, здесь рост</span></span></div>
-          <div class="leaf">Единая переписка, привязанная к заказу<a class="leaf-br" href="backlog.html?theme=Единый%20чат">Единый чат</a><span class="leaf-tag">п.2 · 2B</span></div>
-          <div class="leaf">Собрать документы и отправить одной ссылкой<a class="leaf-br" href="backlog.html?theme=Сервис%20для%20клиента">Сервис клиенту</a><span class="leaf-tag">п.6 · 2A/4</span></div>
-          <div class="leaf">Показывать клиенту новости → меньше вопросов<span class="leaf-br">Виджеты</span><span class="pin pin--inline"><b>E.4</b>повтор у супервизора</span></div>
-          <div class="leaf">Согласование КП и аналитика поездок на стороне клиента<a class="leaf-br" href="backlog.html?theme=Сервис%20для%20клиента">Сервис клиенту</a><span class="leaf-tag">п.3 · этап 4 · вне Q2</span></div>
+          <div class="node-head"><span class="node-num nt-small">Small</span><span class="node-name">Соседняя работа — <span class="sg">пока не делаем, здесь рост</span></span></div>
+          <div class="leaf">Единая переписка, привязанная к заказу<a class="leaf-br" href="backlog.html?theme=Единый%20чат">Единый чат</a></div>
+          <div class="leaf">Собрать документы и отправить одной ссылкой<a class="leaf-br" href="backlog.html?theme=Сервис%20для%20клиента">Сервис клиенту</a></div>
+          <div class="leaf">Показывать клиенту новости → меньше вопросов<span class="leaf-br">Виджеты</span></div>
+          <div class="leaf">Согласование КП и аналитика поездок на стороне клиента<a class="leaf-br" href="backlog.html?theme=Сервис%20для%20клиента">Сервис клиенту</a></div>
         </div>
 
         <div class="node node--direct">
           <div class="node-head"><span class="node-name">↑ Напрямую к Big job</span></div>
-          <div class="leaf">Чтобы клиент был доволен и отношения крепли<span class="leaf-tag">после поездки</span></div>
-          <div class="pin"><b>E.3</b>пока нет показателя на итог (доволен ли клиент) — мы измеряем процесс, а не результат. Достройка клиентских метрик — правка 5 NMT.</div>
+          <div class="leaf">Чтобы клиент был доволен и отношения крепли</div>
         </div>
       </section>
 
@@ -153,22 +140,21 @@
         </header>
 
         <div class="node">
-          <div class="node-head"><span class="node-num nt-micro" style="background:var(--blue);color:var(--bg)">Micro</span><span class="node-name">Настройка и паритет</span></div>
-          <div class="leaf">Настроить нового клиента<a class="leaf-br" href="backlog.html?theme=Агентская%20админка">Агентская админка</a><span class="leaf-tag">п.7 · этап 1</span></div>
-          <div class="leaf">Чтобы клиент видел новые возможности<span class="leaf-tag">п.7 · этап 1</span></div>
+          <div class="node-head"><span class="node-num nt-micro">Micro</span><span class="node-name">Настройка и паритет</span></div>
+          <div class="leaf">Настроить нового клиента<a class="leaf-br" href="backlog.html?theme=Агентская%20админка">Агентская админка</a></div>
+          <div class="leaf">Чтобы клиент видел новые возможности</div>
         </div>
 
         <div class="node">
-          <div class="node-head"><span class="node-num nt-small" style="background:var(--pink);color:var(--bg)">Small</span><span class="node-name">История, разбор, нагрузка</span></div>
-          <div class="leaf">Открыть всю историю кейса в один клик при жалобе<a class="leaf-br" href="backlog.html?theme=Заказы">Заказы / История</a><span class="leaf-tag">п.2 · 2B</span></div>
-          <div class="leaf">Отчёт: где чаще всего возникают ошибки<span class="leaf-br">Рабочее место</span><span class="leaf-tag">п.2 · 2B</span></div>
+          <div class="node-head"><span class="node-num nt-small">Small</span><span class="node-name">История, разбор, нагрузка</span></div>
+          <div class="leaf">Открыть всю историю кейса в один клик при жалобе<a class="leaf-br" href="backlog.html?theme=Заказы">Заказы / История</a></div>
+          <div class="leaf">Отчёт: где чаще всего возникают ошибки<span class="leaf-br">Рабочее место</span></div>
         </div>
 
         <div class="node node--orphan">
           <div class="node-head"><span class="node-name">Распределять нагрузку команды</span><span class="med-stage sx">ядро супервизора · вне 7 подцелей</span></div>
           <div class="leaf">Видеть по каждому консультанту: заявки, время, «зависшие»<span class="leaf-br">Панель загрузки</span></div>
           <div class="leaf">Сигнал «не успеваем в срок» + перераспределить заявки<span class="leaf-br">Панель загрузки</span></div>
-          <div class="pin"><b>E.1</b>эта работа не попадает ни в одну из 7 подцелей; закрываем её через подцель «убрать тормоза».</div>
         </div>
       </section>
 
@@ -181,32 +167,30 @@
         </header>
 
         <div class="node">
-          <div class="node-head"><span class="node-num nt-small" style="background:var(--pink);color:var(--bg)">Small</span><span class="node-name">Бухгалтерия · <span class="sg">быстрее получать деньги</span></span><span class="med-stage sx">этап 3</span></div>
-          <div class="leaf">Сверять платежи и остатки без ручной выгрузки<span class="leaf-br">Баланс / мультивалюта</span><span class="leaf-tag">предположение</span></div>
-          <div class="leaf">Закрывающие документы без ручного ввода в 1С<span class="leaf-br">Мидофис</span><span class="leaf-tag">предположение</span></div>
+          <div class="node-head"><span class="node-num nt-small">Small</span><span class="node-name">Бухгалтерия · <span class="sg">быстрее получать деньги</span></span><span class="med-stage sx">этап 3</span></div>
+          <div class="leaf">Сверять платежи и остатки без ручной выгрузки<span class="leaf-br">Баланс / мультивалюта</span></div>
+          <div class="leaf">Закрывающие документы без ручного ввода в 1С<span class="leaf-br">Мидофис</span></div>
         </div>
 
         <div class="node">
-          <div class="node-head"><span class="node-num nt-small" style="background:var(--pink);color:var(--bg)">Small</span><span class="node-name">Руководитель · <span class="sg">больше прибыли и клиентов</span></span><span class="med-stage sx">этапы 4–5</span></div>
-          <div class="leaf">Самому настраивать сборы и правила оформления<a class="leaf-br" href="backlog.html?theme=Агентская%20админка">Агентская админка</a><span class="leaf-tag">→ Core при переносе в продукт</span></div>
-          <div class="leaf">Больше клиентов тем же штатом — клиент обслуживает себя сам<a class="leaf-br" href="backlog.html?theme=Сервис%20для%20клиента">Сервис клиенту</a><span class="leaf-tag">предположение</span></div>
+          <div class="node-head"><span class="node-num nt-small">Small</span><span class="node-name">Руководитель · <span class="sg">больше прибыли и клиентов</span></span><span class="med-stage sx">этапы 4–5</span></div>
+          <div class="leaf">Самому настраивать сборы и правила оформления<a class="leaf-br" href="backlog.html?theme=Агентская%20админка">Агентская админка</a></div>
+          <div class="leaf">Больше клиентов тем же штатом — клиент обслуживает себя сам<a class="leaf-br" href="backlog.html?theme=Сервис%20для%20клиента">Сервис клиенту</a></div>
         </div>
 
         <div class="node">
-          <div class="node-head"><span class="node-num nt-small" style="background:var(--pink);color:var(--bg)">Small</span><span class="node-name">IT · <span class="sg">обмен данными без сбоев</span></span><span class="med-stage sx">этап 4</span></div>
-          <div class="leaf">Связь с 1С и бухгалтерией без ручного ввода<span class="leaf-br">Мидофис</span><span class="leaf-tag">предположение</span></div>
+          <div class="node-head"><span class="node-num nt-small">Small</span><span class="node-name">IT · <span class="sg">обмен данными без сбоев</span></span><span class="med-stage sx">этап 4</span></div>
+          <div class="leaf">Связь с 1С и бухгалтерией без ручного ввода<span class="leaf-br">Мидофис</span></div>
           <div class="pin">У Мидофиса двойная привязка: часть работает уже на этап 1 (H1.5 — паритет обмена данными) и 2A. <b>Сверка v10:</b> тема не декомпозирована в бэклоге (0 итераций L3) — gap, кандидат в Q3.</div>
         </div>
-
-        <div class="pin pin--col"><b>E.2</b>У этих подцелей нет Core/Micro рядового сотрудника на ближайший период — это Small-работы руководителя и бухгалтерии. Значит, текущий фокус выбран верно.</div>
       </section>
     </div>
 
     <!-- ЧТО МЕШАЕТ ВНЕДРЕНИЮ -->
     <section class="friction">
       <div class="fh">⚠ Что мешает внедрению · этап 1 — тормозит, даже когда Core уже готов</div>
-      <div class="fitem"><strong>Подорванное доверие.</strong> Один сбой Ракеты — и консультант решает «в старой программе надёжнее», перестаёт пользоваться даже готовым Core. Дать функции мало — нужно вернуть доверие. Задач и владельца под это пока нет (gap R4/R11); первый шаг — снять baseline Adoption-in-AA.<span class="pin pin--inline"><b>E.5</b></span></div>
-      <div class="fitem"><strong>Бонус против автоматизации.</strong> Бонус консультанта зависит от числа транзакций (допущение, проверяем интервью 3–5 агентств, R5). Правило: Core-операцию <em>ускорять</em> (успевает больше — бонус растёт), а не <em>забирать</em> к клиенту.<span class="pin pin--inline"><b>E.6</b></span></div>
+      <div class="fitem"><strong>Подорванное доверие.</strong> Один сбой Ракеты — и консультант решает «в старой программе надёжнее», перестаёт пользоваться даже готовым Core. Дать функции мало — нужно вернуть доверие. Задач и владельца под это пока нет (gap R4/R11); первый шаг — снять baseline Adoption-in-AA.</div>
+      <div class="fitem"><strong>Бонус против автоматизации.</strong> Бонус консультанта зависит от числа транзакций (допущение, проверяем интервью 3–5 агентств, R5). Правило: Core-операцию <em>ускорять</em> (успевает больше — бонус растёт), а не <em>забирать</em> к клиенту.</div>
     </section>
 
     <!-- СВОД НАБЛЮДЕНИЙ -->
@@ -215,7 +199,7 @@
         <span class="findings-chev">▶</span>
         <span class="findings-ttl">Что мы заметили</span>
         <span class="findings-cnt">8</span>
-        <span class="findings-hint">— выводы E.1–E.8, часть отмечена пунктиром выше</span>
+        <span class="findings-hint">— полный список выводов E.1–E.8 по дереву</span>
       </summary>
       <div class="findings-body">
         <div class="frow"><span class="fk">E.1</span><p>Распределение нагрузки супервизора не попадает ни в одну из 7 подцелей. Закрываем через подцель «убрать тормоза».</p></div>
