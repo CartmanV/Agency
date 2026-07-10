@@ -3451,7 +3451,7 @@ async function mountExec() {
           <a class="ex-track${t.focus ? " ex-track--focus" : ""}" href="${esc(t.href)}">
             <span class="ex-track__n">${esc(t.n)}</span>
             <span class="ex-track__b"><span class="ex-track__name">${esc(t.name)}</span>
-            <span class="ex-track__owner">${t.focus ? "✓ " : "⚠ "}${esc(t.owner)}</span></span>
+            <span class="ex-track__owner">${(t.focus || t.owned) ? "✓ " : "⚠ "}${esc(t.owner)}</span></span>
           </a>`).join("")}</div>
         ${d.tracks.note ? `<p class="ex-note">${gloss(esc(d.tracks.note))}</p>` : ""}
       </div>` : ""}
