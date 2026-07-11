@@ -20,6 +20,7 @@ const NAV = [
   { href: "tree.html",     label: "Дерево (JTBD)", group: "Работа" },
   { href: "levels.html",   label: "Каталог задач", group: "Работа" },
   { href: "backlog.html",  label: "Бэклог", group: "Работа" },
+  { href: "initiatives.html", label: "Инициативы", group: "Работа" },
   { href: "metod.html",    label: "Метод оценки задач", short: "Метод оценки", group: "Работа" },
   // Данные — доказательная база + справка
   { href: "research.html", label: "Исследования", group: "Данные" },
@@ -387,6 +388,71 @@ const SEARCH_FIELDS = ["title", "jobStory", "iteration", "id", "gitlabId", "quot
 const COLS_STORAGE = "agency-backlog-cols-v1";
 const FILTERS_STORAGE = "agency-backlog-filters-v1";   // память поиска/фильтров/сортировки (ТЗ 07)
 
+// Колонки страницы «Инициативы» (сокращённый бэклог): та же ось, что бэклог, но без
+// «Цитата / данные» и «Агентства (исслед.)», плюс «Задач» и «Свёрнутые итерации».
+const INIT_COLS = [
+  ["num", "#", "num", true],
+  ["status", "Статус", "text", false],
+  ["moscow", "MoSCoW", "badge", true],
+  ["theme", "Тема", "text", true],
+  ["level2", "Уровень 2", "text", true],
+  ["iteration", "Инициатива", "title", true],
+  ["taskCount", "Задач", "num", true],
+  ["gitlabId", "ID гитлаб", "mono", false],
+  ["title", "Название", "title", true],
+  ["jobStory", "Проблема (Job Story)", "long", true],
+  ["problemSource", "Проблема: источник", "text", false],
+  ["stage", "Этап", "text", true],
+  ["block", "Блок", "text", true],
+  ["mechanism", "Механизм", "text", true],
+  ["subgoal", "Подцель", "text", true],
+  ["hypothesis", "Гипотеза", "long", true],
+  ["reach", "Reach", "num", true],
+  ["impact", "Impact", "num", true],
+  ["confidence", "Confidence", "num", true],
+  ["effort", "Effort", "num", true],
+  ["rice", "RICE", "num", true],
+  ["pvMult", "PV Mult", "num", true],
+  ["finalScore", "Final", "num", true],
+  ["gate", "Gate", "badge-plain", true],
+  ["concentration", "Концентрация", "text", true],
+  ["rationale", "Обоснование", "long", false],
+  ["pvNotes", "PV Notes", "text", false],
+  ["activeMetrics", "Активные метрики", "text", true],
+  ["targetMetrics", "Целевые метрики", "text", true],
+  ["reachNote", "Reach — обоснование", "long", false],
+  ["collapsedIterations", "Свёрнутые итерации", "long", false],
+];
+const INIT_FILTER_FIELDS = [
+  ["theme", "Тема"],
+  ["moscow", "MoSCoW"],
+  ["stage", "Этап"],
+  ["mechanism", "Механизм"],
+  ["subgoal", "Подцель"],
+  ["gate", "Gate"],
+  ["hCode", "Гипотеза"],
+  ["concentration", "Концентрация"],
+];
+const INIT_SEARCH_FIELDS = ["title", "jobStory", "iteration", "id", "gitlabId", "rationale", "hypothesis", "activeMetrics", "targetMetrics", "collapsedIterations", "reachNote"];
+
+// Конфиг рендерера таблицы: backlog.html и initiatives.html — одна машина, разные данные/колонки.
+const BACKLOG_CFG = {
+  host: "[data-backlog]", dataUrl: "data/backlog.json",
+  cols: COLS_FULL, filterFields: FILTER_FIELDS, searchFields: SEARCH_FIELDS,
+  colsStorage: COLS_STORAGE, filtersStorage: FILTERS_STORAGE,
+  loading: "Загрузка бэклога…", searchLabel: "Поиск по бэклогу",
+  searchPlaceholder: "Поиск по названию, job story, гипотезе, агентствам, цитатам, ID…",
+  unit: "итераций", countLabel: "итераций", tableClass: "",
+};
+const INIT_CFG = {
+  host: "[data-initiatives]", dataUrl: "data/initiatives.json",
+  cols: INIT_COLS, filterFields: INIT_FILTER_FIELDS, searchFields: INIT_SEARCH_FIELDS,
+  colsStorage: "agency-init-cols-v1", filtersStorage: "agency-init-filters-v1",
+  loading: "Загрузка инициатив…", searchLabel: "Поиск по инициативам",
+  searchPlaceholder: "Поиск по названию, job story, гипотезе, свёрнутым итерациям, ID…",
+  unit: "инициатив", countLabel: "инициатив", tableClass: "backlog--init",
+};
+
 function hCodeOf(s) {
   const m = /^\s*(H\d+(?:\.\d+)*)/.exec(String(s || ""));
   return m ? m[1] : "";
@@ -404,23 +470,25 @@ function compare(a, b, key, dir) {
   return dir === "desc" ? -r : r;
 }
 
-async function mountBacklog() {
-  const host = document.querySelector("[data-backlog]");
+async function mountBacklog(cfg = BACKLOG_CFG) {
+  const host = document.querySelector(cfg.host);
   if (!host) return;
-  host.innerHTML = `<div class="loading">Загрузка бэклога…</div>`;
+  const COLS = cfg.cols, FILTERS = cfg.filterFields, SEARCH = cfg.searchFields;
+  const COLS_KEY = cfg.colsStorage, FILTERS_KEY = cfg.filtersStorage;
+  host.innerHTML = `<div class="loading">${esc(cfg.loading)}</div>`;
 
   let data;
-  try { data = await loadJSON("data/backlog.json"); }
+  try { data = await loadJSON(cfg.dataUrl); }
   catch (e) { host.innerHTML = `<div class="error">${esc(e.message)}</div>`; return; }
 
   const all = data.items || [];
   all.forEach((it) => { it.hCode = hCodeOf(it.hypothesis); });
 
-  const defaultsOn = COLS_FULL.filter((c) => c[3]).map((c) => c[0]);
+  const defaultsOn = COLS.filter((c) => c[3]).map((c) => c[0]);
   let savedCols = null;
-  try { const raw = localStorage.getItem(COLS_STORAGE); if (raw) savedCols = JSON.parse(raw); } catch (e) { /* ignore */ }
+  try { const raw = localStorage.getItem(COLS_KEY); if (raw) savedCols = JSON.parse(raw); } catch (e) { /* ignore */ }
   const visInit = Array.isArray(savedCols) && savedCols.length
-    ? new Set(savedCols.filter((k) => COLS_FULL.some((c) => c[0] === k)))
+    ? new Set(savedCols.filter((k) => COLS.some((c) => c[0] === k)))
     : new Set(defaultsOn);
 
   const state = {
@@ -430,11 +498,11 @@ async function mountBacklog() {
     expanded: new Set(),
     vis: visInit,
   };
-  const visCols = () => COLS_FULL.filter((c) => state.vis.has(c[0]));
-  const colType = (key) => (COLS_FULL.find((c) => c[0] === key) || [])[2];
+  const visCols = () => COLS.filter((c) => state.vis.has(c[0]));
+  const colType = (key) => (COLS.find((c) => c[0] === key) || [])[2];
 
   // опции фильтров — из реальных значений, по убыванию частоты
-  const filterDefs = FILTER_FIELDS.map(([field, label]) => {
+  const filterDefs = FILTERS.map(([field, label]) => {
     const counts = new Map();
     all.forEach((x) => {
       const v = x[field] == null || x[field] === "" ? "—" : x[field];
@@ -450,18 +518,18 @@ async function mountBacklog() {
         .concat(options.map(([v, c]) => `<option value="${esc(v)}">${esc(v)} (${c})</option>`));
       return `<select data-filter="${field}" class="ctl" aria-label="Фильтр: ${esc(label)}">${opts.join("")}</select>`;
     }).join("");
-    const boxes = COLS_FULL.map(([key, label]) =>
+    const boxes = COLS.map(([key, label]) =>
       `<label class="colbox"><input type="checkbox" data-col="${key}" ${state.vis.has(key) ? "checked" : ""}/> ${esc(label)}</label>`).join("");
     return `
       <div class="toolbar" role="search">
         <input type="search" class="ctl ctl--search" data-search
-               aria-label="Поиск по бэклогу" autocomplete="off" spellcheck="false"
-               placeholder="Поиск по названию, job story, гипотезе, агентствам, цитатам, ID…" />
+               aria-label="${esc(cfg.searchLabel)}" autocomplete="off" spellcheck="false"
+               placeholder="${esc(cfg.searchPlaceholder)}" />
         ${selects}
         <button type="button" class="ctl ctl--reset" data-reset>Сбросить</button>
       </div>
       <details class="cols-panel">
-        <summary>Колонки <span data-cols-count>(${state.vis.size}/${COLS_FULL.length})</span></summary>
+        <summary>Колонки <span data-cols-count>(${state.vis.size}/${COLS.length})</span></summary>
         <div class="cols-grid">${boxes}</div>
       </details>
       <div class="result-meta" data-meta aria-live="polite"></div>`;
@@ -489,7 +557,6 @@ async function mountBacklog() {
   }
 
   function detailHTML(it, span) {
-    const cols = COLS_FULL;
     const get = (k) => { const v = it[k]; return v == null || v === "" ? null : v; };
     const row = (label, val) => val ? `<div class="bd-row"><dt>${esc(label)}</dt><dd>${esc(val)}</dd></div>` : "";
     const score = `R ${get("reach") ?? "—"} · I ${get("impact") ?? "—"} · C ${get("confidence") ?? "—"} · E ${get("effort") ?? "—"} → RICE ${get("rice") ?? "—"} → PV ${get("pvMult") ?? "—"} → Final ${get("finalScore") ?? "—"}`;
@@ -510,8 +577,11 @@ async function mountBacklog() {
             </dl></div>
             <div class="bd-sect"><div class="bd-h">Скоринг</div><dl>
               <div class="bd-row"><dt>RICE</dt><dd class="mono">${esc(score)}</dd></div>
-              ${row("Gate", get("gate"))}${row("Концентрация", get("concentration"))}
+              ${row("Gate", get("gate"))}${row("Концентрация", get("concentration"))}${row("Reach — обоснование", get("reachNote"))}
             </dl></div>
+            ${(get("taskCount") != null || get("collapsedIterations")) ? `<div class="bd-sect"><div class="bd-h">Свёртка инициативы</div><dl>
+              ${row("Задач в инициативе", get("taskCount"))}${row("Свёрнутые итерации", get("collapsedIterations"))}
+            </dl></div>` : ""}
             <div class="bd-sect"><div class="bd-h">Метрики</div><dl>
               ${row("Активные", get("activeMetrics"))}${row("Целевые", get("targetMetrics"))}
             </dl></div>
@@ -566,7 +636,7 @@ async function mountBacklog() {
         if (String(cur) !== val) return false;
       }
       if (q) {
-        const hay = SEARCH_FIELDS.map((f) => it[f] || "").join(" ").toLowerCase();
+        const hay = SEARCH.map((f) => it[f] || "").join(" ").toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
@@ -585,12 +655,12 @@ async function mountBacklog() {
   // Память поиска/фильтров/сортировки между визитами (ТЗ 07). Колонки — отдельно (COLS_STORAGE).
   function saveFilters() {
     try {
-      localStorage.setItem(FILTERS_STORAGE, JSON.stringify({ q: state.q, filters: state.filters, sort: state.sort }));
+      localStorage.setItem(FILTERS_KEY, JSON.stringify({ q: state.q, filters: state.filters, sort: state.sort }));
     } catch (e) { /* ignore */ }
   }
   function restoreFilters() {
     let s = null;
-    try { const raw = localStorage.getItem(FILTERS_STORAGE); if (raw) s = JSON.parse(raw); } catch (e) { /* ignore */ }
+    try { const raw = localStorage.getItem(FILTERS_KEY); if (raw) s = JSON.parse(raw); } catch (e) { /* ignore */ }
     if (!s) return;
     if (typeof s.q === "string" && s.q) {
       state.q = s.q;
@@ -635,13 +705,13 @@ async function mountBacklog() {
 
   host.innerHTML = `
     <div class="stats">
-      <div class="stat"><div class="v">${all.length}</div><div class="l">итераций</div></div>
+      <div class="stat"><div class="v">${all.length}</div><div class="l">${esc(cfg.unit)}</div></div>
       <div class="stat"><div class="v">${mustCount}</div><div class="l">Must</div></div>
       <div class="stat"><div class="v">${themes.size}</div><div class="l">тем</div></div>
     </div>
     ${controlsHTML()}
     <div class="table-wrap table-wrap--full">
-      <table class="backlog backlog--full">
+      <table class="backlog backlog--full ${cfg.tableClass || ""}">
         <thead><tr></tr></thead>
         <tbody></tbody>
       </table>
@@ -656,7 +726,7 @@ async function mountBacklog() {
     state.sort = { key: "moscow", dir: "asc" };
     host.querySelector("[data-search]").value = "";
     host.querySelectorAll("[data-filter]").forEach((s) => (s.value = ""));
-    try { localStorage.removeItem(FILTERS_STORAGE); } catch (e) { /* ignore */ }
+    try { localStorage.removeItem(FILTERS_KEY); } catch (e) { /* ignore */ }
     history.replaceState(null, "", location.pathname);
     apply();
   });
@@ -664,9 +734,9 @@ async function mountBacklog() {
     cb.addEventListener("change", (e) => {
       const key = e.target.dataset.col;
       if (e.target.checked) state.vis.add(key); else state.vis.delete(key);
-      try { localStorage.setItem(COLS_STORAGE, JSON.stringify([...state.vis])); } catch (err) { /* ignore */ }
+      try { localStorage.setItem(COLS_KEY, JSON.stringify([...state.vis])); } catch (err) { /* ignore */ }
       const c = host.querySelector("[data-cols-count]");
-      if (c) c.textContent = `(${state.vis.size}/${COLS_FULL.length})`;
+      if (c) c.textContent = `(${state.vis.size}/${COLS.length})`;
       apply();
     });
   });
@@ -3766,6 +3836,7 @@ document.addEventListener("DOMContentLoaded", () => {
   mountHeader();
   mountFooter();
   mountBacklog();
+  mountBacklog(INIT_CFG);       // initiatives.html — та же машина, [data-initiatives]
   mountLevels();
   mountJtbd();
   mountPlan12();

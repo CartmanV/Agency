@@ -574,6 +574,14 @@ table.backlog--full td.mono { font-family: var(--f-mono); font-size: 11.5px; col
 .backlog--full td.b-title { max-width: 260px; }
 .backlog--full td.b-title .clamp2 { color: var(--cream); font-weight: 500; }
 
+/* Инициативы: «Название» и «Инициатива» читаются целиком — без 2-строчного клампа,
+   шире колонка. Область — только таблица инициатив (.backlog--init), бэклог не трогаем. */
+.backlog--init td.b-title { max-width: 380px; min-width: 240px; }
+.backlog--init td.b-title .clamp2 {
+  -webkit-line-clamp: unset; line-clamp: unset;
+  display: block; overflow: visible;
+}
+
 table.backlog--full tbody tr.b-row:hover > td { background: var(--panel); }
 
 /* панель выбора колонок */

@@ -198,6 +198,121 @@ def build_backlog():
     return items, errors
 
 
+# --- Инициативы (сокращённый бэклог) ----------------------------------
+# Отдельный источник: «Сокращённый бэклог — инициативы vN.xlsx», вкладка «Инициативы».
+# Та же логика ценности/скоринга, но строки — укрупнённые инициативы (свёртки итераций):
+# нет колонок «Цитата / данные» и «Агентства (исследования)», добавлены
+# «Reach v1.5 — обоснование», «Задач в инициативе», «Свёрнутые итерации».
+INIT_SHEET = "Инициативы"
+INIT_COLUMNS = {
+    "#": "num",
+    "Статус": "status",
+    "MoSCoW": "moscow",
+    "Тема": "theme",
+    "Уровень 2": "level2",
+    "Итерация": "iteration",
+    "ID гитлаб": "gitlabId",
+    "Название": "title",
+    "Проблема (Job Story)": "jobStory",
+    "Проблема: источник": "problemSource",
+    "Этап": "stage",
+    "Блок": "block",
+    "Механизм": "mechanism",
+    "Подцель": "subgoal",
+    "Гипотеза": "hypothesis",
+    "Reach": "reach",
+    "Impact": "impact",
+    "Confidence": "confidence",
+    "Effort": "effort",
+    "RICE Score": "rice",
+    "PV Mult": "pvMult",
+    "Final Score": "finalScore",
+    "Gate": "gate",
+    "Концентрация": "concentration",
+    "Обоснование": "rationale",
+    "PV Notes": "pvNotes",
+    "Активные метрики": "activeMetrics",
+    "Целевые метрики": "targetMetrics",
+    "Reach v1.5 — обоснование": "reachNote",
+    "Задач в инициативе": "taskCount",
+    "Свёрнутые итерации": "collapsedIterations",
+}
+INIT_NUMERIC = {"num", "reach", "impact", "confidence", "effort", "pvMult", "taskCount"}
+
+
+def find_initiatives_source():
+    """Самый свежий «Сокращённый бэклог — инициативы vN.xlsx» в папке My work
+    (устойчиво к ревизиям v1 → v1.1 → … и NFD/NFC-нормализации имён на macOS)."""
+    cands = []
+    for p in WORK_DIR.glob("*.xlsx"):
+        low = unicodedata.normalize("NFC", p.name).lower()
+        if "сокращённый бэклог" in low and "инициатив" in low:
+            m = re.search(r"\bv(\d+(?:\.\d+)*)", unicodedata.normalize("NFC", p.name))
+            ver = tuple(int(x) for x in m.group(1).split(".")) if m else (0,)
+            cands.append((ver, p.name, p))
+    if not cands:
+        return None
+    cands.sort(key=lambda c: (c[0], c[1]))
+    return cands[-1][2]
+
+
+def build_initiatives():
+    """Вкладка «Инициативы» → initiatives.json. Та же структура, что backlog.json
+    (id, пересчёт RICE/Final), плюс поля taskCount/collapsedIterations/reachNote."""
+    src = find_initiatives_source()
+    if src is None:
+        return None, ["источник инициатив (*сокращённый бэклог*инициатив*.xlsx) не найден"]
+    print(f"Источник инициатив: {src.name}")
+    wb = openpyxl.load_workbook(src, data_only=True, read_only=True)
+    if INIT_SHEET not in wb.sheetnames:
+        return None, [f"нет вкладки {INIT_SHEET!r} в {src.name}"]
+    ws = wb[INIT_SHEET]
+    rows = list(ws.iter_rows(values_only=True))
+    header = [clean(h) for h in rows[0]]
+    idx = {c: header.index(c) for c in INIT_COLUMNS if c in header}
+    missing = [c for c in INIT_COLUMNS if c not in header]
+
+    items, errors, seen_ids = [], list(missing and [f"нет колонок: {missing}"]), set()
+    for rnum, row in enumerate(rows[1:], start=2):
+        if all(v is None for v in row):
+            continue
+        rec = {}
+        for col, key in INIT_COLUMNS.items():
+            if col not in idx:
+                rec[key] = None
+                continue
+            val = clean(row[idx[col]])
+            if key in INIT_NUMERIC and val is not None:
+                try:
+                    val = float(val)
+                    if val == int(val):
+                        val = int(val)
+                except (TypeError, ValueError):
+                    pass
+            rec[key] = val
+
+        r, i, c, e = rec.get("reach"), rec.get("impact"), rec.get("confidence"), rec.get("effort")
+        pv = rec.get("pvMult")
+        rec["rice"] = round((r * i * c) / e) if None not in (r, i, c, e) and e else None
+        rec["finalScore"] = round(rec["rice"] * pv) if rec["rice"] is not None and pv is not None else None
+
+        parts, prev = [], None
+        for p in (slug(rec.get("theme")), slug(rec.get("level2")), str(rec.get("num"))):
+            if p and p != prev:
+                parts.append(p)
+            prev = p
+        rec_id = "-".join(parts)
+        rec["id"] = rec_id
+        rec["cardPath"] = None
+
+        if rec_id in seen_ids:
+            errors.append(f"строка {rnum}: дубль id {rec_id!r}")
+        seen_ids.add(rec_id)
+        items.append(rec)
+
+    return {"source": src.name, "count": len(items), "items": items}, errors
+
+
 def build_tree(items):
     """Иерархия Тема (L1) → Уровень 2 → Итерация (ссылка на backlog id).
     Лестница и механизмы — оси-бейджи, не ветви (см. план р. 4.2)."""
@@ -1390,6 +1505,15 @@ def main():
     }
     out.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"Записано {len(items)} итераций → {out.relative_to(SITE_DIR)}")
+
+    # initiatives.json — сокращённый бэклог (укрупнённые инициативы), отдельный источник
+    initiatives, init_errors = build_initiatives()
+    if initiatives:
+        init_out = DATA_DIR / "initiatives.json"
+        init_out.write_text(json.dumps(initiatives, ensure_ascii=False, indent=2), encoding="utf-8")
+        imust = sum(1 for x in initiatives["items"] if x.get("moscow") == "Must")
+        print(f"Инициативы: {initiatives['count']} (Must {imust}) → {init_out.relative_to(SITE_DIR)}")
+    errors = errors + [f"[инициативы] {m}" for m in init_errors]
 
     # tree.json — дерево из того же источника
     tree = build_tree(items)
