@@ -402,24 +402,30 @@ const INIT_COLS = [
   ["title", "Название", "title", true],
   ["jobStory", "Проблема (Job Story)", "long", true],
   ["problemSource", "Проблема: источник", "text", false],
+  ["jtbdWork", "Работа (JTBD)", "long", true],
   ["stage", "Этап", "text", true],
   ["block", "Блок", "text", true],
   ["mechanism", "Механизм", "text", true],
   ["subgoal", "Подцель", "text", true],
   ["hypothesis", "Гипотеза", "long", true],
-  ["reach", "Reach", "num", true],
   ["impact", "Impact", "num", true],
   ["confidence", "Confidence", "num", true],
-  ["effort", "Effort", "num", true],
-  ["rice", "RICE", "num", true],
+  ["mlLeverage", "ML (рычаг метрик)", "num", true],
+  ["depth", "Depth (глубина)", "num", true],
   ["pvMult", "PV Mult", "num", true],
-  ["finalScore", "Final", "num", true],
+  ["value", "Value", "num", true],
+  ["normPct", "Norm %", "num", true],
+  ["reach", "Reach", "num", false],
+  ["effort", "Effort", "num", false],
+  ["rice", "RICE", "num", false],
+  ["finalScore", "Final", "num", false],
   ["gate", "Gate", "badge-plain", true],
   ["concentration", "Концентрация", "text", true],
+  ["metricsSummary", "Метрики (сводно)", "long", true],
   ["rationale", "Обоснование", "long", false],
   ["pvNotes", "PV Notes", "text", false],
-  ["activeMetrics", "Активные метрики", "text", true],
-  ["targetMetrics", "Целевые метрики", "text", true],
+  ["activeMetrics", "Активные метрики", "text", false],
+  ["targetMetrics", "Целевые метрики", "text", false],
   ["reachNote", "Reach — обоснование", "long", false],
   ["collapsedIterations", "Свёрнутые итерации", "long", false],
 ];
@@ -433,7 +439,7 @@ const INIT_FILTER_FIELDS = [
   ["hCode", "Гипотеза"],
   ["concentration", "Концентрация"],
 ];
-const INIT_SEARCH_FIELDS = ["title", "jobStory", "iteration", "id", "gitlabId", "rationale", "hypothesis", "activeMetrics", "targetMetrics", "collapsedIterations", "reachNote"];
+const INIT_SEARCH_FIELDS = ["title", "jobStory", "iteration", "id", "gitlabId", "rationale", "hypothesis", "jtbdWork", "metricsSummary", "activeMetrics", "targetMetrics", "collapsedIterations", "reachNote"];
 
 // Конфиг рендерера таблицы: backlog.html и initiatives.html — одна машина, разные данные/колонки.
 const BACKLOG_CFG = {
@@ -447,7 +453,8 @@ const BACKLOG_CFG = {
 const INIT_CFG = {
   host: "[data-initiatives]", dataUrl: "data/initiatives.json",
   cols: INIT_COLS, filterFields: INIT_FILTER_FIELDS, searchFields: INIT_SEARCH_FIELDS,
-  colsStorage: "agency-init-cols-v1", filtersStorage: "agency-init-filters-v1",
+  colsStorage: "agency-init-cols-v2", filtersStorage: "agency-init-filters-v1",
+  tieBreak: "value",
   loading: "Загрузка инициатив…", searchLabel: "Поиск по инициативам",
   searchPlaceholder: "Поиск по названию, job story, гипотезе, свёрнутым итерациям, ID…",
   unit: "инициатив", countLabel: "инициатив", tableClass: "backlog--init",
@@ -560,6 +567,9 @@ async function mountBacklog(cfg = BACKLOG_CFG) {
     const get = (k) => { const v = it[k]; return v == null || v === "" ? null : v; };
     const row = (label, val) => val ? `<div class="bd-row"><dt>${esc(label)}</dt><dd>${esc(val)}</dd></div>` : "";
     const score = `R ${get("reach") ?? "—"} · I ${get("impact") ?? "—"} · C ${get("confidence") ?? "—"} · E ${get("effort") ?? "—"} → RICE ${get("rice") ?? "—"} → PV ${get("pvMult") ?? "—"} → Final ${get("finalScore") ?? "—"}`;
+    const valueScore = get("value") != null
+      ? `I ${get("impact") ?? "—"} × C ${get("confidence") ?? "—"} × ML ${get("mlLeverage") ?? "—"} × Depth ${get("depth") ?? "—"} × PV ${get("pvMult") ?? "—"} → Value ${get("value")} (Norm ${get("normPct") ?? "—"}%)`
+      : null;
     return `
       <tr class="b-detailrow" data-detail="${esc(it.id)}" hidden>
         <td colspan="${span}">
@@ -570,12 +580,13 @@ async function mountBacklog(cfg = BACKLOG_CFG) {
               ${get("gitlabId") ? `<span class="bd-git">${esc(it.gitlabId)}</span>` : ""}
             </div>
             <div class="bd-sect"><div class="bd-h">Логика ценности</div><dl>
-              ${row("Этап", get("stage"))}${row("Блок", get("block"))}${row("Механизм", get("mechanism"))}${row("Подцель", get("subgoal"))}${row("Гипотеза", get("hypothesis"))}
+              ${row("Работа (JTBD)", get("jtbdWork"))}${row("Этап", get("stage"))}${row("Блок", get("block"))}${row("Механизм", get("mechanism"))}${row("Подцель", get("subgoal"))}${row("Гипотеза", get("hypothesis"))}
             </dl></div>
             <div class="bd-sect"><div class="bd-h">Проблема</div><dl>
               ${row("Job Story", get("jobStory"))}${row("Источник", get("problemSource"))}${row("Цитата / данные", get("quote"))}
             </dl></div>
             <div class="bd-sect"><div class="bd-h">Скоринг</div><dl>
+              ${valueScore ? `<div class="bd-row"><dt>Value</dt><dd class="mono">${esc(valueScore)}</dd></div>` : ""}
               <div class="bd-row"><dt>RICE</dt><dd class="mono">${esc(score)}</dd></div>
               ${row("Gate", get("gate"))}${row("Концентрация", get("concentration"))}${row("Reach — обоснование", get("reachNote"))}
             </dl></div>
@@ -583,7 +594,7 @@ async function mountBacklog(cfg = BACKLOG_CFG) {
               ${row("Задач в инициативе", get("taskCount"))}${row("Свёрнутые итерации", get("collapsedIterations"))}
             </dl></div>` : ""}
             <div class="bd-sect"><div class="bd-h">Метрики</div><dl>
-              ${row("Активные", get("activeMetrics"))}${row("Целевые", get("targetMetrics"))}
+              ${row("Сводно", get("metricsSummary"))}${row("Активные", get("activeMetrics"))}${row("Целевые", get("targetMetrics"))}
             </dl></div>
             <div class="bd-sect"><div class="bd-h">ProductV</div><dl>
               ${row("PV Notes", get("pvNotes"))}${row("Обоснование", get("rationale"))}
@@ -620,8 +631,9 @@ async function mountBacklog(cfg = BACKLOG_CFG) {
 
   function sortItems(items) {
     return items.slice().sort((a, b) => {
+      const tieKey = cfg.tieBreak || "finalScore";
       let r = compare(a, b, state.sort.key, state.sort.dir);
-      if (r === 0 && state.sort.key !== "finalScore") r = compare(a, b, "finalScore", "desc");
+      if (r === 0 && state.sort.key !== tieKey) r = compare(a, b, tieKey, "desc");
       if (r === 0 && state.sort.key !== "num") r = compare(a, b, "num", "asc");
       return r;
     });

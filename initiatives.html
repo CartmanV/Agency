@@ -21,11 +21,29 @@
     <h1>Инициативы</h1>
     <p class="lede">
       Сокращённый бэклог: итерации свёрнуты в укрупнённые инициативы — одна строка
-      на цельный кусок работы (RICE и Final пересчитаны при сборке). Колонка «Задач»
-      показывает, сколько итераций свёрнуто; полный список — в раскрытии строки (▸).
-      По умолчанию сортировка MoSCoW → Final. «Колонки» — скрыть лишнее.
-      Задачи по каждой инициативе — в <a href="backlog.html">Едином бэклоге</a>.
+      на цельный кусок работы. Задачи по каждой инициативе —
+      в <a href="backlog.html">Едином бэклоге</a>.
     </p>
+
+    <div class="init-guide">
+      <div class="init-formula">
+        <span class="init-formula__label">Приоритет — по модели «рычаг метрик»</span>
+        <span class="init-formula__eq">Value = Impact × Confidence × ML × Depth × PV</span>
+      </div>
+      <dl class="init-terms">
+        <div><dt>Impact</dt><dd>сила эффекта</dd></div>
+        <div><dt>Confidence</dt><dd>уверенность в оценке</dd></div>
+        <div><dt>ML</dt><dd>насколько инициатива двигает ключевые метрики</dd></div>
+        <div><dt>Depth</dt><dd>глубина эффекта</dd></div>
+        <div><dt>PV</dt><dd>поправка ProductV</dd></div>
+        <div><dt>Norm&nbsp;%</dt><dd>доля от самой сильной инициативы (100&nbsp;%)</dd></div>
+      </dl>
+      <ul class="init-notes">
+        <li><b>Метрики (сводно):</b> «акт:» — на что влияем уже сейчас, «цел:» — целевые, к которым идём.</li>
+        <li><b>Задач:</b> сколько итераций свёрнуто в инициативу; полный список — в раскрытии строки&nbsp;(▸).</li>
+        <li><b>Сортировка</b> по умолчанию MoSCoW → Value. Прежние RICE и Final остались в «Колонках».</li>
+      </ul>
+    </div>
 
     <div data-initiatives></div>
   </main>

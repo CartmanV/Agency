@@ -208,6 +208,10 @@ INIT_COLUMNS = {
     "#": "num",
     "Статус": "status",
     "MoSCoW": "moscow",
+    "Работа (JTBD, tree.html)": "jtbdWork",
+    "ML (рычаг метрик)": "mlLeverage",
+    "Depth (глубина)": "depth",
+    "Метрики (сводно)": "metricsSummary",
     "Тема": "theme",
     "Уровень 2": "level2",
     "Итерация": "iteration",
@@ -237,7 +241,7 @@ INIT_COLUMNS = {
     "Задач в инициативе": "taskCount",
     "Свёрнутые итерации": "collapsedIterations",
 }
-INIT_NUMERIC = {"num", "reach", "impact", "confidence", "effort", "pvMult", "taskCount"}
+INIT_NUMERIC = {"num", "reach", "impact", "confidence", "effort", "pvMult", "taskCount", "mlLeverage", "depth"}
 
 
 def find_initiatives_source():
@@ -296,6 +300,14 @@ def build_initiatives():
         rec["rice"] = round((r * i * c) / e) if None not in (r, i, c, e) and e else None
         rec["finalScore"] = round(rec["rice"] * pv) if rec["rice"] is not None and pv is not None else None
 
+        # Модель Metric Leverage (v1.4): Value = I × C × ML × Depth × PV.
+        # В xlsx это формула без кеша — считаем здесь; Norm% нормируем ниже по максимуму.
+        ml, dp = rec.get("mlLeverage"), rec.get("depth")
+        if None not in (i, c, ml, dp, pv):
+            rec["value"] = round(i * c * ml * dp * pv, 1)
+        else:
+            rec["value"] = None
+
         parts, prev = [], None
         for p in (slug(rec.get("theme")), slug(rec.get("level2")), str(rec.get("num"))):
             if p and p != prev:
@@ -309,6 +321,11 @@ def build_initiatives():
             errors.append(f"строка {rnum}: дубль id {rec_id!r}")
         seen_ids.add(rec_id)
         items.append(rec)
+
+    # Norm % — доля от максимального Value (100% у сильнейшей инициативы).
+    vmax = max((x["value"] for x in items if x.get("value") is not None), default=None)
+    for x in items:
+        x["normPct"] = round(x["value"] / vmax * 100) if x.get("value") is not None and vmax else None
 
     return {"source": src.name, "count": len(items), "items": items}, errors
 
