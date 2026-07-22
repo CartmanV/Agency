@@ -327,6 +327,19 @@ def build_initiatives():
     for x in items:
         x["normPct"] = round(x["value"] / vmax * 100) if x.get("value") is not None and vmax else None
 
+    # Сквозная нумерация по приоритету: № = ранг в дефолтном порядке таблицы
+    # (MoSCoW → Value убыв., как в app.js), пустые — вниз.
+    # Номер из xlsx сохраняем как srcNum (он остаётся в id — ссылки стабильны).
+    moscow_order = {"Must": 0, "Should": 1, "Could": 2, "Won't": 3}
+    items.sort(key=lambda x: (moscow_order.get(x.get("moscow"), 9),
+                              x.get("value") is None,
+                              -(x.get("value") or 0),
+                              -(x.get("finalScore") or 0),
+                              str(x.get("title") or "")))
+    for rank, x in enumerate(items, start=1):
+        x["srcNum"] = x.get("num")
+        x["num"] = rank
+
     return {"source": src.name, "count": len(items), "items": items}, errors
 
 

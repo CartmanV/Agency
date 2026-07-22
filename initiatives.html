@@ -26,23 +26,31 @@
     </p>
 
     <div class="init-guide">
-      <div class="init-formula">
-        <span class="init-formula__label">Приоритет — по модели «рычаг метрик»</span>
-        <span class="init-formula__eq">Value = Impact × Confidence × ML × Depth × PV</span>
-      </div>
-      <dl class="init-terms">
-        <div><dt>Impact</dt><dd>сила эффекта</dd></div>
-        <div><dt>Confidence</dt><dd>уверенность в оценке</dd></div>
-        <div><dt>ML</dt><dd>насколько инициатива двигает ключевые метрики</dd></div>
-        <div><dt>Depth</dt><dd>глубина эффекта</dd></div>
-        <div><dt>PV</dt><dd>поправка ProductV</dd></div>
-        <div><dt>Norm&nbsp;%</dt><dd>доля от самой сильной инициативы (100&nbsp;%)</dd></div>
-      </dl>
       <ul class="init-notes">
+        <li><b>Как читать:</b> № — место в приоритете (1 — самое важное), <b>Приоритет&nbsp;%</b> —
+          насколько инициатива слабее самой сильной (у №1 всегда 100&nbsp;%).</li>
         <li><b>Метрики (сводно):</b> «акт:» — на что влияем уже сейчас, «цел:» — целевые, к которым идём.</li>
         <li><b>Задач:</b> сколько итераций свёрнуто в инициативу; полный список — в раскрытии строки&nbsp;(▸).</li>
-        <li><b>Сортировка</b> по умолчанию MoSCoW → Value. Прежние RICE и Final остались в «Колонках».</li>
       </ul>
+      <details class="vis-sect" style="margin-top:10px">
+        <summary>Как считается приоритет</summary>
+        <div class="vis-sect__body">
+          <div class="init-formula">
+            <span class="init-formula__label">Модель «рычаг метрик»</span>
+            <span class="init-formula__eq">Value = Impact × Confidence × ML × Depth × PV</span>
+          </div>
+          <dl class="init-terms">
+            <div><dt>Impact</dt><dd>сила эффекта</dd></div>
+            <div><dt>Confidence</dt><dd>уверенность в оценке</dd></div>
+            <div><dt>ML</dt><dd>насколько инициатива двигает ключевые метрики</dd></div>
+            <div><dt>Depth</dt><dd>глубина эффекта</dd></div>
+            <div><dt>PV</dt><dd>поправка ProductV</dd></div>
+            <div><dt>Norm&nbsp;%</dt><dd>доля от самой сильной инициативы (100&nbsp;%)</dd></div>
+          </dl>
+          <p style="margin:10px 0 0; font-size:13px">Компоненты и прежние RICE/Final скрыты из таблицы —
+            включаются в «Колонках». Полное описание модели — <a href="metod.html">Метод оценки задач</a>.</p>
+        </div>
+      </details>
     </div>
 
     <div data-initiatives></div>

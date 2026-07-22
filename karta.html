@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0A1F16" />
+  <title>Карта решений — направление «Агентства»</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Manrope:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/style.css" />
+  <style>
+    /* локальные стили дерева — поверх общего style.css */
+    .km-goal { border: 1px solid var(--line-soft); border-radius: 14px; padding: 22px 24px; margin: 8px 0 6px; }
+    .km-goal h2 { font-family: var(--f-display); font-size: 26px; margin: 0 0 8px; }
+    .km-goal p { margin: 0; color: var(--cream-soft); font-size: 15px; line-height: 1.6; max-width: 78ch; }
+    .km-branch { margin-top: 26px; border-left: 2px solid var(--line-soft); padding-left: 20px; }
+    .km-branch__head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; }
+    .km-branch__head h3 { font-family: var(--f-display); font-size: 21px; margin: 0; }
+    .km-branch__k { font-family: var(--f-mono); font-size: 11px; letter-spacing: .06em; color: var(--gold); text-transform: uppercase; }
+    .km-branch__aim { margin: 6px 0 4px; color: var(--cream-soft); font-size: 14px; max-width: 78ch; }
+    .km-metric { font-family: var(--f-mono); font-size: 12px; color: var(--cream-soft); opacity: .85; }
+    .km-list { list-style: none; margin: 12px 0 0; padding: 0; }
+    .km-item { display: grid; grid-template-columns: 44px 1fr; gap: 10px; padding: 9px 0; border-top: 1px dashed var(--line-soft); }
+    .km-item__n { font-family: var(--f-mono); font-size: 13px; color: var(--gold); }
+    .km-item__t { font-size: 14px; }
+    .km-item__meta { font-family: var(--f-mono); font-size: 11.5px; color: var(--cream-soft); opacity: .85; margin-top: 3px; }
+    .km-more { margin-top: 8px; font-size: 13px; }
+    .km-hyp { display: grid; grid-template-columns: 90px 1fr; gap: 12px; padding: 10px 0; border-top: 1px dashed var(--line-soft); font-size: 14px; align-items: baseline; }
+    .km-hyp .st { font-family: var(--f-mono); font-size: 12px; white-space: nowrap; }
+    .st--ok { color: #7fd0a0; } .st--part { color: var(--gold); } .st--dead { color: #e08b8b; } .st--open { color: var(--cream-soft); opacity: .8; }
+    .km-badge { font-family: var(--f-mono); font-size: 11px; border: 1px solid var(--line-soft); border-radius: 999px; padding: 2px 8px; }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">К содержанию</a>
+  <div data-header></div>
+
+  <div class="crumbs"><a href="index.html">Направление</a> <span>›</span> Карта решений</div>
+
+  <main id="main">
+    <p class="eyebrow">Обзор для решений</p>
+    <h1>Карта решений</h1>
+    <p class="lede">Одна страница: цель → две ставки → что делаем в рамках каждой →
+      какие гипотезы проверяем и что уже известно. Детали — по ссылкам из каждой строки.</p>
+
+    <!-- ЦЕЛЬ -->
+    <section class="section">
+      <div class="km-goal">
+        <p class="eyebrow">Цель 2026</p>
+        <h2 id="km-goal-line">+20 агентств чистыми · главная метрика — активные клиенты-компании</h2>
+        <p id="km-goal-sub"></p>
+      </div>
+    </section>
+
+    <!-- СТАВКИ + ИНИЦИАТИВЫ -->
+    <section class="section">
+      <h2>Что делаем — две ставки и инициативы под ними</h2>
+      <p class="section-note">Инициативы отсортированы по приоритету (MoSCoW → рычаг метрик).
+        Показаны верхние по каждой ставке; полный список — <a href="initiatives.html">Инициативы</a>.</p>
+      <div id="km-bets"></div>
+    </section>
+
+    <!-- ГИПОТЕЗЫ -->
+    <section class="section">
+      <h2>Гипотезы: что проверено, что проверяем</h2>
+      <p class="section-note">Статусы из доказательной базы; каждая строка ведёт в подробный разбор.
+        План проверок — <a href="strategy.html#plan">стратегия, раздел 8</a>.</p>
+      <div id="km-hyps"></div>
+    </section>
+
+    <!-- ВНЕ ФОКУСА -->
+    <section class="section">
+      <h2>Что осознанно не делаем сейчас</h2>
+      <p class="section-note" id="km-out"></p>
+    </section>
+  </main>
+
+  <div data-footer></div>
+
+  <script src="assets/app.js"></script>
+  <script>
+  (async () => {
+    const [exec, inits] = await Promise.all([
+      fetch("data/exec.json").then(r => r.json()),
+      fetch("data/initiatives.json").then(r => r.json()),
+    ]);
+    const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+    // Цель
+    const p = exec.progress || {};
+    document.getElementById("km-goal-line").textContent =
+      `+${p.goal ?? 20} агентств чистыми · пока +${(p.done ?? 0)} пришло`;
+    document.getElementById("km-goal-sub").textContent =
+      (exec.oneliner ? exec.oneliner + " " : "") +
+      "«+20» — способ нарастить число активных клиентов-компаний; считаем чистый прирост с учётом оттока.";
+
+    // Ставки: этап → ставка
+    const betOf = it => {
+      const st = String(it.stage || "");
+      if (st.startsWith("1")) return 0;          // «Не мешать» и «1+2»
+      if (st.startsWith("2")) return 1;          // «Снимать нагрузку»
+      return -1;                                  // этапы 3–5 → вне ставок
+    };
+    const inScope = it => it.moscow && it.moscow !== "Won't";
+    const items = (inits.items || []).filter(inScope);
+    const TOP = 7;
+
+    const betsHost = document.getElementById("km-bets");
+    (exec.bets || []).forEach((b, bi) => {
+      const rows = items.filter(it => betOf(it) === bi);
+      const shown = rows.slice(0, TOP);
+      const metricsShort = it => {
+        const m = String(it.metricsSummary || "").split("|")[0].replace(/^акт:\s*/, "");
+        return m.length > 90 ? m.slice(0, 90) + "…" : m;
+      };
+      const li = shown.map(it => `
+        <li class="km-item">
+          <span class="km-item__n">№${it.num}</span>
+          <div>
+            <div class="km-item__t">${esc(it.title)}
+              <span class="km-badge">${esc(it.moscow)}</span>
+              <span class="km-badge">${esc(it.status || "")}</span></div>
+            <div class="km-item__meta">влияет: ${esc(metricsShort(it))} · приоритет ${it.normPct ?? "—"}%</div>
+          </div>
+        </li>`).join("");
+      const more = rows.length > shown.length
+        ? `<p class="km-more"><a href="initiatives.html">ещё ${rows.length - shown.length} инициатив этой ставки →</a></p>` : "";
+      betsHost.insertAdjacentHTML("beforeend", `
+        <div class="km-branch">
+          <div class="km-branch__head">
+            <span class="km-branch__k">Ставка ${b.n} · этап ${esc(b.stage)} ${esc(b.stageName)}</span>
+            <h3>${esc(b.name)}</h3>
+          </div>
+          <p class="km-branch__aim">${esc(b.aim)} ${esc(b.what)}</p>
+          <p class="km-metric">метрики ставки: ${esc(b.metric)}</p>
+          <ul class="km-list">${li}</ul>${more}
+        </div>`);
+    });
+
+    // Гипотезы — из exec.facts по статусу
+    const ST = {
+      "подтверждено": ["✓ подтверждено", "st--ok"],
+      "частично": ["~ частично", "st--part"],
+      "опровергнута": ["✗ опровергнута", "st--dead"],
+      "не проверялась": ["? не проверялась", "st--open"],
+    };
+    const order = ["опровергнута", "не проверялась", "частично", "подтверждено"];
+    const facts = (exec.facts || []).slice()
+      .sort((a, b) => order.indexOf(a.ev) - order.indexOf(b.ev));
+    document.getElementById("km-hyps").innerHTML = facts.map(f => {
+      const [label, cls] = ST[f.ev] || [f.ev, "st--open"];
+      return `<div class="km-hyp"><span class="st ${cls}">${label}</span>
+        <span>${esc(f.t)} <a href="${esc(f.href)}">${esc(f.linkLabel)} →</a></span></div>`;
+    }).join("");
+
+    // Вне фокуса
+    const wont = (inits.items || []).filter(it => it.moscow === "Won't").length;
+    const far = (inits.items || []).filter(it => betOf(it) === -1 && inScope(it)).length;
+    document.getElementById("km-out").innerHTML =
+      `${wont} инициатив отложено (Won't this time)` +
+      (far ? ` и ещё ${far} относятся к этапам 3–5 — делаем после этапов 1–2` : ", в том числе все инициативы этапов 3–5 — делаем после этапов 1–2") +
+      `. Полный список со статусами — <a href="initiatives.html">Инициативы</a>; ` +
+      `что не трогаем принципиально — <a href="strategy.html#ne-trogaem">стратегия, раздел 9</a>.`;
+  })();
+  </script>
+</body>
+</html>

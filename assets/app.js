@@ -8,6 +8,7 @@
 const NAV = [
   // Обзор — стратегия и статус
   { href: "index.html",    label: "Направление", group: "Обзор" },
+  { href: "karta.html",    label: "Карта решений", short: "Карта", group: "Обзор" },
   { href: "vision.html",   label: "Видение", group: "Обзор" },
   { href: "strategy.html", label: "Стратегия (v5)", short: "Стратегия", group: "Обзор" },
   { href: "nmt.html",      label: "Диагностика (NMT)", short: "Диагностика", group: "Обзор" },
@@ -408,13 +409,13 @@ const INIT_COLS = [
   ["mechanism", "Механизм", "text", true],
   ["subgoal", "Подцель", "text", true],
   ["hypothesis", "Гипотеза", "long", true],
-  ["impact", "Impact", "num", true],
-  ["confidence", "Confidence", "num", true],
-  ["mlLeverage", "ML (рычаг метрик)", "num", true],
-  ["depth", "Depth (глубина)", "num", true],
-  ["pvMult", "PV Mult", "num", true],
-  ["value", "Value", "num", true],
-  ["normPct", "Norm %", "num", true],
+  ["impact", "Impact", "num", false],
+  ["confidence", "Confidence", "num", false],
+  ["mlLeverage", "ML (рычаг метрик)", "num", false],
+  ["depth", "Depth (глубина)", "num", false],
+  ["pvMult", "PV Mult", "num", false],
+  ["value", "Value", "num", false],
+  ["normPct", "Приоритет %", "num", true],
   ["reach", "Reach", "num", false],
   ["effort", "Effort", "num", false],
   ["rice", "RICE", "num", false],
@@ -453,7 +454,7 @@ const BACKLOG_CFG = {
 const INIT_CFG = {
   host: "[data-initiatives]", dataUrl: "data/initiatives.json",
   cols: INIT_COLS, filterFields: INIT_FILTER_FIELDS, searchFields: INIT_SEARCH_FIELDS,
-  colsStorage: "agency-init-cols-v2", filtersStorage: "agency-init-filters-v1",
+  colsStorage: "agency-init-cols-v3", filtersStorage: "agency-init-filters-v1", // v3: компоненты формулы скрыты по дефолту (п.7 ревью)
   tieBreak: "value",
   loading: "Загрузка инициатив…", searchLabel: "Поиск по инициативам",
   searchPlaceholder: "Поиск по названию, job story, гипотезе, свёрнутым итерациям, ID…",
