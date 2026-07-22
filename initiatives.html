@@ -9,6 +9,15 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Manrope:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/style.css" />
+  <style>
+    /* пояснение к расчёту: термины в одну колонку — описания длиннее, чем в компактной сетке */
+    .init-terms--wide { grid-template-columns: 1fr; gap: 7px 0; }
+    .init-terms--wide dt { min-width: 116px; }
+    .init-steps { margin: 12px 2px 0; padding-left: 18px; font-size: 13.5px;
+      line-height: 1.55; color: var(--cream-soft); }
+    .init-steps li { margin: 5px 0; }
+    .init-steps b { color: var(--cream); font-weight: 600; }
+  </style>
 </head>
 <body>
   <a class="skip-link" href="#main">К содержанию</a>
@@ -35,20 +44,52 @@
       <details class="vis-sect" style="margin-top:10px">
         <summary>Как считается приоритет</summary>
         <div class="vis-sect__body">
-          <div class="init-formula">
-            <span class="init-formula__label">Модель «рычаг метрик»</span>
+          <p class="section-note" style="margin:0 0 4px">Приоритет отвечает на вопрос
+            <b>«насколько эта работа важна для цели 2026»</b> — вырастить число активных
+            клиентов-компаний. Считается в два шага.</p>
+
+          <ol class="init-steps">
+            <li><b>Шаг 1 — обязательность.</b> Инициативы делятся на четыре группы:
+              <b>Must</b> (без этого год не закрыть), <b>Should</b> (важно),
+              <b>Could</b> (полезно, если останутся силы), <b>Won't</b> (сознательно не сейчас).
+              Группа всегда главнее числа: любая Should стоит выше любой Could.</li>
+            <li><b>Шаг 2 — сила внутри группы.</b> Каждой инициативе считается балл важности
+              <b>Value</b> по формуле ниже; внутри своей группы они сортируются по нему.
+              Итог этих двух шагов и есть <b>№</b> в таблице.</li>
+          </ol>
+
+          <div class="init-formula" style="margin-top:12px">
+            <span class="init-formula__label">Балл важности — модель «рычаг метрик»</span>
             <span class="init-formula__eq">Value = Impact × Confidence × ML × Depth × PV</span>
           </div>
-          <dl class="init-terms">
-            <div><dt>Impact</dt><dd>сила эффекта</dd></div>
-            <div><dt>Confidence</dt><dd>уверенность в оценке</dd></div>
-            <div><dt>ML</dt><dd>насколько инициатива двигает ключевые метрики</dd></div>
-            <div><dt>Depth</dt><dd>глубина эффекта</dd></div>
-            <div><dt>PV</dt><dd>поправка ProductV</dd></div>
-            <div><dt>Norm&nbsp;%</dt><dd>доля от самой сильной инициативы (100&nbsp;%)</dd></div>
+          <dl class="init-terms init-terms--wide">
+            <div><dt>Impact</dt><dd>сила эффекта: насколько заметно станет лучше, если сделать
+              (шкала 1–10, оценка команды)</dd></div>
+            <div><dt>Confidence</dt><dd>насколько мы уверены в оценке: 7–8 — есть данные и
+              обращения агентств, 3–4 — пока допущение (шкала 1–10)</dd></div>
+            <div><dt>ML</dt><dd>рычаг метрик: двигает ли инициатива те метрики, за которые мы
+              боремся в 2026. Ведущие метрики этапов 1–2 весят 2, прочие активные — 1,
+              метрики вне фокуса года — 0,5. Итог 0,5–3</dd></div>
+            <div><dt>Depth</dt><dd>работает ли на глубину: 1,2 — растит число клиентов у уже
+              подключённых агентств (там 76% прироста), 1,0 — работает на новые агентства</dd></div>
+            <div><dt>PV</dt><dd>поправка после разбора инициативы по продуктовым принципам
+              (устойчивость, защищаемость, когнитивная нагрузка) — повышает или понижает балл</dd></div>
           </dl>
-          <p style="margin:10px 0 0; font-size:13px">Компоненты и прежние RICE/Final скрыты из таблицы —
-            включаются в «Колонках». Полное описание модели — <a href="metod.html">Метод оценки задач</a>.</p>
+
+          <p class="section-note" style="margin:14px 0 0"><b>Приоритет %</b> — тот же балл, только
+            в понятном виде: доля от самой сильной инициативы. У лидера 100%, у инициативы с 50%
+            важность вдвое ниже. Абсолютное значение Value само по себе ничего не значит —
+            сравнивать имеет смысл только инициативы между собой.</p>
+
+          <p class="section-note" style="margin:12px 0 0"><b>Чего в формуле намеренно нет.</b>
+            Трудозатрат — иначе крупные стратегические блоки всегда проигрывали бы мелким и
+            дешёвым. Охвата (Reach) — он оказался несопоставим между темами и искажал порядок;
+            остался справочной колонкой. Поэтому балл показывает <b>важность, а не выгодность</b>:
+            стоимость учитывается отдельно, когда работы отбирают в квартал.</p>
+
+          <p style="margin:12px 0 0; font-size:13px">Компоненты формулы и прежние оценки
+            RICE / Final скрыты из таблицы — включаются кнопкой «Колонки».
+            Полное описание модели — <a href="metod.html">Метод оценки задач</a>.</p>
         </div>
       </details>
     </div>
