@@ -1,0 +1,1460 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0A1F16" />
+  <title>AI-проекты — направление «Агентства»</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Manrope:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/style.css" />
+  <style>
+    /* Локальные стили страницы AI-проектов — токены v4, золото единственный акцент.
+       Розовый встречается один раз: чип приоритета «Must» у топ-1 проекта (канон .prio--must). */
+
+    /* --- «весы окупаемости»: сколько стоит ИИ против того, что он снимает --- */
+    .ai-scales { display: grid; gap: 14px; margin-top: 18px; }
+    .ai-scale { border: 1px solid var(--line); border-radius: 12px; background: var(--panel);
+      padding: 17px 20px 18px; }
+    .ai-scale__top { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: baseline;
+      margin-bottom: 12px; }
+    .ai-scale__name { font-family: var(--f-display); font-size: 18px; color: var(--cream); }
+    .ai-scale__name a { color: inherit; }
+    .ai-scale__unit { font-family: var(--f-mono); font-size: 11px; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--cream-dim); margin-left: auto; }
+
+    .ai-bar { display: flex; height: 32px; border: 1px solid var(--line-soft);
+      border-radius: 8px; overflow: hidden; }
+    .ai-bar__seg { display: flex; align-items: center; padding: 0 10px; font-family: var(--f-mono);
+      font-size: 11.5px; white-space: nowrap; overflow: hidden; }
+    .ai-bar__cost { background: var(--gold); color: var(--bg); font-weight: 600;
+      min-width: 34px; justify-content: center; }
+    .ai-bar__val { background: var(--gold-dim); color: var(--cream); flex: 1 1 auto; }
+    .ai-bar__val b { color: var(--gold); font-weight: 600; }
+
+    /* подписи под полосой — что за число слева и справа */
+    .ai-legs { display: flex; flex-wrap: wrap; gap: 6px 22px; margin-top: 10px;
+      font-size: 12.5px; color: var(--cream-dim); }
+    .ai-legs .sw { display: inline-block; width: 10px; height: 10px; border-radius: 3px;
+      margin-right: 7px; vertical-align: baseline; }
+    .ai-legs .sw--cost { background: var(--gold); }
+    .ai-legs .sw--val { background: var(--gold-dim); border: 1px solid var(--gold-line); }
+    .ai-legs b { color: var(--cream-soft); font-weight: 500; }
+
+    /* вариант без доли — когда объём не замерен и процент считать не из чего */
+    .ai-scale--open .ai-pair { display: grid; grid-template-columns: 1fr auto 1fr; gap: 14px;
+      align-items: stretch; }
+    @media (max-width: 700px) { .ai-scale--open .ai-pair { grid-template-columns: 1fr; } }
+    .ai-side { border: 1px solid var(--line); border-radius: 9px; padding: 12px 15px;
+      background: var(--bg-2); }
+    .ai-side--val { background: var(--gold-dim); border-color: var(--gold-line); }
+    .ai-side__k { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--cream-dim); }
+    .ai-side__v { font-family: var(--f-mono); font-size: 17px; color: var(--cream); margin-top: 5px;
+      font-variant-numeric: tabular-nums; }
+    .ai-side--val .ai-side__v { color: var(--gold); }
+    .ai-side__s { font-size: 12px; color: var(--cream-dim); margin-top: 4px; line-height: 1.45; }
+    .ai-vs { align-self: center; font-family: var(--f-mono); font-size: 13px; color: var(--cream-dim); }
+    .ai-gap { margin: 11px 0 0; font-size: 12.5px; color: var(--cream-dim); line-height: 1.55; }
+    .ai-gap b { color: var(--cream-soft); font-weight: 500; }
+
+    /* --- карточка проекта --- */
+    .ai-proj { border: 1px solid var(--line); border-radius: 14px; background: var(--panel);
+      padding: 24px 26px 22px; margin-top: 20px; }
+    .ai-proj__head { display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+      margin-bottom: 10px; }
+    .ai-proj h3 { font-family: var(--f-display); font-size: 25px; margin: 0 0 6px; color: var(--cream); }
+    .ai-proj__sub { margin: 0 0 18px; font-size: 14px; color: var(--cream-dim); max-width: 74ch; }
+
+    /* executive summary проекта — акцент-врезка */
+    .ai-ex { background: var(--gold-dim); border: 1px solid var(--gold-line); border-radius: 11px;
+      padding: 18px 20px; }
+    .ai-ex__k { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+    .ai-ex dl { display: grid; grid-template-columns: 128px 1fr; gap: 9px 16px; margin: 0; }
+    @media (max-width: 640px) { .ai-ex dl { grid-template-columns: 1fr; gap: 2px 0; }
+      .ai-ex dd { margin-bottom: 9px; } }
+    .ai-ex dt { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--cream-dim); padding-top: 3px; }
+    .ai-ex dd { margin: 0; font-size: 14.5px; line-height: 1.6; color: var(--cream-soft); }
+    .ai-ex dd strong { color: var(--cream); }
+
+    /* блок внутри проекта */
+    .ai-blk { margin-top: 20px; }
+    .ai-blk__h { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--gold); margin-bottom: 8px; }
+    .ai-blk p { margin: 0; color: var(--cream-soft); font-size: 14px; line-height: 1.65; }
+    .ai-blk p + p { margin-top: 7px; }
+    .ai-blk strong { color: var(--cream); }
+
+    /* было → станет */
+    .ai-flow { display: grid; gap: 10px; }
+    .ai-flow__row { border: 1px solid var(--line); border-radius: 9px; padding: 12px 15px;
+      background: var(--bg-2); }
+    .ai-flow__row--will { border-color: var(--gold-line); background: var(--gold-dim); }
+    .ai-flow__row p { margin: 6px 0 0; font-size: 13.5px; }
+
+    /* строка приоритета — компактная сетка чисел */
+    .ai-score { display: flex; flex-wrap: wrap; gap: 1px; background: var(--line);
+      border: 1px solid var(--line); border-radius: 10px; overflow: hidden; margin-top: 4px; }
+    .ai-score__c { flex: 1 1 92px; background: var(--panel); padding: 11px 13px; }
+    .ai-score__c--res { background: var(--gold-dim); }
+    .ai-score__k { font-family: var(--f-mono); font-size: 10px; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--cream-dim); }
+    .ai-score__v { font-family: var(--f-mono); font-size: 17px; color: var(--cream); margin-top: 4px;
+      font-variant-numeric: tabular-nums; }
+    .ai-score__c--res .ai-score__v { color: var(--gold); }
+    .ai-score__s { font-size: 11px; color: var(--cream-dim); margin-top: 3px; line-height: 1.35; }
+
+    .ai-score__note { margin-top: 10px; font-size: 13px; color: var(--cream-dim); }
+
+    /* матрица «купить или строить» — значки оценки по оси */
+    .mk { font-family: var(--f-mono); margin-right: 5px; }
+    .mk--ok  { color: var(--success); }
+    .mk--mid { color: var(--gold); }
+    .mk--no  { color: var(--cream-dim); }
+    .ai-mx__key { margin-top: 0; }
+
+    table.ai-mx { border-collapse: collapse; width: 100%; font-size: 13px; }
+    table.ai-mx th, table.ai-mx td { text-align: left; padding: 9px 12px;
+      border-bottom: 1px solid var(--line); vertical-align: top; color: var(--cream-soft); }
+    table.ai-mx th { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .06em;
+      text-transform: uppercase; color: var(--cream-dim); background: var(--bg-2); }
+    table.ai-mx tr:last-child td { border-bottom: 0; }
+    table.ai-mx td.ax { font-family: var(--f-mono); font-size: 12px; color: var(--cream);
+      white-space: nowrap; }
+
+    /* риски */
+    table.ai-risk { border-collapse: collapse; width: 100%; font-size: 13px; }
+    table.ai-risk th, table.ai-risk td { text-align: left; padding: 9px 12px;
+      border-bottom: 1px solid var(--line); vertical-align: top; color: var(--cream-soft); }
+    table.ai-risk th { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .06em;
+      text-transform: uppercase; color: var(--cream-dim); background: var(--bg-2); }
+    table.ai-risk tr:last-child td { border-bottom: 0; }
+    table.ai-risk td.rn { font-family: var(--f-mono); font-size: 12px; color: var(--gold);
+      white-space: nowrap; }
+    table.ai-risk strong { color: var(--cream); }
+
+    /* сводная таблица трёх проектов */
+    table.ai-sum { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+    table.ai-sum th, table.ai-sum td { text-align: left; padding: 12px 14px;
+      border-bottom: 1px solid var(--line); vertical-align: top; color: var(--cream-soft); }
+    table.ai-sum th { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .06em;
+      text-transform: uppercase; color: var(--cream-dim); background: var(--bg-2); }
+    table.ai-sum tr:last-child td { border-bottom: 0; }
+    table.ai-sum td.nm { color: var(--cream); }
+    table.ai-sum td.nm a { font-family: var(--f-display); font-size: 16px; }
+    /* .s — вторая строка внутри ячейки: пояснение под основным значением */
+    table.ai-sum .s { display: block; font-family: var(--f-body); font-size: 12.5px;
+      color: var(--cream-dim); margin-top: 4px; line-height: 1.45; }
+    table.ai-sum td.ec { font-family: var(--f-mono); font-size: 12.5px; color: var(--cream); }
+    table.ai-sum td.ec .s { font-size: 12px; }
+    table.ai-sum td.ec .s b { color: var(--gold); font-weight: 600; }
+
+    /* словарь страницы */
+    .ai-dict { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; }
+    .ai-dict .it { border: 1px solid var(--line); border-radius: 9px; background: var(--panel);
+      padding: 11px 14px; font-size: 13px; color: var(--cream-soft); line-height: 1.5; }
+    .ai-dict .it b { display: block; color: var(--cream); font-weight: 600; margin-bottom: 2px; }
+
+    /* сквозные рычаги косты */
+    .ai-levers { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+    .ai-lever { border: 1px solid var(--line); border-left: 3px solid var(--gold);
+      border-radius: 10px; background: var(--panel); padding: 15px 18px; }
+    .ai-lever h4 { font-family: var(--f-display); font-size: 17px; margin: 0 0 6px; color: var(--cream); }
+    .ai-lever p { margin: 0; font-size: 13.5px; color: var(--cream-soft); line-height: 1.55; }
+
+    /* плашка допущений */
+    .ai-note { background: var(--panel); border: 1px solid var(--line);
+      border-left: 3px solid var(--gold); border-radius: 10px; padding: 16px 20px; }
+    .ai-note p { margin: 0; color: var(--cream-soft); font-size: 13.5px; line-height: 1.65; }
+    .ai-note p + p { margin-top: 7px; }
+    .ai-note strong { color: var(--cream); }
+    .ai-note ul { margin: 8px 0 0; padding-left: 20px; color: var(--cream-soft);
+      font-size: 13.5px; line-height: 1.6; }
+    .ai-note li + li { margin-top: 4px; }
+
+    /* лестница развития проекта */
+    .ai-ladder { display: grid; gap: 7px; }
+    .ai-ladder .lv { display: grid; grid-template-columns: 52px 1fr auto; gap: 12px;
+      align-items: center; border: 1px solid var(--line); border-radius: 9px;
+      padding: 10px 14px; background: var(--bg-2); }
+    @media (max-width: 640px) { .ai-ladder .lv { grid-template-columns: 44px 1fr; }
+      .ai-ladder .lv .st { grid-column: 2; } }
+    .ai-ladder .lv--now { border-color: var(--gold-line); background: var(--gold-dim); }
+    .ai-ladder .lv .n { font-family: var(--f-mono); font-size: 12px; color: var(--gold); }
+    .ai-ladder .lv .t { font-size: 13.5px; color: var(--cream-soft); line-height: 1.5; }
+    .ai-ladder .lv .t b { color: var(--cream); font-weight: 600; }
+    .ai-ladder .lv .st { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .06em;
+      text-transform: uppercase; color: var(--cream-dim); white-space: nowrap; }
+
+    .ai-go { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+    a.chip:hover { border-color: var(--gold); color: var(--cream); text-decoration: none; }
+    .ai-src { font-size: 12.5px; color: var(--cream-dim); margin-top: 12px; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">К содержанию</a>
+  <div data-header></div>
+
+  <div class="crumbs"><a href="index.html">Направление</a> <span>›</span> AI-проекты</div>
+
+  <main id="main">
+
+    <!-- ═══════════════ ГЕРОЙ ═══════════════ -->
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Оценка AI-идей · разбор до решения · июль 2026</p>
+        <h1>Три AI-проекта: где ИИ <span class="accent">окупается</span>, а где только кажется</h1>
+        <p class="sub">
+          Три идеи с искусственным интеллектом, разобранные по одной схеме: что за задача,
+          сколько это стоит, сколько экономит, купить готовое или строить своё, что может
+          пойти не так. У всех трёх решение вышло одинаковым — <strong>покупать готовое</strong>.
+          Но окупаемость у них разная: у одного проекта она посчитана до рубля,
+          у второго считается на один случай, у третьего <strong>в деньгах не считается вовсе</strong> —
+          и это тоже честный ответ, а не пробел.
+        </p>
+        <div class="cta-row">
+          <a class="btn btn--primary" href="#ekonomika">Сколько стоит и сколько экономит</a>
+          <a class="btn" href="#svodka">Сводка по трём проектам</a>
+          <a class="btn" href="backlog.html?q=H2.1">Связанные задачи в бэклоге</a>
+        </div>
+      </div>
+      <aside class="hero-goal">
+        <div class="num">2–4%</div>
+        <div class="cap">столько стоит ИИ</div>
+        <div class="sub2">от той ручной работы, которую он снимает — по единственному
+          проекту, где посчитан весь объём</div>
+      </aside>
+    </section>
+
+    <!-- ═══════════════ КАК ЧИТАТЬ ═══════════════ -->
+    <section class="section">
+      <p class="eyebrow">Как читать страницу</p>
+      <h2>У каждой цифры — метка, насколько ей можно верить</h2>
+      <p class="section-note">Почти все числа ниже — <strong>оценки, а не замеры</strong>.
+        Ни по одному проекту ещё не замерено исходное состояние: никто не сидел с секундомером
+        рядом с консультантом. Поэтому у каждого блока стоит метка надёжности, а допущения вынесены
+        отдельными плашками, а не спрятаны в текст.</p>
+
+      <div class="vy-legend">
+        <span class="it"><span class="ev-chip ev-ok">✓</span> <span><strong>Подтверждено</strong> — есть данные или поимённые обращения агентств</span></span>
+        <span class="it"><span class="ev-chip ev-part">~</span> <span><strong>Частично</strong> — данные есть, но с оговоркой или из одного источника</span></span>
+        <span class="it"><span class="ev-chip ev-muted">∅</span> <span><strong>Гипотеза</strong> — рассуждение или идея, числом не проверено</span></span>
+        <span class="it"><span class="chip chip--copper">оценка</span> <span><strong>Оценка</strong> — число взято на глаз, замера нет</span></span>
+      </div>
+
+      <div class="ai-blk" style="margin-top:26px">
+        <div class="ai-blk__h">Словарь страницы — девять слов, без которых не разобраться</div>
+        <div class="ai-dict">
+          <span class="it"><b>Купить готовое</b>Взять чужой ИИ и платить за каждый запрос,
+            как за электричество. В тексте — «купить».</span>
+          <span class="it"><b>Строить своё</b>Собрать собственную модель, обучить её на своих
+            данных и держать на своих серверах. В тексте — «строить».</span>
+          <span class="it"><b>Плата за запрос</b>Сколько стоит один ответ ИИ. Считается от объёма
+            текста: чем больше отдали на вход, тем дороже.</span>
+          <span class="it"><b>Человек на выходе</b>ИИ ничего не отправляет сам. Он готовит
+            черновик, а консультант читает, правит и подтверждает.</span>
+          <span class="it"><b>Выдумка</b>Главная беда ИИ: он уверенно называет то, чего в данных
+            не было — правдоподобную дату, сумму или статус.</span>
+          <span class="it"><b>Ссылка на источник</b>Каждый факт в ответе ИИ кликабелен и ведёт
+            к тому сообщению или строке правил, откуда он взят. Проверка в один клик.</span>
+          <span class="it"><b>Правила тарифа</b>Условия, на которых продан билет: можно ли его
+            вернуть, какой штраф, что не возвращается. Приходят от авиакомпании плотным
+            техническим текстом, читать который тяжело даже опытному человеку.</span>
+          <span class="it"><b>Трудозатраты</b>Сколько минут консультант тратит на одну операцию.
+            На сайте эта метрика называется <a href="metrics.html#m-t-op">T-op</a>.</span>
+          <span class="it"><b>Приживаемость</b>Реально ли консультант работает в нашей системе,
+            а не убегает в почту и сторонние программы. Метрика —
+            <a href="metrics.html#m-adoption-in-aa">доля работы в нашей системе</a>.</span>
+        </div>
+      </div>
+
+      <nav class="toc" aria-label="Содержание страницы" style="margin-top:24px">
+        <span class="toc__lead">На этой странице:</span>
+        <a class="toc__chip" href="#svodka">Главное о трёх проектах</a>
+        <a class="toc__chip" href="#ekonomika">Сколько стоит и сколько экономит</a>
+        <a class="toc__chip" href="#p-vozvrat">1. Возврат и обмен</a>
+        <a class="toc__chip" href="#p-offline">2. Заведение услуг со стороны</a>
+        <a class="toc__chip" href="#p-summari">3. Сводка по заказу</a>
+        <a class="toc__chip" href="#vyvody">Общие выводы</a>
+      </nav>
+    </section>
+
+    <!-- ═══════════════ EXECUTIVE SUMMARY НАПРАВЛЕНИЯ ═══════════════ -->
+    <section class="section" id="svodka">
+      <p class="eyebrow">Главное за 30 секунд</p>
+      <h2>Один вывод на три проекта</h2>
+      <p class="section-note">Три разные задачи, три разных адресата, три разных приоритета —
+        а решение по технологии вышло одно и то же. Это и есть главный результат разбора:
+        <strong>перед нами не три отдельные интеграции, а одна общая основа, которая окупается
+        трижды.</strong></p>
+
+      <div class="accent-grid">
+        <div class="accent-card is-nsm">
+          <div class="k">Решение по всем трём</div>
+          <h3>Покупать, не строить</h3>
+          <p>Своя модель означала бы постоянные расходы на серверы и команду по машинному
+            обучению. На нашем объёме они не окупятся: плата за запросы к готовому ИИ измеряется
+            рублями, а содержание своей модели — миллионами.</p>
+        </div>
+        <div class="accent-card is-bet1">
+          <div class="k">Как закрыт главный минус покупки</div>
+          <h3>Российский поставщик</h3>
+          <p>Единственное, в чём своя модель честно выигрывала, — данные не уходят наружу.
+            Это закрывается выбором российского поставщика с хранением данных в стране плюс
+            затиранием персональных данных перед отправкой. Без своей модели.</p>
+        </div>
+        <div class="accent-card is-bet2">
+          <div class="k">Что это даёт сверх экономии</div>
+          <h3>Одна основа на три фичи</h3>
+          <p>Прослойка между нашей системой и ИИ пишется один раз и переиспользуется всеми
+            тремя проектами. Она же защищает от привязки к одному поставщику: сменить модель
+            можно, не переписывая сами функции.</p>
+        </div>
+      </div>
+
+      <h3 style="font-family:var(--f-display); font-size:22px; margin:34px 0 0">Три проекта в одной таблице</h3>
+      <p class="section-note" style="margin-top:8px">Порядок — по приоритету: сверху то, что
+        стоит делать первым. Приоритет считается не «интересностью идеи», а тем, насколько
+        боль подтверждена и насколько сильный эффект даёт — подробнее в
+        <a href="metod.html">методе оценки задач</a>.</p>
+
+      <div class="table-wrap">
+        <table class="ai-sum">
+          <thead>
+            <tr>
+              <th scope="col">Проект</th>
+              <th scope="col">Этап</th>
+              <th scope="col">Приоритет</th>
+              <th scope="col">Экономика</th>
+              <th scope="col">Насколько подтверждена боль</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="nm"><a href="#p-vozvrat">Помощник по возврату и обмену</a>
+                <span class="s">Читает правила тарифа, показывает условия и сумму возврата,
+                  готовит черновик ответа клиенту</span></td>
+              <td><span class="stage-tag s-2a">2A</span></td>
+              <td><span class="chip prio--must">Must</span>
+                <span class="s">балл 47 — первое место</span></td>
+              <td class="ec">2–17 ₽ за расчёт
+                <span class="s">снимает 4–9 минут ручной работы на каждом случае</span></td>
+              <td><span class="ev-chip ev-ok">✓</span>
+                <span class="s">4 агентства назвали поимённо;
+                  возвраты — 79% обращений по авиабилетам</span></td>
+            </tr>
+            <tr>
+              <td class="nm"><a href="#p-offline">Заведение услуг, купленных на стороне</a>
+                <span class="s">Разбирает свободный текст или голос заявки и сам заполняет
+                  поля услуги в системе</span></td>
+              <td><span class="stage-tag s-2a">2A</span></td>
+              <td><span class="chip prio--should">Should</span>
+                <span class="s">балл не считался — нет оценки трудозатрат</span></td>
+              <td class="ec">0,9–3,4 тыс ₽ в месяц
+                <span class="s">против 69–80 тыс ₽ сэкономленного труда — <b>2–4%</b></span></td>
+              <td><span class="ev-chip ev-ok">✓</span>
+                <span class="s">и боль, и решение подтверждены
+                  при проработке крупного проекта «Оффлайн 4.0»; охват поимённо не сверен</span></td>
+            </tr>
+            <tr>
+              <td class="nm"><a href="#p-summari">Сводка по заказу</a>
+                <span class="s">По кнопке показывает, что нового и что горит по заказу,
+                  вместо ручного обхода всех чатов</span></td>
+              <td><span class="stage-tag s-1">1</span></td>
+              <td><span class="chip prio--should">Should</span>
+                <span class="s">балл 3,8 — последнее место</span></td>
+              <td class="ec">2–21 ₽ за сводку
+                <span class="s">в деньгах не считается: ценность в том, что консультант
+                  остаётся в системе</span></td>
+              <td><span class="ev-chip ev-muted">∅</span>
+                <span class="s">идея продакта. Прямого запроса
+                  «сделайте сводку» ни от кого не было</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ai-note" style="margin-top:20px">
+        <p><strong>Почему разрыв в приоритете такой большой — 47 против 3,8.</strong>
+          Это не «магия ИИ» и не разница в качестве идей. Разница в классе боли, и она
+          раскладывается на три множителя. <strong>Первый:</strong> возврат и обмен просили
+          поимённо четыре агентства, а сводку по заказу не просил никто — это идея продакта.
+          <strong>Второй:</strong> возврат экономит прямые минуты на массовой операции, а сводка
+          работает на приживаемость — эффект реальный, но косвенный. <strong>Третий:</strong>
+          разбор правил тарифа сегодня не закрыт ничем, кроме ручной работы, а «обойти чаты
+          руками» — пусть плохой, но стабильно работающий способ.</p>
+      </div>
+    </section>
+
+    <!-- ═══════════════ ЮНИТ-ЭКОНОМИКА ═══════════════ -->
+    <section class="section" id="ekonomika">
+      <p class="eyebrow">Юнит-экономика · главный блок страницы</p>
+      <h2>Сколько стоит ИИ и сколько работы он снимает</h2>
+      <p class="section-note">Вся экономика этих проектов держится на одном соотношении.
+        <strong>Слева — плата за запросы к ИИ, она измеряется рублями. Справа — время
+        консультанта, оно измеряется часами.</strong> Час консультанта стоит несопоставимо
+        дороже, чем ответ модели, поэтому вопрос «а не дорого ли будет платить за ИИ»
+        на нашем объёме закрывается арифметикой, а не спором.</p>
+
+      <div class="ai-blk" style="margin-top:24px">
+        <div class="ai-blk__h">Как обе стороны считаются</div>
+        <div class="m-calc__formula" style="max-width:760px">Ценность = объём операций × снятые минуты × ставка консультанта</div>
+        <div class="m-calc__formula" style="max-width:760px">Стоимость = объём запросов × объём текста × тариф поставщика</div>
+        <p class="section-note" style="margin-top:12px">Обе формулы упираются в <strong>объём</strong> —
+          сколько таких операций в месяц. Он известен ровно по одному проекту из трёх.
+          Отсюда и вся разница в том, насколько уверенно посчитана окупаемость.</p>
+      </div>
+
+      <!-- ---------- ВЕСЫ ---------- -->
+      <h3 style="font-family:var(--f-display); font-size:22px; margin:34px 0 0">Весы окупаемости по каждому проекту</h3>
+      <p class="section-note" style="margin-top:8px">Одна полоса — один проект.
+        Золотая часть слева — во что обходится ИИ, светлая справа — работа, которую он снимает.
+        Полоса нарисована только там, где известен месячный объём; у двух других проектов
+        честно показано, чего не хватает для полного расчёта.</p>
+
+      <div class="ai-scales">
+
+        <!-- Оффлайн — единственный полный расчёт -->
+        <div class="ai-scale">
+          <div class="ai-scale__top">
+            <span class="ai-scale__name"><a href="#p-offline">Заведение услуг, купленных на стороне</a></span>
+            <span class="ev-chip ev-ok" title="объём взят из выгрузки транзакций">✓ объём известен</span>
+            <span class="ai-scale__unit">в месяц</span>
+          </div>
+          <div class="ai-bar" role="img"
+               aria-label="Стоимость ИИ — около 3 процентов, сэкономленный труд — около 97 процентов">
+            <span class="ai-bar__seg ai-bar__cost" style="flex:0 0 3%">3%</span>
+            <span class="ai-bar__seg ai-bar__val"><b>97%</b>&nbsp;— работа, которую снимает ИИ</span>
+          </div>
+          <div class="ai-legs">
+            <span><span class="sw sw--cost"></span><b>0,9–3,4 тыс ₽</b> — плата за запросы</span>
+            <span><span class="sw sw--val"></span><b>69–80 тыс ₽</b> — сэкономленный труд консультантов</span>
+          </div>
+          <p class="ai-gap"><b>Откуда взялось:</b> около 660 таких операций в месяц, на каждую
+            уходит 10–15 минут ручного заполнения — это примерно 164 часа. ИИ снимает
+            60–70% этого времени. Полная цепочка расчёта — ниже.</p>
+        </div>
+
+        <!-- Возврат/обмен — считается на один случай -->
+        <div class="ai-scale ai-scale--open">
+          <div class="ai-scale__top">
+            <span class="ai-scale__name"><a href="#p-vozvrat">Помощник по возврату и обмену</a></span>
+            <span class="ev-chip ev-part" title="боль подтверждена, объём в штуках не замерен">~ объём не замерен</span>
+            <span class="ai-scale__unit">на один случай</span>
+          </div>
+          <div class="ai-pair">
+            <div class="ai-side">
+              <div class="ai-side__k">Стоит</div>
+              <div class="ai-side__v">2–17 ₽</div>
+              <div class="ai-side__s">один разбор правил тарифа с расчётом и черновиком ответа</div>
+            </div>
+            <span class="ai-vs">против</span>
+            <div class="ai-side ai-side--val">
+              <div class="ai-side__k">Снимает</div>
+              <div class="ai-side__v">4–9 минут</div>
+              <div class="ai-side__s">было 5–12 минут ручного разбора, станет 1–3 минуты на проверку</div>
+            </div>
+          </div>
+          <p class="ai-gap"><b>Почему нет процента:</b> не замерено, сколько возвратов и обменов
+            проходит через агентства за месяц. Известно только, что операция массовая — возвраты
+            занимают <b>79% всех обращений по авиабилетам</b>. Как только появится число случаев
+            в месяц, полоса считается той же формулой, что и у проекта выше — и, судя по
+            массовости, окажется выгоднее.</p>
+        </div>
+
+        <!-- Саммари — в деньгах не считается -->
+        <div class="ai-scale ai-scale--open">
+          <div class="ai-scale__top">
+            <span class="ai-scale__name"><a href="#p-summari">Сводка по заказу</a></span>
+            <span class="ev-chip ev-muted" title="первичная ценность не измеряется в деньгах">∅ в деньгах не считается</span>
+            <span class="ai-scale__unit">на одну сводку</span>
+          </div>
+          <div class="ai-pair">
+            <div class="ai-side">
+              <div class="ai-side__k">Стоит</div>
+              <div class="ai-side__v">2–21 ₽</div>
+              <div class="ai-side__s">одна сводка по заказу; пересчитывается только когда
+                в заказе что-то изменилось</div>
+            </div>
+            <span class="ai-vs">против</span>
+            <div class="ai-side ai-side--val">
+              <div class="ai-side__k">Снимает</div>
+              <div class="ai-side__v">2–4 минуты</div>
+              <div class="ai-side__s">но это <b>побочный</b> эффект, а не главный</div>
+            </div>
+          </div>
+          <p class="ai-gap"><b>Почему считать в рублях бессмысленно:</b> главная ценность этого
+            проекта — не сэкономленные минуты, а то, что консультанту не противно заходить
+            в заказ и он не убегает работать в почту. Это меряется <b>поведением</b>, а не
+            деньгами: падает ли доля случаев, когда человек всё равно обошёл все чаты руками.
+            Пытаться натянуть сюда рублёвую окупаемость — значит обманывать себя.</p>
+        </div>
+      </div>
+
+      <!-- ---------- ФЛАГМАНСКИЙ РАСЧЁТ ---------- -->
+      <h3 style="font-family:var(--f-display); font-size:22px; margin:38px 0 0">Полная цепочка расчёта — на проекте, где известен объём</h3>
+      <p class="section-note" style="margin-top:8px">Это единственный из трёх проектов, где
+        посчитан весь путь от числа операций до рублей. Каждый шаг подписан, чтобы было видно,
+        где данные, а где оценка.</p>
+
+      <div class="sc-flow">
+        <span class="sc-step"><span class="sc-k">~660 операций</span><span class="sc-d">в месяц, из выгрузки</span></span>
+        <span class="sc-op">×</span>
+        <span class="sc-step"><span class="sc-k">10–15 мин</span><span class="sc-d">ручного заполнения · оценка</span></span>
+        <span class="sc-op">=</span>
+        <span class="sc-step sc-step--mid"><span class="sc-k">~164 часа</span><span class="sc-d">ручной работы в месяц</span></span>
+        <span class="sc-op">×</span>
+        <span class="sc-step"><span class="sc-k">60–70%</span><span class="sc-d">снимает ИИ · оценка</span></span>
+        <span class="sc-op">=</span>
+        <span class="sc-step sc-step--mid"><span class="sc-k">98–115 часов</span><span class="sc-d">экономии в месяц</span></span>
+        <span class="sc-op">×</span>
+        <span class="sc-step"><span class="sc-k">700 ₽/час</span><span class="sc-d">ставка · оценка</span></span>
+        <span class="sc-op">=</span>
+        <span class="sc-step sc-step--final"><span class="sc-k">69–80 тыс ₽</span><span class="sc-d">экономии в месяц</span></span>
+      </div>
+
+      <div class="sc-example">
+        <div class="sc-ex-row">Плата за запросы: ~2,6 тыс единиц текста на запрос × 0,5–2,0 ₽ за тысячу = <b>1,3–5,2 ₽ за операцию</b></div>
+        <div class="sc-ex-row">660 операций в месяц × 1,3–5,2 ₽ = <b>0,9–3,4 тыс ₽ в месяц</b></div>
+        <div class="sc-ex-row sc-ex-row--final">0,9–3,4 тыс ₽ от 69–80 тыс ₽ экономии = <b>2–4%</b> — окупается с первого месяца даже по худшей границе</div>
+      </div>
+
+      <p class="section-note" style="margin-top:18px">Обратите внимание на асимметрию вилок.
+        Даже если сложить <strong>худший</strong> сценарий по расходам с <strong>худшим</strong> по
+        экономии — 3,4 тыс против 69 тыс — соотношение остаётся 5%. Чтобы решение «покупать»
+        стало неверным, объём должен вырасти примерно в десять раз. Это и есть
+        <a href="#vyvody">порог пересмотра</a>.</p>
+
+      <!-- ---------- РЫЧАГИ КОСТЫ ---------- -->
+      <h3 style="font-family:var(--f-display); font-size:22px; margin:38px 0 0">Три рычага, от которых экономика может поплыть</h3>
+      <p class="section-note" style="margin-top:8px">Абсолютная стоимость ответа ИИ низкая
+        у всех трёх проектов. Опасность не в цене одного запроса, а в их количестве. Поэтому
+        во всех трёх заложены одни и те же три ограничителя — это часть решения, а не деталь
+        реализации.</p>
+
+      <div class="ai-levers">
+        <div class="ai-lever">
+          <h4>Запуск по кнопке</h4>
+          <p>ИИ не срабатывает автоматически при каждом открытии страницы. Консультант жмёт
+            кнопку тогда, когда ему это нужно. Иначе число запросов привязывается к числу
+            открытий и расходы становятся непредсказуемыми.</p>
+        </div>
+        <div class="ai-lever">
+          <h4>Запоминание ответа</h4>
+          <p>Готовый ответ сохраняется и пересчитывается только тогда, когда исходные данные
+            изменились: пришло новое сообщение, поменялся билет. Число расчётов привязывается
+            к жизни заказа, а не к числу нажатий.</p>
+        </div>
+        <div class="ai-lever">
+          <h4>Ограничение объёма текста</h4>
+          <p>На вход отдаём не всю переписку, а последние сообщения или изменения с прошлого
+            просмотра. Это и дешевле, и точнее: разговорчивый заказ иначе раздувает и цену,
+            и внимание модели.</p>
+        </div>
+      </div>
+
+      <!-- ---------- ДОПУЩЕНИЯ ---------- -->
+      <div class="ai-note" style="margin-top:26px">
+        <p><strong>Что во всех этих числах — оценка, а не замер.</strong> Это важно прочитать
+          до того, как цифры уйдут в презентацию.</p>
+        <ul>
+          <li><strong>Ставка консультанта 700 ₽/час</strong> — рабочая оценка, а не выверенная
+            с финансами стоимость часа.</li>
+          <li><strong>Время ручной работы</strong> (10–15 минут на заведение услуги, 5–12 минут
+            на возврат, 3–5 минут на понимание «что нового по заказу») — оценки со слов, ни одна
+            не замерена секундомером.</li>
+          <li><strong>Доля снятого времени 60–70%</strong> — предположение. Полностью работу ИИ
+            не снимет никогда: остаются обязательная вычитка, поля, которых в тексте клиента
+            не было, и прикрепление файлов.</li>
+          <li><strong>Тариф поставщика 0,5–2,0 ₽ за тысячу единиц текста</strong> — вилка по
+            рынку, договора нет.</li>
+          <li><strong>Объём в штуках</strong> известен только по заведению услуг. По возвратам
+            и по сводкам числа случаев в месяц нет.</li>
+        </ul>
+        <p>Первое, что нужно сделать перед любым из трёх проектов, — <strong>замерить исходное
+          состояние</strong>. Без этого нечем будет доказать, что после запуска стало лучше.</p>
+      </div>
+    </section>
+
+    <!-- ═══════════════ ПРОЕКТ 1 — ВОЗВРАТ/ОБМЕН ═══════════════ -->
+    <section class="section" id="p-vozvrat">
+      <p class="eyebrow">Проект 1 из 3 · первый в приоритете</p>
+      <h2>Помощник по возврату и обмену билета</h2>
+
+      <div class="ai-proj">
+        <div class="ai-proj__head">
+          <span class="stage-tag s-2a">Этап 2A</span>
+          <span class="chip prio--must">Must</span>
+          <span class="chip chip--gold">балл 47 — топ-1</span>
+          <a class="chip" href="etapy.html#stage-2">снимать нагрузку</a>
+          <a class="chip" href="backlog.html?q=H2.1">гипотеза H2.1</a>
+          <span class="ev-chip ev-ok">✓ боль подтверждена</span>
+        </div>
+        <h3>Читает правила тарифа, считает сумму, пишет черновик ответа</h3>
+        <p class="ai-proj__sub">Самая частая и самая тяжёлая из «вторичных» операций —
+          то есть всего, что происходит с билетом после покупки.</p>
+
+        <div class="ai-ex">
+          <div class="ai-ex__k">Executive summary</div>
+          <dl>
+            <dt>Задача</dt>
+            <dd>Клиент просит вернуть или обменять билет. Чтобы ответить «сколько вернём и на
+              каких условиях», консультант вручную открывает правила тарифа — это плотный
+              технический текст, в котором <strong>путаются даже буквы и группы тарифов</strong>, —
+              разбирает штрафы и невозвратные сборы, считает сумму, проверяет ограничения обмена
+              и часто лезет в отдельную программу бронирования. Долго, требует опыта, легко
+              ошибиться.</dd>
+
+            <dt>Идея</dt>
+            <dd>Кнопка «Возврат / обмен» в заказе. ИИ читает правила тарифа и параметры билета
+              и показывает: возвратный билет или нет, размер штрафа, какие сборы не вернутся,
+              <strong>оценку суммы к возврату</strong>, условия обмена и пометку «клиент уже
+              менял билет больше одного раза». Рядом — готовый черновик ответа клиенту.
+              Каждое условие кликабельно и ведёт на ту строку правил, откуда взято.</dd>
+
+            <dt>Решение</dt>
+            <dd><strong>Покупать готовое</strong> — но с важной оговоркой, которой нет у двух
+              других проектов: <strong>деньги считает не ИИ</strong>. Сумму возврата вычисляет
+              обычный код по правилам, а ИИ только читает условия и собирает текст. Принцип
+              короткий: <em>код считает деньги, ИИ читает условия.</em></dd>
+
+            <dt>Цифра</dt>
+            <dd>Один разбор стоит <strong>2–17 ₽</strong> и снимает <strong>4–9 минут</strong>
+              работы консультанта. Операция массовая: <strong>возвраты — 79% всех обращений
+              по авиабилетам</strong>, обмены — ещё 22%.</dd>
+
+            <dt>Главный риск</dt>
+            <dd>Ошибка в сумме или в условии. Если консультант назовёт клиенту неверную цифру —
+              это финансовый спор и удар по доверию, а доверие здесь самый хрупкий актив.
+              Именно поэтому деньги считает код, а не ИИ.</dd>
+
+            <dt>Статус</dt>
+            <dd>Боль подтверждена <strong>поимённо и данными</strong>: четыре агентства назвали
+              вторичные операции своим ядром, по этой теме около 22 заявок в трекере от пяти и
+              более агентств. Это не идея продакта, а закрытие подтверждённого запроса —
+              отсюда первое место в приоритете.</dd>
+          </dl>
+        </div>
+
+        <div class="ai-blk">
+          <div class="ai-blk__h">Экономика проекта</div>
+          <div class="ai-scale ai-scale--open" style="padding-left:0; padding-right:0; border:0; background:none">
+            <div class="ai-pair">
+              <div class="ai-side">
+                <div class="ai-side__k">Стоит один разбор</div>
+                <div class="ai-side__v">2–17 ₽</div>
+                <div class="ai-side__s">правила тарифа плюс параметры билета — 3–8 тысяч единиц
+                  текста на вход, 0,3–0,7 тысячи на ответ</div>
+              </div>
+              <span class="ai-vs">против</span>
+              <div class="ai-side ai-side--val">
+                <div class="ai-side__k">Снимает на каждом случае</div>
+                <div class="ai-side__v">4–9 минут</div>
+                <div class="ai-side__s">было 5–12 минут ручного разбора, станет 1–3 минуты
+                  на проверку и отправку</div>
+              </div>
+            </div>
+            <p class="ai-gap"><b>Почему запоминание ответа здесь работает лучше всего:</b>
+              правила тарифа не меняются, пока не меняется билет. В отличие от переписки по
+              заказу, которая живёт постоянно, здесь один раз посчитанный ответ можно хранить
+              долго — расходы получаются самыми предсказуемыми из трёх проектов.</p>
+            <p class="ai-gap"><b>Чего не хватает для полного расчёта:</b> числа возвратов и
+              обменов за месяц. Есть только доля в обращениях (79%), а долю в охват переносить
+              нельзя — это разные вещи.</p>
+          </div>
+        </div>
+
+        <div class="ai-blk">
+          <div class="ai-blk__h">Приоритет — как посчитан</div>
+          <div class="ai-score">
+            <div class="ai-score__c"><div class="ai-score__k">Охват</div><div class="ai-score__v">7</div>
+              <div class="ai-score__s">4 агентства поимённо + заявки ещё от пяти</div></div>
+            <div class="ai-score__c"><div class="ai-score__k">Сила эффекта</div><div class="ai-score__v">9</div>
+              <div class="ai-score__s">массовая и тяжёлая операция</div></div>
+            <div class="ai-score__c"><div class="ai-score__k">Уверенность</div><div class="ai-score__v">6</div>
+              <div class="ai-score__s">боль ясна, решение рискованно — деньги</div></div>
+            <div class="ai-score__c"><div class="ai-score__k">Трудозатраты</div><div class="ai-score__v">8</div>
+              <div class="ai-score__s">возврат по авиа; обмен поднимет до 13</div></div>
+            <div class="ai-score__c ai-score__c--res"><div class="ai-score__k">Итог</div><div class="ai-score__v">≈47</div>
+              <div class="ai-score__s">первое место в направлении</div></div>
+          </div>
+          <p class="ai-score__note">Требует сверки:
+            авторство 22 заявок по трекеру. Если уникальных агентств окажется меньше пяти,
+            охват опускается до 6, а итог — примерно до 40. Место в приоритете при этом
+            не меняется.</p>
+        </div>
+
+        <details class="vis-sect" style="margin-top:20px">
+          <summary>Купить или строить — разбор по осям</summary>
+          <div class="vis-sect__body">
+            <p class="ai-mx__key">Семь осей сравнения. Значки: <span class="mk mk--ok">✔</span> явно лучше ·
+              <span class="mk mk--mid">◐</span> есть оговорка ·
+              <span class="mk mk--no">✕</span> явно хуже.</p>
+            <div class="table-wrap" style="margin-top:12px">
+              <table class="ai-mx">
+                <thead><tr>
+                  <th scope="col">Ось сравнения</th>
+                  <th scope="col">Купить готовое</th>
+                  <th scope="col">Строить своё</th>
+                </tr></thead>
+                <tbody>
+                  <tr><td class="ax">Стоимость на объёме</td>
+                    <td><span class="mk mk--ok">✔</span> платим за вызов, ответ запоминается по билету</td>
+                    <td><span class="mk mk--no">✕</span> постоянные расходы на серверы и команду не окупятся</td></tr>
+                  <tr><td class="ax">Приватность данных</td>
+                    <td><span class="mk mk--mid">◐</span> правила тарифа и данные брони уходят наружу → берём российского поставщика, персональные данные затираем</td>
+                    <td><span class="mk mk--ok">✔</span> ничего не покидает наш контур</td></tr>
+                  <tr><td class="ax">Точность в деньгах</td>
+                    <td><span class="mk mk--mid">◐</span> ИИ не гарантирует арифметику → сумму считает обычный код</td>
+                    <td><span class="mk mk--mid">◐</span> та же проблема, дороже; своя модель точность денег не даёт</td></tr>
+                  <tr><td class="ax">Чтение правил тарифа</td>
+                    <td><span class="mk mk--ok">✔</span> разбор плотного технического текста — сильная сторона готовых моделей</td>
+                    <td><span class="mk mk--no">✕</span> нужен размеченный набор правил, которого нет</td></tr>
+                  <tr><td class="ax">Риск выдумок</td>
+                    <td><span class="mk mk--mid">◐</span> на деньгах риск высокий → снимаем ссылками на источник, пометкой «оценка» и проверкой человеком</td>
+                    <td><span class="mk mk--mid">◐</span> тот же риск</td></tr>
+                  <tr><td class="ax">Срок до запуска</td>
+                    <td><span class="mk mk--ok">✔</span> недели — пара месяцев</td>
+                    <td><span class="mk mk--no">✕</span> месяцы</td></tr>
+                  <tr><td class="ax">Привязка к поставщику</td>
+                    <td><span class="mk mk--mid">◐</span> снимается прослойкой, общей с другими проектами</td>
+                    <td><span class="mk mk--ok">✔</span> полный контроль</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p><strong>Вывод.</strong> Единственная ось, где строить честно выигрывает, —
+              приватность, и она закрывается российским поставщиком. Новое по сравнению с
+              другими проектами — ось «точность в деньгах». Её решает не выбор «купить или
+              строить», а <strong>устройство самой фичи</strong>: сумму считает код, ИИ читает
+              условия и пишет текст.</p>
+          </div>
+        </details>
+
+        <details class="vis-sect">
+          <summary>Как меняется работа консультанта</summary>
+          <div class="vis-sect__body">
+            <div class="ai-flow" style="margin-top:10px">
+              <div class="ai-flow__row">
+                <span class="fl-tag fl-tag--is">Сейчас</span>
+                <p>Клиент пишет «планы поменялись, верните билет» → консультант открывает правила
+                  тарифа, плотный технический текст, в котором путаются группы и буквы тарифов →
+                  вручную разбирает штрафы и невозвратные сборы → считает сумму → проверяет
+                  ограничения обмена → часто идёт в отдельную программу бронирования →
+                  формулирует ответ с нуля.</p>
+              </div>
+              <div class="ai-flow__row ai-flow__row--will">
+                <span class="fl-tag fl-tag--will">Станет</span>
+                <p>Консультант открывает случай → жмёт «Возврат / обмен» → видит: возвратный или
+                  нет, штраф, невозвратные сборы, сумму к возврату, условия обмена, пометку
+                  о повторном обмене → рядом черновик ответа клиенту → проверяет спорное
+                  по ссылкам на правила, правит, отправляет.</p>
+              </div>
+            </div>
+            <p style="margin-top:14px"><strong>Что уходит из работы:</strong> ручной разбор правил,
+              ручной расчёт суммы и написание ответа с чистого листа.
+              <strong>Что остаётся за консультантом:</strong> само решение и сама операция.
+              Это принципиально: операция биллинговая, за неё консультант получает бонус.
+              Мы её <strong>ускоряем, а не забираем</strong>, — поэтому проект не конфликтует
+              с мотивацией того самого человека, чьё согласие работать в системе нам и нужно.</p>
+            <p><strong>Точную цену обмена система за факт не выдаёт.</strong> Её нельзя достоверно
+              узнать заранее — только через программу бронирования. Поэтому цена обмена всегда
+              помечается «оценка, подтвердить вручную». Возврат идёт первым именно потому, что
+              там сумму можно посчитать точно.</p>
+          </div>
+        </details>
+
+        <details class="vis-sect">
+          <summary>Риски и как они гасятся</summary>
+          <div class="vis-sect__body">
+            <div class="table-wrap" style="margin-top:12px">
+              <table class="ai-risk">
+                <thead><tr><th scope="col">#</th><th scope="col">Риск</th><th scope="col">Чем гасим</th></tr></thead>
+                <tbody>
+                  <tr><td class="rn">Р1</td><td><strong>Ошибка в сумме возврата.</strong> Консультант назовёт клиенту не ту цифру — спор и удар по доверию</td><td>Сумму считает обычный код, не ИИ. Точность суммы — жёсткое условие допуска к пробному запуску. Ссылки на правила для проверки. До подтверждения — пометка «оценка»</td></tr>
+                  <tr><td class="rn">Р2</td><td><strong>Выдуманное условие</strong> — невозвратный билет назван возвратным. Худший класс ошибки: прямое обещание клиенту</td><td>Правило для модели: «не уверен — помечай, не утверждай». Доля выдумок должна быть нулевой. Человек подтверждает перед отправкой</td></tr>
+                  <tr><td class="rn">Р3</td><td><strong>Цена обмена недостоверна заранее</strong> — структурно, не по вине ИИ</td><td>В первой версии обмен — только черновик с пометкой «уточнить вручную». Цену за факт не выдаём. Возврат идёт первым</td></tr>
+                  <tr><td class="rn">Р4</td><td><strong>Консультант всё равно перепроверит вручную.</strong> Привычка сильна; если не доверяет — эффекта ноль</td><td>Ссылки на источник и точная сумма снижают тревогу. На пробном запуске меряем реальную замену ручного разбора, а не «понравилось ли»</td></tr>
+                  <tr><td class="rn">Р5</td><td><strong>Расходы плывут</strong> при запуске на каждое открытие</td><td>Только по кнопке + запоминание ответа по билету</td></tr>
+                  <tr><td class="rn">Р6</td><td><strong>Правила тарифа недоступны</strong> для части поставщиков</td><td>В первую версию берём только те тарифы, где правила есть. Для остальных — честное «нет данных», а не догадка</td></tr>
+                  <tr><td class="rn">Р7</td><td><strong>Завышенные ожидания</strong> — «ИИ сам делает возврат»</td><td>В разговоре с руководством: это расчёт-подсказка и черновик под контролем консультанта, а не автоматическое исполнение операции</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </details>
+
+        <details class="vis-sect">
+          <summary>Что переубедит и когда мы откажемся</summary>
+          <div class="vis-sect__body">
+            <p style="margin-top:0"><strong>Вернёмся к вопросу «купить или строить», если:</strong>
+              регулятор запретит передавать правила тарифа и данные брони даже российскому
+              поставщику; поставщик не сможет стабильно читать условия с верными ссылками;
+              число запросов вырастет так, что даже с запоминанием ответа плата станет заметной.</p>
+            <p><strong>Откажемся от неё целиком, если</strong> при пробном запуске сумма или условия
+              ошибаются в недопустимой доле случаев, либо консультант после окна всё равно всё
+              перепроверяет вручную. Тогда она не экономит время, а добавляет лишний шаг,
+              которому не доверяют, — и вся экономия обнуляется.</p>
+            <p>Начинаем с возврата по авиабилетам именно потому, что там сумму можно посчитать
+              точно. Это самая честная проверка идеи до захода в обмен.</p>
+          </div>
+        </details>
+
+        <details class="vis-sect">
+          <summary>Куда это может вырасти</summary>
+          <div class="vis-sect__body">
+            <p style="margin-top:0">Здесь развитие идёт не вширь, а <strong>от подсказки
+              к исполнению</strong> — по мере того как растёт доверие и точность расчёта.</p>
+            <div class="ai-ladder" style="margin-top:12px">
+              <div class="lv lv--now">
+                <span class="n">Шаг 0</span>
+                <span class="t"><b>Возврат по авиабилетам</b> — точная сумма и черновик ответа</span>
+                <span class="st">первая версия</span>
+              </div>
+              <div class="lv">
+                <span class="n">Шаг 1</span>
+                <span class="t"><b>Обмен по авиабилетам</b> — условия и черновик, цена помечена «оценка»</span>
+                <span class="st">после проверки шага 0</span>
+              </div>
+              <div class="lv">
+                <span class="n">Шаг 2</span>
+                <span class="t"><b>Железная дорога и отели</b> — та же механика на других услугах</span>
+                <span class="st">позже</span>
+              </div>
+              <div class="lv">
+                <span class="n">Шаг 3</span>
+                <span class="t"><b>Клиент возвращает билет сам</b>, агент только подтверждает</span>
+                <span class="st">не сейчас · конфликт мотивации</span>
+              </div>
+            </div>
+            <p style="margin-top:14px"><strong>Порядок строго снизу вверх.</strong> Шаг 3 уносит
+              операцию и бонус от консультанта — это уже другая задача и другой заказчик, поэтому
+              он сознательно отложен. Чем дальше в сторону денег и автоматического исполнения,
+              тем больше должен решать обычный код и тем меньше — ИИ.</p>
+          </div>
+        </details>
+
+        <div class="ai-blk">
+          <div class="ai-blk__h">На что влияет и где смотреть дальше</div>
+          <div class="ai-go">
+            <a class="chip chip--gold" href="metrics.html#m-t-op">↓ Трудозатраты на операцию</a>
+            <a class="chip chip--gold" href="metrics.html#m-support-ratio-ракеты">↓ Зависимость от саппорта</a>
+            <a class="chip" href="metrics.html#m-steps-per-task">↓ Шагов на задачу</a>
+            <a class="chip" href="metrics.html#m-hidden-work">↓ Скрытая работа вне системы</a>
+          </div>
+          <div class="ai-go">
+            <a class="chip" href="research.html#f-3-2">3.2 · возвраты 79% авиачатов</a>
+            <a class="chip" href="research.html#f-7-1">7.1 · ручной обмен</a>
+            <a class="chip" href="research.html#f-7-2">7.2 · показать условия явно</a>
+            <a class="chip" href="research.html#f-7-3">7.3 · цена обмена недостоверна</a>
+            <a class="chip" href="research.html#f-m5">M5 · буквы тарифов путают</a>
+            <a class="chip" href="research.html#f-c4">C4 · сбор за обмен не учитывается</a>
+          </div>
+          <div class="ai-go">
+            <a class="chip" href="etapy.html#stage-2">Этап 2A — снимать нагрузку</a>
+            <a class="chip" href="backlog.html?q=H2.1">Задачи по гипотезе H2.1</a>
+          </div>
+          <p class="ai-src">Источник: разбор идеи «Помощник по возврату и обмену» от 24 июля 2026 —
+            до уровня решения «купить или строить» с расчётом окупаемости.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════ ПРОЕКТ 2 — ОФФЛАЙН ═══════════════ -->
+    <section class="section" id="p-offline">
+      <p class="eyebrow">Проект 2 из 3 · единственный с полным расчётом</p>
+      <h2>Заведение услуг, купленных на стороне</h2>
+
+      <div class="ai-proj">
+        <div class="ai-proj__head">
+          <span class="stage-tag s-2a">Этап 2A</span>
+          <span class="chip prio--should">Should</span>
+          <a class="chip" href="etapy.html#stage-2">снимать нагрузку</a>
+          <a class="chip" href="backlog.html?q=H2.1">гипотеза H2.1</a>
+          <span class="ev-chip ev-ok">✓ боль подтверждена</span>
+          <span class="chip chip--gold">окупаемость посчитана целиком</span>
+        </div>
+        <h3>Разбирает текст или голос заявки и сам заполняет поля услуги</h3>
+        <p class="ai-proj__sub">Услуга, купленная вне нашей системы, всё равно должна быть в неё
+          заведена — иначе не будет ни отчётности, ни данных, ни денег с этой операции.</p>
+
+        <div class="ai-ex">
+          <div class="ai-ex__k">Executive summary</div>
+          <dl>
+            <dt>Задача</dt>
+            <dd>Билет или отель куплены на стороне, но завести их в систему всё равно надо:
+              оттуда данные уходят в отчётность, в бухгалтерию клиента и в обмен по интерфейсам.
+              Консультант заполняет все поля <strong>руками — это 10–15 минут на одну услугу</strong>,
+              причём сама покупка в эти минуты не входит. Раньше было 5–7 минут; полей стало
+              намного больше, и время выросло.</dd>
+
+            <dt>Идея</dt>
+            <dd>Консультант или клиент вставляет свободный текст заявки — или наговаривает
+              голосом — а ИИ разбирает его и <strong>сам заполняет поля услуги</strong>.
+              Консультант проверяет, правит спорное и подтверждает. Поле, которого в тексте
+              не было, остаётся пустым: пустое поле лучше выдуманного.</dd>
+
+            <dt>Решение</dt>
+            <dd><strong>Покупать готовое.</strong> Решение принимается один раз на всю линейку
+              услуг, а раскатывается по очереди: авиа → отели → железная дорога → дополнительные
+              услуги.</dd>
+
+            <dt>Цифра</dt>
+            <dd>Около 660 таких операций в месяц. Плата за запросы —
+              <strong>0,9–3,4 тыс ₽ в месяц</strong> против <strong>69–80 тыс ₽</strong>
+              сэкономленного труда. Это <strong>2–4%</strong>: окупается с первого месяца даже
+              по худшей границе.</dd>
+
+            <dt>Главный риск</dt>
+            <dd>Цена ошибки в поле высокая. Поля уходят в проводку, в счета клиенту и в отчётность —
+              неверная дата, сумма или фамилия доходят до бухгалтерии клиента. Поэтому вычитка
+              человеком обязательна всегда, и именно из-за неё экономия не может быть стопроцентной.</dd>
+
+            <dt>Статус</dt>
+            <dd>И боль «ввод занимает слишком много времени», и решение «предзаполнять поля»
+              помечены как <strong>подтверждённые</strong> при проработке крупного проекта
+              «Оффлайн 4.0». Функция бьёт в проверенную боль. Не сверен только охват — сколько агентств поимённо.</dd>
+          </dl>
+        </div>
+
+        <div class="ai-blk">
+          <div class="ai-blk__h">Экономика проекта — единственная посчитанная целиком</div>
+          <div class="ai-bar" role="img"
+               aria-label="Стоимость ИИ около 3 процентов, сэкономленный труд около 97 процентов">
+            <span class="ai-bar__seg ai-bar__cost" style="flex:0 0 3%">3%</span>
+            <span class="ai-bar__seg ai-bar__val"><b>97%</b>&nbsp;— работа, которую снимает ИИ</span>
+          </div>
+          <div class="ai-legs">
+            <span><span class="sw sw--cost"></span><b>0,9–3,4 тыс ₽ / мес</b> — плата за запросы</span>
+            <span><span class="sw sw--val"></span><b>69–80 тыс ₽ / мес</b> — сэкономленный труд</span>
+          </div>
+          <p class="ai-gap" style="margin-top:14px"><b>Откуда объём:</b> 39 400 операций за
+            полгода — это около 6 570 в месяц. Доля услуг, купленных на стороне, — 8,8–11,3%,
+            то есть 578–742 операции в месяц, в среднем около 660. Это единственное место, где
+            объём взят из выгрузки, а не с потолка.</p>
+          <p class="ai-gap"><b>Важный поворот:</b> рост числа полей, из-за которого время выросло
+            с 5–7 до 10–15 минут, <b>усилил</b> ценность автозаполнения. Ручного труда стало
+            больше — значит и снимаем мы теперь больше, чем сняли бы четыре года назад.
+            Поставленная в том проекте цель «услуга за 2–3 минуты» при нынешнем числе полей
+            достижима практически только через автозаполнение.</p>
+          <p class="ai-gap"><b>Почему не 100%:</b> три причины. Консультант обязан вычитать
+            заполненное — цена ошибки высокая. Поля, которых в тексте клиента не было,
+            всё равно вводятся руками. И прикрепление файла билета никуда не девается.
+            Отсюда реалистичная оценка 60–70%, а не «в разы».</p>
+          <p class="ai-gap"><b>Когда решение придётся пересмотреть:</b> если объём вырастет
+            больше чем в десять раз — примерно до 6–7 тысяч операций в месяц. Тогда постоянные
+            затраты на свою модель начинают окупаться и расчёт надо делать заново.</p>
+        </div>
+
+        <div class="ai-blk">
+          <div class="ai-blk__h">Приоритет — как посчитан</div>
+          <div class="ai-score">
+            <div class="ai-score__c"><div class="ai-score__k">Охват</div><div class="ai-score__v">4–6</div>
+              <div class="ai-score__s">прикидка, поимённо не сверен</div></div>
+            <div class="ai-score__c"><div class="ai-score__k">Сила эффекта</div><div class="ai-score__v">8</div>
+              <div class="ai-score__s">сильно и часто + попутный ветер рынка</div></div>
+            <div class="ai-score__c"><div class="ai-score__k">Уверенность</div><div class="ai-score__v">7</div>
+              <div class="ai-score__s">подтверждены и боль, и само решение</div></div>
+            <div class="ai-score__c"><div class="ai-score__k">Трудозатраты</div><div class="ai-score__v">—</div>
+              <div class="ai-score__s">не оценены, нужна разработка</div></div>
+            <div class="ai-score__c ai-score__c--res"><div class="ai-score__k">Итог</div><div class="ai-score__v">—</div>
+              <div class="ai-score__s">не считается без трудозатрат</div></div>
+          </div>
+          <p class="ai-score__note">Единственный из трёх
+            проектов без итогового балла: не оценены трудозатраты. Уверенность при этом самая
+            высокая из трёх — здесь подтверждена не только боль, но и само решение.</p>
+        </div>
+
+        <details class="vis-sect" style="margin-top:20px">
+          <summary>Купить или строить — разбор по осям</summary>
+          <div class="vis-sect__body">
+            <div class="table-wrap" style="margin-top:12px">
+              <table class="ai-mx">
+                <thead><tr>
+                  <th scope="col">Ось сравнения</th>
+                  <th scope="col">Купить готовое</th>
+                  <th scope="col">Строить своё</th>
+                </tr></thead>
+                <tbody>
+                  <tr><td class="ax">Стоимость на объёме</td>
+                    <td><span class="mk mk--ok">✔</span> 0,9–3,4 тыс ₽ в месяц при 660 операциях</td>
+                    <td><span class="mk mk--no">✕</span> постоянные расходы на серверы и команду не окупаются на этом объёме</td></tr>
+                  <tr><td class="ax">Приватность данных</td>
+                    <td><span class="mk mk--mid">◐</span> данные уходят наружу → российский поставщик, персональные данные затираем</td>
+                    <td><span class="mk mk--ok">✔</span> ничего не покидает наш контур</td></tr>
+                  <tr><td class="ax">Риск выдумок</td>
+                    <td><span class="mk mk--mid">◐</span> средний → человек проверяет + жёсткая структура полей на выходе</td>
+                    <td><span class="mk mk--mid">◐</span> тот же риск, дороже дообучать</td></tr>
+                  <tr><td class="ax">Срок до запуска</td>
+                    <td><span class="mk mk--ok">✔</span> недели</td>
+                    <td><span class="mk mk--no">✕</span> месяцы: сбор данных, разметка, обучение, сопровождение</td></tr>
+                  <tr><td class="ax">Качество на старте</td>
+                    <td><span class="mk mk--ok">✔</span> сильная модель из коробки</td>
+                    <td><span class="mk mk--no">✕</span> нужен размеченный набор заявок, которого нет</td></tr>
+                  <tr><td class="ax">Привязка к поставщику</td>
+                    <td><span class="mk mk--mid">◐</span> снимается прослойкой, общей с другими проектами</td>
+                    <td><span class="mk mk--ok">✔</span> полный контроль</td></tr>
+                  <tr><td class="ax">Рост объёма</td>
+                    <td><span class="mk mk--ok">✔</span> платим ровно за то, что использовали</td>
+                    <td><span class="mk mk--mid">◐</span> требует наращивания серверов</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p><strong>Вывод.</strong> Единственная ось, где строить выигрывает по существу, —
+              приватность. Она закрывается выбором российского поставщика и затиранием
+              персональных данных, без расходов на свою модель. Остальные оси — за покупку.</p>
+          </div>
+        </details>
+
+        <details class="vis-sect">
+          <summary>Как меняется работа консультанта</summary>
+          <div class="vis-sect__body">
+            <div class="ai-flow" style="margin-top:10px">
+              <div class="ai-flow__row">
+                <span class="fl-tag fl-tag--is">Сейчас</span>
+                <p>Клиент пишет агенту в почту или мессенджер: нужен билет на такую-то дату,
+                  вот вводные → консультант покупает его в стороннем сервисе → заходит в нашу
+                  систему и <b>руками заполняет все поля услуги</b> → прикрепляет файл билета.
+                  Второй вариант: клиент сам создал услугу и заполнил что знал, консультант
+                  дозаполняет остальное.</p>
+              </div>
+              <div class="ai-flow__row ai-flow__row--will">
+                <span class="fl-tag fl-tag--will">Станет</span>
+                <p>Консультант вставляет текст заявки в поле — или наговаривает голосом →
+                  ИИ разбирает и заполняет поля услуги → консультант проверяет, правит спорное,
+                  подтверждает и прикрепляет билет.</p>
+              </div>
+            </div>
+            <p style="margin-top:14px"><strong>Голос — вторым шагом, не первым.</strong>
+              Города, аэропорты, тарифы и даты на слух распознаются с ошибками, а двойное
+              преобразование «голос → текст → поля» их множит. Сначала стабилизируем ввод
+              текстом, потом добавляем голос, и обязательно показываем расшифровку для правки
+              до того, как поля заполнятся.</p>
+            <p><strong>Точкой входа может стать сам клиент</strong> — тогда консультант получает
+              не сырой текст из чата, а готовый разобранный запрос. Но здесь надо следить,
+              чтобы работа и оплачиваемая операция не переехали к клиенту незаметно для нас:
+              в ближайшем квартале целимся в ускорение работы консультанта, а самообслуживание
+              клиента — отдельная и более поздняя история.</p>
+          </div>
+        </details>
+
+        <details class="vis-sect">
+          <summary>Риски и как они гасятся</summary>
+          <div class="vis-sect__body">
+            <div class="table-wrap" style="margin-top:12px">
+              <table class="ai-risk">
+                <thead><tr><th scope="col">#</th><th scope="col">Риск</th><th scope="col">Чем гасим</th></tr></thead>
+                <tbody>
+                  <tr><td class="rn">Р1</td><td><strong>Цена ошибки в поле высокая.</strong> Поля уходят в проводку, счета клиенту и отчётность. Ошибка в дате, сумме, маршруте или пассажире доходит до бухгалтерии клиента</td><td>Проверка человеком обязательна. Жёсткая структура полей и проверка форматов. Поля с денежным весом подсвечиваются для обязательной вычитки</td></tr>
+                  <tr><td class="rn">Р2</td><td><strong>Экономия ниже 100%</strong> даже при чистом заполнении</td><td>Замерить при пробном запуске фактически снятую долю. Не обещать «в разы» без данных</td></tr>
+                  <tr><td class="rn">Р3</td><td><strong>В тексте клиента нет части обязательных данных</strong> — паспорта, отдельных параметров</td><td>Замерить долю полей, которые вообще выводятся из свободного текста. ИИ помечает, чего не хватает, а не додумывает</td></tr>
+                  <tr><td class="rn">Р4</td><td><strong>Выдуманные значения.</strong> Модель «дозаполнит» поле правдоподобной выдумкой, консультант не заметит</td><td>Правило «не знаешь — оставь пустым». Доля выдумок должна быть нулевой — это жёсткое условие допуска к пробному запуску</td></tr>
+                  <tr><td class="rn">Р5</td><td><strong>Ошибки распознавания голоса</strong> на названиях городов, аэропортов, тарифов</td><td>Голос запускаем вторым, после того как ввод текстом заработает стабильно. Показываем расшифровку для правки до заполнения полей</td></tr>
+                  <tr><td class="rn">Р6</td><td><strong>Неверно определён тип услуги</strong> — не та форма для заполнения</td><td>Пробный запуск начинается с одного типа услуги. Тип подтверждает человек до заполнения</td></tr>
+                  <tr><td class="rn">Р7</td><td><strong>Работа переезжает к клиенту</strong> вместе с оплачиваемой операцией</td><td>В ближайшем квартале целимся в ускорение работы консультанта. Самообслуживание клиента — отдельная и более поздняя задача</td></tr>
+                  <tr><td class="rn">Р8</td><td><strong>Завышенные ожидания</strong> — «ИИ автоматизирует всё заведение услуг»</td><td>Говорим прямо: ускоряем только ввод данных. Покупка в стороннем сервисе как была, так и остаётся ручной</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </details>
+
+        <details class="vis-sect">
+          <summary>Зачем это стратегически — не только экономия часов</summary>
+          <div class="vis-sect__body">
+            <p style="margin-top:0">Экономия времени — не единственная и, возможно, не главная
+              ценность. Цель более крупная: <strong>чтобы все услуги агентства попадали
+              в нашу систему</strong>. Сейчас часть оформляется мимо, и вместе с услугой
+              мимо проходят и деньги, и данные, и картина происходящего.</p>
+            <p><strong>Преград к заведению услуги ровно две, и обе подтверждены:</strong></p>
+            <ul>
+              <li><strong>Время</strong> — «процесс ввода занимает слишком много времени».
+                Вот в это наша функция и бьёт.</li>
+              <li><strong>Деньги</strong> — за заведение услуги берётся плата. Это ИИ не решает
+                никак, тут нужна отдельная ценовая политика.</li>
+            </ul>
+            <p>Здесь же и внутренний конфликт: та самая плата за операцию — одновременно
+              и источник выручки, и подтверждённая преграда к заведению. Дороже плата → меньше
+              услуг в системе → меньше данных и видимости. Наша функция снимает преграду времени,
+              но <strong>денежную развилку решает ценовая политика</strong>. Это
+              важно проговорить, чтобы не переоценить эффект от одной функции.</p>
+            <p><strong>Как это может окупаться напрямую.</strong> Два рычага: плата за каждую
+              заведённую услугу (но см. конфликт выше) и включение ИИ-заполнения только
+              в старшие тарифы — как платное отличие и повод перейти на тариф выше.
+              Второй рычаг лучше: он монетизирует функцию, не давя на число заведённых услуг.</p>
+          </div>
+        </details>
+
+        <div class="ai-blk">
+          <div class="ai-blk__h">На что влияет и где смотреть дальше</div>
+          <div class="ai-go">
+            <a class="chip chip--gold" href="metrics.html#m-t-op">↓ Трудозатраты на операцию</a>
+            <a class="chip chip--gold" href="metrics.html#m-self-service-share">↑ Доля самообслуживания</a>
+            <a class="chip" href="metrics.html#m-steps-per-task">↓ Шагов на задачу</a>
+          </div>
+          <div class="ai-go">
+            <a class="chip" href="etapy.html#stage-2">Этап 2A — снимать нагрузку</a>
+            <a class="chip" href="backlog.html?q=H2.1">Задачи по гипотезе H2.1</a>
+            <a class="chip" href="now.html">Тема в работе прямо сейчас</a>
+          </div>
+          <p class="ai-src">Источник: разбор идеи «Оффлайн 4.0» от 23 июля 2026. Объём операций —
+            из выгрузки транзакций за июнь 2026. Ставка консультанта и время на операцию —
+            оценки автора.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════ ПРОЕКТ 3 — САММАРИ ═══════════════ -->
+    <section class="section" id="p-summari">
+      <p class="eyebrow">Проект 3 из 3 · честно помечен как идея</p>
+      <h2>Сводка по заказу</h2>
+
+      <div class="ai-proj">
+        <div class="ai-proj__head">
+          <span class="stage-tag s-1">Этап 1</span>
+          <span class="chip prio--should">Should</span>
+          <span class="chip">балл 3,8</span>
+          <a class="chip" href="etapy.html#stage-1">не мешать</a>
+          <a class="chip" href="backlog.html?q=H1.2">гипотеза H1.2</a>
+          <span class="ev-chip ev-muted">∅ прямого запроса не было</span>
+        </div>
+        <h3>По кнопке показывает, что нового и что горит по заказу</h3>
+        <p class="ai-proj__sub">Единственный из трёх проектов, где ценность измеряется не
+          деньгами и не часами, а поведением консультанта.</p>
+
+        <div class="ai-ex">
+          <div class="ai-ex__k">Executive summary</div>
+          <dl>
+            <dt>Задача</dt>
+            <dd>Страница заказа перегружена. У каждой услуги свой чат, плюс общий чат заказа,
+              плюс история изменений, поля и приложенные документы. Чтобы понять
+              «что нового и что горит», консультант вручную обходит все источники и складывает
+              картину в голове. На групповых заказах — а это <strong>30% всех заказов</strong> —
+              особенно дорого.</dd>
+
+            <dt>Идея</dt>
+            <dd>Окно со сводкой по кнопке. Два входа, один механизм: кнопка вверху самого
+              заказа — и то же окно по нажатию на карточку в списке заказов,
+              <strong>без проваливания в заказ</strong>. Консультант быстро просматривает список,
+              понимает по каждому «что нового», и открывает целиком только то, что требует
+              действия. Каждый факт в сводке кликабелен и ведёт к исходному сообщению.</dd>
+
+            <dt>Решение</dt>
+            <dd><strong>Покупать готовое.</strong> Сжать переписку и расставить приоритеты по
+              свежести и важности — типовая сильная сторона готовых моделей. Своя модель здесь
+              не даёт ничего, чего не даёт чужая.</dd>
+
+            <dt>Цифра</dt>
+            <dd>Одна сводка стоит <strong>2–21 ₽</strong>. Но главное здесь другое:
+              <strong>эффект не в часах</strong>. Понимание «что нового» вручную занимает
+              3–5 минут и сократится до минуты — это приятный побочный результат,
+              а не смысл проекта.</dd>
+
+            <dt>Главный риск</dt>
+            <dd>Сводка потеряет критичный факт — отмену, смену даты, срочность. Консультант
+              доверится окну и промахнётся при клиенте. Плохая сводка бьёт по доверию сильнее,
+              чем перегруженная страница, поэтому надёжность здесь важнее эффектности.</dd>
+
+            <dt>Статус</dt>
+            <dd><strong>Это идея продакта, а не запрос агентства.</strong> Прямой просьбы
+              «сделайте сводку по заказу» не было ни от кого. Смежные боли подтверждены —
+              визуальный шум на странице заказа, ручная пересылка писем, разрозненная история, —
+              но по нашим же правилам это не даёт права записать их в охват. Отсюда охват = 1
+              и последнее место в приоритете. Честно, а не обидно.</dd>
+          </dl>
+        </div>
+
+        <div class="ai-blk">
+          <div class="ai-blk__h">Экономика проекта — и почему её нельзя мерить в рублях</div>
+          <div class="ai-scale ai-scale--open" style="padding-left:0; padding-right:0; border:0; background:none">
+            <div class="ai-pair">
+              <div class="ai-side">
+                <div class="ai-side__k">Стоит одна сводка</div>
+                <div class="ai-side__v">2–21 ₽</div>
+                <div class="ai-side__s">переписка и история — 4–10 тысяч единиц текста на вход,
+                  0,3–0,6 тысячи на ответ</div>
+              </div>
+              <span class="ai-vs">против</span>
+              <div class="ai-side ai-side--val">
+                <div class="ai-side__k">Побочно снимает</div>
+                <div class="ai-side__v">2–4 минуты</div>
+                <div class="ai-side__s">было 3–5 минут ручного обхода источников, станет меньше
+                  минуты</div>
+              </div>
+            </div>
+            <p class="ai-gap"><b>Почему это самая дорогая сводка из трёх проектов:</b>
+              на вход идёт вся переписка заказа. У болтливого заказа она большая, и цена растёт.
+              Отсюда ограничение окна — берём последние сообщения или изменения с прошлого
+              просмотра, а не всю историю.</p>
+            <p class="ai-gap"><b>Чем меряем на самом деле:</b> не рублями, а поведением.
+              Падает ли доля случаев «прочитал окно и всё равно пошёл обходить чаты руками».
+              Если не падает — сводка не сняла нагрузку, а добавила лишний шаг, которому не
+              доверяют. Это и есть условие отказа.</p>
+            <p class="ai-gap"><b>Что здесь особенно чувствительно к расходам:</b> сводка живёт
+              на переписке, а переписка меняется постоянно — в отличие от правил тарифа, которые
+              стабильны. Значит запоминание ответа работает хуже, и ограничение «только по
+              кнопке» становится не оптимизацией, а обязательным условием.</p>
+          </div>
+        </div>
+
+        <div class="ai-blk">
+          <div class="ai-blk__h">Приоритет — как посчитан</div>
+          <div class="ai-score">
+            <div class="ai-score__c"><div class="ai-score__k">Охват</div><div class="ai-score__v">1</div>
+              <div class="ai-score__s">идея продакта, прямого запроса нет</div></div>
+            <div class="ai-score__c"><div class="ai-score__k">Сила эффекта</div><div class="ai-score__v">6</div>
+              <div class="ai-score__s">средне, но часто; рынок нейтрален</div></div>
+            <div class="ai-score__c"><div class="ai-score__k">Уверенность</div><div class="ai-score__v">6</div>
+              <div class="ai-score__s">проблема ясна, решение — нет</div></div>
+            <div class="ai-score__c"><div class="ai-score__k">Трудозатраты</div><div class="ai-score__v">8–13</div>
+              <div class="ai-score__s">ориентир, уточнить с разработкой</div></div>
+            <div class="ai-score__c ai-score__c--res"><div class="ai-score__k">Итог</div><div class="ai-score__v">≈3,8</div>
+              <div class="ai-score__s">последнее место из трёх</div></div>
+          </div>
+          <p class="ai-score__note">Низкий балл —
+            следствие честного охвата, а не слабости идеи. Приоритет вырастет, если проверка
+            покажет, что агентства действительно просят именно сводку. До этого держим её
+            внизу списка.</p>
+        </div>
+
+        <details class="vis-sect" style="margin-top:20px">
+          <summary>Что в исследованиях поддерживает идею — и чего не хватает</summary>
+          <div class="vis-sect__body">
+            <div class="table-wrap" style="margin-top:12px">
+              <table class="ai-risk">
+                <thead><tr><th scope="col">Находка</th><th scope="col">О чём</th><th scope="col">Кто и сколько</th></tr></thead>
+                <tbody>
+                  <tr><td class="rn"><a href="research.html#f-e3">E3</a></td><td>Визуальный шум на странице заказа, «рябит»</td><td>несколько агентств</td></tr>
+                  <tr><td class="rn"><a href="research.html#f-1-1">1.1</a></td><td>Ручная пересылка писем из общего чата</td><td>4 агентства, 50+ запросов в день</td></tr>
+                  <tr><td class="rn"><a href="research.html#f-1-3">1.3</a></td><td>Нужен единый ящик и сквозная история со статусами</td><td>5 агентств</td></tr>
+                  <tr><td class="rn"><a href="research.html#f-f3">F3</a></td><td>История изменений разрознена, уведомление не ведёт к услуге</td><td>несколько агентств</td></tr>
+                  <tr><td class="rn"><a href="research.html#f-4-1">4.1</a></td><td>Групповые заказы — много услуг и путешественников</td><td>7 агентств; 30% заказов групповые</td></tr>
+                  <tr><td class="rn"><a href="research.html#f-l4">L4</a></td><td>Чат был общий — сделали по услугам</td><td>уже сделано</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p style="margin-top:14px"><strong>Честная рамка.</strong> Всё перечисленное
+              подтверждает, что <em>понять «что нового по заказу» дорого — контекст размазан
+              по источникам</em>. Но ни одна из этих находок не является просьбой сделать сводку.
+              Смежная боль не даёт права записать агентство в охват — иначе любую идею можно
+              подпереть чужими жалобами. Поэтому охват = 1, и он вырастет только после проверки.</p>
+          </div>
+        </details>
+
+        <details class="vis-sect">
+          <summary>Как меняется работа консультанта</summary>
+          <div class="vis-sect__body">
+            <div class="ai-flow" style="margin-top:10px">
+              <div class="ai-flow__row">
+                <span class="fl-tag fl-tag--is">Сейчас</span>
+                <p>Консультант видит список заказов → чтобы понять, что происходит,
+                  <b>проваливается в заказ</b> → страница рябит → по очереди открывает чат первой
+                  услуги, второй, общий чат, смотрит историю изменений, ищет пересланное письмо →
+                  складывает картину в голове → возвращается к списку и открывает следующий.</p>
+              </div>
+              <div class="ai-flow__row ai-flow__row--will">
+                <span class="fl-tag fl-tag--will">Станет</span>
+                <p>Нажал на карточку в списке → всплыло окно сводки с упором на последние
+                  изменения и важное → понял, требует ли заказ действия, <b>не заходя в него</b> →
+                  открывает целиком только то, что горит. Внутри заказа — та же сводка по кнопке
+                  вверху.</p>
+              </div>
+            </div>
+            <p style="margin-top:14px"><strong>Что уходит из работы:</strong> ручной обход
+              нескольких чатов и истории ради понимания «что нового» — и само проваливание
+              в заказ ради этого. <strong>Что остаётся:</strong> все решения и вся операция
+              за консультантом; автономия не урезается.</p>
+            <p><strong>Твёрдые факты остаются на странице.</strong> Статусы, даты, состав заказа
+              сводка не подменяет — она расставляет приоритеты и ведёт к деталям.
+              Это принципиально: если сводка ошибётся, есть куда посмотреть и свериться.</p>
+          </div>
+        </details>
+
+        <details class="vis-sect">
+          <summary>Риски и как они гасятся</summary>
+          <div class="vis-sect__body">
+            <div class="table-wrap" style="margin-top:12px">
+              <table class="ai-risk">
+                <thead><tr><th scope="col">#</th><th scope="col">Риск</th><th scope="col">Чем гасим</th></tr></thead>
+                <tbody>
+                  <tr><td class="rn">Р1</td><td><strong>Сводка теряет критичный факт.</strong> Консультант доверится окну и промахнётся при клиенте</td><td>Ссылки на источник для проверки в клик. Правило «не теряй отмены, смены даты, срочность». Полнота сводки — условие допуска к пробному запуску. Твёрдые факты остаются на странице</td></tr>
+                  <tr><td class="rn">Р2</td><td><strong>Выдуманное значение</strong> — правдоподобный, но несуществующий статус, дата или сумма</td><td>Правило «не уверен — не утверждай». Пустая сводка лучше выдуманной. Доля выдумок должна быть нулевой</td></tr>
+                  <tr><td class="rn">Р3</td><td><strong>Наверх поднято не то.</strong> «Важное» субъективно, и окно станет бесполезным</td><td>Настройка на пробном запуске по обратной связи консультантов. Опора на объективное — свежесть плюс явные признаки: отмена, срочность</td></tr>
+                  <tr><td class="rn">Р4</td><td><strong>Консультант всё равно обходит чаты.</strong> Привычка сильна; если не доверяет окну — эффекта ноль</td><td>Ссылки на источник снижают тревогу: спорное проверяется в клик. На пробном запуске меряем реальную замену ручного обхода</td></tr>
+                  <tr><td class="rn">Р5</td><td><strong>Расходы плывут</strong> при запуске на каждое открытие</td><td>Только по кнопке + запоминание ответа с пересчётом при изменении</td></tr>
+                  <tr><td class="rn">Р6</td><td><strong>Длинная переписка</strong> — цена растёт на разговорчивых заказах</td><td>Ограничение окна: последние сообщения или изменения с прошлого просмотра</td></tr>
+                  <tr><td class="rn">Р7</td><td><strong>Завышенные ожидания</strong> — «ИИ понимает заказ» звучит как автопилот</td><td>Говорим прямо: это обзор «что нового и важно» для быстрого входа, а не замена контроля консультанта</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </details>
+
+        <details class="vis-sect">
+          <summary>Куда это может вырасти — и почему туда пока не идём</summary>
+          <div class="vis-sect__body">
+            <p style="margin-top:0">Здесь развитие идёт вверх по уровню охвата — от одного заказа
+              к целому агентству. Но при этом <strong>меняется не размер, а природа фичи</strong>:
+              другой адресат, другая задача, другой заказчик.</p>
+            <div class="ai-ladder" style="margin-top:12px">
+              <div class="lv lv--now">
+                <span class="n">Шаг 0</span>
+                <span class="t"><b>Один заказ</b> — «что нового и что горит». Адресат: консультант</span>
+                <span class="st">первая версия</span>
+              </div>
+              <div class="lv">
+                <span class="n">Шаг 1</span>
+                <span class="t"><b>Один клиент</b> — картина по всем его заказам. Адресат: консультант</span>
+                <span class="st">открытый вопрос · возможно, не нужен</span>
+              </div>
+              <div class="lv">
+                <span class="n">Шаг 2</span>
+                <span class="t"><b>Все клиенты одного агента</b> — приоритеты дня и первый сигнал
+                  о его загрузке. Адресат: агент и руководитель группы</span>
+                <span class="st">после проверки шага 0</span>
+              </div>
+              <div class="lv">
+                <span class="n">Шаг 3</span>
+                <span class="t"><b>Всё агентство</b> — нагрузка на людей, риск сорвать сроки,
+                  балансировка. Адресат: руководитель</span>
+                <span class="st">видение · не сейчас</span>
+              </div>
+            </div>
+            <p style="margin-top:14px"><strong>Три вещи меняются по дороге вверх.</strong>
+              Первое: меняется заказчик — с того, кто решает, работать ли в системе, на того,
+              кто решает, продлевать ли договор. Второе: задача из «сожми текст» превращается
+              в «найди горящее среди сотен заказов» — это ближе к панели контроля и оповещениям,
+              чем к сводке. Третье и главное: <strong>наверху обычные правила снова становятся
+              основой, а ИИ — добавкой</strong>. Пропущенный горящий срок среди двухсот клиентов
+              никто не проверит вручную, а значит на «доверься ИИ» такую панель строить нельзя.</p>
+            <p><strong>Почему нельзя прыгнуть сразу наверх.</strong> Панель по агентству —
+              самая ценная и самая тяжёлая ставка: другой адресат, другой этап, охват ещё более
+              гипотетический. Идти строго снизу вверх, где каждый следующий шаг оправдан данными
+              предыдущего. Технически это возможно потому, что каждый уровень собирается
+              из готовых сводок нижнего, а не пережёвывает всю базу заново.</p>
+          </div>
+        </details>
+
+        <div class="ai-blk">
+          <div class="ai-blk__h">На что влияет и где смотреть дальше</div>
+          <div class="ai-go">
+            <a class="chip chip--gold" href="metrics.html#m-adoption-in-aa">↑ Доля работы в нашей системе</a>
+            <a class="chip" href="metrics.html#m-t-op">↓ Трудозатраты на операцию</a>
+            <a class="chip" href="metrics.html#m-steps-per-task">↓ Шагов на задачу</a>
+            <a class="chip" href="metrics.html#m-hidden-work">↓ Скрытая работа вне системы</a>
+          </div>
+          <div class="ai-go">
+            <a class="chip" href="research.html#f-e3">E3 · страница заказа рябит</a>
+            <a class="chip" href="research.html#f-1-1">1.1 · ручная пересылка писем</a>
+            <a class="chip" href="research.html#f-1-3">1.3 · единый ящик и история</a>
+            <a class="chip" href="research.html#f-f3">F3 · история разрознена</a>
+            <a class="chip" href="research.html#f-4-1">4.1 · групповые заказы</a>
+          </div>
+          <div class="ai-go">
+            <a class="chip" href="etapy.html#stage-1">Этап 1 — не мешать</a>
+            <a class="chip" href="backlog.html?q=H1.2">Задачи по гипотезе H1.2</a>
+            <a class="chip" href="planned.html">План исследований</a>
+          </div>
+          <p class="ai-src">Источник: разбор идеи «Сводка по заказу» от 24 июля 2026.
+            Все временные оценки — со слов, замера нет.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════ ОБЩИЕ ВЫВОДЫ ═══════════════ -->
+    <section class="section" id="vyvody">
+      <p class="eyebrow">Общие выводы</p>
+      <h2>Что верно для всех трёх проектов сразу</h2>
+
+      <div class="ai-blk">
+        <div class="ai-blk__h">1. Покупать — и это не про экономию, а про то, чего своя модель не даёт</div>
+        <p>Три раза подряд получился один и тот же ответ, и каждый раз по одной причине:
+          <strong>своя модель не даёт ничего, чего не дала бы чужая</strong>, зато требует
+          постоянных расходов. Размеченного набора данных, на котором её можно было бы обучить,
+          у нас нет ни по заявкам, ни по правилам тарифа. Разбор текста и сжатие переписки —
+          это ровно то, что готовые модели умеют из коробки. А точность в деньгах не даёт
+          ни та, ни другая — её даёт обычный код.</p>
+      </div>
+
+      <div class="ai-blk">
+        <div class="ai-blk__h">2. Единственный честный аргумент за «строить» закрывается выбором поставщика</div>
+        <p>Во всех трёх матрицах есть ровно одна ось, где своя модель побеждает по существу, —
+          данные не покидают наш контур. Она закрывается российским поставщиком с хранением
+          данных в стране плюс затиранием персональных данных перед отправкой. Это дешевле
+          своей модели на порядки и решает ту же задачу.</p>
+      </div>
+
+      <div class="ai-blk">
+        <div class="ai-blk__h">3. Прослойка пишется один раз и окупается трижды</div>
+        <p>Сервис-прослойка между нашей системой и ИИ у всех трёх проектов одна и та же. Она
+          решает сразу две задачи: снимает привязку к одному поставщику — модель можно сменить,
+          не переписывая функции, — и делает каждую следующую AI-фичу дешевле предыдущей.
+          Это <strong>аргумент за общую основу, а не за отдельную модель под каждую задачу</strong>.
+          Проект по возврату добавляет к ней ещё и денежный модуль, который пригодится другим
+          финансовым функциям.</p>
+      </div>
+
+      <div class="ai-blk">
+        <div class="ai-blk__h">4. Когда решение придётся пересматривать</div>
+        <p>Порог одинаковый у всех трёх, и он записан заранее — чтобы решение можно было
+          опровергнуть, а не защищать до последнего:</p>
+        <ul class="prose-list">
+          <li><strong>Объём вырастет примерно в десять раз</strong> — тогда постоянные затраты
+            на свою модель начинают окупаться, и расчёт делается заново.</li>
+          <li><strong>Регулятор запретит передавать данные</strong> даже российскому поставщику —
+            тогда остаётся только своя модель на своих серверах.</li>
+          <li><strong>Поставщик не даёт нужного качества</strong> — не держит структуру ответа
+            или путает ссылки на источник. Тогда рассматриваем дообучение.</li>
+        </ul>
+      </div>
+
+      <div class="ai-blk">
+        <div class="ai-blk__h">5. Чего мы не обещаем</div>
+        <p>Во всех трёх проектах ИИ <strong>ничего не делает сам</strong>. Он не отправляет
+          сообщений клиенту, не оформляет возврат, не покупает билет и не подтверждает услугу.
+          Он готовит черновик, а человек проверяет и принимает решение. Это не осторожность
+          ради осторожности: во всех трёх случаях цена ошибки доходит до клиента — до его
+          денег или его поездки.</p>
+        <p>Формулировка для разговора с руководством: <strong>мы ускоряем работу консультанта,
+          а не заменяем его</strong>. «ИИ понимает заказ» и «ИИ делает возврат» звучат
+          как автопилот — и создают ожидания, которых продукт не выдержит.</p>
+      </div>
+
+      <div class="ai-note" style="margin-top:24px">
+        <p><strong>Что нужно сделать до того, как что-то из этого пойдёт в разработку.</strong>
+          Один и тот же шаг для всех трёх: <strong>замерить исходное состояние</strong>.
+          Сколько минут реально уходит на заведение услуги, на разбор правил тарифа, на
+          понимание «что нового по заказу». Сегодня все три числа — оценки со слов. Без замера
+          нельзя ни доказать эффект после запуска, ни честно защитить окупаемость.</p>
+        <p>Отдельно по проекту сводки: <strong>проверить, просят ли её вообще</strong>. Пока
+          охват равен единице, это идея продакта, а не запрос агентств — и место в приоритете
+          у неё соответствующее.</p>
+      </div>
+
+      <div class="ai-blk" style="margin-top:26px">
+        <div class="ai-blk__h">Куда идти дальше</div>
+        <div class="ai-go">
+          <a class="chip chip--gold" href="backlog.html?q=H2.1">Задачи по гипотезе H2.1 — трудозатраты</a>
+          <a class="chip chip--gold" href="backlog.html?q=H1.2">Задачи по гипотезе H1.2 — когнитивная нагрузка</a>
+          <a class="chip" href="metod.html">Как считается приоритет</a>
+          <a class="chip" href="etapy.html#stage-2">Этап 2A — снимать нагрузку</a>
+          <a class="chip" href="etapy.html#stage-1">Этап 1 — не мешать</a>
+          <a class="chip" href="metrics.html">Все метрики направления</a>
+          <a class="chip" href="research.html">Реестр исследований</a>
+          <a class="chip" href="planned.html">План исследований</a>
+        </div>
+        <p class="ai-src">Страница собрана из трёх разборов от 23–24 июля 2026. Тексты
+          редакторские, ведутся вручную вместе с исходными документами; числа из этих разборов
+          не пересчитываются сборкой и обновляются вместе со страницей.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <div data-footer></div>
+
+  <script src="assets/app.js"></script>
+</body>
+</html>

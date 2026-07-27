@@ -22,6 +22,7 @@ const NAV = [
   { href: "levels.html",   label: "Каталог задач", group: "Работа" },
   { href: "backlog.html",  label: "Бэклог", group: "Работа" },
   { href: "initiatives.html", label: "Инициативы", group: "Работа" },
+  { href: "ai.html",       label: "AI-проекты", group: "Работа" },
   { href: "metod.html",    label: "Метод оценки задач", short: "Метод оценки", group: "Работа" },
   // Данные — доказательная база + справка
   { href: "research.html", label: "Исследования", group: "Данные" },
