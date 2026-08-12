@@ -1697,6 +1697,511 @@ def build_support_window_shift(per_agency, baseline):
     }
 
 
+# ===================== Экономика поддержки (support_econ.json) ==============
+# Отдельный источник от build_support(): тот отвечает на «кто чаще пишет»,
+# этот — «сколько это стоит и где предел ёмкости людей». Оба живут параллельно:
+# support.json питает чипы доказательств и другие страницы, support_econ.json —
+# только страницу «Экономика поддержки».
+
+# Источники лежат НЕ в корне /My work, а в подпапке, поэтому find_work_xlsx()
+# сюда не годится: он глобит только корень (WORK_DIR.glob("*.xlsx")).
+ECON_DIR_NEEDLE = "экономика поддержки"
+
+
+def find_econ_xlsx(needle):
+    """Файл *.xlsx по маске в подпапке «Экономика поддержки».
+
+    Имя папки и файла сравниваем через NFC: macOS хранит кириллицу в NFD, и
+    сравнение сырых строк молча не находит ничего. Возвращаем НАИБОЛЬШЕЕ имя
+    по сортировке — в имени файла стоит дата, значит наибольшее = свежайшее.
+    """
+    nfc = lambda s: unicodedata.normalize("NFC", s).lower()
+    folder = next((d for d in WORK_DIR.iterdir()
+                   if d.is_dir() and ECON_DIR_NEEDLE in nfc(d.name)), None)
+    if not folder:
+        return None
+    cands = [p for p in folder.glob("*.xlsx")
+             if needle in nfc(p.name) and not p.name.startswith("~$")]
+    return sorted(cands, key=lambda p: nfc(p.name))[-1] if cands else None
+
+
+def _econ_month(v):
+    """«07.2025» → «2025-07». Ключ месяца сортируемый, подпись рисует фронт."""
+    m = re.match(r"^\s*(\d{2})\.(\d{4})\s*$", str(v or ""))
+    return f"{m.group(2)}-{m.group(1)}" if m else None
+
+
+def _is_note_row(v):
+    """Строки-примечания под итогом. В данные не тянуть."""
+    s = str(v or "").strip()
+    return s.startswith("⚠") or s.startswith("Читается так") or s.startswith("Именно здесь")
+
+
+def load_agency_aliases():
+    """Карта «любое написание агентства → каноничное имя» из agencies.yml.
+
+    Одно агентство записано по-разному в трёх источниках: «KMP Group» в расчёте,
+    «ИНТЕРСИТИ СЕРВИС» в выгрузке поддержки, «KMP Group (ООО …)» в своде. Без
+    карты строки не сшиваются и колонка «→ поставщику» пустеет. Справочник общий
+    с ботом, его сторожит check_sync — держать вторую копию здесь нельзя.
+    """
+    path = WORK_DIR / "tg-bot-pm" / "config" / "agencies.yml"
+    try:
+        import yaml
+        cfg = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    except Exception as exc:
+        print(f"  ⚠ agencies.yml не прочитан ({exc}) — имена агентств не сшиваются")
+        return {}
+    out = {}
+    for e in cfg.get("agencies") or []:
+        canon = e.get("canon")
+        if not canon:
+            continue
+        for a in list(e.get("aliases") or []) + [canon]:
+            out[unicodedata.normalize("NFC", str(a)).strip().lower()] = canon
+    return out
+
+
+def build_econ_supplier(month_keys, canon_of):
+    """Доля обращений, переадресованных внешнему поставщику, — на окне L13M.
+
+    Считаем по сырой выгрузке, а не берём готовые 9,6% из support.json: там
+    доля посчитана на ВСЕЙ выгрузке с января 2025 (886 из 9 271), а деньги и
+    ёмкость на странице — за 13 месяцев. Смешивать два окна нельзя, поэтому
+    пересчитываем на общем.
+
+    Честная дыра, которую надо показать на странице: выгрузка обрывается
+    24.06.2026, июля 2026 в ней нет — доля живёт на 12 месяцах из 13.
+    """
+    import datetime
+
+    f = find_econ_xlsx("hde_report")
+    if not f or not month_keys:
+        print("  ⚠ support_econ: выгрузка обращений не найдена — блок «→ поставщику» пуст")
+        return None
+    wb = openpyxl.load_workbook(f, data_only=True, read_only=True)
+    ws = wb[wb.sheetnames[0]]
+    it = ws.iter_rows(values_only=True)
+    head = [str(h or "").strip() for h in next(it)]
+    idx = {h: i for i, h in enumerate(head)}
+    i_date = idx.get("Дата создание заявки")
+    i_ag = idx.get("Агентство")
+    i_sup = idx.get("Было ли обращение к поставщику")
+    i_git = idx.get("Gitlab")
+    i_t1, i_t2 = idx.get("Тип и раздел [1 Уровень]"), idx.get("Тип и раздел [2 Уровень]")
+    if i_date is None or i_ag is None or i_sup is None:
+        print(f"  ⚠ support_econ: в выгрузке нет ожидаемых колонок — {head}")
+        return None
+
+    y0, m0 = map(int, month_keys[0].split("-"))
+    y1, m1 = map(int, month_keys[-1].split("-"))
+    start = datetime.datetime(y0, m0, 1)
+    end = datetime.datetime(y1 + (m1 == 12), (m1 % 12) + 1, 1)
+    yes = lambda v: str(v or "").strip().lower() == "да"
+
+    # «Другое» — не промах карты имён, а корзина обращений, которые поддержка
+    # не привязала к агентству. Её показываем отдельной строкой: молча выкинуть
+    # нельзя (это 8% потока и четверть всех переадресаций к поставщику).
+    UNATTRIBUTED = "Другое"
+
+    by_canon, by_theme = {}, {}
+    unattributed = {"total": 0, "toSupplier": 0, "escalations": 0}
+    total = to_supplier = escalations = 0
+    seen_min = seen_max = None
+    unmapped = set()
+    for r in it:
+        d = r[i_date] if i_date < len(r) else None
+        if not isinstance(d, datetime.datetime) or not (start <= d < end):
+            continue
+        total += 1
+        seen_min = d if seen_min is None or d < seen_min else seen_min
+        seen_max = d if seen_max is None or d > seen_max else seen_max
+        is_sup = yes(r[i_sup]) if i_sup < len(r) else False
+        is_esc = bool(i_git is not None and i_git < len(r) and yes(r[i_git]))
+        to_supplier += is_sup
+        escalations += is_esc
+
+        raw = clean(r[i_ag]) if i_ag < len(r) else None
+        canon = canon_of(raw) if raw else None
+        if canon:
+            b = by_canon.setdefault(canon, {"total": 0, "toSupplier": 0, "escalations": 0})
+            b["total"] += 1
+            b["toSupplier"] += is_sup
+            b["escalations"] += is_esc
+        elif str(raw or "").strip() == UNATTRIBUTED:
+            unattributed["total"] += 1
+            unattributed["toSupplier"] += is_sup
+            unattributed["escalations"] += is_esc
+        elif raw:
+            unmapped.add(str(raw).strip())
+
+        t1 = clean(r[i_t1]) if i_t1 is not None and i_t1 < len(r) else None
+        t2 = clean(r[i_t2]) if i_t2 is not None and i_t2 < len(r) else None
+        key = (str(t1 or "—"), str(t2 or "—"))
+        th = by_theme.setdefault(key, {"total": 0, "toSupplier": 0})
+        th["total"] += 1
+        th["toSupplier"] += is_sup
+
+    for b in by_canon.values():
+        b["share"] = round(b["toSupplier"] / b["total"], 4) if b["total"] else None
+
+    # Темы 2-го уровня: показываем только заметные, мелочь схлопываем в хвост,
+    # иначе список из 60 строк по 2 обращения нечитаем и доли в нём — шум.
+    MIN_THEME = 30
+    themes = []
+    for (t1, t2), v in by_theme.items():
+        if v["total"] < MIN_THEME:
+            continue
+        themes.append({"level1": t1, "level2": t2, "total": v["total"],
+                       "toSupplier": v["toSupplier"],
+                       "share": round(v["toSupplier"] / v["total"], 4)})
+    themes.sort(key=lambda t: -t["total"])
+    tops = []
+    for t1 in dict.fromkeys(t["level1"] for t in themes):
+        rows = [v for (a, _), v in by_theme.items() if a == t1]
+        tot = sum(v["total"] for v in rows)
+        sup = sum(v["toSupplier"] for v in rows)
+        tops.append({"level1": t1, "total": tot, "toSupplier": sup,
+                     "share": round(sup / tot, 4) if tot else None})
+    tops.sort(key=lambda t: -t["total"])
+
+    if unmapped:
+        print(f"  ⚠ support_econ: написания без канона в выгрузке — {sorted(unmapped)}. "
+              f"Добавь псевдоним в tg-bot-pm/config/agencies.yml")
+
+    covered = sorted({m for m in month_keys if seen_max and m <= f"{seen_max:%Y-%m}"})
+    unattributed["share"] = (round(unattributed["toSupplier"] / unattributed["total"], 4)
+                             if unattributed["total"] else None)
+
+    return {
+        "builtFrom": f.name,
+        "window": f"{month_keys[0]} … {month_keys[-1]}",
+        "windowFact": (f"{seen_min:%d.%m.%Y} – {seen_max:%d.%m.%Y}"
+                       if seen_min and seen_max else None),
+        "monthsCovered": len(covered),
+        "monthsTotal": len(month_keys),
+        "monthsMissing": [m for m in month_keys if m not in covered],
+        "total": total, "toSupplier": to_supplier,
+        "share": round(to_supplier / total, 4) if total else None,
+        "escalations": escalations,
+        "escalationShare": round(escalations / total, 4) if total else None,
+        "unattributed": {**unattributed, "name": UNATTRIBUTED,
+                         "shareOfFlow": round(unattributed["total"] / total, 4) if total else None},
+        "byTheme": themes, "byTopTheme": tops,
+        "byAgency": [{"canon": k, **v} for k, v in
+                     sorted(by_canon.items(), key=lambda kv: -kv[1]["total"])],
+        "_byCanon": by_canon,
+    }
+
+
+def build_support_econ():
+    """Экономика поддержки → support_econ.json.
+
+    Источники (оба в подпапке «Экономика поддержки»):
+      • «Нагрузка на саппорт в деньгах — помесячно L13M …xlsx» — все деньги,
+        ёмкость, юнит-экономика и сценарии ФОТ (10 листов);
+      • «HDE_Report… (выгрузка обращений)» — сырые обращения: доля, ушедшая
+        внешнему поставщику, и темы. Считаем её сами на окне L13M, а не берём
+        готовую из support.json: та посчитана на всей выгрузке с 01.2025, и
+        смешивать её с деньгами за 13 месяцев было бы враньём.
+    """
+    f_calc = find_econ_xlsx("помесячно l13m")
+    if not f_calc:
+        print("  ⚠ support_econ.json НЕ собран: не найден «Нагрузка на саппорт "
+              "в деньгах — помесячно L13M …xlsx» в подпапке «Экономика поддержки»")
+        return None
+    wb = openpyxl.load_workbook(f_calc, data_only=True, read_only=True)
+
+    def sheet(*needles):
+        for s in wb.sheetnames:
+            sl = unicodedata.normalize("NFC", s).lower()
+            if all(unicodedata.normalize("NFC", n).lower() in sl for n in needles):
+                return wb[s]
+        return None
+
+    def rows_of(ws):
+        return list(ws.iter_rows(values_only=True)) if ws else []
+
+    def num(v, nd=4):
+        try:
+            return round(float(v), nd)
+        except (TypeError, ValueError):
+            return None
+
+    # Шапка каждого листа — строка 4 (индекс 3): выше заголовок и пояснение.
+    HEAD = 3
+
+    # --- лист 0: входы и допущения ---------------------------------------
+    fot_base = staff = None
+    assumptions = []
+    in_assumptions = False
+    for r in rows_of(sheet("читать первым")):
+        c0, c1 = clean(r[0]), clean(r[1]) if len(r) > 1 else None
+        if not c0:
+            continue
+        low = str(c0).lower()
+        if low.startswith("фот на 1 специалиста"):
+            fot_base = num(c1, 0)
+        elif low.startswith("специалистов поддержки"):
+            staff = num(c1, 0)
+        elif low.startswith("e. допущения"):
+            in_assumptions = True
+            continue
+        elif low.startswith(("f. ", "a. ", "b. ", "c. ", "d. ")):
+            in_assumptions = False
+        elif in_assumptions and c1:
+            # «Тарифы IBC 170 ₽ | со слов PM, документарно не подтверждены»
+            assumptions.append({"what": str(c0), "note": str(c1)})
+
+    # --- лист 1: главный временной ряд ------------------------------------
+    M_COLS = ["calls", "callsIbc", "callsExt", "capacityTickets", "ticketCost",
+              "ops", "opsExt", "revenue", "revenueExt", "ratio", "ratioExt",
+              "ratioIbc", "supportCost", "supportCostExt", "pctRevenue",
+              "pctRevenueExt", "perSpecialist"]
+    months, totals_row = [], None
+    for r in rows_of(sheet("помесячно"))[HEAD + 1:]:
+        c0 = clean(r[0])
+        if not c0 or _is_note_row(c0):
+            continue
+        rec = {k: num(v) for k, v in zip(M_COLS, r[1:1 + len(M_COLS)])}
+        if str(c0).strip().upper() == "L13M":
+            totals_row = rec
+            continue
+        m = _econ_month(c0)
+        if m:
+            months.append({"m": m, **rec})
+
+    # --- лист 7: юнит-экономика L13M ---------------------------------------
+    A_COLS = ["segment", "calls", "ops", "revenue", "supportCost",
+              "marginBeforeCost", "pctRevenue", "ratio", "revenuePerCall",
+              "escalations", "escalationShare"]
+    agencies, totals_all, totals_ex_ibc = [], None, None
+    for r in rows_of(sheet("юнит-экономика"))[HEAD + 1:]:
+        nm = clean(r[0])
+        if not nm or _is_note_row(nm):
+            continue
+        rec = {"segment": clean(r[1])}
+        rec.update({k: num(v) for k, v in zip(A_COLS[1:], r[2:2 + len(A_COLS) - 1])})
+        label = str(nm).strip()
+        if label.upper().startswith("ИТОГО"):
+            totals_all = rec
+            continue
+        if label.lower().startswith("без ibc"):
+            totals_ex_ibc = rec
+            continue
+        agencies.append({"name": label, **rec})
+
+    # --- листы 2–6: месяц × агентство --------------------------------------
+    # Список агентств берём с листа 7 — он авторитетный. Всё остальное на листе 2
+    # (внутренние тикеты Ракеты, ушедшие агентства, оценка непрофильных) — это
+    # знаменатель ёмкости, а не агентство: именно на эти строки расходится
+    # «6 374 обращения агентств» и «6 995 тикетов ёмкости».
+    known = {a["name"] for a in agencies}
+
+    def matrix(ws_needle, n_months):
+        """{строка: [13 значений]} → агентства · не-агентства · итоговые строки."""
+        rows = rows_of(sheet(ws_needle))
+        data, other, service = {}, {}, {}
+        for r in rows[HEAD + 1:]:
+            nm = clean(r[0])
+            if not nm or _is_note_row(nm):
+                continue
+            vals = [num(v) for v in r[1:1 + n_months]]
+            if all(v is None for v in vals):
+                continue          # перенос строки примечания — не данные
+            name = str(nm)
+            if name.startswith(("ИТОГО", "ВСЕГО", "Без IBC", "ВЕСЬ", "Доля")):
+                service[name] = vals
+            elif name in known:
+                data[name] = vals
+            else:
+                other[name] = vals
+        return data, other, service, rows
+
+    n_m = len(months)
+    calls_m, calls_other, calls_svc, _ = matrix("2. обращения", n_m)
+    ops_m, _, _, _ = matrix("3. операции", n_m)
+    rev_m, _, _, rev_rows = matrix("4. выручка", n_m)
+    cost_m, _, cost_svc, _ = matrix("5. стоимость", n_m)
+    pct_m, _, _, _ = matrix("6. % выручки", n_m)
+
+    # Тариф с оговоркой — последняя колонка листа 4, дословно.
+    tariffs = {}
+    for r in rev_rows[HEAD + 1:]:
+        nm = clean(r[0])
+        if nm and str(nm) in known and len(r) > n_m + 2:
+            t = clean(r[n_m + 2])
+            if t:
+                tariffs[str(nm)] = str(t)
+
+    # --- лист 8: ёмкость и загрузка ----------------------------------------
+    C_COLS = ["capacityTickets", "perSpecialist", "agencyTickets", "ticketCost",
+              "directionCost", "directionShareOfFot"]
+    capacity, cap_trend = [], {}
+    for r in rows_of(sheet("ёмкость"))[HEAD + 1:]:
+        c0 = clean(r[0])
+        if not c0 or _is_note_row(c0):
+            continue
+        low = str(c0).lower()
+        if low.startswith("наклон"):
+            cap_trend["slopeText"] = str(clean(r[3]) or "")
+            continue
+        if low.startswith("диапазон"):
+            cap_trend["rangeText"] = str(clean(r[3]) or "")
+            continue
+        m = _econ_month(c0)
+        if m:
+            capacity.append({"m": m, **{k: num(v) for k, v in zip(C_COLS, r[1:1 + len(C_COLS)])}})
+
+    # --- лист 9: чувствительность к ФОТ ------------------------------------
+    fot_scenarios = []
+    for r in rows_of(sheet("чувствительность"))[HEAD + 1:]:
+        fot = num(r[0], 0)
+        if fot is None:
+            continue
+        fot_scenarios.append({
+            "fot": fot, "ticketCost": num(r[1]), "total13m": num(r[2], 2),
+            "pctDirection": num(r[3]), "pctExternal": num(r[4]), "pctIbc": num(r[5]),
+            "note": str(clean(r[6]) or ""), "base": fot == fot_base,
+        })
+
+    mkeys = [m["m"] for m in months]
+    alias = load_agency_aliases()
+    canon_of = lambda n: alias.get(unicodedata.normalize("NFC", str(n)).strip().lower())
+
+    # --- обращения к внешнему поставщику: считаем сами по сырой выгрузке ----
+    supplier = build_econ_supplier(mkeys, canon_of)
+
+    # --- сборка агентств: ряды, тариф, поставщик ---------------------------
+    sup_by_agency = (supplier or {}).get("_byCanon", {})
+    for a in agencies:
+        a["canon"] = canon_of(a["name"])
+        a["tariffNote"] = tariffs.get(a["name"])
+        a["series"] = {k: v.get(a["name"]) for k, v in
+                       (("calls", calls_m), ("ops", ops_m), ("revenue", rev_m),
+                        ("supportCost", cost_m), ("pctRevenue", pct_m))}
+        s = sup_by_agency.get(a["canon"]) if a["canon"] else None
+        a["toSupplier"] = s["toSupplier"] if s else None
+        a["toSupplierShare"] = s["share"] if s else None
+        a["callsInSupplierWindow"] = s["total"] if s else None
+        # Первый месяц с объёмом позже начала окна = агентство подключилось
+        # внутри окна. Это и есть когорта новичков — не ярлык сегмента:
+        # Симпл Флайт уже помечен Stable, но в окно вошёл в 08.2025.
+        ops_series = ops_m.get(a["name"]) or []
+        first = next((i for i, o in enumerate(ops_series) if (o or 0) > 0), None)
+        a["firstMonth"] = mkeys[first] if first is not None else None
+        a["isNewcomer"] = first is not None and first > 0
+
+    # --- убыток: суммируем ПОМЕСЯЧНЫЕ превышения ---------------------------
+    # Не по годовому итогу агентства: у новичка дорогой месяц входа гасится
+    # его же поздними месяцами, и убыток схлопывается с 25 851 до 10 311 ₽.
+    # Помесячный метод — тот, что в отчёте.
+    loss_total, loss_by_month = 0.0, []
+    for i, mk in enumerate(mkeys):
+        mloss = 0.0
+        for a in agencies:
+            c = (cost_m.get(a["name"]) or [None] * len(mkeys))[i] or 0
+            v = (rev_m.get(a["name"]) or [None] * len(mkeys))[i] or 0
+            if c > v:
+                mloss += c - v
+        loss_total += mloss
+        loss_by_month.append({"m": mk, "loss": round(mloss, 2)})
+    worst = max(loss_by_month, key=lambda x: x["loss"]) if loss_by_month else None
+
+    # --- профиль новичка для калькулятора «+20» ----------------------------
+    # Метод отчёта: последний месяц окна, когорта вошедших внутрь окна.
+    newcomers = [a for a in agencies if a["isNewcomer"]]
+    nc_calls = sum((calls_m.get(a["name"]) or [0])[-1] or 0 for a in newcomers)
+    avg_month_calls = (totals_row or {}).get("calls", 0) / len(months) if months else 0
+    newcomer = {
+        "count": len(newcomers),
+        "names": [a["name"] for a in newcomers],
+        "lastMonth": mkeys[-1] if mkeys else None,
+        "callsLastMonth": round(nc_calls),
+        "callsPerNewcomer": round(nc_calls / len(newcomers), 2) if newcomers else None,
+        "baseCallsPerMonth": round(avg_month_calls),
+        "method": "Обращения новичков за последний месяц окна, делённые на их число. "
+                  "Новичок — агентство, у которого первый месяц с объёмом позже начала окна. "
+                  "Оценка нижняя: по мере разгона объёма новичок пишет больше.",
+    }
+
+    ibc = next((a for a in agencies if a["name"] == "IBC"), None)
+    T = totals_all or {}
+    share = lambda part, whole: round(part / whole, 4) if part and whole else None
+
+    # --- сверка листов между собой ------------------------------------------
+    # Не пришпиливаем сегодняшние 6 374 / 497 444 / 67 521 734 / 4 317 127
+    # константами: следующая выгрузка их законно изменит, и сборка падала бы на
+    # верных данных. Проверяем ВНУТРЕННЮЮ сходимость — лист 7 против листа 1 и
+    # помесячные матрицы против годовой колонки. Разъедется парсинг — увидим.
+    checks = []
+    for key, label in (("calls", "обращения"), ("ops", "операции"),
+                       ("revenue", "выручка"), ("supportCost", "стоимость поддержки")):
+        a7, a1 = T.get(key), (totals_row or {}).get(key)
+        if a7 is not None and a1 is not None and abs(a7 - a1) > 1:
+            checks.append(f"{label}: лист 7 даёт {a7:.0f}, лист 1 — {a1:.0f}")
+    for key, mat in (("calls", calls_m), ("ops", ops_m), ("revenue", rev_m),
+                     ("supportCost", cost_m)):
+        s = sum(sum(v or 0 for v in vals) for vals in mat.values())
+        tot = T.get(key)
+        if tot is not None and abs(s - tot) > 1:
+            checks.append(f"{key}: сумма по месяцам {s:.0f} ≠ итог листа 7 {tot:.0f}")
+    if calls_svc.get("ВСЕГО тикетов ёмкости"):
+        cap = sum(v or 0 for v in calls_svc["ВСЕГО тикетов ёмкости"])
+        mix = sum(sum(v or 0 for v in vals) for vals in calls_other.values())
+        if abs((T.get("calls") or 0) + mix - cap) > 1:
+            checks.append(f"ёмкость: обращения агентств + непрофильные ≠ тикетов ёмкости ({cap:.0f})")
+    if checks:
+        print("  ⚠ support_econ: листы расходятся —")
+        for c in checks:
+            print(f"      {c}")
+
+    return {
+        "meta": {
+            "builtFrom": f_calc.name,
+            "builtFromCalls": (supplier or {}).get("builtFrom"),
+            "fotBase": fot_base, "staff": staff, "months": len(months),
+            "window": f"{mkeys[0]} … {mkeys[-1]}" if mkeys else None,
+            "assumptions": assumptions,
+        },
+        "months": months,
+        "agencies": agencies,
+        "capacity": capacity,
+        "capacityTrend": cap_trend,
+        "capacityMix": [{"name": k, "total": round(sum(x or 0 for x in v)), "series": v}
+                        for k, v in calls_other.items()],
+        "fotScenarios": fot_scenarios,
+        "supplier": {k: v for k, v in (supplier or {}).items() if not k.startswith("_")},
+        "newcomer": newcomer,
+        "totals": {
+            "calls": T.get("calls"), "ops": T.get("ops"), "revenue": T.get("revenue"),
+            "supportCost": T.get("supportCost"), "pctRevenue": T.get("pctRevenue"),
+            "ratio": T.get("ratio"),
+            # Эскалации считаны по окну выгрузки (до 24.06.2026), а не по 13
+            # месяцам: долю берём к обращениям того же окна, иначе знаменатель
+            # шире числителя и доля занижается.
+            "escalations": T.get("escalations"),
+            "escalationShare": share(
+                T.get("escalations"),
+                sum(a.get("callsInSupplierWindow") or 0 for a in agencies)),
+            "escalationWindow": (supplier or {}).get("windowFact"),
+            "ticketCostAvg": (totals_row or {}).get("ticketCost"),
+            "capacityTickets": (totals_row or {}).get("capacityTickets"),
+            "perSpecialistAvg": (totals_row or {}).get("perSpecialist"),
+            "exIbc": totals_ex_ibc,
+            "ibcShare": {
+                "calls": share(ibc and ibc.get("calls"), T.get("calls")),
+                "ops": share(ibc and ibc.get("ops"), T.get("ops")),
+                "revenue": share(ibc and ibc.get("revenue"), T.get("revenue")),
+            },
+            "lossTotal": round(loss_total),
+            "lossByMonth": loss_by_month,
+            "lossWorstMonth": worst,
+            "lossPctRevenue": share(loss_total, T.get("revenue")),
+        },
+    }
+
+
 # --- нормализация доказательной базы (ТЗ 13) -----------------------------
 # Единый словарь этапов. Любое значение в research/etapy/sootv обязано быть отсюда.
 STAGE_VOCAB = ["1", "2A", "2B", "3", "4", "5", "клиент", "вне этапов"]
@@ -2132,8 +2637,8 @@ def build_search(items, research, tree):
 # читает (линтер связей), но не пересобирает — де-факто они авторские.
 GENERATED_JSON = {
     "backlog.json", "initiatives.json", "tree.json", "agencies.json",
-    "support.json", "research.json", "sootv.json", "legend.json",
-    "home.json", "search.json",
+    "support.json", "support_econ.json", "research.json", "sootv.json",
+    "legend.json", "home.json", "search.json",
 }
 
 # Чем питается каждый генерируемый json — чтобы в манифесте была видна не
@@ -2147,6 +2652,7 @@ JSON_SOURCE_HINT = {
     "initiatives.json": "сокращённый бэклог (инициативы)",
     "agencies.json": "«Свод по агентствам …xlsx» + «Общий отчёт …xlsx»",
     "support.json": "«Обращения агентств — единый вывод …xlsx»",
+    "support_econ.json": "экономика поддержки (расчёт L13M + выгрузка обращений)",
     "research.json": "«Реестр исследований …xlsx»",
     "sootv.json": "«Соответствие исследований и логики ценности.xlsx»",
 }
@@ -2264,6 +2770,18 @@ def main():
               f"{len(support['conclusions'])} выводов · {len(support['categories'])} тем "
               f"→ {sup_out.relative_to(SITE_DIR)}")
 
+    # support_econ.json — экономика поддержки (отдельный источник, подпапка)
+    support_econ = build_support_econ()
+    if support_econ:
+        se_out = DATA_DIR / "support_econ.json"
+        se_out.write_text(json.dumps(support_econ, ensure_ascii=False, indent=2), encoding="utf-8")
+        t, sup = support_econ["totals"], support_econ["supplier"]
+        print(f"Экономика поддержки: {len(support_econ['agencies'])} агентств × "
+              f"{support_econ['meta']['months']} мес · поддержка {t['supportCost']:,.0f} ₽ "
+              f"({t['pctRevenue']:.1%} выручки) · убыток {t['lossTotal']:,.0f} ₽ · "
+              f"к поставщику {sup['share']:.1%} ({sup['monthsCovered']}/{sup['monthsTotal']} мес) "
+              f"→ {se_out.relative_to(SITE_DIR)}".replace(",", " "))
+
     # research.json — реестр исследований
     research = build_research()
     if research:
@@ -2306,6 +2824,10 @@ def main():
     init_src = find_initiatives_source()
     if init_src:
         sources["сокращённый бэклог (инициативы)"] = init_src.name
+    if support_econ:
+        m = support_econ["meta"]
+        sources["экономика поддержки (расчёт L13M + выгрузка обращений)"] = (
+            m["builtFrom"] + (f" + {m['builtFromCalls']}" if m.get("builtFromCalls") else ""))
     manifest = build_manifest(sources)
     (DATA_DIR / "manifest.json").write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
