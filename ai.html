@@ -311,7 +311,9 @@
       <h2>Три проекта в одной таблице</h2>
       <p class="section-note">Порядок — по приоритету: сверху то, что
         стоит делать первым. Приоритет считается не «интересностью идеи», а тем, насколько
-        боль подтверждена и насколько сильный эффект даёт — подробнее в
+        боль подтверждена и насколько сильный эффект даёт. Балл важности считается по той же
+        формуле, что и у всех инициатив направления (без трудозатрат и без охвата) — подробнее в
+        <a href="initiatives.html">том, как считается приоритет</a>, и в
         <a href="metod.html">методе оценки задач</a>. Откуда взялись числа в колонке
         «Экономика» — в блоке <a href="#ekonomika">«Как считалась окупаемость»</a>
         в конце страницы.</p>
@@ -334,11 +336,11 @@
                   готовит черновик ответа клиенту</span></td>
               <td><span class="stage-tag s-2a">2A</span></td>
               <td><span class="chip prio--must">Must</span>
-                <span class="s">балл 47 — первое место</span></td>
+                <span class="s">важность 194 (68% от лидера) — 3-е место из 65 инициатив</span></td>
               <td class="ec">0,7–3,5 ₽ за расчёт
                 <span class="s">снимает 4–9 минут ручной работы на каждом случае</span></td>
               <td><span class="ev-chip ev-ok">✓</span>
-                <span class="s">4 агентства назвали поимённо;
+                <span class="s">4 агентства назвали поимённо (сверено 28.07);
                   возвраты — 79% обращений по авиабилетам</span></td>
             </tr>
             <tr>
@@ -347,7 +349,7 @@
                   поля услуги в системе</span></td>
               <td><span class="stage-tag s-2a">2A</span></td>
               <td><span class="chip prio--should">Should</span>
-                <span class="s">балл не считался — нет оценки трудозатрат</span></td>
+                <span class="s">важность 212 (74% от лидера) — 6-е место из 65 инициатив</span></td>
               <td class="ec">0,3–0,7 тыс ₽ в месяц
                 <span class="s">против 69–80 тыс ₽ сэкономленного труда — <b>менее 1%</b></span></td>
               <td><span class="ev-chip ev-ok">✓</span>
@@ -360,7 +362,7 @@
                   вместо ручного обхода всех чатов</span></td>
               <td><span class="stage-tag s-1">1</span></td>
               <td><span class="chip prio--should">Should</span>
-                <span class="s">балл 3,8 — последнее место</span></td>
+                <span class="s">важность 136 (48% от лидера) — 11-е место из 65 инициатив</span></td>
               <td class="ec">0,9–4,2 ₽ за сводку
                 <span class="s">в деньгах не считается: ценность в том, что консультант
                   остаётся в системе</span></td>
@@ -373,13 +375,15 @@
       </div>
 
       <div class="ai-note" style="margin-top:20px">
-        <p><strong>Почему разрыв в приоритете такой большой — 47 против 3,8.</strong>
-          Это не «магия ИИ» и не разница в качестве идей. Разница в классе боли:</p>
+        <p><strong>Почему разрыв в важности — 194 против 136.</strong>
+          Это не «магия ИИ» и не разница в качестве идей. Рычаг метрик и глубина у всех трёх
+          одинаковые, PV близкий — расходятся только сила эффекта и уверенность:</p>
         <ul class="prose-list">
-          <li><b>Кто просил.</b> Возврат и обмен назвали поимённо четыре агентства.
-            Сводку не просил никто — это идея продакта.</li>
-          <li><b>Какой эффект.</b> Возврат экономит прямые минуты на массовой операции.
-            Сводка работает на приживаемость — эффект реальный, но косвенный.</li>
+          <li><b>Какой эффект.</b> Возврат экономит прямые минуты на массовой операции —
+            сила 9. Сводка работает на приживаемость: эффект реальный, но косвенный — сила 6.</li>
+          <li><b>Кто просил.</b> Возврат и обмен назвали поимённо четыре агентства, сводку
+            не просил никто. На балл важности это <em>не</em> влияет — охват в формулу не входит, —
+            но влияет на то, чему мы верим при проверке гипотезы.</li>
           <li><b>Есть ли обходной путь.</b> Разбор правил тарифа не закрыт ничем, кроме ручной
             работы. «Обойти чаты руками» — плохой, но стабильно работающий способ.</li>
         </ul>
@@ -545,14 +549,14 @@
 
     <!-- ═══════════════ ПРОЕКТ 1 — ВОЗВРАТ/ОБМЕН ═══════════════ -->
     <section class="section" id="p-vozvrat">
-      <p class="eyebrow">Проект 1 из 3 · первый в приоритете</p>
+      <p class="eyebrow">Проект 1 из 3 · самый приоритетный из трёх</p>
       <h2>Помощник по возврату и обмену билета</h2>
 
       <div class="ai-proj">
         <div class="ai-proj__head">
           <span class="stage-tag s-2a">Этап 2A</span>
           <span class="chip prio--must">Must</span>
-          <span class="chip chip--gold">балл 47 — топ-1</span>
+          <span class="chip chip--gold">важность 194 · 68% · №3</span>
           <a class="chip" href="etapy.html#stage-2">снимать нагрузку</a>
           <a class="chip" href="backlog.html?q=H2.1">гипотеза H2.1</a>
           <span class="ev-chip ev-ok">✓ боль подтверждена</span>
@@ -621,21 +625,23 @@
         <div class="ai-blk">
           <div class="ai-blk__h">Приоритет — как посчитан</div>
           <div class="ai-score">
-            <div class="ai-score__c"><div class="ai-score__k">Охват</div><div class="ai-score__v">7</div>
-              <div class="ai-score__s">4 агентства поимённо + заявки ещё от пяти</div></div>
             <div class="ai-score__c"><div class="ai-score__k">Сила эффекта</div><div class="ai-score__v">9</div>
               <div class="ai-score__s">массовая и тяжёлая операция</div></div>
             <div class="ai-score__c"><div class="ai-score__k">Уверенность</div><div class="ai-score__v">6</div>
               <div class="ai-score__s">боль ясна, решение рискованно — деньги</div></div>
-            <div class="ai-score__c"><div class="ai-score__k">Трудозатраты</div><div class="ai-score__v">8</div>
-              <div class="ai-score__s">возврат по авиа; обмен поднимет до 13</div></div>
-            <div class="ai-score__c ai-score__c--res"><div class="ai-score__k">Итог</div><div class="ai-score__v">≈47</div>
-              <div class="ai-score__s">первое место в направлении</div></div>
+            <div class="ai-score__c"><div class="ai-score__k">Рычаг метрик</div><div class="ai-score__v">3</div>
+              <div class="ai-score__s">двигает ведущие метрики этапов 1–2</div></div>
+            <div class="ai-score__c"><div class="ai-score__k">Глубина</div><div class="ai-score__v">1,2</div>
+              <div class="ai-score__s">растит клиентов у уже подключённых агентств</div></div>
+            <div class="ai-score__c"><div class="ai-score__k">Поправка PV</div><div class="ai-score__v">1,00</div>
+              <div class="ai-score__s">нейтрально по продуктовым принципам</div></div>
+            <div class="ai-score__c ai-score__c--res"><div class="ai-score__k">Важность</div><div class="ai-score__v">194</div>
+              <div class="ai-score__s">68% от лидера · №3 из 65 инициатив</div></div>
           </div>
-          <p class="ai-score__note">Требует сверки:
-            авторство 22 заявок по трекеру. Если уникальных агентств окажется меньше пяти,
-            охват опускается до 6, а итог — примерно до 40. Место в приоритете при этом
-            не меняется.</p>
+          <p class="ai-score__note"><b>Трудозатраты — 8 SP</b> — в балл важности
+            не входят: возврат по авиа; обмен поднимет до 13. Стоимость учитывается отдельно,
+            когда работы отбирают в квартал. Подробнее — <a href="initiatives.html">как считается приоритет</a>.</p>
+          <p class="ai-score__note">Охват — <b>6</b>, а не 7: сверено 28.07 по Единому бэклогу v10 (строка L3.2.Б2). Поимённо подтвердили четыре агентства — FS&nbsp;Travel, Аэроглобус, ATH, IBC; ядро #32260 по правилу Reach&nbsp;v1.5 исключено как размытая запись, авторство 22 заявок поимённо не идентифицировано. На балл важности это не влияет — охват в формулу не входит.</p>
         </div>
 
         <details class="vis-sect" style="margin-top:20px">
@@ -873,20 +879,23 @@
         <div class="ai-blk">
           <div class="ai-blk__h">Приоритет — как посчитан</div>
           <div class="ai-score">
-            <div class="ai-score__c"><div class="ai-score__k">Охват</div><div class="ai-score__v">4–6</div>
-              <div class="ai-score__s">прикидка, поимённо не сверен</div></div>
             <div class="ai-score__c"><div class="ai-score__k">Сила эффекта</div><div class="ai-score__v">8</div>
               <div class="ai-score__s">сильно и часто + попутный ветер рынка</div></div>
             <div class="ai-score__c"><div class="ai-score__k">Уверенность</div><div class="ai-score__v">7</div>
               <div class="ai-score__s">подтверждены и боль, и само решение</div></div>
-            <div class="ai-score__c"><div class="ai-score__k">Трудозатраты</div><div class="ai-score__v">—</div>
-              <div class="ai-score__s">не оценены, нужна разработка</div></div>
-            <div class="ai-score__c ai-score__c--res"><div class="ai-score__k">Итог</div><div class="ai-score__v">—</div>
-              <div class="ai-score__s">не считается без трудозатрат</div></div>
+            <div class="ai-score__c"><div class="ai-score__k">Рычаг метрик</div><div class="ai-score__v">3</div>
+              <div class="ai-score__s">двигает ведущие метрики этапов 1–2</div></div>
+            <div class="ai-score__c"><div class="ai-score__k">Глубина</div><div class="ai-score__v">1,2</div>
+              <div class="ai-score__s">растит клиентов у уже подключённых агентств</div></div>
+            <div class="ai-score__c"><div class="ai-score__k">Поправка PV</div><div class="ai-score__v">1,05</div>
+              <div class="ai-score__s">плюс за расширение автономии агентства</div></div>
+            <div class="ai-score__c ai-score__c--res"><div class="ai-score__k">Важность</div><div class="ai-score__v">212</div>
+              <div class="ai-score__s">74% от лидера · №6 из 65 инициатив</div></div>
           </div>
-          <p class="ai-score__note">Единственный из трёх
-            проектов без итогового балла: не оценены трудозатраты. Уверенность при этом самая
-            высокая из трёх — здесь подтверждена не только боль, но и само решение.</p>
+          <p class="ai-score__note"><b>Трудозатраты — не оценены</b> — в балл важности
+            не входят: нужна оценка разработки, но балл важности она не меняет. Стоимость учитывается отдельно,
+            когда работы отбирают в квартал. Подробнее — <a href="initiatives.html">как считается приоритет</a>.</p>
+          <p class="ai-score__note">Уверенность самая высокая из трёх: подтверждена не только боль, но и само решение. Охват (4–6, поимённо не сверен) в формулу не входит.</p>
         </div>
 
         <details class="vis-sect" style="margin-top:20px">
@@ -1028,7 +1037,7 @@
         <div class="ai-proj__head">
           <span class="stage-tag s-1">Этап 1</span>
           <span class="chip prio--should">Should</span>
-          <span class="chip">балл 3,8</span>
+          <span class="chip">важность 136 · 48% · №11</span>
           <a class="chip" href="etapy.html#stage-1">не мешать</a>
           <a class="chip" href="backlog.html?q=H1.2">гипотеза H1.2</a>
           <span class="ev-chip ev-muted">∅ прямого запроса не было</span>
@@ -1058,8 +1067,9 @@
             <dd><a href="#obshchee">Покупать готовое</a>, как и у двух других — но с двумя
               отличиями. <strong>Эффект не в часах:</strong> сэкономленные минуты здесь побочный
               результат, а не смысл проекта. И это <b>идея продакта, а не запрос агентства</b> —
-              просьбы «сделайте сводку» не было ни от кого, отсюда охват = 1 и последнее место
-              в приоритете. Честно, а не обидно.</dd>
+              просьбы «сделайте сводку» не было ни от кого. На балл важности охват не влияет
+              (в формулу не входит), но именно он делает проект кандидатом на проверку,
+              а не на разработку. Честно, а не обидно.</dd>
 
             <dt>Главный риск</dt>
             <dd>Сводка потеряет критичный факт — отмену, смену даты, срочность. Консультант
@@ -1104,21 +1114,23 @@
         <div class="ai-blk">
           <div class="ai-blk__h">Приоритет — как посчитан</div>
           <div class="ai-score">
-            <div class="ai-score__c"><div class="ai-score__k">Охват</div><div class="ai-score__v">1</div>
-              <div class="ai-score__s">идея продакта, прямого запроса нет</div></div>
             <div class="ai-score__c"><div class="ai-score__k">Сила эффекта</div><div class="ai-score__v">6</div>
               <div class="ai-score__s">средне, но часто; рынок нейтрален</div></div>
             <div class="ai-score__c"><div class="ai-score__k">Уверенность</div><div class="ai-score__v">6</div>
               <div class="ai-score__s">проблема ясна, решение — нет</div></div>
-            <div class="ai-score__c"><div class="ai-score__k">Трудозатраты</div><div class="ai-score__v">8–13</div>
-              <div class="ai-score__s">ориентир, уточнить с разработкой</div></div>
-            <div class="ai-score__c ai-score__c--res"><div class="ai-score__k">Итог</div><div class="ai-score__v">≈3,8</div>
-              <div class="ai-score__s">последнее место из трёх</div></div>
+            <div class="ai-score__c"><div class="ai-score__k">Рычаг метрик</div><div class="ai-score__v">3</div>
+              <div class="ai-score__s">двигает ведущие метрики этапов 1–2</div></div>
+            <div class="ai-score__c"><div class="ai-score__k">Глубина</div><div class="ai-score__v">1,2</div>
+              <div class="ai-score__s">растит клиентов у уже подключённых агентств</div></div>
+            <div class="ai-score__c"><div class="ai-score__k">Поправка PV</div><div class="ai-score__v">1,05</div>
+              <div class="ai-score__s">плюс за стендэлон-ценность и мемное ядро</div></div>
+            <div class="ai-score__c ai-score__c--res"><div class="ai-score__k">Важность</div><div class="ai-score__v">136</div>
+              <div class="ai-score__s">48% от лидера · №11 из 65 инициатив</div></div>
           </div>
-          <p class="ai-score__note">Низкий балл —
-            следствие честного охвата, а не слабости идеи. Приоритет вырастет, если проверка
-            покажет, что агентства действительно просят именно сводку. До этого держим её
-            внизу списка.</p>
+          <p class="ai-score__note"><b>Трудозатраты — 8–13 SP</b> — в балл важности
+            не входят: ориентир, уточнить с разработкой. Стоимость учитывается отдельно,
+            когда работы отбирают в квартал. Подробнее — <a href="initiatives.html">как считается приоритет</a>.</p>
+          <p class="ai-score__note">Балл ниже двух других из-за силы эффекта и уверенности, а не из-за охвата: охват (1 — идея продакта) в формулу важности не входит вовсе. Приоритет вырастет, если проверка покажет, что агентства просят именно сводку.</p>
         </div>
 
         <details class="vis-sect" style="margin-top:20px">
@@ -1446,9 +1458,9 @@
           в разработку. Сколько минут реально уходит на заведение услуги, на разбор правил
           тарифа, на понимание «что нового по заказу». Сегодня все три числа — оценки со слов.
           Без замера нельзя ни доказать эффект после запуска, ни честно защитить окупаемость.</p>
-        <p>Отдельно по проекту сводки: <strong>проверить, просят ли её вообще</strong>. Пока
-          охват равен единице, это идея продакта, а не запрос агентств — и место в приоритете
-          у неё соответствующее.</p>
+        <p>Отдельно по проекту сводки: <strong>проверить, просят ли её вообще</strong>. Охват
+          равен единице — это идея продакта, а не запрос агентств. На балл важности это не влияет,
+          но пока проверка не пройдена, уверенность держим на 6 и в квартал проект не берём.</p>
       </div>
 
       <div class="ai-blk" style="margin-top:26px">

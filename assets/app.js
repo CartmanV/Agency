@@ -36,8 +36,73 @@ const NAV = [
   // voprosy.html выведена из навигации 2026-07-03 как неактуальная (файл оставлен, но не линкуется).
 ];
 
-// Единственный источник правды по актуальности данных сайта.
-const SITE_UPDATED = "июнь 2026";
+// Актуальность данных берётся из data/manifest.json, который пишет сборка.
+// Раньше здесь была ручная константа SITE_UPDATED: одна дата на весь сайт,
+// проставленная руками. Она устаревала незаметно и подписывала июньскими
+// данными июльские страницы — второй, ложный источник правды.
+// Теперь футер показывает дату САМЫХ СТАРЫХ данных, которые взяла страница.
+let MANIFEST = null;
+const USED_DATA = new Set();   // какие data/*.json загрузила текущая страница
+
+function fmtDate(iso) {
+  const d = new Date(iso);
+  if (isNaN(d)) return String(iso || "").slice(0, 10);
+  return d.toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" });
+}
+
+function daysSince(iso) {
+  const d = new Date(iso);
+  return isNaN(d) ? null : Math.floor((Date.now() - d.getTime()) / 86400000);
+}
+
+async function ensureManifest() {
+  if (MANIFEST !== null) return MANIFEST;
+  try { MANIFEST = await (await fetch("data/manifest.json")).json(); }
+  catch (e) { MANIFEST = false; }   // манифеста нет — футер остаётся нейтральным
+  return MANIFEST;
+}
+
+/** Строка о свежести данных страницы: дата старейшего файла + пометка, если
+ *  он старше порога. Порог живёт в манифесте (staleAfterDays), а не здесь. */
+function freshnessHtml(manifest) {
+  if (!manifest || !manifest.files) return "";
+  const used = [...USED_DATA]
+    .map((name) => [name, manifest.files[name]])
+    .filter(([, f]) => f && f.date);
+  // Страница без выгружаемых данных (стратегия, рынок, метод) — показываем
+  // дату сборки сайта: пустое место в футере читалось бы как «нет данных».
+  if (!used.length) {
+    return manifest.builtAt ? `сайт собран ${fmtDate(manifest.builtAt)}` : "";
+  }
+
+  used.sort((a, b) => new Date(a[1].date) - new Date(b[1].date));
+  const [oldestName, oldest] = used[0];
+  const age = daysSince(oldest.date);
+  const limit = manifest.staleAfterDays || 30;
+
+  const breakdown = used
+    .map(([n, f]) => `${n} — ${fmtDate(f.date)} (${f.kind === "authored" ? "вручную" : "сборка"}: ${f.source})`)
+    .join("\n");
+
+  const stale = age !== null && age > limit;
+  const label = used.length > 1
+    ? `данные не новее ${fmtDate(oldest.date)}`
+    : `данные от ${fmtDate(oldest.date)}`;
+  const warn = stale
+    ? ` <span class="freshness__stale" title="Старше ${limit} дней: ${oldestName}">· устарело (${age} дн.)</span>`
+    : "";
+
+  return `<span class="freshness" title="${esc(breakdown)}">${label}</span>${warn}`;
+}
+
+/** Футер перерисовывается после загрузки данных: mountFooter() отрабатывает
+ *  на DOMContentLoaded, а json страница тянет асинхронно и позже. */
+async function refreshFreshness() {
+  const host = document.querySelector("[data-freshness]");
+  if (!host) return;
+  const manifest = await ensureManifest();
+  host.innerHTML = freshnessHtml(manifest);
+}
 
 function currentPage() {
   return location.pathname.split("/").pop() || "index.html";
@@ -48,8 +113,9 @@ function mountFooter() {
   if (!host) return;
   host.innerHTML = `
     <footer class="site-footer">
-      Направление «Агентства» · внутренние данные направления · обновлено: ${SITE_UPDATED}.
+      Направление «Агентства» · внутренние данные направления · <span data-freshness></span>
     </footer>`;
+  refreshFreshness();
 }
 
 // Навигация v4 (Design Guide · 06): 3 группы-дропдауна в один ряд вместо 14 пунктов в рядах.
@@ -237,6 +303,10 @@ async function loadJSON(path) {
   try {
     const res = await fetch(path);
     if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+    // Регистрируем файл до возврата: футер считает свежесть только по тем
+    // данным, которые страница действительно взяла.
+    const name = path.split("/").pop();
+    if (!USED_DATA.has(name)) { USED_DATA.add(name); refreshFreshness(); }
     return await res.json();
   } catch (e) {
     throw new Error(
@@ -1305,6 +1375,26 @@ async function mountAgencies() {
   const mon = data.monthly || null;
   const monCl = data.monthlyClients || null;
 
+  // Подписи месяцев выводятся из data.cut / data.offlineCut, а не зашиты в разметку.
+  // До июля 2026 везде стояло «июнь» строкой — при смене среза заголовки врали молча.
+  // Отдельная подпись у оффлайна: он приходит из транзакционного дампа и отстаёт от ops.
+  // Падежи заданы списками, а не склеиванием окончаний: «июль»+«е» даёт «июлье».
+  const MON_N = ["январь", "февраль", "март", "апрель", "май", "июнь", "июль", "август", "сентябрь", "октябрь", "ноябрь", "декабрь"];
+  const MON_G = ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"];
+  const MON_P = ["январе", "феврале", "марте", "апреле", "мае", "июне", "июле", "августе", "сентябре", "октябре", "ноябре", "декабре"];
+  const MON_D = ["январю", "февралю", "марту", "апрелю", "маю", "июню", "июлю", "августу", "сентябрю", "октябрю", "ноябрю", "декабрю"];
+  const cutP = String(data.cut || "").split(".");
+  const cutMi = cutP.length === 3 ? (+cutP[1] - 1) : 5;
+  const cutY = cutP.length === 3 ? cutP[2] : "";
+  const curM = MON_N[cutMi] || "", curMG = MON_G[cutMi] || "", curMP = MON_P[cutMi] || "";
+  const prevMi = (cutMi + 11) % 12;
+  const prevMG = MON_G[prevMi] || "", prevMD = MON_D[prevMi] || "";
+  const yy = cutY ? "'" + String(cutY).slice(2) : "";
+  const yyPrev = cutY ? "'" + String(+cutY - 1).slice(2) : "";
+  const offM = (data.offlineCut || curM).replace(/\s*\d{4}\s*$/, "").trim();
+  const offStale = offM && offM.toLowerCase() !== curM;   // месяц оффлайна ≠ месяц ops
+  const offMG = MON_G[MON_N.indexOf(offM)] || offM;
+
   // Лидер базы (ядро) против остальных — для сплит-полос «IBC ↔ все».
   const lead = ags.reduce((a, b) => ((b.may || 0) > (a.may || 0) ? b : a), ags[0] || {});
   const leadName = /IBC/i.test(lead.name || "") ? "IBC" : (lead.name || "лидер");
@@ -1391,10 +1481,10 @@ async function mountAgencies() {
       </div>`;
     sumHost.innerHTML = `
       <div class="ag-strip">
-        <div class="ag-stat"><div class="v">${t.count ?? ags.length}</div><div class="l">агентств</div><div class="s">активных в июне</div></div>
+        <div class="ag-stat"><div class="v">${t.count ?? ags.length}</div><div class="l">агентств</div><div class="s">активных в ${curMP}</div></div>
         <div class="ag-stat"><div class="v">${fmtNum(nsm.now)}</div><div class="l">клиентов-компаний · NSM</div><div class="s">главная метрика</div></div>
         <div class="ag-stat ag-stat--win"><div class="v">${intDelta(nsm.net)}</div><div class="l">клиентов / 6 мес.</div><div class="s">${fmtNum(nsm.new)} пришло − ${fmtNum(nsm.lost)} ушло</div></div>
-        <div class="ag-stat"><div class="v">${fmtNum(t.may)}</div><div class="l">транзакций · июнь</div><div class="s">${pctCell(t.momPct)} к маю</div></div>
+        <div class="ag-stat"><div class="v">${fmtNum(t.may)}</div><div class="l">транзакций · ${curM}</div><div class="s">${pctCell(t.momPct)} к ${prevMD}</div></div>
         <div class="ag-stat"><div class="v">${fmtPct(c.top3, 0)}</div><div class="l">у ТОП-3</div><div class="s">концентрация базы</div></div>
         <div class="ag-stat ag-stat--goal"><div class="v">+20</div><div class="l">цель · агентств</div><div class="s">стратегия 2026 (KR-2)</div></div>
       </div>
@@ -1459,7 +1549,7 @@ async function mountAgencies() {
           <td class="num">${pctCell(a.momPct)}</td>
           <td class="num">${pctCell(a.yoyPct)}</td>
           <td class="num">${fmtNum(a.l6m)}</td>
-          <td class="num" title="${a.offlineN != null ? esc(fmtNum(a.offlineN) + " из " + fmtNum(a.may) + " опер. за июнь — вручную") : "нет данных"}">${fmtPct(a.offlinePct)}</td>
+          <td class="num" title="${a.offlineN != null ? esc(fmtNum(a.offlineN) + " из " + fmtNum(a.apr) + " опер. за " + offM + " — вручную") : "нет данных"}">${fmtPct(a.offlinePct)}</td>
           <td class="spark-cell">${sparkline(mon && mon.byId ? mon.byId[a.id] : null)}</td>
           <td class="num">${fmtNum(a.clNow)}</td>
           <td class="num">${intDelta(a.clNet)}</td>
@@ -1474,12 +1564,12 @@ async function mountAgencies() {
         <table class="backlog">
           <thead><tr>
             <th>Агентство</th><th>Сегмент</th><th>Концентрация</th>
-            <th>Транзакций, июнь</th><th>Доля транзакций</th>
-            <th><abbr title="Транзакции июня'26 к маю'26">За месяц</abbr></th>
-            <th><abbr title="Транзакции июня'26 к июню'25">За год</abbr></th>
+            <th>Транзакций, ${curM}</th><th>Доля транзакций</th>
+            <th><abbr title="Транзакции ${curMG}${yy} к ${prevMD}${yy}">За месяц</abbr></th>
+            <th><abbr title="Транзакции ${curMG}${yy} к ${MON_D[cutMi]}${yyPrev}">За год</abbr></th>
             <th><abbr title="Среднее число транзакций в месяц за последние 6 месяцев">Ср. за 6 мес.</abbr></th>
-            <th><abbr title="Какая доля операций июня оформлена вручную, а не онлайн — снимок месяца среза, не накопление за период">Доля оффлайн, июнь</abbr></th>
-            <th><abbr title="Транзакции по месяцам за 13 месяцев (июнь'25 – июнь'26)">Динамика</abbr></th>
+            <th><abbr title="Какая доля операций ${offMG} оформлена вручную, а не онлайн — снимок месяца, не накопление за период.${offStale ? " ВНИМАНИЕ: месяц оффлайна отстаёт от месяца транзакций — транзакционного дампа за " + curM + " ещё нет." : ""}">Доля оффлайн, ${offM}${offStale ? " ⚠" : ""}</abbr></th>
+            <th><abbr title="Транзакции по месяцам за 13 месяцев (${curM}${yyPrev} – ${curM}${yy})">Динамика</abbr></th>
             <th>Клиентов сейчас</th><th>Δ клиентов за полгода</th>
           </tr></thead>
           <tbody>${rows()}</tbody>
@@ -1522,15 +1612,78 @@ async function mountAgencies() {
       <div class="ag-strip">${strip}</div>
       <div class="conc-wrap">
         ${bar}
-        <div class="conc-cap">Полоса — доля операций июня по сегментам объёма (Парето: A — верхние клиенты, дающие половину объёма; X — почти неактивные). Клиенты IBC внутри холдинга размечены не ниже сегмента B — поэтому у IBC почти нет C/D/X.</div>
+        <div class="conc-cap">Полоса — доля операций ${curMG} по сегментам объёма (Парето: A — верхние клиенты, дающие половину объёма; X — почти неактивные). Клиенты IBC внутри холдинга размечены не ниже сегмента B — поэтому у IBC почти нет C/D/X.</div>
       </div>
       <div class="table-wrap" style="margin-top:14px">
         <table class="backlog">
-          <thead><tr><th>Агентство</th><th>Клиентов, июнь</th><th>A</th><th>B</th><th>C</th><th>D</th><th>X</th></tr></thead>
+          <thead><tr><th>Агентство</th><th>Клиентов, ${curM}</th><th>A</th><th>B</th><th>C</th><th>D</th><th>X</th></tr></thead>
           <tbody>${rowsHtml}</tbody>
         </table>
       </div>`;
     wireTips(abcdxHost);
+  }
+
+  // --- Ось денег к ABCDX (лист «Цена транзакции» единого свода) ---
+  // Выручка — расчёт «тариф × операции», не биллинг. IBC вынесен из сравнения:
+  // тариф 170 ₽ считается по всем деньгам холдинга, а не по транзакционному сбору.
+  const priceHost = document.querySelector("[data-ag-price]");
+  if (priceHost && data.price && (data.price.rows || []).length) {
+    const pr = data.price;
+    const pct = (v) => (v == null ? "—" : (v * 100).toFixed(1) + "%");
+    const money = (r) => (r.revenue != null ? fmtNum(Math.round(r.revenue)) : esc(r.revenueText || "—"));
+    const rows = pr.rows.slice().sort((a, b) => (b.revenue || 0) - (a.revenue || 0));
+    const tr = rows.map((r) => `
+        <tr${r.excluded ? ' class="ag-row-muted"' : ""}>
+          <td class="title">${esc(r.name)}${r.excluded ? ' <span class="ev-chip ev-warn">вне сравнения</span>' : ""}</td>
+          <td class="num">${fmtNum(r.ops)}</td>
+          <td>${esc(r.tariff || "—")}</td>
+          <td class="num">${money(r)}</td>
+          <td class="num">${r.effPrice != null ? fmtNum(Math.round(r.effPrice)) : "—"}</td>
+          <td class="num">${pct(r.revSharePct)}</td>
+          <td class="num">${r.excluded ? "—" : pct(r.revShareExIbcPct)}</td>
+          <td class="num">${pct(r.opsSharePct)}</td>
+          <td>${esc(r.flag || "")}</td>
+        </tr>`).join("");
+    const concRows = (pr.concentration || []).map((c) => `
+        <tr>
+          <td class="title">${esc(c.cut)}</td>
+          <td>${esc(c.byOps)}</td>
+          <td>${esc(c.byMoney)}</td>
+          <td>${esc(c.byMoneyExIbc)}</td>
+          <td>${esc(c.note || "")}</td>
+        </tr>`).join("");
+    priceHost.innerHTML = `
+      <div class="callout--soft">
+        <b>Оговорка по IBC — читать до таблицы.</b> IBC входит в тот же холдинг, что и Ракета,
+        и тариф 170 ₽ за операцию считается по <b>всем полученным от клиента деньгам</b>, а не
+        только по транзакционному сбору, как у внешних агентств. С 32–100 ₽ остальных он
+        несопоставим — это разные базы начисления. Поэтому доля выручки дана двумя колонками:
+        «с IBC» — вес направления в деньгах компании, «без IBC» — сравнение агентств между
+        собой и метка «Концентрация». Оценка «клиент IBC ≈ ×8 к клиенту внешнего агентства» —
+        допущение PM, в данных не проверено.
+      </div>
+      <div class="table-wrap" style="margin-top:14px">
+        <table class="backlog">
+          <thead><tr>
+            <th>Агентство</th><th>Опер. ${curM}</th><th>Тариф</th><th>Выручка ₽, оценка</th>
+            <th>Эфф. ₽/трз</th><th>Доля денег, с IBC</th><th>Доля денег, без IBC</th>
+            <th>Доля объёма</th><th>Флаг</th>
+          </tr></thead>
+          <tbody>${tr}</tbody>
+        </table>
+      </div>
+      <p class="ev-srcline"><b>Эффективная цена</b> — сколько агентство фактически платит за одну операцию
+      с учётом минимумов и лицензий: у Космоса и Альбатроса номинал 35 и 50 ₽, но объёма до минимума
+      они не добирают и платят фиксированные 105 000 ₽, то есть 415 и 279 ₽ за операцию.</p>
+      ${concRows ? `<h3 style="margin-top:22px">Концентрация: объём против денег</h3>
+      <div class="table-wrap">
+        <table class="backlog">
+          <thead><tr><th>Срез</th><th>По объёму</th><th>По деньгам, с IBC</th><th>По деньгам, без IBC</th><th>Комментарий</th></tr></thead>
+          <tbody>${concRows}</tbody>
+        </table>
+      </div>` : ""}
+      <p class="ev-srcline">Источник цен — ${esc(pr.priceSource || "")}. ${esc(pr.assumption || "")}</p>`;
+    wireTips(priceHost);
   }
 
   // --- Отток / рост / миграции (лист «3. Отток и миграции» единого свода) ---
@@ -1750,6 +1903,62 @@ async function mountSupport() {
       <tbody>${body}${blRow}</tbody>
     </table></div>
     ${ex.tableConcl ? `<p class="lede" style="font-size:13px">${esc(ex.tableConcl)}</p>` : ""}`;
+  }
+
+  // --- 3b. Проверка знаменателя и его эластичность (windowShift) -------------
+  // Ratio = обращения / транзакции. Обращения обновляются только новой выгрузкой HDE,
+  // транзакции — каждым «Общим отчётом». Блок показывает, насколько число держится на
+  // знаменателе, и ловит агентства, у которых «дороговизна» — артефакт объёма.
+  const winHost = document.querySelector("[data-sup-window]");
+  if (winHost && d.windowShift && (d.windowShift.rows || []).length) {
+    const w = d.windowShift;
+    // Разъезд от сдвига окна и разъезд по существу — разные вещи, не смешивать.
+    const shaky = w.rows.filter((r) => r.smallBaseNow && Math.abs(r.ratioDelta || 0) >= 5);
+    const real = w.rows.filter((r) => !r.smallBaseNow && Math.abs(r.ratioDelta || 0) >= 5);
+    // Кто ТОЛЬКО ЧТО провалился под порог: раньше базой считался, теперь нет.
+    const moved = w.rows.filter((r) => r.smallBaseNow && !/мал/i.test(
+      (pa.find((a) => a.name === r.name) || {}).signal || ""));
+    const rowsHtml = w.rows.map((r) => `
+        <tr${r.smallBaseNow ? ' class="sup-row-noise"' : ""}>
+          <td class="title">${esc(r.name)}${r.smallBaseNow ? ' <span class="sup-sig">малая база</span>' : ""}</td>
+          <td class="num">${r1(r.ratio)}</td>
+          <td class="num">${r1(r.ratioNow)}</td>
+          <td class="num">${signDelta(r.ratioDelta)}</td>
+          <td class="num muted">${fmtNum(r.opsFact)} → ${fmtNum(r.opsNow)}</td>
+          <td class="num muted">${r.opsDeltaPct == null ? "—" : (r.opsDeltaPct > 0 ? "+" : "") + Math.round(r.opsDeltaPct * 100) + "%"}</td>
+        </tr>`).join("");
+    winHost.innerHTML = `
+      <div class="callout--soft">
+        <b>Знаменатель проверен, но он отстаёт от числителя.</b> Обращения посчитаны за
+        <b>${esc(w.callsWindow)}</b>, и обновить их можно только новой выгрузкой из саппорта.
+        Транзакции за то же окно сверены с «Общим отчётом» и сходятся:
+        ${fmtNum(w.checkFact)} против ${fmtNum(w.checkStored)} зашитых${w.checkOk ? " — расхождений нет" : " — ⚠ расходятся"}.
+        Колонка «если знаменатель на ${esc(w.opsWindowRu)}» — <b>не новый показатель</b>: это тот же
+        числитель, поделённый на свежий объём. Она отвечает на один вопрос — какая часть
+        «дороговизны» агентства держится на его объёме, а не на саппорте.
+      </div>
+      <div class="table-wrap" style="margin-top:14px">
+        <table class="backlog">
+          <thead><tr>
+            <th>Агентство</th>
+            <th><abbr title="Показатель на странице: обращения и транзакции за ${esc(w.callsWindow)}">Нагрузка сейчас</abbr></th>
+            <th><abbr title="Тот же числитель, знаменатель — свежие 6 месяцев. Не показатель, а тест чувствительности">Если знаменатель на ${esc(w.opsWindowRu)}</abbr></th>
+            <th>Δ</th>
+            <th>Транзакций было → стало</th>
+            <th>Δ объёма</th>
+          </tr></thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+      </div>
+      <p class="ev-srcline">Средний по базе почти не двигается: <b>${r1(w.baselineRatio)} → ${r1(w.baselineRatioNow)}</b>
+      — общий вывод страницы устойчив. ${shaky.length ? `Сильнее всего разъезжаются агентства с малым
+      объёмом (${esc(shaky.map((r) => r.name).join(", "))}): у них показатель меняется от сдвига окна
+      на два месяца, без единого нового обращения. Это не оценка саппорта, а деление на маленькое число. ` : ""}${
+        real.length ? `Отдельно стоит посмотреть на ${esc(real.map((r) => `${r.name} (${r1(r.ratio)} → ${r1(r.ratioNow)})`).join(", "))}
+        — здесь объём достаточный, значит сдвиг содержательный: агентство выросло, а поток обращений за ним не пошёл.` : ""}${
+        moved.length ? `<br><b>Внимание:</b> ${esc(moved.map((r) => r.name).join(", "))} — объём упал ниже
+        порога в 1 000 транзакций. Показатель больше не сигнал о саппорте, даже если раньше был.` : ""}</p>`;
+    wireTips(winHost);
   }
 
   // --- 4. Профиль боли по сегментам (карточки, авторский слой) --------

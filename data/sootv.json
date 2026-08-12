@@ -157,7 +157,7 @@
       "pain": "Визуальный шум на странице заказа",
       "quote": "«общий вид услуг сливается в массу, в глазах рябит»",
       "mechanism": "—",
-      "iter": "Редизайн страницы заказа [вне Q2] → gap",
+      "iter": "Редизайн страницы заказа [вторичный контур] → gap",
       "artifact": "Заказы/01 Скелет уровня 3.md",
       "metricsActive": [
         "↓ когнитивная нагрузка"
@@ -165,7 +165,7 @@
       "metricsTarget": [
         "↓ Steps-per-task"
       ],
-      "moscow": "Could → Q3",
+      "moscow": "Could → ближайшая волна",
       "reach": "Reach 2 (FS Travel, Аэроглобус)",
       "status": "осталось",
       "conflict": "GAP: вытащить точечную задачу из редизайна"
@@ -378,10 +378,10 @@
       "metricsTarget": [
         "↓ Hidden-work"
       ],
-      "moscow": "Won't (Q2)",
+      "moscow": "Won't (первичный контур)",
       "reach": "PM",
       "status": "осталось",
-      "conflict": "Мостик к мидофису, Q3-кандидат"
+      "conflict": "Мостик к мидофису, кандидат ближайшей волны"
     },
     {
       "stage": "2 Снимать нагрузку",
@@ -1444,10 +1444,10 @@
       "metricsTarget": [
         "↓ Time-to-cash"
       ],
-      "moscow": "Won't (Q2)",
+      "moscow": "Won't (первичный контур)",
       "reach": "Reach 1 (Аэроглобус)",
       "status": "осталось",
-      "conflict": "Этап 3, вне Q2"
+      "conflict": "Этап 3, вторичный контур"
     },
     {
       "stage": "3 Сохранять экономику",
@@ -1540,7 +1540,7 @@
       "pain": "CSV в 1С как замена интеграции; отчёт по командировкам",
       "quote": "грузят CSV в 1С (KPMG)",
       "mechanism": "Мидофис",
-      "iter": "J Отчётность [вне Q2]",
+      "iter": "J Отчётность [вторичный контур]",
       "artifact": "Синтез (блок J)",
       "metricsActive": [
         "—"
@@ -1548,7 +1548,7 @@
       "metricsTarget": [
         "—"
       ],
-      "moscow": "Won't (Q2)",
+      "moscow": "Won't (первичный контур)",
       "reach": "Reach 1 (KPMG)",
       "status": "осталось",
       "conflict": null
@@ -1566,7 +1566,7 @@
       "pain": "Один отель называется по-разному → не схлопывается",
       "quote": "—",
       "mechanism": "Мидофис",
-      "iter": "[вне Q2]",
+      "iter": "[вторичный контур]",
       "artifact": "Синтез (блок J)",
       "metricsActive": [
         "—"
@@ -1574,7 +1574,7 @@
       "metricsTarget": [
         "—"
       ],
-      "moscow": "Won't (Q2)",
+      "moscow": "Won't (первичный контур)",
       "reach": "Reach 1 (KPMG)",
       "status": "осталось",
       "conflict": null
@@ -1600,7 +1600,7 @@
       "metricsTarget": [
         "—"
       ],
-      "moscow": "вне фокуса Q2",
+      "moscow": "вторичный контур",
       "reach": "Growth leaders",
       "status": "осталось",
       "conflict": "Двойная привязка: 2B + 4"
@@ -1626,7 +1626,7 @@
       "metricsTarget": [
         "↑ Operations per consultant"
       ],
-      "moscow": "вне фокуса Q2",
+      "moscow": "вторичный контур",
       "reach": "Strategists+Growth",
       "status": "осталось",
       "conflict": null
@@ -1652,7 +1652,7 @@
       "metricsTarget": [
         "—"
       ],
-      "moscow": "Won't (Q2)",
+      "moscow": "Won't (первичный контур)",
       "reach": "Strategists IBC/ATH",
       "status": "осталось",
       "conflict": "H5 из value ladder, не из интервью"
@@ -1883,7 +1883,7 @@
       "moscow": "Should",
       "reach": "—",
       "status": null,
-      "conflict": "Дом гипотезы — этап 3, виден уже в Q2"
+      "conflict": "Дом гипотезы — этап 3, виден уже в первичном контуре"
     },
     {
       "stage": "3 Сохранять экономику",
@@ -1932,7 +1932,7 @@
       "metricsTarget": [
         "Time-to-cash"
       ],
-      "moscow": "Won't (Q2)",
+      "moscow": "Won't (первичный контур)",
       "reach": "—",
       "status": "⚠️",
       "conflict": "Спросить: уже индексируете сбор? если да — отклоняем"
@@ -1958,7 +1958,7 @@
       "metricsTarget": [
         "—"
       ],
-      "moscow": "Won't (Q2)",
+      "moscow": "Won't (первичный контур)",
       "reach": "новички/Risers",
       "status": "GAP",
       "conflict": "Двигает подцель 5 + предусловие H4.2; перетолкование отклонённой H3.6"
@@ -2010,7 +2010,7 @@
       "metricsTarget": [
         "—"
       ],
-      "moscow": "Won't (Q2)",
+      "moscow": "Won't (первичный контур)",
       "reach": "—",
       "status": "⚠️",
       "conflict": "Нужен discovery: подтвердить, что задержка денег про прозрачность баланса"

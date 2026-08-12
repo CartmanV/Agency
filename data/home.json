@@ -23,8 +23,8 @@
       "Could": 48,
       "Won't": 78
     },
-    "scored": 199,
-    "unscored": 17,
+    "scored": 200,
+    "unscored": 16,
     "topTitle": "Avia: атрибуты (iata, политика)",
     "topFinal": 120,
     "themes": [
@@ -61,10 +61,10 @@
   },
   "data": {
     "agenciesActive": 19,
-    "opsMay": 39355.0,
-    "momPct": 0.0369,
-    "top3": 0.8393,
-    "top5": 0.9043,
+    "opsMay": 39163.0,
+    "momPct": -0.0049,
+    "top3": 0.8396,
+    "top5": 0.9095,
     "researchTotal": 89,
     "researchConfirmed": 57,
     "researchClosed": 18,

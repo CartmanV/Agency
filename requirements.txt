@@ -1,3 +1,4 @@
 # Зависимости сборки данных (build/build.py).
-# build.py использует только openpyxl; остальное — стандартная библиотека Python 3.
 openpyxl>=3.1
+# Машинный канон скоринга (tg-bot-pm/config/scoring.yml) читается через YAML.
+PyYAML>=6.0

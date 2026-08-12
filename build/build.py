@@ -24,11 +24,428 @@ try:
 except ImportError:
     sys.exit("Нужен openpyxl:  pip3 install openpyxl")
 
+try:
+    import yaml
+except ImportError:
+    sys.exit("Нужен PyYAML:  pip3 install PyYAML")
+
 # --- пути ---------------------------------------------------------------
 SITE_DIR = Path(__file__).resolve().parent.parent          # site/
 WORK_DIR = SITE_DIR.parent                                 # My work/  (источники)
 DATA_DIR = SITE_DIR / "data"
 SHEET = "Бэклог"
+
+# --- машинный канон скоринга -------------------------------------------
+# Единственный источник порогов, формул и кодов гипотез — общий с ботом файл.
+# Прозаический канон: «Проектные инструкции v2.md», §5.3–5.4.
+# Раньше эти правила дублировались здесь в коде; копия разъезжалась молча.
+SCORING_PATH = WORK_DIR / "tg-bot-pm" / "config" / "scoring.yml"
+
+
+def load_scoring():
+    if not SCORING_PATH.exists():
+        sys.exit(f"Не найден машинный канон скоринга: {SCORING_PATH}")
+    with SCORING_PATH.open(encoding="utf-8") as fh:
+        return yaml.safe_load(fh)
+
+
+SCORING = load_scoring()
+BOUNDS = SCORING["bounds"]
+HYPOTHESIS_IDS = {h["id"] for group in SCORING["hypotheses"].values() for h in group}
+MOSCOW_VALUES = set(SCORING["moscow_order"])
+GATE_VALUES = set(SCORING["gate_values"])
+
+# --- машинный канон таксономии -----------------------------------------
+# §4 (подцели) и §5.1–5.2 (этапы, блоки, механизмы) живут в taxonomy.yml —
+# том же файле, который читает бот. Второй копии этих словарей быть не должно:
+# scoring.yml несёт только §5.3–5.4.
+TAXONOMY_PATH = WORK_DIR / "tg-bot-pm" / "config" / "taxonomy.yml"
+
+
+def load_taxonomy():
+    if not TAXONOMY_PATH.exists():
+        sys.exit(f"Не найден машинный канон таксономии: {TAXONOMY_PATH}")
+    with TAXONOMY_PATH.open(encoding="utf-8") as fh:
+        return yaml.safe_load(fh)
+
+
+TAXONOMY = load_taxonomy()
+
+# Написания «вне канона»: значение опознано, но записано не канонически.
+# Это не ошибка данных, а материал для нормализации, поэтому копится
+# отдельно от errors и печатается своим блоком.
+STYLE_NOTES = []
+
+# Осознанные gap'ы гипотез (§5.3 + решение Влада, список в scoring.yml).
+# Считаем отдельно: gap должен быть виден как gap, а не пропасть в тишине.
+HYPOTHESIS_GAPS = SCORING.get("hypothesis_gaps") or []
+GAP_NOTES = []
+
+# Пояснение в скобках: «топ-3 (52% IBC, 13 аг)», «1 «Освободить время» (основная)».
+# Это комментарий к значению, а не другое значение — снимается ДО разбиения
+# составных, иначе «1 + 2 (трудозатраты + тормоза)» рвётся по плюсу внутри скобок.
+_PARENS = re.compile(r"[\(\[][^)\]]*[\)\]]")
+
+
+def _strip_parens(s):
+    s = unicodedata.normalize("NFC", str(s))
+    prev = None
+    while prev != s:                     # скобки бывают вложенными
+        prev = s
+        s = _PARENS.sub(" ", s)
+    return re.sub(r"\s+", " ", s).strip()
+
+
+def _norm_token(s):
+    """Единый вид для сверки со словарём: NFC, без скобок, без кавычек-ёлочек."""
+    s = _strip_parens(s)
+    for q in "«»„“”\"'":
+        s = s.replace(q, "")
+    return re.sub(r"\s+", " ", s).strip(" .;:—-").strip()
+
+
+def _split_top_level(text, splitters):
+    """Разбить по разделителям, НЕ трогая то, что внутри скобок.
+
+    «1 «Освободить время» (основная) + 2 (тормоза)» → два значения, а не четыре:
+    плюс внутри пояснения разделителем не является.
+    """
+    parts, buf, depth = [], [], 0
+    for ch in unicodedata.normalize("NFC", str(text)):
+        if ch in "([":
+            depth += 1
+        elif ch in ")]":
+            depth = max(0, depth - 1)
+        if depth == 0 and ch in splitters:
+            parts.append("".join(buf))
+            buf = []
+        else:
+            buf.append(ch)
+    parts.append("".join(buf))
+    return [p.strip() for p in parts if p.strip()]
+
+
+PRIMARY_MARKERS = [m.casefold() for m in (TAXONOMY.get("primary_markers") or [])]
+SECONDARY_MARKERS = [m.casefold() for m in (TAXONOMY.get("secondary_markers") or [])]
+
+
+def _role_of(part):
+    """«Снимать нагрузку (осн.)» → 'primary'; «(вторичн.)» → 'secondary'; иначе None.
+
+    Смотрим только в скобки — там канон и пишет пометку (см. карточки L1–L2).
+    """
+    tail = " ".join(_PARENS.findall(str(part))).casefold()
+    if any(m in tail for m in PRIMARY_MARKERS):
+        return "primary"
+    if any(m in tail for m in SECONDARY_MARKERS):
+        return "secondary"
+    return None
+
+
+def _index_from_entries(entries, canon_key="name"):
+    """{нормализованное написание: (канон, это_алиас)} из списка taxonomy.yml.
+
+    В бэклоге одно и то же поле пишут тремя способами сразу: «2», «Снимать
+    нагрузку», «2 «Снимать нагрузку»». Все три должны опознаваться, иначе
+    валидатор ругается на оформление, а не на смысл.
+
+    canon_key — что считать эталонным написанием. Для подцели это `id`:
+    §6 (шаблон карточки) требует номер, «Подцель направления: [1-7]».
+    Для этапа и механизма — `name`.
+    """
+    idx = {}
+    for e in entries:
+        canon = str(e[canon_key])
+        idx[_norm_token(canon).casefold()] = (canon, False)
+        vid = e.get("id")
+        name = str(e.get("name", ""))
+        forms = [name] + list(e.get("aliases", []))
+        if vid is not None:
+            forms.append(str(vid))
+            forms += [f"{vid} {f}" for f in [name] + list(e.get("aliases", [])) if f]
+        for f in forms:
+            if not f:
+                continue
+            idx.setdefault(_norm_token(f).casefold(), (canon, True))
+    return idx
+
+
+def _mechanism_index():
+    idx = {}
+    for name in TAXONOMY.get("mechanisms", []):
+        idx[_norm_token(name).casefold()] = (str(name), False)
+    for alias, canon in (TAXONOMY.get("mechanism_aliases") or {}).items():
+        idx.setdefault(_norm_token(alias).casefold(), (canon, True))
+    return idx
+
+
+# Этапы 2A и 2B — один этап «Снимать нагрузку» с разными блоками, поэтому
+# по имени они схлопываются; для валидации поля «Этап» это и нужно.
+VOCAB_INDEX = {
+    "stage": _index_from_entries(TAXONOMY.get("stages", [])),
+    "block": _index_from_entries(TAXONOMY.get("blocks", [])),
+    "subgoal": _index_from_entries(TAXONOMY.get("subgoals", []), canon_key="id"),
+    "mechanism": _mechanism_index(),
+}
+SINGLE_VALUE = TAXONOMY.get("single_value", {})
+SPLITTERS = TAXONOMY.get("splitters") or ["+", ",", "·"]
+
+# Токены, законные в поле, но не являющиеся значением словаря:
+# «функциональный паритет» — условие этапа 1 (§5.1), а не восьмая подцель.
+EXTRA_TOKENS = {name: {_norm_token(t).casefold()
+                       for t in (TAXONOMY.get(f"{name}_extra_tokens") or [])}
+                for name in ("stage", "block", "mechanism", "subgoal")}
+# «—» внутри составного значения — это «здесь пусто», а не неизвестное значение
+# (встречается как «— / Сокращение трудозатрат», «— ; вторичный эффект …»).
+_EMPTY_TOKENS = {"", "-", "–", "—", "н/д", "нд", "n/a"}
+
+
+def _conc_index():
+    """Метка «Концентрация»: словарь обеих осей + прежние написания (§5.4)."""
+    spec = SCORING.get("concentration") or {}
+    idx = {}
+    for v in list(spec.get("volume_values") or []) + list(spec.get("money_values") or []):
+        idx[_norm_token(v).casefold()] = (v, False)
+    for old, canon in (spec.get("aliases") or {}).items():
+        idx.setdefault(_norm_token(old).casefold(), (canon, True))
+    return idx
+
+
+CONC_INDEX = _conc_index()
+# «деньги: ГСП+Космос» — шаблон денежной оси, конкретные агентства не словарные.
+_CONC_MONEY_FREEFORM = re.compile(r"^деньги\s*:", re.IGNORECASE)
+
+
+def check_concentration(rec, rnum, rec_id, errors):
+    """Метка широты базы. Две оси через слэш: «объём / деньги» (§5.4)."""
+    raw = rec.get("concentration")
+    if raw is None or not str(raw).strip() or str(raw).strip() in ("—", "-", "–"):
+        return
+    if str(raw).rstrip().endswith("…"):
+        return          # см. check_truncated
+    text = _strip_parens(raw)
+    if not text:
+        return
+    # «н/д» само содержит слэш — по нему оси не режем, иначе получаем «н» и «д».
+    if _norm_token(text).casefold() in ("н/д", "нд", "n/a"):
+        return
+    for part in [p.strip() for p in text.split("/") if p.strip()]:
+        if _CONC_MONEY_FREEFORM.match(part):
+            continue                       # «деньги: <агентства>» — свободный список
+        hit = CONC_INDEX.get(_norm_token(part).casefold())
+        if hit is None:
+            short = part if len(part) <= 45 else part[:42] + "…"
+            errors.append(
+                f"строка {rnum} ({rec_id}): Концентрация «{short}» — нет в словаре §5.4")
+        elif hit[1]:
+            STYLE_NOTES.append(
+                f"строка {rnum} ({rec_id}): Концентрация «{part}» → канон «{hit[0]}»")
+
+
+def check_vocab(rec, rnum, rec_id, errors, field, vocab_name, label):
+    """Сверка поля со словарём §5.1 / §5.2 / §4.
+
+    Три класса исхода:
+      • значение не опознано               → ошибка (в errors);
+      • составное там, где канон требует одного → ошибка (§5.1 про этап);
+      • опознано, но написано не канонически   → STYLE_NOTES.
+    Пустое значение здесь не трогаем: пустую подцель ловит отдельная проверка,
+    а пустой механизм законен на этапе 1.
+    """
+    idx = VOCAB_INDEX.get(vocab_name) or {}
+    if not idx:
+        return
+    raw = rec.get(field)
+    if raw is None or not str(raw).strip() or str(raw).strip() in ("—", "-", "–"):
+        return
+    if str(raw).rstrip().endswith("…"):
+        return          # обрезанную ячейку уже сообщил check_truncated, не дублируем
+
+    # Разбиваем по верхнему уровню: плюс внутри скобок — часть пояснения,
+    # а не разделитель значений.
+    text = unicodedata.normalize("NFC", str(raw)).strip()
+    parts = _split_top_level(text, SPLITTERS)
+    if not parts:
+        return
+
+    mode = SINGLE_VALUE.get(vocab_name)
+
+    # §5.1 (ред. 2026-08-06): у поля «Этап» ровно один ОСНОВНОЙ этап,
+    # вторичный допускается с явной пометкой «(вторичн.)».
+    if mode == "primary_marked" and len(parts) > 1:
+        roles = [_role_of(p) for p in parts]
+        primaries = roles.count("primary")
+        if primaries == 0:
+            errors.append(
+                f"строка {rnum} ({rec_id}): {label} «{_strip_parens(text)}» — "
+                f"несколько этапов, ни один не помечен основным "
+                f"(§5.1: «Снимать нагрузку (осн.) + Не мешать (вторичн.)»)")
+            return
+        if primaries > 1:
+            errors.append(
+                f"строка {rnum} ({rec_id}): {label} «{_strip_parens(text)}» — "
+                f"основных этапов {primaries}, а канон требует ровно одного (§5.1)")
+            return
+    elif mode is True and len(parts) > 1:
+        errors.append(
+            f"строка {rnum} ({rec_id}): {label} «{_strip_parens(text)}» — составное "
+            f"значение, а канон требует ровно одного")
+        return
+
+    unknown, non_canon = [], []
+    extra = EXTRA_TOKENS.get(vocab_name, set())
+    for p in parts:
+        key = _norm_token(p).casefold()
+        if key in _EMPTY_TOKENS or key in extra:
+            continue                       # пусто или законный не-словарный токен
+        hit = idx.get(key)
+        if hit is None:
+            unknown.append(_strip_parens(p) or p)
+        elif hit[1]:
+            non_canon.append((_strip_parens(p) or p, hit[0]))
+
+    if unknown:
+        short = [u if len(u) <= 45 else u[:42] + "…" for u in unknown]
+        errors.append(
+            f"строка {rnum} ({rec_id}): {label} {short} — нет в словаре scoring.yml")
+    for got, canon in non_canon:
+        STYLE_NOTES.append(
+            f"строка {rnum} ({rec_id}): {label} «{got}» → канон «{canon}»")
+
+
+# Ячейка, обрезанная при записи. Найдено 2026-08-06: 62 ячейки в двух бэклогах
+# кончаются на «…» ровно на 121 / 180 / 181 символе — след скрипта, писавшего
+# с ограничением длины. Текст потерян в источнике, не при чтении, поэтому это
+# ошибка данных, а не оформления: «7 «Миним…» уже не восстановить из файла.
+_TRUNCATED_FIELDS = (("hypothesis", "Гипотеза"), ("subgoal", "Подцель"),
+                     ("mechanism", "Механизм"), ("stage", "Этап"),
+                     ("block", "Блок"), ("concentration", "Концентрация"))
+
+
+def check_truncated(rec, rnum, rec_id, errors):
+    for field, label in _TRUNCATED_FIELDS:
+        val = rec.get(field)
+        if isinstance(val, str) and val.rstrip().endswith("…"):
+            errors.append(
+                f"строка {rnum} ({rec_id}): {label} обрезана при записи "
+                f"({len(val)} симв., кончается на «…») — текст потерян в источнике")
+
+
+# Связь «этап ↔ подцель» из §4/§5.1 живёт в taxonomy.yml с самого начала
+# (поля stages[].subgoals и subgoals[].stage), но никто её не проверял.
+# Находка 2026-08-07: тему «Предложения 2.0» перепривязали с этапа 2B на этап 5,
+# а подцель осталась прежняя — 31 строка несёт «этап 5 + подцель 2».
+# Перепривязка сделана наполовину, и это было не видно.
+# Берём расширенные наборы из stage_subgoals_allowed: stages[].subgoals — это
+# ОСНОВНАЯ подцель этапа, а §4.1 разрешает подцелям 1, 2 и 7 жить на обоих
+# этапах первичного контура. Без этого валидатор ругался на сам канон.
+STAGE_SUBGOALS = {k: {str(x) for x in v}
+                  for k, v in (TAXONOMY.get("stage_subgoals_allowed") or {}).items()}
+for _st in TAXONOMY.get("stages", []):
+    STAGE_SUBGOALS.setdefault(str(_st["name"]), set()).update(
+        str(x) for x in (_st.get("subgoals") or []))
+SUBGOAL_IDS = {str(g["id"]) for g in TAXONOMY.get("subgoals", [])}
+
+
+def check_stage_subgoal(rec, rnum, rec_id, errors):
+    """Основной этап и подцели должны сходиться по таблице §4."""
+    stage_raw, sub_raw = rec.get("stage"), rec.get("subgoal")
+    if not stage_raw or not sub_raw:
+        return
+    if str(stage_raw).rstrip().endswith("…") or str(sub_raw).rstrip().endswith("…"):
+        return
+
+    # Основной этап: помеченный «(осн.)», иначе единственный.
+    parts = _split_top_level(str(stage_raw), SPLITTERS)
+    primary = next((p for p in parts if _role_of(p) == "primary"), parts[0] if parts else None)
+    if not primary:
+        return
+    hit = VOCAB_INDEX["stage"].get(_norm_token(primary).casefold())
+    if not hit:
+        return
+    allowed = STAGE_SUBGOALS.get(hit[0])
+    if not allowed:
+        return
+
+    subs = set()
+    for p in _split_top_level(str(sub_raw), SPLITTERS):
+        h = VOCAB_INDEX["subgoal"].get(_norm_token(p).casefold())
+        if h:
+            subs.add(h[0])
+    if not subs or (subs & allowed):
+        return          # хотя бы одна подцель соответствует этапу — норма
+    errors.append(
+        f"строка {rnum} ({rec_id}): этап «{hit[0]}» ждёт подцель "
+        f"{sorted(allowed)}, а стоит {sorted(subs)} — связь §4 не сходится")
+
+
+def check_scoring(rec, rnum, rec_id, errors, with_ml=False):
+    """Валидация строки по scoring.yml. Не правит данные — только сообщает."""
+    for key, field in (("reach", "reach"), ("impact", "impact"),
+                       ("confidence", "confidence"), ("pv_mult", "pvMult")):
+        val = rec.get(field)
+        if val is None or not isinstance(val, (int, float)):
+            continue
+        lo, hi = BOUNDS[key]
+        if not (lo <= val <= hi):
+            errors.append(f"строка {rnum} ({rec_id}): {field}={val} вне канона [{lo}; {hi}]")
+    if with_ml:
+        for key, field in (("ml", "mlLeverage"), ("depth", "depth")):
+            val = rec.get(field)
+            if isinstance(val, (int, float)):
+                lo, hi = BOUNDS[key]
+                if not (lo <= val <= hi):
+                    errors.append(f"строка {rnum} ({rec_id}): {field}={val} вне диапазона [{lo}; {hi}]")
+    eff = rec.get("effort")
+    if isinstance(eff, (int, float)) and eff <= 0:
+        errors.append(f"строка {rnum} ({rec_id}): Effort={eff} — должен быть > 0")
+    mos = rec.get("moscow")
+    if mos and mos not in MOSCOW_VALUES:
+        errors.append(f"строка {rnum} ({rec_id}): MoSCoW {mos!r} не из канона {sorted(MOSCOW_VALUES)}")
+    gate = rec.get("gate")
+    if gate and gate not in GATE_VALUES:
+        errors.append(f"строка {rnum} ({rec_id}): Gate {gate!r} не из канона {sorted(GATE_VALUES)}")
+    hyp = rec.get("hypothesis")
+    if hyp:
+        text = str(hyp).strip()
+        codes = re.findall(r"H\d+\.\d+", text)
+        unknown = [c for c in codes if c not in HYPOTHESIS_IDS]
+        if unknown:
+            errors.append(f"строка {rnum} ({rec_id}): гипотеза {unknown} нет в scoring.yml")
+        # Плейсхолдер вместо кода. До 2026-08-06 сюда проваливались 49 строк:
+        # «H5.x — платный сервис поверх (уточнить код)» не даёт совпадений по
+        # H\d+\.\d+, значит и ошибки не давало. §5.3 требует ЯВНОЙ ссылки на код.
+        elif not codes:
+            gap = next((g for g in HYPOTHESIS_GAPS
+                        if text.casefold().startswith(str(g["id"]).casefold())), None)
+            if gap:
+                # Осознанный gap (решение Влада, зафиксировано в scoring.yml).
+                # Не ошибка, но и не тишина: считаем отдельно, чтобы было видно.
+                GAP_NOTES.append(f"строка {rnum} ({rec_id}): {gap['id']} — {gap['scope']}")
+            else:
+                short = text if len(text) <= 60 else text[:57] + "…"
+                errors.append(
+                    f"строка {rnum} ({rec_id}): гипотеза «{short}» — без кода H1.x–H5.x "
+                    f"(§5.3 требует явной ссылки)")
+
+    # Словари §5.1 / §5.2 / §4 — до 2026-08-06 эти поля не проверялись вовсе.
+    check_vocab(rec, rnum, rec_id, errors, "stage", "stage", "Этап")
+    check_vocab(rec, rnum, rec_id, errors, "block", "block", "Блок")
+    check_vocab(rec, rnum, rec_id, errors, "mechanism", "mechanism", "Механизм")
+    check_vocab(rec, rnum, rec_id, errors, "subgoal", "subgoal", "Подцель")
+    check_concentration(rec, rnum, rec_id, errors)
+    check_truncated(rec, rnum, rec_id, errors)
+    check_stage_subgoal(rec, rnum, rec_id, errors)
+
+
+def build_meta():
+    """Штамп сборки — чтобы на странице было видно, насколько свежи данные."""
+    from datetime import datetime, timezone
+    return {
+        "builtAt": datetime.now(timezone.utc).astimezone().isoformat(timespec="seconds"),
+        "scoringSynced": SCORING.get("synced"),
+        "scoringSource": SCORING.get("source"),
+    }
 
 # Заголовок колонки xlsx -> ключ в JSON
 COLUMNS = {
@@ -192,6 +609,7 @@ def build_backlog():
             errors.append(f"строка {rnum} ({rec_id}): пустая подцель")
         if not rec.get("hypothesis"):
             errors.append(f"строка {rnum} ({rec_id}): пустая гипотеза")
+        check_scoring(rec, rnum, rec_id, errors)
 
         items.append(rec)
 
@@ -320,6 +738,7 @@ def build_initiatives():
         if rec_id in seen_ids:
             errors.append(f"строка {rnum}: дубль id {rec_id!r}")
         seen_ids.add(rec_id)
+        check_scoring(rec, rnum, rec_id, errors, with_ml=True)
         items.append(rec)
 
     # Norm % — доля от максимального Value (100% у сильнейшей инициативы).
@@ -340,7 +759,7 @@ def build_initiatives():
         x["srcNum"] = x.get("num")
         x["num"] = rank
 
-    return {"source": src.name, "count": len(items), "items": items}, errors
+    return {"source": src.name, "count": len(items), "meta": build_meta(), "items": items}, errors
 
 
 def build_tree(items):
@@ -404,11 +823,9 @@ def build_legend(src):
 
 def find_agencies_source():
     """Файл «Свод по агентствам …xlsx» (устойчиво к NFD/NFC и дате)."""
-    cands = []
-    for p in WORK_DIR.glob("*.xlsx"):
-        if "свод по агентствам" in unicodedata.normalize("NFC", p.name).lower():
-            cands.append(p)
-    return sorted(cands)[-1] if cands else None
+    cands = [p for p in WORK_DIR.glob("*.xlsx")
+             if "свод по агентствам" in unicodedata.normalize("NFC", p.name).lower()]
+    return sorted(cands, key=lambda p: unicodedata.normalize("NFC", p.name))[-1] if cands else None
 
 
 # Соответствие «потерянное агентство» → тип оттока (кураторская классификация, лист
@@ -602,6 +1019,69 @@ def build_agencies_abcdx(agencies):
     return {"segments": segments, "byAgency": by_agency, "total": total}
 
 
+def build_agencies_price(agencies):
+    """Ось ДЕНЕГ к ABCDX — лист «Цена транзакции» единого свода: тариф, оценка выручки и
+    эффективная цена операции по агентствам + пересчёт концентрации на деньги.
+
+    Три оговорки, которые обязаны доехать до страницы (иначе цифры читаются неверно):
+      1. Выручка — РАСЧЁТ (тариф × операции июня), а не выгрузка из биллинга.
+      2. IBC — внутри холдинга: тариф 170 ₽ считается по всем полученным от клиента деньгам,
+         а не только по транзакционному сбору. С внешними 32–100 ₽ несопоставим → отдельная
+         доля «без IBC» и флаг excluded.
+      3. Аэроглобус — две цены по статусам, точной раскладки нет: выручка диапазоном.
+    Источник цен — «Транзакции агентств. Определения и стоимость.xlsx» (2026); цены IBC 170 /
+    KazTour 100 в том файле отсутствуют и внесены со слов PM (допущение)."""
+    src = find_agencies_source()
+    if not src or "Цена транзакции" not in openpyxl.load_workbook(
+            src, read_only=True).sheetnames:
+        return None
+    wb = openpyxl.load_workbook(src, data_only=True, read_only=True)
+    ws = wb["Цена транзакции"]
+
+    rows_out, totals, conc, mode = [], {}, [], None
+    for r in ws.iter_rows(values_only=True):
+        c0 = clean(r[0])
+        if c0 == "Агентство" and clean(r[1]) == "Сегмент (Свод)":
+            mode = "rows"; continue
+        if c0 == "Срез" and clean(r[1]) == "По объёму":
+            mode = "conc"; continue
+        if c0 and str(c0).startswith(("C.", "D.", "E.", "F.", "G.")):
+            mode = None
+        if not c0 or not mode:
+            continue
+        if mode == "rows":
+            if str(c0).startswith("ИТОГО"):
+                totals["exIbc" if "без IBC" in str(c0) else "all"] = {
+                    "ops": _anum(r[2]), "revenue": _anum(r[4]), "effPrice": _anum(r[5])}
+                continue
+            rows_out.append({
+                "name": c0, "segment": clean(r[1]), "ops": _anum(r[2]),
+                "tariff": clean(r[3]),
+                "revenue": _anum(r[4]), "revenueText": None if _anum(r[4]) is not None else clean(r[4]),
+                "effPrice": _anum(r[5]),
+                "revSharePct": _anum(r[6]), "revShareExIbcPct": _anum(r[7]),
+                "opsSharePct": _anum(r[8]), "supportRatio": _anum(r[9]),
+                "offlinePct": _anum(r[10]), "flag": clean(r[11]),
+                "excluded": c0 == "IBC",
+                "id": _resolve_agency_id(c0, agencies),
+            })
+        elif mode == "conc":
+            # после таблицы срезов идут прозаические строки-выводы (только колонка A) — не таблица
+            if clean(r[1]) is None:
+                mode = None; continue
+            conc.append({"cut": c0, "byOps": clean(r[1]), "byMoney": clean(r[2]),
+                         "byMoneyExIbc": clean(r[3]), "note": clean(r[4])})
+
+    return {
+        "rows": rows_out, "totals": totals, "concentration": conc,
+        "priceSource": "Транзакции агентств. Определения и стоимость.xlsx (2026)",
+        "assumption": ("Выручка — расчёт «тариф × операции июня», не выгрузка из биллинга. "
+                       "Цены IBC 170 ₽ и KazTour 100 ₽ в файле цен отсутствуют — внесены со слов PM. "
+                       "Экономика клиента IBC ≈ ×8 к клиенту внешнего агентства — оценка PM, "
+                       "в данных не проверена (нужна маржинальная выгрузка, R6)."),
+    }
+
+
 def build_agencies_churn():
     """Отток/рост/миграции по агентствам — лист «3. Отток и миграции» (H1'25 vs H1'26 по
     транзакциям): сегменты Rising/Stable/Declining/Lost/New + список потерянных/новых с типом
@@ -644,6 +1124,14 @@ def build_agencies():
     sheet = next((s for s in wb.sheetnames if s.lower().startswith("свод")), wb.sheetnames[0])
     rows = list(wb[sheet].iter_rows(values_only=True))
     num = _anum
+
+    # Месяц колонки «Оффлайн» берём из её заголовка: оффлайн по агентствам приходит из
+    # транзакционного дампа, который отстаёт от общего отчёта. С июля 2026 месяц оффлайна
+    # и месяц ops расходятся — подпись на странице обязана это показывать.
+    offline_cut = None
+    m_off = re.search(r"\(([^)]+)\)", str(rows[0][12] or "")) if len(rows[0]) > 12 else None
+    if m_off:
+        offline_cut = m_off.group(1).strip().lower()
 
     agencies, total = [], None
     for r in rows[1:]:
@@ -717,8 +1205,22 @@ def build_agencies():
             if r and r[0] and "источник" in str(r[0]).lower():
                 note = clean(r[1]); break
 
+    # Дата среза выводится из имени листа «Свод (<месяц> <год>)» — раньше была зашита
+    # строкой «30.06.2026» и молча устаревала при смене месяца.
+    _MON = {"январ": (1, 31), "феврал": (2, 28), "март": (3, 31), "апрел": (4, 30),
+            "ма": (5, 31), "июн": (6, 30), "июл": (7, 31), "август": (8, 31),
+            "сентябр": (9, 30), "октябр": (10, 31), "ноябр": (11, 30), "декабр": (12, 31)}
+    cut = "—"
+    m = re.search(r"\(([^)]*?)\s+(\d{4})\)", sheet)
+    if m:
+        low = m.group(1).lower()
+        for k, (mm, dd) in _MON.items():
+            if low.startswith(k):
+                cut = f"{dd:02d}.{mm:02d}.{m.group(2)}"
+                break
+
     return {
-        "source": src.name, "cut": "30.06.2026", "metric": "операции (ops)",
+        "source": src.name, "cut": cut, "offlineCut": offline_cut, "metric": "операции (ops)",
         "note": note, "total": total,
         "concentration": {"top3": top3, "top5": top5},
         "nsm": nsm_total,
@@ -726,16 +1228,21 @@ def build_agencies():
         "monthlyClients": monthly_clients,
         "agencies": agencies,
         "abcdx": build_agencies_abcdx(agencies),
+        "price": build_agencies_price(agencies),
         "churn": build_agencies_churn(),
     }
 
 
 def find_work_xlsx(needle):
-    """Файл *.xlsx, чьё имя (NFC, lower) содержит подстроку needle."""
-    for p in WORK_DIR.glob("*.xlsx"):
-        if needle in unicodedata.normalize("NFC", p.name).lower():
-            return p
-    return None
+    """Файл *.xlsx, чьё имя (NFC, lower) содержит подстроку needle.
+
+    Возвращает НАИБОЛЬШЕЕ имя по сортировке — версии датируются в имени
+    («Общий отчет 2026 07.xlsx» > «… 2026 06.xlsx»), поэтому это latest.
+    Раньше возвращался первый попавшийся glob — порядок ФС недетерминирован,
+    и после появления нового месяца сборка могла молча взять старый файл."""
+    cands = [p for p in WORK_DIR.glob("*.xlsx")
+             if needle in unicodedata.normalize("NFC", p.name).lower()]
+    return sorted(cands, key=lambda p: unicodedata.normalize("NFC", p.name))[-1] if cands else None
 
 
 # --- пересчёт истории Support-ratio по ТОЧНОЙ привязке (HDE + Свод) --------
@@ -863,7 +1370,18 @@ def build_support():
     """
     f1 = find_work_xlsx("единый вывод")
     f2 = find_work_xlsx("support-ratio baseline")
+    if not f2:
+        # Файл уехал в /Архив при уборке 2026-07-25 — сборка молча переставала
+        # обновлять support.json, а манифест продолжал помечать его «generated».
+        # Ищем в архиве и предупреждаем: данные живы, но источник вне корня.
+        arch = sorted(WORK_DIR.glob("Архив/**/*.xlsx"))
+        f2 = next((p for p in arch
+                   if "support-ratio baseline" in unicodedata.normalize("NFC", p.name).lower()), None)
+        if f2:
+            print(f"  ⚠ support: источник тренда взят из архива — {f2.relative_to(WORK_DIR)}")
     if not f1 or not f2:
+        print("  ⚠ support.json НЕ пересобран: не найден "
+              + ("«Обращения агентств — единый вывод …xlsx»" if not f1 else "«Support-ratio baseline …xlsx»"))
         return None
     wb1 = openpyxl.load_workbook(f1, data_only=True, read_only=True)
     wb2 = openpyxl.load_workbook(f2, data_only=True, read_only=True)
@@ -1085,6 +1603,97 @@ def build_support():
         "trend": trend, "heat": heat,
         "perAgency": per_agency, "perAgencyHist": per_agency_hist,
         "categories": categories, "conclusions": conclusions,
+        "windowShift": build_support_window_shift(per_agency, baseline),
+    }
+
+
+# Имя агентства в выгрузке обращений → имя в «Общем отчёте». Обращения приходят из HDE
+# со своими написаниями, отчёт — из биллинга; общего ключа нет.
+SUP_TO_REPORT = {
+    "IBC": 'ООО "Интернейшнл Бизнес Центр" (IBC Corporate Travel)',
+    "АТН": "ATH группа компаний", "Глобал Эир": "GLOBAL AIR", "ГСП": "ГСП-Сервис",
+    "ИНТЕРСИТИ СЕРВИС": 'KMP Group (ООО "ИНТЕРСИТИ СЕРВИС")',
+    "Корпорейт Тревел": 'ООО "КОРПОРЭЙТ ТРЭВЕЛ"', "Аэроглобус": "АЭРОГЛОБУС БИЗНЕС ТРЭВЕЛ",
+    "Казтур": "KazTour Corporate", "Альбатрос": 'ООО "СБ "Альбатрос"',
+    "Космос Тревел": "Космос Тревел", "Симпл Флайт": "Симпл Флайт",
+    "Аэротон": "Аэротон Корпорейт Трэвел", "РейнаТур": "Рейна-Тур",
+    "Атланта": "Атланта БТК", "Интоп": "Ин.Топ Консалтинг", "Иналекс": "Иналекс",
+}
+
+
+def build_support_window_shift(per_agency, baseline):
+    """Проверка знаменателя Support-ratio и его эластичность к окну.
+
+    Зачем. Ratio = обращения / операции. Числитель обновляется только новой выгрузкой
+    обращений (HDE), знаменатель — каждым «Общим отчётом». Между обновлениями окна
+    расходятся, и число на странице начинает двигаться по причинам, не связанным с
+    саппортом. Здесь мы (1) сверяем зашитый знаменатель с фактом из отчёта за ТО ЖЕ
+    окно — это ловит ошибку в данных; (2) считаем, каким стал бы ratio на актуальном
+    L6M-окне при том же числителе — это НЕ новый ratio, а мера того, насколько число
+    держится на знаменателе.
+
+    Возвращает None, если «Общий отчёт …xlsx» не найден."""
+    src = find_work_xlsx("общий отчет")
+    if not src or not per_agency:
+        return None
+    wb = openpyxl.load_workbook(src, data_only=True, read_only=True)
+    ws = wb["All. Помесячно"]
+    rows = list(ws.iter_rows(min_row=19, max_row=72, values_only=True))
+    hdr = rows[0]
+    idx = {str(h): i for i, h in enumerate(hdr) if h and re.match(r"^\d{6}$", str(h))}
+    months = sorted(idx)
+    if len(months) < 8:
+        return None
+
+    ops = {}
+    for r in rows[1:]:
+        nm = clean(r[1])
+        if not nm:
+            continue
+        for m, i in idx.items():
+            v = r[i] if i < len(r) else None
+            if v:
+                ops.setdefault(str(nm), {})[m] = ops.get(str(nm), {}).get(m, 0) + v
+
+    # Окно числителя зашито в источнике обращений (дек-25 … май-26); окно «сейчас» —
+    # последние 6 месяцев отчёта. Если источник обращений обновят, правится здесь.
+    w_calls = ["202512", "202601", "202602", "202603", "202604", "202605"]
+    w_now = months[-6:]
+    if not set(w_calls) <= set(months):
+        return None
+
+    def total(nm, w):
+        d = ops.get(nm, {})
+        return sum(d.get(m, 0) for m in w)
+
+    out, sum_stored, sum_fact, sum_now, sum_calls = [], 0, 0, 0, 0
+    for a in per_agency:
+        rep = SUP_TO_REPORT.get(a["name"])
+        if not rep or rep not in ops:
+            continue
+        fact, now, calls = total(rep, w_calls), total(rep, w_now), a.get("callsL6M") or 0
+        stored = a.get("ops") or 0
+        sum_stored += stored; sum_fact += fact; sum_now += now; sum_calls += calls
+        out.append({
+            "name": a["name"], "opsStored": stored, "opsFact": fact, "opsNow": now,
+            "ratio": a.get("ratio"),
+            "ratioNow": round(calls / now * 1000, 1) if now else None,
+            "opsDeltaPct": round(now / fact - 1, 4) if fact else None,
+            "smallBaseNow": now < 1000,
+        })
+    for r in out:
+        r["ratioDelta"] = (round(r["ratioNow"] - r["ratio"], 1)
+                           if r["ratioNow"] is not None and r["ratio"] is not None else None)
+    out.sort(key=lambda r: -abs(r["ratioDelta"] or 0))
+
+    return {
+        "callsWindow": "дек'25 – май'26", "opsWindow": f"{w_now[0]} – {w_now[-1]}",
+        "opsWindowRu": f"{w_now[0][4:6]}.{w_now[0][:4]} – {w_now[-1][4:6]}.{w_now[-1][:4]}",
+        "checkStored": sum_stored, "checkFact": sum_fact,
+        "checkOk": abs(sum_stored - sum_fact) <= max(10, 0.001 * (sum_fact or 1)),
+        "baselineRatio": (baseline or {}).get("ratio"),
+        "baselineRatioNow": round(sum_calls / sum_now * 1000, 1) if sum_now else None,
+        "rows": out,
     }
 
 
@@ -1515,6 +2124,75 @@ def build_search(items, research, tree):
     return idx
 
 
+# Данные сайта делятся на два класса, и «дата данных» у них берётся по-разному.
+# GENERATED пересобираются из .xlsx этим скриптом — их дата = дата сборки.
+# Остальные json авторские: правятся руками и `make build` их не трогает,
+# поэтому они тихо стареют — их дата = mtime файла.
+# etapy.json, planned.json, levels.json сюда НЕ входят: main() их только
+# читает (линтер связей), но не пересобирает — де-факто они авторские.
+GENERATED_JSON = {
+    "backlog.json", "initiatives.json", "tree.json", "agencies.json",
+    "support.json", "research.json", "sootv.json", "legend.json",
+    "home.json", "search.json",
+}
+
+# Чем питается каждый генерируемый json — чтобы в манифесте была видна не
+# только дата, но и происхождение числа.
+JSON_SOURCE_HINT = {
+    "backlog.json": "единый бэклог",
+    "tree.json": "единый бэклог",
+    "legend.json": "единый бэклог, вкладка «Легенда»",
+    "search.json": "производный индекс (бэклог + реестр + дерево)",
+    "home.json": "производная сводка (бэклог + агентства + реестр)",
+    "initiatives.json": "сокращённый бэклог (инициативы)",
+    "agencies.json": "«Свод по агентствам …xlsx» + «Общий отчёт …xlsx»",
+    "support.json": "«Обращения агентств — единый вывод …xlsx»",
+    "research.json": "«Реестр исследований …xlsx»",
+    "sootv.json": "«Соответствие исследований и логики ценности.xlsx»",
+}
+
+STALE_AFTER_DAYS = 30  # порог «данные устарели» для плашки в футере
+
+
+def _manifest_source(name, sources):
+    """Человекочитаемый источник json: где можно — с именем файла-донора."""
+    hint = JSON_SOURCE_HINT.get(name)
+    if hint is None:
+        return "пересобирается `make build`"
+    return sources.get(hint, hint)
+
+
+def build_manifest(sources):
+    """data/manifest.json — дата и происхождение каждого файла данных.
+
+    Заменяет ручную константу SITE_UPDATED в app.js: одна дата на весь сайт,
+    выставленная руками, устаревала незаметно и подписывала июньскими
+    данными июльские страницы (и наоборот).
+    """
+    from datetime import datetime, timezone
+
+    def iso(ts):
+        return datetime.fromtimestamp(ts, timezone.utc).astimezone().isoformat(timespec="seconds")
+
+    files = {}
+    for p in sorted(DATA_DIR.glob("*.json")):
+        if p.name == "manifest.json":
+            continue
+        generated = p.name in GENERATED_JSON
+        files[p.name] = {
+            "kind": "generated" if generated else "authored",
+            "date": iso(p.stat().st_mtime),
+            "source": _manifest_source(p.name, sources) if generated
+                      else "авторский файл, правится вручную",
+        }
+    return {
+        "builtAt": build_meta()["builtAt"],
+        "staleAfterDays": STALE_AFTER_DAYS,
+        "sources": sources,
+        "files": files,
+    }
+
+
 def _load_data_json(name, default):
     p = DATA_DIR / name
     try:
@@ -1524,12 +2202,14 @@ def _load_data_json(name, default):
 
 
 def main():
+    print(f"Скоринг: {SCORING_PATH.name} (сверен с каноном {SCORING.get('synced')})")
     items, errors = build_backlog()
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     out = DATA_DIR / "backlog.json"
     payload = {
         "source": find_source().name,
         "count": len(items),
+        "meta": build_meta(),
         "columns": list(COLUMNS.values()),
         "items": items,
     }
@@ -1550,6 +2230,7 @@ def main():
     tree_out = DATA_DIR / "tree.json"
     tree_out.write_text(json.dumps({
         "source": find_source().name,
+        "meta": build_meta(),
         "count": len(items),
         "themes": len(tree),
         "tree": tree,
@@ -1620,14 +2301,81 @@ def main():
     # Единый термин по всем собранным json (устойчиво к пересборке).
     normalize_terms()
 
+    # manifest.json — последним: normalize_terms() трогает mtime файлов.
+    sources = {"единый бэклог": find_source().name}
+    init_src = find_initiatives_source()
+    if init_src:
+        sources["сокращённый бэклог (инициативы)"] = init_src.name
+    manifest = build_manifest(sources)
+    (DATA_DIR / "manifest.json").write_text(
+        json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+    authored = [n for n, f in manifest["files"].items() if f["kind"] == "authored"]
+    print(f"Манифест: {len(manifest['files'])} файлов данных "
+          f"({len(authored)} авторских) → data/manifest.json")
+
     if errors:
         print(f"\n⚠ Предупреждения валидации ({len(errors)}):")
-        for msg in errors[:30]:
-            print("  -", msg)
-        if len(errors) > 30:
-            print(f"  … ещё {len(errors) - 30}")
+        # Сводка по классам — чтобы из лога было видно, ЧТО чинить,
+        # а не только сколько строк не нравится валидатору.
+        classes = (
+            ("обрезана при записи", "обрезанная ячейка — текст потерян в источнике"),
+            ("связь §4 не сходится", "этап ↔ подцель не сходятся (§4)"),
+            ("без кода H1.x", "гипотеза без кода (§5.3)"),
+            ("составное значение", "составной этап (§5.1 требует одного)"),
+            ("Концентрация", "Концентрация вне словаря §5.4"),
+            ("Подцель", "Подцель вне словаря §4"),
+            ("Механизм", "Механизм вне словаря §5.2"),
+            ("Блок", "Блок вне словаря"),
+            ("Этап", "Этап вне словаря §5.1"),
+            ("пустая подцель", "пустая подцель"),
+            ("пустая гипотеза", "пустая гипотеза"),
+            ("нет в scoring.yml", "неизвестный H-код"),
+        )
+        tally = {}
+        for e in errors:
+            for pat, name in classes:
+                if pat in e:
+                    tally[name] = tally.get(name, 0) + 1
+                    break
+            else:
+                tally["прочее"] = tally.get("прочее", 0) + 1
+        for name, n in sorted(tally.items(), key=lambda kv: -kv[1]):
+            print(f"  {n:>4}  {name}")
+        report = DATA_DIR.parent / "build" / "validation-errors.txt"
+        report.write_text(
+            "# Ошибки валидации бэклога и инициатив.\n"
+            "# Пересобирается каждым build.py. Порядок — как в источнике.\n\n"
+            + "\n".join(errors) + "\n", encoding="utf-8")
+        print(f"  полный список → site/build/{report.name}")
     else:
         print("Валидация: ошибок нет.")
+
+    if GAP_NOTES:
+        by_gap = {}
+        for msg in GAP_NOTES:
+            key = msg.split(": ", 1)[1]
+            by_gap[key] = by_gap.get(key, 0) + 1
+        print(f"\n· Осознанные gap'ы гипотез ({len(GAP_NOTES)} строк) — "
+              f"код не назначен намеренно, решение зафиксировано в scoring.yml:")
+        for key, n in sorted(by_gap.items(), key=lambda kv: -kv[1]):
+            print(f"  · {n:>3}  {key}")
+
+    # Написания вне канона — отдельным блоком: это не поломанные данные,
+    # а очередь на нормализацию. Полный список пишется в файл, чтобы его
+    # можно было отрабатывать построчно, а не выуживать из лога.
+    if STYLE_NOTES:
+        print(f"\n· Написания вне канона ({len(STYLE_NOTES)}) — данные читаются, "
+              f"но словарь §4/§5.1/§5.2/§5.4 записан не канонически:")
+        for msg in STYLE_NOTES[:10]:
+            print("  ·", msg)
+        if len(STYLE_NOTES) > 10:
+            print(f"  … ещё {len(STYLE_NOTES) - 10}")
+        report = DATA_DIR.parent / "build" / "normalize-queue.txt"
+        report.write_text(
+            "# Очередь нормализации. Пересобирается каждым build.py.\n"
+            "# Опознанные значения, записанные не по словарю канона.\n\n"
+            + "\n".join(STYLE_NOTES) + "\n", encoding="utf-8")
+        print(f"  полный список → site/build/{report.name}")
 
 
 if __name__ == "__main__":

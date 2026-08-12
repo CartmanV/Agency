@@ -403,6 +403,19 @@ footer.site-footer {
   font-family: var(--f-mono); font-size: 11.5px;
 }
 
+/* Свежесть данных в футере (data/manifest.json). Пометка «устарело» —
+   единственный акцентный цвет здесь: она должна ловить взгляд, когда
+   страница показывает старые числа. */
+.freshness {
+  border-bottom: 1px dotted currentColor;
+  cursor: help;
+}
+.freshness__stale {
+  color: var(--gold);   /* акцент темы; --attention оставлен под «критично» */
+  font-weight: 600;
+}
+
+
 /* ===================== D2 · атмосферный фон ===================== */
 body { position: relative; }
 body::before {
@@ -2406,6 +2419,9 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
 
 /* сигнал и строка базового уровня */
 .sup-sig { font-family: var(--f-mono); font-size: 12px; white-space: nowrap; }
+/* строка с ненадёжным знаменателем (<1000 транзакций) — приглушаем, но не прячем */
+.sup-row-noise td { opacity: .62; }
+.sup-row-noise .sup-sig { font-size: 10.5px; color: var(--cream-dim); }
 .sup-sig--base { font-size: 10.5px; color: var(--cream-dim); border: 1px dashed var(--line-soft);
   border-radius: 999px; padding: 1px 8px; }
 tr.sup-baseline td { border-top: 2px solid var(--line-soft); color: var(--cream);
@@ -2525,3 +2541,6 @@ tr.sup-row--mute .sup-load-bar { opacity: .4; }
   font-size: 13.5px; line-height: 1.55; color: var(--cream-soft); }
 .init-notes li { margin: 3px 0; }
 .init-notes b { color: var(--cream); font-weight: 600; }
+
+/* Ось денег к ABCDX (agencies.html): IBC вынесен из сравнения — приглушённая строка */
+.backlog tr.ag-row-muted td { opacity: .62; font-style: italic; }

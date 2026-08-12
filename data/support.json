@@ -1193,5 +1193,193 @@
       "fact": "Корп.Тревел 29,8 · Интерсити 27,4 · Аэроглобус 22,0 · Альбатрос 36,1. Эффективные: ГСП 3,1 · Глобал Эир 8,6. Пилот 2B — на дорогих, не на IBC.",
       "status": "Подтверждено"
     }
-  ]
+  ],
+  "windowShift": {
+    "callsWindow": "дек'25 – май'26",
+    "opsWindow": "202602 – 202607",
+    "opsWindowRu": "02.2026 – 07.2026",
+    "checkStored": 221000.0,
+    "checkFact": 220998,
+    "checkOk": true,
+    "baselineRatio": 13.6,
+    "baselineRatioNow": 12.8,
+    "rows": [
+      {
+        "name": "Иналекс",
+        "opsStored": 8.0,
+        "opsFact": 8,
+        "opsNow": 36,
+        "ratio": 375.0,
+        "ratioNow": 83.3,
+        "opsDeltaPct": 3.5,
+        "smallBaseNow": true,
+        "ratioDelta": -291.7
+      },
+      {
+        "name": "Аэротон",
+        "opsStored": 1053.0,
+        "opsFact": 1053,
+        "opsNow": 406,
+        "ratio": 106.4,
+        "ratioNow": 275.9,
+        "opsDeltaPct": -0.6144,
+        "smallBaseNow": true,
+        "ratioDelta": 169.5
+      },
+      {
+        "name": "Интоп",
+        "opsStored": 27.0,
+        "opsFact": 27,
+        "opsNow": 100,
+        "ratio": 148.1,
+        "ratioNow": 40.0,
+        "opsDeltaPct": 2.7037,
+        "smallBaseNow": true,
+        "ratioDelta": -108.1
+      },
+      {
+        "name": "РейнаТур",
+        "opsStored": 86.0,
+        "opsFact": 86,
+        "opsNow": 168,
+        "ratio": 58.1,
+        "ratioNow": 29.8,
+        "opsDeltaPct": 0.9535,
+        "smallBaseNow": true,
+        "ratioDelta": -28.3
+      },
+      {
+        "name": "Космос Тревел",
+        "opsStored": 1041.0,
+        "opsFact": 1041,
+        "opsNow": 1231,
+        "ratio": 98.9,
+        "ratioNow": 83.7,
+        "opsDeltaPct": 0.1825,
+        "smallBaseNow": false,
+        "ratioDelta": -15.2
+      },
+      {
+        "name": "Атланта",
+        "opsStored": 235.0,
+        "opsFact": 235,
+        "opsNow": 283,
+        "ratio": 72.3,
+        "ratioNow": 60.1,
+        "opsDeltaPct": 0.2043,
+        "smallBaseNow": true,
+        "ratioDelta": -12.2
+      },
+      {
+        "name": "ИНТЕРСИТИ СЕРВИС",
+        "opsStored": 3253.0,
+        "opsFact": 3253,
+        "opsNow": 4823,
+        "ratio": 27.4,
+        "ratioNow": 18.5,
+        "opsDeltaPct": 0.4826,
+        "smallBaseNow": false,
+        "ratioDelta": -8.9
+      },
+      {
+        "name": "Альбатрос",
+        "opsStored": 1496.0,
+        "opsFact": 1496,
+        "opsNow": 1742,
+        "ratio": 36.1,
+        "ratioNow": 31.0,
+        "opsDeltaPct": 0.1644,
+        "smallBaseNow": false,
+        "ratioDelta": -5.1
+      },
+      {
+        "name": "Корпорейт Тревел",
+        "opsStored": 5134.0,
+        "opsFact": 5134,
+        "opsNow": 5649,
+        "ratio": 29.8,
+        "ratioNow": 27.1,
+        "opsDeltaPct": 0.1003,
+        "smallBaseNow": false,
+        "ratioDelta": -2.7
+      },
+      {
+        "name": "АТН",
+        "opsStored": 30175.0,
+        "opsFact": 30175,
+        "opsNow": 33351,
+        "ratio": 15.5,
+        "ratioNow": 14.1,
+        "opsDeltaPct": 0.1053,
+        "smallBaseNow": false,
+        "ratioDelta": -1.4
+      },
+      {
+        "name": "Аэроглобус",
+        "opsStored": 7637.0,
+        "opsFact": 7637,
+        "opsNow": 7328,
+        "ratio": 22.0,
+        "ratioNow": 22.9,
+        "opsDeltaPct": -0.0405,
+        "smallBaseNow": false,
+        "ratioDelta": 0.9
+      },
+      {
+        "name": "ГСП",
+        "opsStored": 4809.0,
+        "opsFact": 4809,
+        "opsNow": 6370,
+        "ratio": 3.1,
+        "ratioNow": 2.4,
+        "opsDeltaPct": 0.3246,
+        "smallBaseNow": false,
+        "ratioDelta": -0.7
+      },
+      {
+        "name": "IBC",
+        "opsStored": 140570.0,
+        "opsFact": 140568,
+        "opsNow": 147836,
+        "ratio": 11.3,
+        "ratioNow": 10.7,
+        "opsDeltaPct": 0.0517,
+        "smallBaseNow": false,
+        "ratioDelta": -0.6
+      },
+      {
+        "name": "Симпл Флайт",
+        "opsStored": 824.0,
+        "opsFact": 824,
+        "opsNow": 1325,
+        "ratio": 1.2,
+        "ratioNow": 0.8,
+        "opsDeltaPct": 0.608,
+        "smallBaseNow": false,
+        "ratioDelta": -0.4
+      },
+      {
+        "name": "Глобал Эир",
+        "opsStored": 19096.0,
+        "opsFact": 19096,
+        "opsNow": 18428,
+        "ratio": 8.6,
+        "ratioNow": 8.9,
+        "opsDeltaPct": -0.035,
+        "smallBaseNow": false,
+        "ratioDelta": 0.3
+      },
+      {
+        "name": "Казтур",
+        "opsStored": 5556.0,
+        "opsFact": 5556,
+        "opsNow": 5485,
+        "ratio": 11.9,
+        "ratioNow": 12.0,
+        "opsDeltaPct": -0.0128,
+        "smallBaseNow": false,
+        "ratioDelta": 0.1
+      }
+    ]
+  }
 }
