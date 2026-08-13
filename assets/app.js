@@ -29,7 +29,7 @@ const NAV = [
   { href: "sootvetstvie.html", label: "Доказательная база", short: "Доказательства", group: "Данные" },
   { href: "planned.html", label: "План исследований", short: "План ресёрча", group: "Данные" },
   { href: "agencies.html", label: "Агентства", group: "Данные" },
-  { href: "support.html",  label: "Нагрузка на саппорт", short: "Саппорт", group: "Данные" },
+  { href: "support.html",  label: "Экономика поддержки", short: "Поддержка", group: "Данные" },
   { href: "rynok.html",    label: "Рынок", group: "Данные" },
   { href: "metrics.html",  label: "Метрики", group: "Данные" },
   { href: "legend.html",   label: "Легенды", group: "Данные" },
@@ -1226,6 +1226,22 @@ async function mountLevels() {
 }
 
 // ===================== Агентства. Цифры (agencies.html) =====================
+
+// Канон русских названий сегментов. Жил внутри mountAgencies, поднят наверх:
+// те же сегменты выводит «Экономика поддержки», а в источниках они записаны
+// по-английски и по-разному. Две копии карты разъехались бы молча.
+const SEG_RU = {
+  "Strategist (ядро)": "Опорные (ядро)",
+  "Growth leader": "Лидеры роста",
+  "Stable": "Устойчивые",
+  "Riser": "Растущие",
+  "Riser (новичок)": "Растущие (новичок)",
+  "Stagnating/Declining": "Замедляющиеся/Уходящие",
+  "Declining": "Уходящие",
+  "Declining (уходит)": "Уходящие",
+};
+const segRu = (v) => SEG_RU[v] || v;
+
 const RU_NUM = new Intl.NumberFormat("ru-RU");
 function fmtNum(n) { return n == null ? "—" : RU_NUM.format(Math.round(n)); }
 function fmtPct(x, digits = 1) { return x == null ? "—" : (x * 100).toFixed(digits) + "%"; }
@@ -1520,17 +1536,6 @@ async function mountAgencies() {
   }
 
   // Отображение сегментов партнёрской базы по-русски (данные остаются как в источнике).
-  const SEG_RU = {
-    "Strategist (ядро)": "Опорные (ядро)",
-    "Growth leader": "Лидеры роста",
-    "Stable": "Устойчивые",
-    "Riser": "Растущие",
-    "Riser (новичок)": "Растущие (новичок)",
-    "Stagnating/Declining": "Замедляющиеся/Уходящие",
-    "Declining": "Уходящие",
-  };
-  const segRu = (v) => SEG_RU[v] || v;
-
   if (tblHost) {
     const segs = [...new Set(ags.map((a) => a.segment).filter(Boolean))];
     const bands = [...new Set(ags.map((a) => a.band).filter(Boolean))];
@@ -1710,487 +1715,1004 @@ async function mountAgencies() {
   }
 }
 
-// ===================== Нагрузка на саппорт (support.html) =====================
-// Ось «частота боли» (Impact): Support-ratio = обращений на 1000 транзакций. Числа — из
-// support.json (build_support), курирование и оговорки — из support_extra.json (вручную).
+// ===================== Экономика поддержки (support.html) ===================
+// Страница отвечает на «сколько стоит поддержка и где предел у людей».
+// Данные: support_econ.json (считанное) + support_econ_extra.json (суждения PM).
+// Чисел в этом файле нет — всё приходит из json.
 
-async function mountSupport() {
-  const kpiHost = document.querySelector("[data-sup-kpi]");
-  if (!kpiHost) return;                       // не на этой странице
-  let d;
-  try { d = await loadJSON("data/support.json"); }
-  catch (e) { kpiHost.innerHTML = `<div class="error">${esc(e.message)}</div>`; return; }
-  let ex = {};
-  try { ex = await loadJSON("data/support_extra.json"); } catch (_) { /* авторский слой необязателен */ }
+const SE_RU_MON = ["янв", "фев", "мар", "апр", "май", "июн", "июл", "авг", "сен", "окт", "ноя", "дек"];
 
-  const pa = d.perAgency || [], bl = d.baseline || {}, tr = d.trend || {};
-  const r1 = (x) => (x == null ? "—" : Number(x).toLocaleString("ru-RU", { minimumFractionDigits: 1, maximumFractionDigits: 1 }));
-  // Тренд ratio: рост (+) — это плохо (дороже), снижение (−) — хорошо.
-  const signDelta = (x) => (x == null ? "—" : `<span class="${x > 0 ? "sup-up" : x < 0 ? "sup-down" : ""}">${x > 0 ? "+" : ""}${Number(x).toFixed(2)}</span>`);
-  const signalChip = (s) => {
-    if (!s) return "—";
-    const t = String(s).toLowerCase();
-    const cls = (t.includes("🔴") || t.includes("дорог")) ? "sup-sig--bad"
-      : (t.includes("🟢") || t.includes("эффектив")) ? "sup-sig--good" : "sup-sig--mid";
-    return `<span class="sup-sig ${cls}">${esc(s)}</span>`;
-  };
-  // Статус вывода/гипотезы → словарь evChip (✓ ~ ⚠ ∅ ?).
-  const stStatus = (s) => {
-    const t = String(s || "").toLowerCase();
-    if (t.startsWith("подтв")) return "подтверждено";
-    if (t.startsWith("открыт")) return "в плане";
-    if (t.startsWith("нет дан")) return "не проверялась";
-    return "гипотеза";
-  };
-  // Сегменты — единый русский канон (см. SEG_RU в mountAgencies / память segment-names-canon).
-  const SEG_RU = {
-    "Strategist": "Опорные (ядро)", "Strategist (ядро)": "Опорные (ядро)",
-    "Growth leader": "Лидеры роста", "Growth": "Лидеры роста",
-    "Stable": "Устойчивые", "Stable/Growth": "Устойчивые / рост",
-    "Riser": "Растущие", "Riser (новичок)": "Растущие (новичок)", "Riser (KMP)": "Растущие (KMP)",
-    "Stagnating/Declining": "Замедляющиеся/Уходящие", "Declining": "Уходящие",
-    "новичок": "Новичок", "ОТТОК": "Отток", "хвост": "Хвост",
-  };
-  const segRu = (v) => {
-    if (!v) return "—";
-    if (SEG_RU[v]) return SEG_RU[v];
-    return String(v).split("/").map((p) => SEG_RU[p.trim()] || p.trim()).join(" / ");
-  };
+// Свой форматтер процентов: глобальный fmtPct объявлен в файле дважды, и
+// побеждает версия, округляющая до целых. Здесь нужен один знак — «6,4%»
+// вместо «6%», иначе главный вывод страницы теряет точность.
+function sePct(x, d = 1) {
+  return x == null ? "—" : (x * 100).toFixed(d).replace(".", ",") + "%";
+}
+function seNum(n, d = 0) {
+  if (n == null) return "—";
+  return n.toLocaleString("ru-RU", { minimumFractionDigits: d, maximumFractionDigits: d }).replace(/ /g, " ");
+}
+// Деньги крупно: 4317127 → «4,32 млн ₽», 343616 → «344 тыс ₽», 676 → «676 ₽».
+function seMoney(n, long = false) {
+  if (n == null) return "—";
+  if (long) return seNum(n) + " ₽";
+  const a = Math.abs(n);
+  if (a >= 1e6) return seNum(n / 1e6, 2) + " млн ₽";
+  if (a >= 1e4) return seNum(n / 1e3) + " тыс ₽";
+  return seNum(n) + " ₽";
+}
+// «2025-07» → «июл·25»
+function seMon(key) {
+  if (!key) return "";
+  const [y, m] = String(key).split("-");
+  return (SE_RU_MON[(+m) - 1] || m) + "·" + String(y).slice(2);
+}
+function seMonLong(key) {
+  if (!key) return "";
+  const [y, m] = String(key).split("-");
+  return (SE_RU_MON[(+m) - 1] || m) + " " + y;
+}
 
-  // Доля в процентах (0.296 → «30%»).
-  const pct = (x) => (x == null ? "—" : `${Math.round(Number(x) * 100)}%`);
-  // Класс закрытия темы → чип (Ракета-fixable / поставщик-bound / частично).
-  const TCLS = ex.themeClass || {};
-  const clsChip = (cls) => {
-    if (!cls) return "—";
-    const t = String(cls).toLowerCase();
-    const k = t.includes("fixable") ? "fixable" : t.includes("bound") ? "bound" : "partial";
-    const m = TCLS[k] || {};
-    return `<span class="sup-cls sup-cls--${m.cls || "mid"}">${esc(m.label || cls)}</span>`;
-  };
+const SE_METRICS = {
+  calls: { label: "Обращения", axis: "обращений", fmt: (v) => seNum(v) },
+  cost: { label: "Стоимость, ₽", axis: "₽ в месяц", fmt: (v) => seMoney(v) },
+  pct: { label: "% выручки", axis: "% выручки", fmt: (v) => sePct(v) },
+  load: { label: "Загрузка на специалиста", axis: "обращений на человека", fmt: (v) => seNum(v) },
+};
 
-  // --- 0. KPI-плашки + главный вывод -----------------------------------
-  // «Самый дорогой» — максимум среди стабильных (без малой базы и без оттока).
-  const stable = pa.filter((a) => !a.smallBase && !a.outflow);
-  const dearest = stable.reduce((a, b) => ((b.ratio || 0) > (a.ratio || 0) ? b : a), stable[0] || {});
-  const sup = d.supplier || {};
-  const slopeTxt = tr.slopeNum != null ? `+${Number(tr.slopeNum).toFixed(2)}` : (tr.slopeText || "растёт");
-  const kx = ex.kpi || {};
-  const xt = ex.external || {};
-  // Внешний рынок без IBC (своя компания холдинга, ~⅔ объёма тянет среднее вниз).
-  const ibc = pa.find((a) => a.name === "IBC") || {};
-  const extOps = (bl.ops || 0) - (ibc.ops || 0);
-  const extRatio = extOps ? ((bl.calls || 0) - (ibc.callsL6M || 0)) / extOps * 1000 : null;
-  const ibcShare = bl.ops ? (ibc.ops || 0) / bl.ops : null;
-  const extStat = extRatio == null ? "" :
-    `<div class="ag-stat ag-stat--bad"><div class="v">${r1(extRatio)}</div><div class="l">${esc(xt.label || "внешний рынок")}</div><div class="s">${esc(xt.subExt || "без IBC")}</div></div>`;
-  kpiHost.innerHTML = `
-    <div class="ag-strip">
-      <div class="ag-stat"><div class="v">${r1(bl.ratio)}</div><div class="l">средний уровень</div><div class="s">на 1000 транзакций (с IBC)</div></div>
-      ${extStat}
-      <div class="ag-stat ag-stat--bad"><div class="v">${pct(sup.share)}</div><div class="l">${esc(kx.supplierLabel || "уходит поставщику")}</div><div class="s">${esc(kx.supplierSub || "")}</div></div>
-      <div class="ag-stat"><div class="v">${r1(dearest.ratio)}</div><div class="l">самый дорогой</div><div class="s">${esc(dearest.name || "")} · ${esc(dearest.pain || "")}</div></div>
-      <div class="ag-stat"><div class="v">${esc(slopeTxt)}</div><div class="l">тренд за месяц</div><div class="s">нагрузка медленно растёт</div></div>
-    </div>
-    ${xt.whatBase ? `<p class="ev-srcline">${esc(xt.whatBase)}</p>` : ""}
-    ${xt.whatExt ? `<p class="ev-srcline">${esc(xt.whatExt)}</p>` : ""}
-    ${xt.footBody ? `<details class="sup-more"><summary>${esc(xt.footHead || "Почему IBC считаем отдельно")}</summary><p>${esc(xt.footBody)}</p></details>` : ""}
-    <article class="accent-card is-bet2 sup-lead">
-      <div class="k">Главный вывод</div>
-      <h3>Нагрузка сама не уменьшается — и часть её вне нашего контроля</h3>
-      <p>${esc(ex.leadPlain || tr.conclusion || "")}</p>
-      <div class="ev-chiprow"><span class="ev-chip ev-ok" aria-label="подтверждено">✓ подтверждено</span></div>
-    </article>`;
-
-  // --- 2. Ключевые выводы ----------------------------------------------
-  const conclHost = document.querySelector("[data-sup-concl]");
-  if (conclHost) {
-    const plainMap = ex.conclusionsPlain || {};
-    const hide = ex.hideConclusions || [];
-    // Вывод = t (жирный итог) + s (строка пояснения). Поддержка легаси-строки и c.text.
-    const partsOf = (c) => {
-      const p = plainMap[String(c.n)];
-      if (p && typeof p === "object") return { t: p.t || "", s: p.s || "" };
-      if (c.t || c.s) return { t: c.t || "", s: c.s || "" };
-      const str = (typeof p === "string" ? p : null) || c.text || "";
-      return { t: str, s: "" };
-    };
-    // Собранные выводы (из xlsx) + авторские (extraConclusions: PM-выводы, которых нет в источнике сборки).
-    const cons = (d.conclusions || []).filter((c) => !hide.includes(c.n)).concat(ex.extraConclusions || []);
-    const cardOf = (c) => {
-      const ev = evChip(stStatus(c.status));
-      const { t, s } = partsOf(c);
-      return `<article class="accent-card is-nsm sup-conclcard">
-        <h3>${esc(t)}</h3>
-        ${s ? `<p class="muted">${esc(s)}</p>` : ""}
-        <div class="ev-chiprow"><span class="ev-chip ${ev.cls} ev-chip--mini" aria-label="${ev.label}">${ev.sign} ${esc(c.status || ev.label)}</span></div>
-      </article>`;
-    };
-    conclHost.innerHTML = `<div class="accent-grid accent-grid--sm">${cons.map(cardOf).join("")}</div>`;
+async function mountSupportEcon() {
+  const headHost = document.querySelector("[data-se-head]");
+  if (!headHost) return;
+  headHost.innerHTML = `<div class="loading">Загрузка…</div>`;
+  let D, X;
+  try {
+    [D, X] = await Promise.all([
+      loadJSON("data/support_econ.json"),
+      loadJSON("data/support_econ_extra.json"),
+    ]);
+  } catch (e) {
+    headHost.innerHTML = `<div class="error">${esc(e.message)}</div>`;
+    return;
   }
 
-  // --- 3. Support-ratio по агентствам (одна таблица, с динамикой) ------
-  const tblHost = document.querySelector("[data-sup-table]");
-  if (tblHost) {
-    const m26 = d.months2026 || 5.79;
-    // Динамика нагрузки: обращений в месяц 2025 → 2026 (новая атрибуция, 2026 — неполный год).
-    const dynCell = (a) => {
-      if (a.y2025 == null && a.y2026 == null) return `<td class="muted">—</td>`;
-      const r25 = (a.y2025 || 0) / 12, r26 = (a.y2026 || 0) / m26;
-      const tip = `2025: ${Math.round(r25)}/мес → 2026: ${Math.round(r26)}/мес`;
-      let arr = "→", cls = "sup-dyn--flat", word = "ровно";
-      if (r25 < 0.5 && r26 > 0) { arr = "▲"; cls = "sup-dyn--up"; word = "новое"; }
-      else if (r26 > r25 * 1.12) { arr = "▲"; cls = "sup-dyn--up"; word = "растёт"; }
-      else if (r26 < r25 * 0.88) { arr = "▼"; cls = "sup-dyn--down"; word = "падает"; }
-      return `<td class="num"><span class="sup-dyn ${cls}" title="${tip}">${arr} ${word}</span></td>`;
+  const mKeys = D.months.map((m) => m.m);
+  const FOTS = D.fotScenarios.map((s) => s.fot);
+
+  // --- состояние страницы живёт в адресе -------------------------------
+  // Чтобы ссылку на конкретный разрез можно было отправить в чат. localStorage
+  // для этого не годится: он не уезжает вместе со ссылкой.
+  function readState() {
+    const p = new URLSearchParams(location.search);
+    const fot = Number(p.get("fot"));
+    const n = Number(p.get("n"));
+    return {
+      base: p.get("base") === "ex" ? "ex" : "all",
+      fot: FOTS.includes(fot) ? fot : D.meta.fotBase,
+      metric: SE_METRICS[p.get("m")] ? p.get("m") : "cost",
+      ag: p.get("ag") || null,
+      mm: mKeys.includes(p.get("mm")) ? p.get("mm") : null,
+      n: Number.isFinite(n) && n >= 0 && n <= 20 ? n : 20,
+      heat: p.get("heat") === "cost" ? "cost" : "ratio",
     };
-    // Уровень обслуживания из сигнала — для группировки строк.
-    const levelKey = (sig) => {
-      const t = String(sig || "").toLowerCase();
-      if (t.includes("отток") || t.includes("мал")) return "noise";
-      if (t.includes("эффект") || t.includes("🟢")) return "eff";
-      if (t.includes("дорог") || t.includes("🔴")) return "dear";
-      return "norm";
+  }
+  const state = readState();
+
+  function writeState() {
+    const p = new URLSearchParams();
+    if (state.base !== "all") p.set("base", state.base);
+    if (state.fot !== D.meta.fotBase) p.set("fot", state.fot);
+    if (state.metric !== "cost") p.set("m", state.metric);
+    if (state.ag) p.set("ag", state.ag);
+    if (state.mm) p.set("mm", state.mm);
+    if (state.n !== 20) p.set("n", state.n);
+    if (state.heat !== "ratio") p.set("heat", state.heat);
+    const q = p.toString();
+    history.replaceState(null, "", location.pathname + (q ? "?" + q : "") + location.hash);
+  }
+
+  // --- пересчёт под выбранную зарплату и базу ---------------------------
+  // Стоимость обращения прямо пропорциональна зарплате (число обращений от неё
+  // не зависит), поэтому все денежные величины масштабируются одним множителем.
+  // Проверено на сценариях из источника: 4 317 127 × 118 300/91 000 = 5 612 265.
+  // Единственное, что так не считается, — убыток: это сумма превышений по
+  // месяцам, а max(0, …) не линеен. Его пересчитываем по рядам.
+  function derive() {
+    const k = state.fot / D.meta.fotBase;
+    const ex = state.base === "ex";
+    const staff = D.meta.staff;
+
+    const months = D.months.map((m) => ({
+      m: m.m,
+      calls: ex ? m.callsExt : m.calls,
+      ops: ex ? m.opsExt : m.ops,
+      revenue: ex ? m.revenueExt : m.revenue,
+      ratio: ex ? m.ratioExt : m.ratio,
+      supportCost: (ex ? m.supportCostExt : m.supportCost) * k,
+      pctRevenue: (ex ? m.pctRevenueExt : m.pctRevenue) * k,
+      ticketCost: m.ticketCost * k,
+      capacityTickets: m.capacityTickets,
+      perSpecialist: m.perSpecialist,
+      callsIbc: m.callsIbc,
+      callsExt: m.callsExt,
+    }));
+
+    const list = D.agencies.filter((a) => !ex || a.name !== "IBC");
+    const agencies = list.map((a) => ({
+      ...a,
+      supportCost: a.supportCost * k,
+      pctRevenue: a.pctRevenue * k,
+      marginBeforeCost: a.revenue - a.supportCost * k,
+      series: {
+        ...a.series,
+        supportCost: (a.series.supportCost || []).map((v) => (v == null ? null : v * k)),
+        pctRevenue: (a.series.pctRevenue || []).map((v) => (v == null ? null : v * k)),
+      },
+    }));
+
+    let loss = 0;
+    const lossByMonth = mKeys.map((mk, i) => {
+      let s = 0;
+      agencies.forEach((a) => {
+        const c = (a.series.supportCost || [])[i] || 0;
+        const r = (a.series.revenue || [])[i] || 0;
+        if (c > r) s += c - r;
+      });
+      loss += s;
+      return { m: mk, loss: s };
+    });
+
+    const sum = (f) => agencies.reduce((t, a) => t + (f(a) || 0), 0);
+    const revenue = sum((a) => a.revenue);
+    const supportCost = sum((a) => a.supportCost);
+    const calls = sum((a) => a.calls);
+    const ops = sum((a) => a.ops);
+    const scen = D.fotScenarios.find((s) => s.fot === state.fot);
+
+    return {
+      k, ex, staff, months, agencies, lossByMonth,
+      totals: {
+        calls, ops, revenue, supportCost,
+        pctRevenue: revenue ? supportCost / revenue : null,
+        ratio: ops ? (calls / ops) * 1000 : null,
+        ticketCostAvg: D.totals.ticketCostAvg * k,
+        perSpecialistLast: D.capacity[D.capacity.length - 1]?.perSpecialist,
+        lossTotal: loss,
+        lossPctRevenue: revenue ? loss / revenue : null,
+        lossWorst: lossByMonth.reduce((a, b) => (b.loss > a.loss ? b : a), lossByMonth[0]),
+      },
+      scenario: scen,
     };
-    // Ячейка нагрузки: мини-полоска (секвенциальная шкала данных) + число. Шкала ограничена 40,
-    // выше — полная полоска (выбросы вроде оттока не «съедают» масштаб остальных).
-    const LOAD_CAP = 40;
-    const loadCell = (a) => {
-      const w = Math.max(2, Math.min((a.ratio || 0) / LOAD_CAP, 1) * 100);
-      return `<td class="sup-load"><span class="sup-load-bar" style="width:${w.toFixed(0)}%"></span><span class="sup-load-val">${r1(a.ratio)}</span></td>`;
+  }
+
+  // --- общие кусочки разметки -------------------------------------------
+  const srcHint = (text) => `<p class="se-foot">${text} <a href="#znamenatel">Что стоит за числами →</a></p>`;
+
+  // ---------------------------------------------------------------- шапка
+  const P = X.page || {};
+  headHost.innerHTML = `
+    <p class="eyebrow">${esc(P.eyebrow || "")}</p>
+    <h1>${esc(P.h1 || "Экономика поддержки")}</h1>
+    <p class="lede">${esc(P.lede || "")}</p>
+    ${P.srcline ? `<p class="ev-srcline">${P.srcline}</p>` : ""}`;
+
+  // ------------------------------------------------------------ B0 сводка
+  function renderSummary(M) {
+    const host = document.querySelector("[data-se-summary]");
+    if (!host) return;
+    const b0 = X.b0 || {};
+    const nc = D.newcomer || {};
+    const plus = nc.callsPerNewcomer && nc.baseCallsPerMonth
+      ? (nc.callsPerNewcomer * 20) / nc.baseCallsPerMonth : null;
+
+    const VAL = {
+      supportCost: () => seMoney(M.totals.supportCost),
+      pctRevenue: () => sePct(M.totals.pctRevenue),
+      perSpecialist: () => seNum(M.totals.perSpecialistLast),
+      ratio: () => seNum(M.totals.ratio, 1),
+      plus20: () => (plus == null ? "—" : "+" + Math.round(plus * 100) + "%"),
     };
-    const rowOf = (a, mute) => `
-      <tr${mute ? ' class="sup-row--mute"' : ""}>
-        <td class="title">${esc(a.name)}</td>
-        <td class="muted">${esc(segRu(a.segment))}</td>
-        <td class="num">${fmtNum(a.callsL6M)}</td>
-        ${loadCell(a)}
-        ${dynCell(a)}
-        <td class="num muted">${pct(a.supShare)}</td>
-        <td class="muted">${esc(a.pain || "—")}</td>
-      </tr>`;
-    const COLS = 7;
-    const GROUPS = [
-      ["dear", "Дорогие · обслуживание выше среднего"],
-      ["norm", "Около среднего"],
-      ["eff", "Эффективные · ниже среднего"],
-      ["noise", "Малая база и отток · показатель нестабилен"],
-    ];
-    const sorted = pa.slice().sort((a, b) => (b.ratio || 0) - (a.ratio || 0));
-    let body = "";
-    for (const [key, label] of GROUPS) {
-      const grp = sorted.filter((a) => levelKey(a.signal) === key);
-      if (!grp.length) continue;
-      body += `<tr class="sup-grouphdr"><td colspan="${COLS}">${label}</td></tr>`;
-      body += grp.map((a) => rowOf(a, key === "noise")).join("");
+    const kpi = (b0.kpi || []).map((k) => {
+      const cls = k.accent === "alert" ? " se-stat--alert" : k.accent === "gold" ? " ag-stat--goal" : "";
+      // Загрузка и очередь — величины на всю службу: специалисты общие, и от
+      // исключения IBC из денежного среза очередь не становится короче.
+      // Без этой оговорки «Без IBC» читается как «а вот тут полегче».
+      const shared = state.base === "ex" && (k.key === "perSpecialist" || k.key === "plus20");
+      return `<div class="ag-stat${cls}">
+        <div class="v">${esc((VAL[k.key] || (() => "—"))())}</div>
+        <div class="l">${esc(k.label || "")}</div>
+        <div class="s">${esc(k.sub || "")}${shared ? " · считая IBC: люди общие" : ""}</div>
+      </div>`;
+    }).join("");
+
+    const v = b0.verdict || {};
+    const tiles = (b0.tiles || []).map((t) => `
+      <a class="se-tile" href="#${esc(t.to)}">
+        <b>${esc(t.head)}</b>
+        <span>${esc(t.text)}</span>
+      </a>`).join("");
+
+    host.innerHTML = `
+      <div class="ag-strip">${kpi}</div>
+      <article class="accent-card is-nsm se-verdict">
+        <h3>${esc(v.head || "")}</h3>
+        ${(v.body || []).map((p) => `<p>${esc(p)}</p>`).join("")}
+        ${(() => {
+          // evChip возвращает описатель {cls, sign, label}, а не готовую разметку.
+          const c = evChip(v.chipStatus || "подтв.");
+          return `<p class="se-verdict-chip"><span class="ev-chip ${c.cls}" aria-label="${esc(c.label)}">${c.sign} ${esc(c.label)}</span>
+            <span class="muted">${esc(v.chipLabel || "")}</span></p>`;
+        })()}
+      </article>
+      <div class="se-tiles">${tiles}</div>`;
+  }
+
+  // -------------------------------------------------------- B1 управление
+  function renderControls(M) {
+    const host = document.querySelector("[data-se-controls]");
+    if (!host) return;
+    const c = X.b1 || {};
+    const opt = (val, cur, label) =>
+      `<button type="button" class="se-seg${val === cur ? " is-on" : ""}" data-val="${esc(val)}">${esc(label)}</button>`;
+
+    const warns = [];
+    if (state.fot !== D.meta.fotBase && c.warnFot) {
+      warns.push(c.warnFot
+        .replace("{fot}", seMoney(state.fot, true))
+        .replace("{base}", seMoney(D.meta.fotBase, true)));
     }
-    const blRow = `<tr class="sup-baseline">
-        <td class="title">Средний по всей базе</td><td class="muted">—</td>
-        <td class="num">${fmtNum(bl.calls)}</td>
-        <td class="sup-load"><span class="sup-load-val">${r1(bl.ratio)}</span> <span class="sup-sig sup-sig--base">порог для задач 2B</span></td>
-        <td class="num muted">—</td><td class="num muted">—</td>
-        <td class="muted">—</td>
-      </tr>`;
-    tblHost.innerHTML = `<div class="table-wrap"><table class="backlog">
-      <thead><tr>
-        <th>Агентство</th><th>Сегмент</th>
-        <th><abbr title="Сколько обращений в саппорт за последние 6 месяцев">Обращений<br>за 6 мес</abbr></th>
-        <th><abbr title="Обращений в саппорт на 1000 транзакций за 6 месяцев: чем больше — тем дороже агентство в обслуживании">Нагрузка<br>на 1000 опер.</abbr></th>
-        <th><abbr title="Растёт или падает нагрузка: обращений в месяц 2025 → 2026 (2026 — неполный год)">Динамика</abbr></th>
-        <th><abbr title="Доля обращений, переадресованных внешнему поставщику — её продуктом не снять">→ поставщику</abbr></th>
-        <th>Чаще всего пишут о</th>
-      </tr></thead>
-      <tbody>${body}${blRow}</tbody>
-    </table></div>
-    ${ex.tableConcl ? `<p class="lede" style="font-size:13px">${esc(ex.tableConcl)}</p>` : ""}`;
+    if (state.base === "ex" && c.warnExIbc) warns.push(c.warnExIbc);
+
+    host.innerHTML = `
+      <div class="se-bar">
+        <div class="se-ctl" data-ctl="base">
+          <span class="se-ctl-l">${esc(c.baseLabel || "База")}</span>
+          <div class="se-segs">
+            ${opt("all", state.base, c.baseAll || "Всё направление")}
+            ${opt("ex", state.base, c.baseExIbc || "Без IBC")}
+          </div>
+          <span class="se-ctl-h">${esc(c.baseHint || "")}</span>
+        </div>
+        <div class="se-ctl" data-ctl="fot">
+          <span class="se-ctl-l">${esc(c.fotLabel || "Зарплата специалиста")}</span>
+          <div class="se-segs">
+            ${D.fotScenarios.map((s) => opt(String(s.fot), String(state.fot),
+              seNum(s.fot) + (s.base ? " ₽ · опорный" : " ₽"))).join("")}
+          </div>
+          <span class="se-ctl-h">${esc(c.fotHint || "")}</span>
+        </div>
+        <div class="se-ctl" data-ctl="metric">
+          <span class="se-ctl-l">${esc(c.metricLabel || "Показатель на графике")}</span>
+          <div class="se-segs">
+            ${Object.entries(SE_METRICS).map(([k, m]) => opt(k, state.metric, m.label)).join("")}
+          </div>
+        </div>
+      </div>
+      ${warns.map((w) => `<p class="se-warn">${esc(w)}</p>`).join("")}`;
+
+    host.querySelectorAll("[data-ctl] .se-seg").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const kind = btn.closest("[data-ctl]").dataset.ctl;
+        const v = btn.dataset.val;
+        if (kind === "fot") state.fot = Number(v);
+        else if (kind === "base") state.base = v;
+        else state.metric = v;
+        renderAll();
+      });
+    });
   }
 
-  // --- 3b. Проверка знаменателя и его эластичность (windowShift) -------------
-  // Ratio = обращения / транзакции. Обращения обновляются только новой выгрузкой HDE,
-  // транзакции — каждым «Общим отчётом». Блок показывает, насколько число держится на
-  // знаменателе, и ловит агентства, у которых «дороговизна» — артефакт объёма.
-  const winHost = document.querySelector("[data-sup-window]");
-  if (winHost && d.windowShift && (d.windowShift.rows || []).length) {
-    const w = d.windowShift;
-    // Разъезд от сдвига окна и разъезд по существу — разные вещи, не смешивать.
-    const shaky = w.rows.filter((r) => r.smallBaseNow && Math.abs(r.ratioDelta || 0) >= 5);
-    const real = w.rows.filter((r) => !r.smallBaseNow && Math.abs(r.ratioDelta || 0) >= 5);
-    // Кто ТОЛЬКО ЧТО провалился под порог: раньше базой считался, теперь нет.
-    const moved = w.rows.filter((r) => r.smallBaseNow && !/мал/i.test(
-      (pa.find((a) => a.name === r.name) || {}).signal || ""));
-    const rowsHtml = w.rows.map((r) => `
-        <tr${r.smallBaseNow ? ' class="sup-row-noise"' : ""}>
-          <td class="title">${esc(r.name)}${r.smallBaseNow ? ' <span class="sup-sig">малая база</span>' : ""}</td>
-          <td class="num">${r1(r.ratio)}</td>
-          <td class="num">${r1(r.ratioNow)}</td>
-          <td class="num">${signDelta(r.ratioDelta)}</td>
-          <td class="num muted">${fmtNum(r.opsFact)} → ${fmtNum(r.opsNow)}</td>
-          <td class="num muted">${r.opsDeltaPct == null ? "—" : (r.opsDeltaPct > 0 ? "+" : "") + Math.round(r.opsDeltaPct * 100) + "%"}</td>
-        </tr>`).join("");
-    winHost.innerHTML = `
-      <div class="callout--soft">
-        <b>Знаменатель проверен, но он отстаёт от числителя.</b> Обращения посчитаны за
-        <b>${esc(w.callsWindow)}</b>, и обновить их можно только новой выгрузкой из саппорта.
-        Транзакции за то же окно сверены с «Общим отчётом» и сходятся:
-        ${fmtNum(w.checkFact)} против ${fmtNum(w.checkStored)} зашитых${w.checkOk ? " — расхождений нет" : " — ⚠ расходятся"}.
-        Колонка «если знаменатель на ${esc(w.opsWindowRu)}» — <b>не новый показатель</b>: это тот же
-        числитель, поделённый на свежий объём. Она отвечает на один вопрос — какая часть
-        «дороговизны» агентства держится на его объёме, а не на саппорте.
-      </div>
-      <div class="table-wrap" style="margin-top:14px">
-        <table class="backlog">
+  // ------------------------------------------------------------- B2 деньги
+  // Комбинированный график: столбцы — выбранный показатель, линия — доля выручки.
+  function chartMoney(M) {
+    const W = 760, H = 260, pL = 62, pR = 52, pT = 16, pB = 38;
+    const key = state.metric;
+    const bars = M.months.map((m) => ({
+      m: m.m,
+      v: key === "calls" ? m.calls : key === "pct" ? m.pctRevenue
+        : key === "load" ? m.perSpecialist : m.supportCost,
+    }));
+    const vals = bars.map((b) => b.v).filter((v) => v != null);
+    if (!vals.length) return `<p class="muted">Нет данных для графика.</p>`;
+    const max = Math.max(...vals) * 1.15;
+    const n = bars.length;
+    const bw = (W - pL - pR) / n;
+    const y = (v) => H - pB - (v / max) * (H - pT - pB);
+    const cx = (i) => pL + bw * i + bw / 2;
+
+    const lineMax = Math.max(...M.months.map((m) => m.pctRevenue || 0)) * 1.3 || 1;
+    const yr = (v) => H - pB - (v / lineMax) * (H - pT - pB);
+
+    let grid = "";
+    for (let g = 0; g <= 3; g++) {
+      const v = (max / 3) * g, yy = y(v).toFixed(1);
+      grid += `<line x1="${pL}" x2="${W - pR}" y1="${yy}" y2="${yy}" class="se-grid"/>
+        <text x="${pL - 8}" y="${(+yy + 3).toFixed(1)}" class="ch-ylab" text-anchor="end">${SE_METRICS[key].fmt(v)}</text>`;
+    }
+    for (let g = 0; g <= 2; g++) {
+      const v = (lineMax / 2) * g;
+      grid += `<text x="${W - pR + 8}" y="${(yr(v) + 3).toFixed(1)}" class="ch-ylab ch-ylab--r" text-anchor="start">${sePct(v, 0)}</text>`;
+    }
+
+    const rects = bars.map((b, i) => {
+      const on = state.mm === b.m;
+      const h = Math.max(1, H - pB - y(b.v || 0));
+      const mo = M.months[i];
+      const tip = `<b>${esc(seMonLong(b.m))}</b><br>обращений ${seNum(mo.calls)} · транзакций ${seNum(mo.ops)}<br>`
+        + `стоимость ${seMoney(mo.supportCost, true)} · ${sePct(mo.pctRevenue)} выручки<br>`
+        + `на специалиста ${seNum(mo.perSpecialist)} · обращение ${seMoney(mo.ticketCost, true)}`;
+      return `<rect class="se-bar-r${on ? " is-on" : ""} ch-hit" data-m="${esc(b.m)}" data-tip="${esc(tip)}"
+        x="${(pL + bw * i + bw * 0.16).toFixed(1)}" y="${y(b.v || 0).toFixed(1)}"
+        width="${(bw * 0.68).toFixed(1)}" height="${h.toFixed(1)}"/>`;
+    }).join("");
+
+    const pts = M.months.map((m, i) => [cx(i), yr(m.pctRevenue || 0)]);
+    const path = pts.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" ");
+    const dots = pts.map((p) => `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="2.5" class="se-line-dot"/>`).join("");
+
+    const xlab = bars.map((b, i) =>
+      (i % 2 === 0 || i === n - 1)
+        ? `<text x="${cx(i).toFixed(1)}" y="${H - 14}" class="ch-xlab" text-anchor="middle">${seMon(b.m)}</text>`
+        : "").join("");
+
+    const label = `Столбцы — ${SE_METRICS[key].label.toLowerCase()} по месяцам, линия — доля выручки, `
+      + `с ${seMonLong(mKeys[0])} по ${seMonLong(mKeys[n - 1])}`;
+    return `<svg class="se-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}">
+      ${grid}${rects}
+      <path d="${path}" class="se-line" fill="none"/>${dots}
+      ${xlab}
+      <text x="${pL - 8}" y="${pT}" class="ch-ylab" text-anchor="end">${esc(SE_METRICS[key].axis)}</text>
+      <text x="${W - pR + 8}" y="${pT}" class="ch-ylab ch-ylab--r" text-anchor="start">% выручки</text>
+    </svg>`;
+  }
+
+  function renderMoney(M) {
+    const host = document.querySelector("[data-se-money]");
+    if (!host) return;
+    const b = X.b2 || {}, s = b.sensitivity || {};
+    const rows = D.fotScenarios.map((sc) => {
+      const on = sc.fot === state.fot;
+      return `<tr class="${on ? "is-on" : ""}">
+        <td class="title">${seNum(sc.fot)} ₽${sc.base ? ` <span class="se-tag">опорный</span>` : ""}</td>
+        <td class="num">${seMoney(sc.ticketCost, true)}</td>
+        <td class="num">${seMoney(sc.total13m)}</td>
+        <td class="num">${sePct(sc.pctDirection)}</td>
+        <td class="num">${sePct(sc.pctExternal)}</td>
+        <td>${esc(sc.note || "")}</td>
+      </tr>`;
+    }).join("");
+
+    const t = M.totals;
+    host.innerHTML = `
+      <p class="lede se-lede">${esc(b.lede || "")}</p>
+      ${chartMoney(M)}
+      <p class="se-note">${esc(b.note || "")}</p>
+      <h3 class="se-h3">${esc(s.head || "")}</h3>
+      <p class="se-lede">${esc(s.lede || "")}</p>
+      <div class="table-wrap">
+        <table class="se-tbl">
           <thead><tr>
-            <th>Агентство</th>
-            <th><abbr title="Показатель на странице: обращения и транзакции за ${esc(w.callsWindow)}">Нагрузка сейчас</abbr></th>
-            <th><abbr title="Тот же числитель, знаменатель — свежие 6 месяцев. Не показатель, а тест чувствительности">Если знаменатель на ${esc(w.opsWindowRu)}</abbr></th>
-            <th>Δ</th>
-            <th>Транзакций было → стало</th>
-            <th>Δ объёма</th>
+            <th>Зарплата специалиста</th><th class="num">Одно обращение</th>
+            <th class="num">Поддержка за 13 мес.</th><th class="num">% выручки</th>
+            <th class="num">% без IBC</th><th>Что это за сценарий</th>
           </tr></thead>
-          <tbody>${rowsHtml}</tbody>
+          <tbody>${rows}</tbody>
         </table>
       </div>
-      <p class="ev-srcline">Средний по базе почти не двигается: <b>${r1(w.baselineRatio)} → ${r1(w.baselineRatioNow)}</b>
-      — общий вывод страницы устойчив. ${shaky.length ? `Сильнее всего разъезжаются агентства с малым
-      объёмом (${esc(shaky.map((r) => r.name).join(", "))}): у них показатель меняется от сдвига окна
-      на два месяца, без единого нового обращения. Это не оценка саппорта, а деление на маленькое число. ` : ""}${
-        real.length ? `Отдельно стоит посмотреть на ${esc(real.map((r) => `${r.name} (${r1(r.ratio)} → ${r1(r.ratioNow)})`).join(", "))}
-        — здесь объём достаточный, значит сдвиг содержательный: агентство выросло, а поток обращений за ним не пошёл.` : ""}${
-        moved.length ? `<br><b>Внимание:</b> ${esc(moved.map((r) => r.name).join(", "))} — объём упал ниже
-        порога в 1 000 транзакций. Показатель больше не сигнал о саппорте, даже если раньше был.` : ""}</p>`;
-    wireTips(winHost);
+      <p class="se-note">${esc(s.conclusion || "")}
+        <b>При выбранном сценарии превышение — ${seMoney(t.lossTotal, true)} за 13 месяцев,
+        это ${sePct(t.lossPctRevenue, 2)} выручки.</b></p>
+      ${srcHint(esc(b.footnote || ""))}`;
+    wireTips(host);
+    host.querySelectorAll("[data-m]").forEach((el) => {
+      el.addEventListener("click", () => {
+        state.mm = state.mm === el.dataset.m ? null : el.dataset.m;
+        renderAll();
+      });
+    });
   }
 
-  // --- 4. Профиль боли по сегментам (карточки, авторский слой) --------
-  const segHost = document.querySelector("[data-sup-seg]");
-  if (segHost) {
-    const segs = ex.segments || [];
-    segHost.innerHTML = `<div class="accent-grid">${segs.map((e) => `
-      <article class="accent-card is-bet1">
-        <div class="k">${esc(e.volume || "")} обращений</div>
-        <h3>${esc(e.nameRu || "")}</h3>
-        ${e.who ? `<p class="sup-seg-ratio">${esc(e.who)}</p>` : ""}
-        <p><b>Что болит:</b> ${esc(e.painPlain || "—")}</p>
-        <p><b>Чем помочь:</b> ${esc(e.leverPlain || "—")}</p>
-      </article>`).join("")}</div>`;
-  }
+  // -------------------------------------------------------------- B3 люди
+  function chartCapacity() {
+    const W = 760, H = 220, pL = 46, pR = 20, pT = 18, pB = 34;
+    const cap = D.capacity;
+    const vals = cap.map((c) => c.perSpecialist).filter((v) => v != null);
+    if (vals.length < 2) return `<p class="muted">Нет данных для графика.</p>`;
+    const max = Math.max(...vals) * 1.12, min = 0;
+    const n = cap.length;
+    const cx = (i) => pL + (i / (n - 1)) * (W - pL - pR);
+    const y = (v) => H - pB - ((v - min) / (max - min)) * (H - pT - pB);
 
-  // --- 4b. Что чинимо продуктом, а что упирается в поставщика ----------
-  const supHost = document.querySelector("[data-sup-supplier]");
-  if (supHost) {
-    const sx = ex.supplier || {};
-    const bound = (sup.byTheme || []).filter((t) => String(t.cls || "").toLowerCase().includes("bound"));
-    const fixable = sup.fixable || [];
-    // Потолок эффекта: расклад всей нагрузки по управляемости (доля обращений по классу темы).
-    const cats0 = d.categories || [];
-    const ctot = cats0.reduce((s, c) => s + (c.freq || 0), 0) || 1;
-    const clKey = (c) => { const t = String(c.cls || "").toLowerCase(); return t.includes("bound") ? "supp" : t.includes("частичн") ? "part" : "own"; };
-    const ceil = { own: 0, part: 0, supp: 0 };
-    cats0.forEach((c) => { ceil[clKey(c)] += (c.freq || 0); });
-    const ceilPct = (k) => Math.round((ceil[k] / ctot) * 100);
-    const themeRow = (t) => `<li><span class="sup-tname">${esc(t.theme)}</span> <span class="sup-tval">${pct(t.share)} → поставщику</span></li>`;
-    const fixRow = (t) => `<li><span class="sup-tname">${esc(t.theme)}</span> <span class="sup-tval muted">${fmtNum(t.freq)} обращений</span></li>`;
-    // «Другое» = обращения без точной привязки к агентству — не показываем как агентство.
-    // Метка «чтения» → чип: высокая/повышенная/низкая зависимость.
-    const readChip = (t) => {
-      const s = String(t || "").toLowerCase();
-      const cls = s.includes("высок") ? "sup-cls--bad" : s.includes("повыш") ? "sup-cls--mid" : "sup-cls--good";
-      return `<span class="sup-cls ${cls}">${esc(t || "—")}</span>`;
+    let grid = "";
+    for (let g = 0; g <= 3; g++) {
+      const v = (max / 3) * g, yy = y(v).toFixed(1);
+      grid += `<line x1="${pL}" x2="${W - pR}" y1="${yy}" y2="${yy}" class="se-grid"/>
+        <text x="${pL - 8}" y="${(+yy + 3).toFixed(1)}" class="ch-ylab" text-anchor="end">${seNum(v)}</text>`;
+    }
+    const path = cap.map((c, i) => (i ? "L" : "M") + cx(i).toFixed(1) + " " + y(c.perSpecialist).toFixed(1)).join(" ");
+
+    const lo = cap.reduce((a, b) => (b.perSpecialist < a.perSpecialist ? b : a));
+    const hi = cap.reduce((a, b) => (b.perSpecialist > a.perSpecialist ? b : a));
+    const last = cap[cap.length - 1];
+    const mark = (c, cls, txt) => {
+      const i = cap.indexOf(c);
+      return `<circle cx="${cx(i).toFixed(1)}" cy="${y(c.perSpecialist).toFixed(1)}" r="4" class="se-mark ${cls}"/>
+        <text x="${cx(i).toFixed(1)}" y="${(y(c.perSpecialist) - 11).toFixed(1)}" class="se-mark-t ${cls}" text-anchor="middle">${esc(txt)}</text>`;
     };
-    const agRows = (sup.byAgency || []).filter((a) => a.name !== "Другое").map((a) => `<tr>
-        <td class="title">${esc(a.name)}</td>
-        <td class="num">${pct(a.share)}</td>
-        <td>${readChip(a.read)}</td>
-      </tr>`).join("");
-    supHost.innerHTML = `
-      <article class="accent-card is-bet2 sup-lead">
-        <div class="k">Предел эффекта</div>
-        <h3>${esc(sx.head || "Что чинимо, а что упирается в поставщика")}</h3>
-        <p>${esc(sx.lead || "")}</p>
-        ${sx.ceilLead ? `<p class="muted">${esc(sx.ceilLead)}</p>` : ""}
-        <div class="ev-chiprow">
-          <span class="sup-cls sup-cls--good">${ceilPct("own")}% в наших руках</span>
-          <span class="sup-cls sup-cls--mid">${ceilPct("part")}% частично</span>
-          <span class="sup-cls sup-cls--bad">${ceilPct("supp")}% упирается в поставщика</span>
+    const dots = cap.map((c, i) => {
+      const tip = `<b>${esc(seMonLong(c.m))}</b><br>на специалиста ${seNum(c.perSpecialist)}<br>`
+        + `всего закрыто ${seNum(c.capacityTickets)} · из них агентских ${seNum(c.agencyTickets)}`;
+      return `<circle class="ch-hit se-dot" cx="${cx(i).toFixed(1)}" cy="${y(c.perSpecialist).toFixed(1)}" r="9" data-tip="${esc(tip)}"/>`;
+    }).join("");
+    const xlab = cap.map((c, i) => (i % 2 === 0 || i === n - 1)
+      ? `<text x="${cx(i).toFixed(1)}" y="${H - 12}" class="ch-xlab" text-anchor="middle">${seMon(c.m)}</text>` : "").join("");
+
+    return `<svg class="se-chart" viewBox="0 0 ${W} ${H}" role="img"
+      aria-label="Загрузка на специалиста по месяцам: минимум ${seNum(lo.perSpecialist)} в ${esc(seMonLong(lo.m))}, максимум ${seNum(hi.perSpecialist)} в ${esc(seMonLong(hi.m))}, последнее значение ${seNum(last.perSpecialist)}">
+      ${grid}
+      <path d="${path}" class="se-line se-line--load" fill="none"/>
+      ${mark(lo, "is-lo", seNum(lo.perSpecialist))}
+      ${mark(hi, "is-hi", seNum(hi.perSpecialist))}
+      ${dots}${xlab}
+      <text x="${pL - 8}" y="${pT - 4}" class="ch-ylab" text-anchor="end">обращений на человека</text>
+    </svg>`;
+  }
+
+  function renderCapacity() {
+    const host = document.querySelector("[data-se-capacity]");
+    if (!host) return;
+    const b = X.b3 || {}, nc = D.newcomer || {};
+    const per = nc.callsPerNewcomer || 0, base = nc.baseCallsPerMonth || 0;
+    const add = Math.round(per * state.n);
+    const pct = base ? add / base : 0;
+    const tr = D.capacityTrend || {};
+
+    host.innerHTML = `
+      <p class="lede se-lede">${esc(b.lede || "")}</p>
+      ${chartCapacity()}
+      <p class="se-note">${esc(b.conclusion || "")}
+        ${tr.rangeText ? `<span class="muted">Диапазон за окно: ${esc(tr.rangeText)}.</span>` : ""}</p>
+      <div class="se-calc">
+        <h3 class="se-h3">${esc(b.calcHead || "")}</h3>
+        <p class="se-lede">${esc(b.calcLede || "")}</p>
+        <div class="se-calc-row">
+          <input type="range" min="0" max="20" step="1" value="${state.n}" class="se-range"
+                 aria-label="Сколько новых агентств подключаем" data-se-n />
+          <output class="se-calc-n"><b>+${state.n}</b> агентств</output>
         </div>
-        <div class="ev-chiprow"><span class="sup-sig sup-sig--bad">${pct(sup.share)} · ${fmtNum(sup.calls)} обращений физически ушли поставщику</span></div>
-        ${sx.ceilNote ? `<p class="ev-srcline">${esc(sx.ceilNote)}</p>` : ""}
-      </article>
-      <div class="sup-supgrid">
-        <article class="accent-card is-nsm">
-          <h3>${esc(sx.boundHead || "Упирается в поставщика")}</h3>
-          <p class="muted">${esc(sx.boundNote || "")}</p>
-          <ul class="sup-tlist">${bound.map(themeRow).join("")}</ul>
-        </article>
-        <article class="accent-card is-bet1">
-          <h3>${esc(sx.fixableHead || "В наших руках")}</h3>
-          <p class="muted">${esc(sx.fixableNote || "")}</p>
-          <ul class="sup-tlist">${fixable.map(fixRow).join("")}</ul>
-        </article>
-      </div>
-      ${agRows ? `<details class="sup-more"><summary>Зависимость от поставщика по агентствам</summary>
-        ${sx.agencyNote ? `<p class="lede" style="font-size:13px">${esc(sx.agencyNote)}</p>` : ""}
-        <div class="table-wrap"><table class="backlog">
-          <thead><tr><th>Агентство</th><th>→ поставщику</th><th>Что это значит</th></tr></thead>
-          <tbody>${agRows}</tbody>
-        </table></div></details>` : ""}`;
+        <p class="se-calc-out">
+          <b class="se-calc-v">+${seNum(add)}</b>
+          ${esc((b.calcResult || "").replace("{base}", seNum(base)))}
+          — <b>+${Math.round(pct * 100)}%</b> к очереди
+        </p>
+        <p class="se-note">${esc((b.calcNote || "").replace("{perNewcomer}", seNum(per, 1)))}</p>
+        <p class="se-foot">${esc((b.calcCaveat || "").replace("{count}", String(nc.count || 0)))}
+          ${nc.names ? `<span class="muted">Это ${esc(nc.names.join(", "))}.</span>` : ""}</p>
+      </div>`;
+    wireTips(host);
+    const r = host.querySelector("[data-se-n]");
+    if (r) {
+      r.addEventListener("input", () => {
+        state.n = Number(r.value);
+        renderCapacity();
+        writeState();
+      });
+    }
   }
 
-  // --- 5. Тренд во времени + теплокарта L13M --------------------------
-  const trendHost = document.querySelector("[data-sup-trend]");
-  if (trendHost) {
-    const heat = d.heat || { months: [], agencies: [], total: null };
-    const grow = (tr.perAgency || []).filter((p) => (p.slope || 0) > 0).length;
-    const tot = (tr.perAgency || []).length;
-    const cell = (v) => {
-      if (v == null) return `<td class="hm hm--na"></td>`;
-      const c = v === 0 ? "hm--na" : v < 12 ? "hm--g" : v < 20 ? "hm--y" : "hm--r";
-      return `<td class="hm ${c}" title="${r1(v)}">${v === 0 ? "" : r1(v)}</td>`;
+  // ------------------------------------------------- B4 кто создаёт нагрузку
+  function renderWho(M) {
+    const host = document.querySelector("[data-se-who]");
+    if (!host) return;
+    const b = X.b4 || {};
+    const sh = D.totals.ibcShare || {};
+    const ibc = D.agencies.find((a) => a.name === "IBC");
+    const exT = D.totals.exIbc || {};
+
+    const bar = (label, ibcShare) => {
+      const p = (ibcShare || 0) * 100;
+      return `<div class="se-split">
+        <div class="se-split-l">${esc(label)}</div>
+        <div class="se-split-bar" role="img" aria-label="${esc(label)}: IBC ${sePct(ibcShare)}, внешние ${sePct(1 - ibcShare)}">
+          <span class="se-split-a" style="flex:${p.toFixed(2)}"><i>${sePct(ibcShare, 0)}</i></span>
+          <span class="se-split-b" style="flex:${(100 - p).toFixed(2)}"><i>${sePct(1 - ibcShare, 0)}</i></span>
+        </div>
+      </div>`;
     };
-    const MON_RU = ["янв", "фев", "мар", "апр", "май", "июн", "июл", "авг", "сен", "окт", "ноя", "дек"];
-    const monLabel = (m) => {
-      const mm = String(m).match(/^(\d{4})-(\d{2})$/);
-      return mm ? `${MON_RU[+mm[2] - 1]}<br>${mm[1].slice(2)}` : esc(String(m));
+
+    const times = ibc && exT.revenuePerCall
+      ? (ibc.revenuePerCall / exT.revenuePerCall) : null;
+
+    // Две линии: как менялась нагрузка у IBC и у внешней базы.
+    const W = 760, H = 200, pL = 46, pR = 20, pT = 16, pB = 32;
+    const n = D.months.length;
+    const all = D.months.flatMap((m) => [m.ratioIbc, m.ratioExt]).filter((v) => v != null);
+    const max = Math.max(...all) * 1.15;
+    const cx = (i) => pL + (i / (n - 1)) * (W - pL - pR);
+    const y = (v) => H - pB - (v / max) * (H - pT - pB);
+    const line = (get, cls) => {
+      const d = D.months.map((m, i) => (i ? "L" : "M") + cx(i).toFixed(1) + " " + y(get(m)).toFixed(1)).join(" ");
+      return `<path d="${d}" class="se-line ${cls}" fill="none"/>`;
     };
-    const heatTable = `<div class="table-wrap"><table class="backlog hm-table">
-      <thead><tr><th>Агентство</th>${heat.months.map((m) => `<th>${monLabel(m)}</th>`).join("")}</tr></thead>
-      <tbody>${heat.agencies.map((a) => `<tr><td class="title">${esc(a.name)}</td>${a.vals.map(cell).join("")}</tr>`).join("")}
-        ${heat.total ? `<tr class="sup-baseline"><td class="title">ИТОГО</td>${heat.total.map(cell).join("")}</tr>` : ""}</tbody>
-    </table></div>`;
-    const trendHead = ex.trendHead || `у ${grow} из ${tot} агентств нагрузка растёт или держится`;
-    trendHost.innerHTML = `
-      <article class="accent-card is-nsm">
-        <div class="k">Тренд · ${grow} из ${tot} агентств</div>
-        <h3>${esc(trendHead)}</h3>
-        <p>${esc(ex.trendPlain || tr.conclusion || "")}</p>
-        ${ex.seasonNote ? `<p class="muted">${esc(ex.seasonNote)}</p>` : ""}
-        <div class="ev-chiprow"><span class="ev-chip ev-ok" aria-label="подтверждено">✓ подтверждено</span> <a class="ev-chip ev-ok" href="etapy.html#stage-2">→ почему это задача «снять тормоза»</a></div>
-      </article>
-      ${ex.trendCaveat ? `<p class="ev-srcline">⚠ ${esc(ex.trendCaveat)}</p>` : ""}
-      <details class="sup-more"><summary>Помесячная нагрузка по месяцам (теплокарта, ${heat.months.length} месяцев)</summary>
-        <p class="lede" style="font-size:13px">🟩 ниже среднего · 🟨 выше среднего · 🟥 дорого. Пусто — обращений в этом месяце не было.</p>
-        ${heatTable}
+    let grid = "";
+    for (let g = 0; g <= 3; g++) {
+      const v = (max / 3) * g, yy = y(v).toFixed(1);
+      grid += `<line x1="${pL}" x2="${W - pR}" y1="${yy}" y2="${yy}" class="se-grid"/>
+        <text x="${pL - 8}" y="${(+yy + 3).toFixed(1)}" class="ch-ylab" text-anchor="end">${seNum(v, 1)}</text>`;
+    }
+    const hits = D.months.map((m, i) => {
+      const tip = `<b>${esc(seMonLong(m.m))}</b><br>IBC ${seNum(m.ratioIbc, 1)} · внешние ${seNum(m.ratioExt, 1)}<br>`
+        + `<span class="muted">обращений на 1000 транзакций</span>`;
+      return `<rect class="ch-hit" x="${(cx(i) - (W - pL - pR) / n / 2).toFixed(1)}" y="${pT}"
+        width="${((W - pL - pR) / n).toFixed(1)}" height="${H - pT - pB}" fill="transparent" data-tip="${esc(tip)}"/>`;
+    }).join("");
+    const xlab = D.months.map((m, i) => (i % 2 === 0 || i === n - 1)
+      ? `<text x="${cx(i).toFixed(1)}" y="${H - 12}" class="ch-xlab" text-anchor="middle">${seMon(m.m)}</text>` : "").join("");
+
+    host.innerHTML = `
+      <p class="lede se-lede">${esc(b.lede || "")}</p>
+      <div class="se-splits">
+        <div class="se-legend">
+          <span class="se-key se-key--a">IBC</span>
+          <span class="se-key se-key--b">18 внешних агентств</span>
+        </div>
+        ${bar("Обращения", sh.calls)}
+        ${bar("Объём работы", sh.ops)}
+        ${bar("Выручка", sh.revenue)}
+      </div>
+      ${ibc && times ? `<p class="se-note">${esc((b.gapNote || "")
+        .replace("{ibc}", seMoney(ibc.revenuePerCall, true))
+        .replace("{ext}", seMoney(exT.revenuePerCall, true))
+        .replace("{times}", seNum(times, 1)))}</p>` : ""}
+      <h3 class="se-h3">${esc(b.trendHead || "")}</h3>
+      <svg class="se-chart" viewBox="0 0 ${W} ${H}" role="img"
+        aria-label="Обращений на 1000 транзакций по месяцам: у IBC растёт, у внешних агентств уровень выше и без роста">
+        ${grid}${line((m) => m.ratioIbc, "se-line--a")}${line((m) => m.ratioExt, "se-line--b")}${hits}${xlab}
+        <text x="${pL - 8}" y="${pT - 2}" class="ch-ylab" text-anchor="end">на 1000 транзакций</text>
+      </svg>
+      <ul class="se-bullets">
+        <li><span class="se-key se-key--a"></span>${esc(b.trendIbc || "")}</li>
+        <li><span class="se-key se-key--b"></span>${esc(b.trendExt || "")}</li>
+      </ul>
+      <p class="se-foot">${esc(b.trendNote || "")}</p>
+      <div class="callout--soft se-caveat">${esc(b.caveat || "")}</div>`;
+    wireTips(host);
+  }
+
+  // ------------------------------------------------------- B5 по агентствам
+  const SORTS = {
+    pctRevenue: { label: "% выручки на поддержку", get: (a) => a.pctRevenue, dir: -1 },
+    name: { label: "Агентство", get: (a) => a.name, dir: 1, text: true },
+    calls: { label: "Обращения", get: (a) => a.calls, dir: -1 },
+    ops: { label: "Объём работы", get: (a) => a.ops, dir: -1 },
+    revenue: { label: "Выручка", get: (a) => a.revenue, dir: -1 },
+    supportCost: { label: "Стоимость поддержки", get: (a) => a.supportCost, dir: -1 },
+    ratio: { label: "На 1000 транзакций", get: (a) => a.ratio, dir: -1 },
+    escalationShare: { label: "Ушло в разработку", get: (a) => a.escalationShare, dir: -1 },
+    toSupplierShare: { label: "К поставщику", get: (a) => a.toSupplierShare, dir: -1 },
+  };
+  let sortKey = "pctRevenue", sortDir = -1;
+
+  function renderTable(M) {
+    const host = document.querySelector("[data-se-table]");
+    if (!host) return;
+    const b = X.b5 || {};
+    const V = b.verdicts || {};
+    const s = SORTS[sortKey];
+    const list = [...M.agencies].sort((a, b2) => {
+      const x = s.get(a), yv = s.get(b2);
+      if (x == null) return 1;
+      if (yv == null) return -1;
+      return (s.text ? String(x).localeCompare(String(yv), "ru") : x - yv) * sortDir;
+    });
+    const maxPct = Math.max(...M.agencies.map((a) => a.pctRevenue || 0));
+
+    const th = (k, extra = "") => {
+      const on = sortKey === k;
+      return `<th class="${extra}${on ? " is-sorted" : ""}" data-sort="${k}"
+        aria-sort="${on ? (sortDir < 0 ? "descending" : "ascending") : "none"}">
+        <button type="button">${esc(SORTS[k].label)}${on ? (sortDir < 0 ? " ↓" : " ↑") : ""}</button></th>`;
+    };
+
+    const rows = list.map((a) => {
+      const v = V[a.name] || {};
+      const small = (a.ops || 0) < 500;
+      const open = state.ag === a.name;
+      const w = maxPct ? Math.min(100, ((a.pctRevenue || 0) / maxPct) * 100) : 0;
+      return `<tr class="se-row${small ? " is-small" : ""}${open ? " is-open" : ""}" data-ag="${esc(a.name)}" tabindex="0">
+          <td class="title">
+            <span class="se-caret">${open ? "▾" : "▸"}</span>${esc(a.name)}
+            ${a.isNewcomer ? `<span class="se-tag">новичок</span>` : ""}
+            ${small ? `<span class="se-tag se-tag--warn" title="${esc(b.smallBaseNote || "")}">малая база</span>` : ""}
+            <span class="se-seg-l">${esc(segRu(a.segment))}</span>
+          </td>
+          <td class="num">${seNum(a.calls)}</td>
+          <td class="num">${seNum(a.ops)}</td>
+          <td class="num">${seMoney(a.revenue)}</td>
+          <td class="num">${seMoney(a.supportCost)}</td>
+          <td class="num sup-load">
+            <span class="sup-load-bar" style="width:${w.toFixed(1)}%"></span>
+            <span class="sup-load-val">${sePct(a.pctRevenue)}</span>
+          </td>
+          <td class="num">${seNum(a.ratio, 1)}</td>
+          <td class="num">${a.escalationShare == null ? "—" : sePct(a.escalationShare, 0)}</td>
+          <td class="num se-dim">${a.toSupplierShare == null ? "—" : sePct(a.toSupplierShare, 0)}</td>
+        </tr>
+        ${open ? drill(a, v) : ""}`;
+    }).join("");
+
+    const tot = M.totals;
+    const totalRow = (label, t, cls) => `<tr class="se-total ${cls}">
+      <td class="title">${esc(label)}</td>
+      <td class="num">${seNum(t.calls)}</td><td class="num">${seNum(t.ops)}</td>
+      <td class="num">${seMoney(t.revenue)}</td><td class="num">${seMoney(t.supportCost)}</td>
+      <td class="num">${sePct(t.pctRevenue)}</td><td class="num">${seNum(t.ratio, 1)}</td>
+      <td class="num">—</td><td class="num">—</td></tr>`;
+
+    const exIbc = D.totals.exIbc || {};
+    host.innerHTML = `
+      <p class="lede se-lede">${esc(b.lede || "")}</p>
+      <div class="table-wrap">
+        <table class="se-tbl se-tbl--ag">
+          <thead><tr>
+            ${th("name", "title")}${th("calls", "num")}${th("ops", "num")}${th("revenue", "num")}
+            ${th("supportCost", "num")}${th("pctRevenue", "num")}${th("ratio", "num")}
+            ${th("escalationShare", "num")}
+            <th class="num se-dim" data-sort="toSupplierShare">
+              <button type="button">К поставщику${sortKey === "toSupplierShare" ? (sortDir < 0 ? " ↓" : " ↑") : ""}</button>
+              <span class="se-th-note">${esc(D.supplier ? `${D.supplier.monthsCovered} из ${D.supplier.monthsTotal} мес.` : "")}</span>
+            </th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+          <tfoot>
+            ${totalRow("Итого", tot, "")}
+            ${state.base === "all" && exIbc.calls ? totalRow("Без IBC", {
+              calls: exIbc.calls, ops: exIbc.ops, revenue: exIbc.revenue,
+              supportCost: exIbc.supportCost * M.k, pctRevenue: exIbc.pctRevenue * M.k,
+              ratio: exIbc.ratio,
+            }, "se-total--alt") : ""}
+          </tfoot>
+        </table>
+      </div>
+      <p class="se-foot">${esc(b.supplierColNote || "")}</p>
+      <p class="se-note">${esc(b.newcomerNote || "")}</p>
+      <h3 class="se-h3">${esc(b.highlightHead || "")}</h3>
+      <div class="se-cards">
+        ${["Аэротон", "KMP Group"].map((nm) => {
+          const a = M.agencies.find((x) => x.name === nm);
+          const v = V[nm] || {};
+          if (!a) return "";
+          return `<article class="accent-card is-bet1 se-card">
+            <div class="k">${sePct(a.pctRevenue)} выручки на обслуживание</div>
+            <h3>${esc(nm)}</h3>
+            <p><b>${esc(v.verdict || "")}.</b> ${esc(v.text || "")}</p>
+          </article>`;
+        }).join("")}
+      </div>`;
+
+    host.querySelectorAll("th[data-sort]").forEach((h) => {
+      h.addEventListener("click", () => {
+        const k = h.dataset.sort;
+        if (sortKey === k) sortDir = -sortDir;
+        else { sortKey = k; sortDir = SORTS[k].dir; }
+        renderTable(M);
+      });
+    });
+    host.querySelectorAll(".se-row").forEach((tr) => {
+      const toggle = () => {
+        state.ag = state.ag === tr.dataset.ag ? null : tr.dataset.ag;
+        renderTable(M);
+        writeState();
+      };
+      tr.addEventListener("click", toggle);
+      tr.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); }
+      });
+    });
+    wireTips(host);
+  }
+
+  // Разбор одного агентства: помесячные ряды, тариф, разработка, вердикт.
+  function drill(a, v) {
+    const spark = (key, label, fmt) => {
+      const ser = a.series[key] || [];
+      const last = [...ser].reverse().find((x) => x != null);
+      return `<div class="se-spark">
+        <div class="se-spark-l">${esc(label)}</div>
+        ${sparkline(ser, 120, 30)}
+        <div class="se-spark-v">${fmt(last)}</div>
+      </div>`;
+    };
+    const esc2 = (s) => esc(s || "");
+    const agHref = a.name === "Аэротон" ? "agencies.html#aeroton"
+      : a.name === "Симпл Флайт" ? "agencies.html#simple-flight" : "agencies.html";
+    return `<tr class="se-drill"><td colspan="9">
+      <div class="se-drill-in">
+        <div class="se-sparks">
+          ${spark("calls", "Обращения", (x) => seNum(x))}
+          ${spark("ops", "Объём работы", (x) => seNum(x))}
+          ${spark("revenue", "Выручка", (x) => seMoney(x))}
+          ${spark("supportCost", "Стоимость поддержки", (x) => seMoney(x))}
+        </div>
+        <div class="se-drill-facts">
+          ${a.tariffNote ? `<p><b>Тариф:</b> ${esc2(a.tariffNote)}</p>` : ""}
+          ${a.escalations != null ? `<p><b>Ушло в разработку:</b> ${seNum(a.escalations)} обращений`
+            + `${a.escalationShare != null ? ` (${sePct(a.escalationShare, 0)})` : ""}.
+            <span class="muted">Это нагрузка на разработку, которой нет ни в одной цифре выше.</span></p>` : ""}
+          ${a.toSupplier != null ? `<p><b>Переадресовано поставщику:</b> ${seNum(a.toSupplier)} из ${seNum(a.callsInSupplierWindow)}
+            (${sePct(a.toSupplierShare, 0)}).</p>`
+            : `<p class="muted">Данных о переадресации нет: агентство подключилось позже, чем обрывается выгрузка обращений.</p>`}
+          ${a.firstMonth ? `<p class="muted">Первый месяц с объёмом — ${esc(seMonLong(a.firstMonth))}.</p>` : ""}
+        </div>
+        ${v.verdict ? `<div class="se-verdict-box se-v--${esc(v.cls || "mid")}">
+          <b>${esc(v.verdict)}</b>
+          <p>${esc(v.text || "")}</p>
+        </div>` : ""}
+        <p class="se-drill-links">
+          <a href="${agHref}">Агентство в цифрах →</a>
+          <a href="backlog.html?q=${encodeURIComponent(a.name)}">Задачи в бэклоге →</a>
+        </p>
+      </div>
+    </td></tr>`;
+  }
+
+  // ---------------------------------------------------------- B6 теплокарта
+  function renderHeat(M) {
+    const host = document.querySelector("[data-se-heat]");
+    if (!host) return;
+    const b = X.b6 || {};
+    const isCost = state.heat === "cost";
+    const cell = (a, i) => {
+      const calls = (a.series.calls || [])[i];
+      const ops = (a.series.ops || [])[i];
+      const cost = (a.series.supportCost || [])[i];
+      if (!ops && !calls) return { v: null };
+      const v = isCost ? cost : (ops ? (calls || 0) / ops * 1000 : null);
+      return { v, calls, ops, cost };
+    };
+    const all = [];
+    M.agencies.forEach((a) => mKeys.forEach((_, i) => {
+      const c = cell(a, i);
+      if (c.v != null) all.push(c.v);
+    }));
+    const max = all.length ? Math.max(...all) : 1;
+    const lvl = (v) => (v == null ? -1 : Math.min(4, Math.floor((v / max) * 5)));
+
+    const rows = M.agencies.map((a) => `
+      <tr>
+        <th class="title">${esc(a.name)}</th>
+        ${mKeys.map((mk, i) => {
+          const c = cell(a, i);
+          const l = lvl(c.v);
+          const tip = c.v == null
+            ? `<b>${esc(a.name)}</b><br>${esc(seMonLong(mk))}<br>ни транзакций, ни обращений`
+            : `<b>${esc(a.name)}</b> · ${esc(seMonLong(mk))}<br>`
+              + `обращений ${seNum(c.calls)} · транзакций ${seNum(c.ops)}<br>`
+              + `${isCost ? "стоимость " + seMoney(c.cost, true) : seNum(c.v, 1) + " на 1000 транзакций"}`;
+          return `<td class="se-cell se-l${l}${state.mm === mk ? " is-col" : ""}"
+            data-ag="${esc(a.name)}" data-m="${esc(mk)}" data-tip="${esc(tip)}">
+            ${c.v == null ? "" : `<span>${isCost ? seMoney(c.cost) : seNum(c.v, 0)}</span>`}</td>`;
+        }).join("")}
+      </tr>`).join("");
+
+    host.innerHTML = `
+      <p class="lede se-lede">${esc(b.lede || "")}</p>
+      <div class="se-heat-ctl">
+        <div class="se-segs">
+          <button type="button" class="se-seg${!isCost ? " is-on" : ""}" data-heat="ratio">На 1000 транзакций</button>
+          <button type="button" class="se-seg${isCost ? " is-on" : ""}" data-heat="cost">Стоимость, ₽</button>
+        </div>
+        <div class="se-scale" role="img" aria-label="Шкала: чем темнее, тем выше значение">
+          <span class="muted">меньше</span>
+          ${[0, 1, 2, 3, 4].map((l) => `<i class="se-l${l}"></i>`).join("")}
+          <span class="muted">больше — до ${isCost ? seMoney(max) : seNum(max, 0)}</span>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="se-tbl se-heat">
+          <thead><tr><th class="title">Агентство</th>${mKeys.map((mk) => `<th class="num">${seMon(mk)}</th>`).join("")}</tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+      <p class="se-foot">${esc(b.emptyNote || "")}</p>`;
+
+    host.querySelectorAll("[data-heat]").forEach((btn) => {
+      btn.addEventListener("click", () => { state.heat = btn.dataset.heat; renderHeat(M); writeState(); });
+    });
+    host.querySelectorAll(".se-cell").forEach((td) => {
+      td.addEventListener("click", () => {
+        state.ag = td.dataset.ag;
+        state.mm = td.dataset.m;
+        renderAll();
+        document.querySelector(`.se-row[data-ag="${CSS.escape(td.dataset.ag)}"]`)
+          ?.scrollIntoView({ block: "center", behavior: "smooth" });
+      });
+    });
+    wireTips(host);
+  }
+
+  // -------------------------------------------------- B6a потолок эффекта
+  function renderSupplier() {
+    const host = document.querySelector("[data-se-supplier]");
+    if (!host) return;
+    const b = X.b6a || {}, S = D.supplier;
+    if (!S) { host.innerHTML = `<p class="muted">Выгрузка обращений недоступна.</p>`; return; }
+    const th = b.thresholds || { supplier: 0.25, partial: 0.1 };
+    const cls = (share) => (share >= th.supplier ? "supp" : share >= th.partial ? "part" : "own");
+    const CLS_CSS = { own: "good", part: "mid", supp: "bad" };
+
+    const buckets = { own: 0, part: 0, supp: 0 };
+    (S.byTheme || []).forEach((t) => { buckets[cls(t.share)] += t.total; });
+    const tot = buckets.own + buckets.part + buckets.supp;
+    // Последнюю долю берём остатком, а не округляем независимо: три округления
+    // вверх дают «101%», и читатель справедливо решает, что где-то ошибка.
+    const pOwn = tot ? Math.round((buckets.own / tot) * 100) : 0;
+    const pPart = tot ? Math.round((buckets.part / tot) * 100) : 0;
+    const shares = { own: pOwn, part: pPart, supp: Math.max(0, 100 - pOwn - pPart) };
+    const bp = (k) => shares[k];
+
+    const themeList = (pick, head) => {
+      const items = (S.byTheme || []).filter((t) => pick.includes(cls(t.share)))
+        .sort((a, b2) => b2.total - a.total);
+      return `<div class="se-col">
+        <h4>${esc(head)}</h4>
+        <ul class="se-theme-list">
+          ${items.map((t) => `<li>
+            <span class="se-theme-n">${esc(t.level2 === "—" ? t.level1 : t.level2)}</span>
+            <span class="se-theme-v">${seNum(t.total)} обращений${t.share >= th.partial ? ` · наружу ${sePct(t.share, 0)}` : ""}</span>
+          </li>`).join("")}
+        </ul>
+      </div>`;
+    };
+
+    const u = S.unattributed || {};
+    host.innerHTML = `
+      <p class="lede se-lede">${esc(b.lede || "")}</p>
+      <div class="ag-strip">
+        <div class="ag-stat">
+          <div class="v">${sePct(S.share)}</div>
+          <div class="l">обращений уходит наружу</div>
+          <div class="s">${seNum(S.toSupplier)} из ${seNum(S.total)} за окно</div>
+        </div>
+        <div class="ag-stat ag-stat--goal">
+          <div class="v">${sePct(1 - (S.share || 0))}</div>
+          <div class="l">остаются у нас</div>
+          <div class="s">но снимаются продуктом не все — расклад по темам ниже</div>
+        </div>
+      </div>
+      <div class="callout--soft se-caveat">${esc(b.caveat || "")}</div>
+      <div class="se-ceil">
+        <span class="sup-cls sup-cls--${CLS_CSS.own}">${bp("own")}% ${esc((b.classLabels || {}).own || "")}</span>
+        <span class="sup-cls sup-cls--${CLS_CSS.part}">${bp("part")}% ${esc((b.classLabels || {}).part || "")}</span>
+        <span class="sup-cls sup-cls--${CLS_CSS.supp}">${bp("supp")}% ${esc((b.classLabels || {}).supp || "")}</span>
+      </div>
+      <p class="se-foot">${esc(b.classNote || "")}</p>
+      <div class="se-cols">
+        ${themeList(["supp"], b.suppHead || "Упирается в поставщика")}
+        ${themeList(["own"], b.ownHead || "Целиком в наших руках")}
+      </div>
+      ${u.total ? `<p class="se-note">${esc((b.unattributedNote || "")
+        .replace("{n}", seNum(u.total))
+        .replace("{pct}", sePct(u.shareOfFlow, 0))
+        .replace("{share}", sePct(u.share, 0)))}</p>` : ""}
+      <details class="se-details">
+        <summary>Зависимость от поставщика по агентствам</summary>
+        <div class="table-wrap">
+          <table class="se-tbl">
+            <thead><tr><th>Агентство</th><th class="num">Обращений за окно</th><th class="num">Наружу</th><th class="num">Доля</th></tr></thead>
+            <tbody>${(S.byAgency || []).map((r) => `<tr>
+              <td class="title">${esc(r.canon)}</td>
+              <td class="num">${seNum(r.total)}</td>
+              <td class="num">${seNum(r.toSupplier)}</td>
+              <td class="num">${sePct(r.share, 0)}</td></tr>`).join("")}
+            </tbody>
+          </table>
+        </div>
       </details>`;
   }
 
-  // --- 6. Темы обращений (топ + класс закрытия) ----------------------
-  const catHost = document.querySelector("[data-sup-cat]");
-  if (catHost) {
-    const cats = (d.categories || []).slice(0, 8);
-    const maxFreq = Math.max(1, ...cats.map((c) => c.freq || 0));
-    const freqCell = (c) => {
-      const w = Math.max(2, ((c.freq || 0) / maxFreq) * 100);
-      return `<td class="sup-load"><span class="sup-load-bar" style="width:${w.toFixed(0)}%"></span><span class="sup-load-val">${fmtNum(c.freq)}</span></td>`;
-    };
-    // Темы бэклога — для перехода «обращение → задачи в продукте» (?theme=).
-    // Определяем по сырому mapping/названию темы (видимый текст берём из чистого catMapPlain).
-    const BL_THEMES = ["Агентская админка", "Заказы", "Сервис для клиента", "Предложения 2.0", "Оффлайн 4.0", "Онлайн-услуги", "Единый чат"];
-    const blThemeOf = (c) => { const hay = `${c.theme} ${c.mapping || ""}`; return BL_THEMES.find((t) => hay.includes(t)) || null; };
-    const catMap = ex.catMapPlain || {};
-    const nameCell = (c) => {
-      const bt = blThemeOf(c);
-      return bt
-        ? `<td class="title"><a href="backlog.html?theme=${encodeURIComponent(bt)}" title="Задачи бэклога по направлению «${esc(bt)}»">${esc(c.theme)}</a></td>`
-        : `<td class="title">${esc(c.theme)}</td>`;
-    };
-    // «→ куда в продукте»: только чистый авторский текст; сырой mapping не показываем (жаргон).
-    const mapCell = (c) => {
-      const m = catMap[c.theme];
-      return m ? `<td class="muted">${esc(m)}</td>` : `<td class="muted">уточняется</td>`;
-    };
-    catHost.innerHTML = `<div class="table-wrap"><table class="backlog">
-      <thead><tr><th>Тема обращений</th><th><abbr title="Сколько обращений в саппорт по этой теме за весь период">Обращений</abbr></th><th><abbr title="Доля обращений по теме, ушедшая внешнему поставщику">→ поставщику</abbr></th><th><abbr title="Можно ли снять тему продуктом или она упирается в поставщика">Что с этим делать</abbr></th><th><abbr title="Куда тема ложится в продукте — этап и направление работ">→ куда в продукте</abbr></th></tr></thead>
-      <tbody>${cats.map((c) => `<tr>
-        ${nameCell(c)}
-        ${freqCell(c)}
-        <td class="num muted">${pct(c.supShare)}</td>
-        <td>${clsChip(c.cls)}</td>
-        ${mapCell(c)}
-      </tr>`).join("")}</tbody>
-    </table></div>
-    <p class="lede" style="font-size:13px">Показаны 8 из ${(d.categories || []).length} тем. Кликабельная тема ведёт в Бэклог по направлению; полный список и охват — <a href="backlog.html">в Бэклоге</a>.</p>`;
-  }
-
-  // --- 7. Корреляция тормоза → отток (честный отрицательный результат) ---
-  const joinHost = document.querySelector("[data-sup-join]");
-  if (joinHost) {
-    const jp = ex.joinPlain || {};
-    joinHost.innerHTML = `<article class="accent-card is-bet1">
-      <div class="k">Проверка предположения</div>
-      <h3>Дорогая поддержка ≠ уход клиентов</h3>
-      <p>${esc(jp.verdict || "")}</p>
-      <p>${esc(jp.caseFor || "—")}<br>${esc(jp.caseAgainst || "—")}</p>
-      ${jp.implication ? `<p class="muted">${esc(jp.implication)}</p>` : ""}
-      <div class="ev-chiprow"><span class="ev-chip ev-muted" aria-label="не проверялась">∅ пока не подтверждено</span></div>
+  // ------------------------------------------------------- B7 рекомендации
+  function renderActions() {
+    const host = document.querySelector("[data-se-actions]");
+    if (!host) return;
+    const b = X.b7 || {};
+    const PR = { "высокий": "high", "средний": "mid", "низкий": "low" };
+    const card = (r) => `<article class="se-act se-act--${PR[r.prio] || "mid"}${r.special ? " is-special" : ""}">
+      <div class="se-act-h">
+        <span class="se-prio se-prio--${PR[r.prio] || "mid"}">${esc(r.prio || "")}</span>
+      </div>
+      <p class="se-act-w">${esc(r.what || "")}</p>
+      <p class="se-act-e"><b>Что это даст.</b> ${esc(r.effect || "")}</p>
+      ${r.backlogQuery ? `<p class="se-act-l"><a href="backlog.html?q=${encodeURIComponent(r.backlogQuery)}">Найти в бэклоге →</a></p>` : ""}
+      ${r.special && b.specialNote ? `<p class="se-act-n">${esc(b.specialNote)}</p>` : ""}
     </article>`;
+    host.innerHTML = `
+      <div class="se-cols se-cols--acts">
+        <div class="se-col">
+          <h3 class="se-h3">${esc(b.manageHead || "")}</h3>
+          ${(b.manage || []).map(card).join("")}
+        </div>
+        <div class="se-col">
+          <h3 class="se-h3">${esc(b.productHead || "")}</h3>
+          ${(b.product || []).map(card).join("")}
+        </div>
+      </div>`;
   }
 
-  // --- 9. Куда бить первым — кандидаты в пилот 2B (авторский приоритет) ---
-  // Числа (нагрузка, доля поставщика) берём из support.json по агентству; текст — авторский.
-  const pilotHost = document.querySelector("[data-sup-pilot]");
-  if (pilotHost) {
-    const px = ex.pilot || {};
-    const items = px.items || [];
-    const byName = {};
-    pa.forEach((a) => { byName[a.name] = a; });
-    const VERD = {
-      go:    { label: "Брать в пилот",     cls: "sup-cls--good" },
-      hold:  { label: "Другой рычаг",      cls: "sup-cls--mid" },
-      watch: { label: "Образец, не пилот", cls: "sup-cls--mid" },
-      skip:  { label: "Не сейчас",         cls: "sup-cls--bad" },
-    };
-    const PCAP = 40;  // та же шкала нагрузки, что в основной таблице
-    const loadC = (r) => {
-      if (r == null) return `<td class="num muted">—</td>`;
-      const w = Math.max(2, Math.min(r / PCAP, 1) * 100);
-      return `<td class="sup-load"><span class="sup-load-bar" style="width:${w.toFixed(0)}%"></span><span class="sup-load-val">${r1(r)}</span></td>`;
-    };
-    const rowOf = (it) => {
-      const a = byName[it.key] || {};
-      const v = VERD[it.verdict] || { label: it.verdictLabel || "—", cls: "sup-cls--mid" };
-      return `<tr>
-        <td class="title">${esc(it.name || it.key)}</td>
-        ${loadC(a.ratio)}
-        <td class="num muted">${pct(a.supShare)}</td>
-        <td class="muted">${esc(it.pain || a.pain || "—")}</td>
-        <td><span class="sup-cls ${v.cls}">${esc(v.label)}</span></td>
-        <td class="muted">${esc(it.why || "")}</td>
-      </tr>`;
-    };
-    pilotHost.innerHTML = `
-      <article class="accent-card is-bet2 sup-lead">
-        <div class="k">Рабочий приоритет</div>
-        <h3>${esc(px.head || "Куда бить первым")}</h3>
-        <p>${esc(px.lead || "")}</p>
-      </article>
-      <div class="table-wrap"><table class="backlog">
-        <thead><tr>
-          <th>Агентство</th>
-          <th><abbr title="Обращений в саппорт на 1000 транзакций за 6 месяцев: чем больше — тем дороже">Нагрузка</abbr></th>
-          <th><abbr title="Доля обращений, переадресованных внешнему поставщику — её продуктом не снять">→ поставщику</abbr></th>
-          <th>Чаще болит</th>
-          <th>Что делать</th>
-          <th>Почему</th>
-        </tr></thead>
-        <tbody>${items.map(rowOf).join("")}</tbody>
-      </table></div>
-      ${px.note ? `<p class="ev-srcline">${esc(px.note)}</p>` : ""}`;
+  // ----------------------------------------------------------- B8 методика
+  function renderMethod() {
+    const host = document.querySelector("[data-se-method]");
+    if (!host) return;
+    const b = X.b8 || {};
+    const asm = D.meta.assumptions || [];
+    const gaps = X.gaps || [];
+    host.innerHTML = `
+      <p class="lede se-lede">${esc(b.lede || "")}</p>
+      <details class="se-details" open>
+        <summary>${esc(b.methodHead || "Как считали")}</summary>
+        <ul class="se-method">${(b.method || []).map((m) => `<li>${m}</li>`).join("")}</ul>
+        <p class="se-foot">Обращения агентств за окно — ${seNum(D.totals.calls)}, а всего специалисты закрыли
+          ${seNum(D.totals.capacityTickets)} обращений. Разница — непрофильные:
+          ${(D.capacityMix || []).map((c) => `${esc(c.name.toLowerCase())} ${seNum(c.total)}`).join(", ")}.</p>
+      </details>
+      <details class="se-details">
+        <summary>${esc(b.limitsHead || "Ограничения")}</summary>
+        <ul class="se-limits">${(b.limits || []).map((l) =>
+          `<li><b>${esc(l.what)}.</b> ${esc(l.text)}</li>`).join("")}</ul>
+      </details>
+      <details class="se-details">
+        <summary>${esc(b.risksHead || "Риски")}</summary>
+        <ul class="se-limits">${(b.risks || []).map((l) =>
+          `<li><b>${esc(l.what)}.</b> ${esc(l.text)}</li>`).join("")}</ul>
+      </details>
+      ${asm.length ? `<details class="se-details">
+        <summary>${esc(b.sourceCaveatsHead || "Оговорки из расчёта")}</summary>
+        <p class="se-foot">${esc(b.sourceCaveatsNote || "")}</p>
+        <ul class="se-limits">${asm.map((a) =>
+          `<li><b>${esc(a.what)}</b> — ${esc(a.note)}</li>`).join("")}</ul>
+      </details>` : ""}
+      <details class="se-details">
+        <summary>${esc(b.openHead || "Чего не хватает")}</summary>
+        <ul class="se-limits">${(b.open || []).map((o) => `<li>${esc(o)}</li>`).join("")}</ul>
+        ${gaps.length ? `<h4 class="se-h4">Что ушло с прежней версии страницы</h4>
+          <ul class="se-limits">${gaps.map((g) =>
+            `<li><b>${esc(g.what)}.</b> ${esc(g.text)}</li>`).join("")}</ul>` : ""}
+      </details>`;
   }
 
-  // --- 10. Открытые вопросы / что достать дальше (авторский) ---
-  const openHost = document.querySelector("[data-sup-open]");
-  if (openHost) {
-    const ox = ex.openBlock || {};
-    const items = ox.items || [];
-    if (items.length) {
-      openHost.innerHTML = `
-        <article class="accent-card is-nsm">
-          ${ox.lead ? `<p class="muted">${esc(ox.lead)}</p>` : ""}
-          <ul class="sup-caveats">${items.map((it) => `<li><b>${esc(it.q)}.</b> ${esc(it.why || "")}</li>`).join("")}</ul>
-        </article>`;
-    }
+  // ------------------------------------------------------------- B9 подвал
+  function renderFootData() {
+    const host = document.querySelector("[data-se-footdata]");
+    if (!host) return;
+    const b = X.b9 || {};
+    const S = D.supplier || {};
+    // Имена исходных файлов анализа в видимый текст не выносим — только вывод
+    // и период. Происхождение файлов видно в плашке свежести из манифеста.
+    host.innerHTML = `<div class="se-footdata">
+      <p><b>${esc(b.windowNote || "")}</b> ${esc(b.refreshNote || "")}</p>
+      <p class="muted">Обращения в расчёте — по ${seNum(D.meta.months)} месяцам;
+        выгрузка поддержки покрывает ${seNum(S.monthsCovered)} из них${S.windowFact ? ` (${esc(S.windowFact)})` : ""}.
+        Зарплата специалиста в опорном расчёте — ${seMoney(D.meta.fotBase, true)} в месяц,
+        специалистов ${seNum(D.meta.staff)}.</p>
+    </div>`;
   }
 
+  // ------------------------------------------------------------------ сборка
+  function renderAll() {
+    const M = derive();
+    renderSummary(M);
+    renderControls(M);
+    renderMoney(M);
+    renderCapacity();
+    renderWho(M);
+    renderTable(M);
+    renderHeat(M);
+    renderSupplier();
+    renderActions();
+    renderMethod();
+    renderFootData();
+    writeState();
+  }
+  renderAll();
 }
 
 // ===================== Этапы ценности (etapy.html) =====================
@@ -4067,7 +4589,7 @@ document.addEventListener("DOMContentLoaded", () => {
   mountMasshtab();
   mountLegend();
   mountAgencies();
-  mountSupport();
+  mountSupportEcon();
   mountMetrics();
   mountResearch();
   mountSootv();

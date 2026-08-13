@@ -2390,111 +2390,252 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
   .e-hyp__row dt { min-width: 0; }
 }
 
-/* ===================== Нагрузка на саппорт (support.html) =====================
-   Переиспользует .accent-card / .backlog / .ag-strip / .ev-chip. Своё — ниже.
-   Цвет: золото — единственный акцент; теплокарта — отдельная секвенциальная шкала
-   данных (зелёный→янтарь→терракота), НЕ из акцентной оси, с легендой. */
-.sup-lead { margin-top: 16px; }
-.sup-fact { font-family: var(--f-mono); font-size: 13px; color: var(--cream); margin: 6px 0 0; }
-[data-sup-seg] .accent-card p + p,
-[data-sup-concl] .accent-card p + p,
-.sup-lead p + p { margin-top: 8px; }
-.sup-seg-ratio { font-family: var(--f-mono); font-size: 12px; color: var(--gold); margin: 0 0 8px; }
+/* ===================== Экономика поддержки (support.html) ====================
+   Переиспользует .accent-card / .ag-strip / .ag-stat / .table-wrap / .ev-chip /
+   .callout--soft и графические классы .ch-* / .spark. Своё — с префиксом .se-.
+   Цвет по Design Guide v4: золото — единственный акцент действия; розовый
+   --attention ровно один раз в поле зрения (плашка загрузки, она же вывод
+   страницы). Теплокарта — отдельная секвенциальная шкала данных, с легендой.
+   Категориальные --cat-* только там, где есть легенда: IBC против внешних. */
 
-/* раскрывающиеся «ещё выводы» / теплокарта */
-.sup-more { margin: 16px 0 0; border-top: 1px solid var(--line); }
-.sup-more > summary { cursor: pointer; list-style: none; font-family: var(--f-mono); font-size: 12.5px;
-  color: var(--cream-dim); padding: 12px 0; }
-.sup-more > summary::-webkit-details-marker { display: none; }
-.sup-more > summary::before { content: "▸ "; color: var(--gold); }
-.sup-more[open] > summary::before { content: "▾ "; }
-.sup-more > summary:hover { color: var(--cream); }
-.sup-conclist { list-style: none; padding: 0; margin: 6px 0 14px; display: grid; gap: 9px; }
-.sup-conclist li { font-size: 13.5px; color: var(--cream-soft); line-height: 1.5; }
-.ev-chip--mini { padding: 1px 6px; font-size: 11px; }
+.se-lede { font-size: 14px; margin: 0 0 14px; }
+.se-note { font-size: 13.5px; line-height: 1.6; color: var(--cream-soft); margin: 12px 0 0; max-width: 82ch; }
+.se-foot { font-size: 12.5px; line-height: 1.55; color: var(--cream-dim); margin: 10px 0 0; max-width: 82ch; }
+.se-h3 { font-family: var(--f-display); font-size: 18px; margin: 26px 0 8px; }
+.se-h4 { font-size: 14px; margin: 16px 0 6px; color: var(--cream); }
+.se-caveat { margin: 16px 0 0; }
+.se-dim { opacity: .72; }
 
-/* тренд/динамика в таблице: рост ratio — дороже, снижение — лучше */
-.sup-up { color: var(--cream-soft); }
-.sup-down { color: var(--success); font-weight: 500; }
+/* --- B0: плашка-вывод и три плитки ------------------------------------ */
+/* Единственный розовый на странице: ограничение направления — это люди. */
+.se-stat--alert { background: var(--attention-dim); }
+.se-stat--alert .v { color: var(--attention-soft); }
+.se-stat--alert .l::before { content: "▲ "; color: var(--attention); }
 
-/* сигнал и строка базового уровня */
-.sup-sig { font-family: var(--f-mono); font-size: 12px; white-space: nowrap; }
-/* строка с ненадёжным знаменателем (<1000 транзакций) — приглушаем, но не прячем */
-.sup-row-noise td { opacity: .62; }
-.sup-row-noise .sup-sig { font-size: 10.5px; color: var(--cream-dim); }
-.sup-sig--base { font-size: 10.5px; color: var(--cream-dim); border: 1px dashed var(--line-soft);
-  border-radius: 999px; padding: 1px 8px; }
-tr.sup-baseline td { border-top: 2px solid var(--line-soft); color: var(--cream);
-  font-weight: 500; background: var(--gold-dim); }
+.se-verdict { margin-top: 18px; }
+.se-verdict p + p { margin-top: 9px; }
+.se-verdict-chip { display: flex; align-items: center; gap: 8px; margin-top: 14px !important;
+  font-size: 12px; }
 
-/* корреляция / оговорки */
-.sup-corr { list-style: none; padding: 0; margin: 10px 0; display: grid; gap: 5px;
-  font-family: var(--f-mono); font-size: 12.5px; color: var(--cream-soft); }
-.sup-corr code { color: var(--cream-dim); }
-.sup-caveats { color: var(--cream-dim); font-size: 13px; line-height: 1.6; padding-left: 18px; margin: 0 0 12px; }
-.sup-caveats li { margin: 0 0 6px; }
+.se-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 10px; margin: 14px 0 6px; }
+.se-tile { display: flex; flex-direction: column; gap: 5px; padding: 13px 15px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+  text-decoration: none; transition: border-color .15s, transform .15s; }
+.se-tile:hover { border-color: var(--gold-line); transform: translateY(-1px); }
+.se-tile b { font-size: 14.5px; color: var(--gold); }
+.se-tile span { font-size: 12.5px; color: var(--cream-soft); line-height: 1.5; }
+.se-tile::after { content: "↓"; position: absolute; }
+.se-tile { position: relative; }
+.se-tile::after { right: 13px; top: 12px; color: var(--cream-dim); font-size: 12px; }
 
-/* KPI «уходит поставщику» — структурный пол (акцентная ось: золото) */
-.ag-stat--bad { background: var(--gold-dim); }
-.ag-stat--bad .v { color: var(--gold); }
+/* --- B1: панель управления, липнет к верху ----------------------------- */
+.se-bar { position: sticky; top: 0; z-index: 30; display: flex; flex-wrap: wrap;
+  gap: 14px 26px; padding: 12px 16px; margin: 22px 0 0;
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px;
+  backdrop-filter: blur(6px); }
+.se-ctl { display: flex; flex-direction: column; gap: 5px; }
+.se-ctl-l { font-family: var(--f-mono); font-size: 10.5px; text-transform: uppercase;
+  letter-spacing: .05em; color: var(--cream-dim); }
+/* Каждый контрол объясняет себя строкой рядом, а не всплывающей подсказкой. */
+.se-ctl-h { font-size: 11.5px; color: var(--cream-dim); line-height: 1.45; max-width: 42ch; }
+.se-segs { display: flex; flex-wrap: wrap; gap: 1px; background: var(--line);
+  border: 1px solid var(--line); border-radius: 8px; overflow: hidden; width: fit-content; }
+.se-seg { font-family: var(--f-mono); font-size: 12px; padding: 5px 11px; border: 0;
+  background: var(--panel); color: var(--cream-soft); cursor: pointer; }
+.se-seg:hover { color: var(--cream); background: var(--panel-3, var(--panel)); }
+.se-seg.is-on { background: var(--gold-dim); color: var(--gold); font-weight: 500; }
+.se-warn { margin: 10px 0 0; padding: 9px 14px; font-size: 13px; line-height: 1.55;
+  color: var(--cream-soft); background: var(--gold-dim); border: 1px solid var(--gold-line);
+  border-radius: 10px; max-width: 90ch; }
 
-/* строка агентства в оттоке — мягкая пометка, не критично-розовая */
-tr.sup-row--warn td { color: var(--cream-dim); }
-tr.sup-row--warn td.title { color: var(--cream-soft); }
+/* --- графики ----------------------------------------------------------- */
+.se-chart { width: 100%; height: auto; margin: 6px 0 2px; overflow: visible; }
+.se-grid { stroke: var(--line); stroke-width: 1; }
+.se-bar-r { fill: var(--gold-line); transition: fill .12s; cursor: pointer; }
+.se-bar-r:hover { fill: var(--gold); }
+.se-bar-r.is-on { fill: var(--gold); }
+.se-line { stroke: var(--cream-soft); stroke-width: 1.6; stroke-linejoin: round; }
+.se-line--load { stroke: var(--attention); stroke-width: 2; }
+.se-line--a { stroke: var(--cat-1); stroke-width: 2; }
+.se-line--b { stroke: var(--cat-2); stroke-width: 2; stroke-dasharray: 5 3; }
+.se-line-dot { fill: var(--cream-soft); }
+.se-mark { fill: var(--bg); stroke: var(--attention); stroke-width: 2; }
+.se-mark-t { font-family: var(--f-mono); font-size: 10px; fill: var(--attention-soft); }
+.se-dot { fill: transparent; cursor: default; }
 
-/* блок «что чинимо / упирается в поставщика» */
-.sup-supgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
-@media (max-width: 720px) { .sup-supgrid { grid-template-columns: 1fr; } }
-.sup-tlist { list-style: none; padding: 0; margin: 10px 0 0; display: grid; gap: 7px; }
-.sup-tlist li { display: flex; justify-content: space-between; gap: 10px; align-items: baseline;
-  font-size: 13.5px; color: var(--cream-soft); border-bottom: 1px solid var(--line); padding-bottom: 6px; }
-.sup-tlist li:last-child { border-bottom: none; }
-.sup-tname { line-height: 1.35; }
-.sup-tval { font-family: var(--f-mono); font-size: 12px; white-space: nowrap; color: var(--cream); }
+/* --- B4: две сопоставленные полосы, IBC против внешних ------------------ */
+.se-splits { display: grid; gap: 9px; margin: 14px 0 0; }
+.se-legend { display: flex; gap: 16px; margin-bottom: 4px; }
+.se-key { font-family: var(--f-mono); font-size: 11.5px; color: var(--cream-soft);
+  display: inline-flex; align-items: center; gap: 6px; }
+.se-key::before { content: ""; width: 12px; height: 3px; border-radius: 2px; background: var(--cat-1); }
+.se-key--b::before { background: var(--cat-2); }
+.se-split { display: grid; grid-template-columns: 130px 1fr; align-items: center; gap: 12px; }
+.se-split-l { font-size: 13px; color: var(--cream-soft); }
+.se-split-bar { display: flex; height: 26px; border-radius: 6px; overflow: hidden; background: var(--line); }
+.se-split-a, .se-split-b { display: flex; align-items: center; justify-content: center; min-width: 0; }
+.se-split-a { background: rgba(110, 151, 192, .34); }
+.se-split-b { background: rgba(207, 131, 80, .30); }
+.se-split i { font-family: var(--f-mono); font-size: 11px; font-style: normal; color: var(--cream); }
+.se-bullets { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 7px; }
+.se-bullets li { display: flex; gap: 9px; align-items: baseline; font-size: 13.5px;
+  line-height: 1.55; color: var(--cream-soft); }
+.se-bullets .se-key { flex: none; }
 
-/* выводы — все карточки, компактнее (6 шт.) */
-.accent-grid--sm { grid-template-columns: repeat(3, 1fr); gap: 12px; }
-@media (max-width: 900px) { .accent-grid--sm { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 600px) { .accent-grid--sm { grid-template-columns: 1fr; } }
-.sup-conclcard { padding: 14px 16px; }
-.sup-conclcard h3 { font-size: 14px; line-height: 1.4; margin: 0 0 8px; }
+/* --- таблицы ------------------------------------------------------------ */
+.se-tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+.se-tbl th { text-align: left; font-family: var(--f-mono); font-size: 10.5px;
+  text-transform: uppercase; letter-spacing: .05em; color: var(--cream-dim);
+  padding: 8px 10px; border-bottom: 1px solid var(--line-soft); vertical-align: bottom; white-space: nowrap; }
+.se-tbl th button { background: none; border: 0; padding: 0; font: inherit; color: inherit;
+  cursor: pointer; text-transform: inherit; letter-spacing: inherit; }
+.se-tbl th button:hover { color: var(--cream); }
+.se-tbl th.is-sorted { color: var(--gold); }
+.se-th-note { display: block; font-size: 9.5px; text-transform: none; letter-spacing: 0;
+  color: var(--cream-dim); font-weight: 400; margin-top: 2px; }
+.se-tbl td { padding: 8px 10px; border-bottom: 1px solid var(--line);
+  color: var(--cream-soft); vertical-align: middle; }
+.se-tbl td.title { color: var(--cream); }
+.se-tbl .num { text-align: right; font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.se-tbl tr.is-on td { background: var(--gold-dim); }
+.se-total td { border-top: 2px solid var(--line-soft); border-bottom: 0;
+  font-weight: 600; color: var(--cream); background: var(--panel-2); }
+.se-total--alt td { font-weight: 400; color: var(--cream-soft); font-style: italic; }
 
-/* динамика нагрузки в таблице (обращений/мес 2025→2026) */
-.sup-dyn { font-family: var(--f-mono); font-size: 12px; white-space: nowrap; }
-.sup-dyn--up { color: var(--cream); }
-.sup-dyn--down { color: var(--success); }
-.sup-dyn--flat { color: var(--cream-dim); }
+.se-row { cursor: pointer; }
+.se-row:hover td { background: var(--panel-2); }
+.se-row.is-open td { background: var(--gold-dim); }
+.se-row:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; }
+.se-row.is-small td { opacity: .68; }
+.se-caret { display: inline-block; width: 14px; color: var(--gold); }
+.se-seg-l { display: block; font-size: 11px; color: var(--cream-dim); margin-left: 14px; }
+.se-tag { font-family: var(--f-mono); font-size: 9.5px; text-transform: uppercase;
+  letter-spacing: .04em; padding: 1px 6px; border-radius: 999px; margin-left: 6px;
+  border: 1px solid var(--line-soft); color: var(--cream-dim); white-space: nowrap; }
+.se-tag--warn { border-style: dashed; }
 
-/* ячейка «нагрузка»: мини-полоска (секвенциальная шкала данных) + число */
+/* разбор агентства под строкой */
+.se-drill td { background: var(--panel-2); padding: 0; }
+.se-drill-in { padding: 16px 18px 18px; display: grid; gap: 14px; }
+.se-sparks { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+.se-spark { display: grid; gap: 3px; }
+.se-spark-l { font-family: var(--f-mono); font-size: 10px; text-transform: uppercase;
+  letter-spacing: .05em; color: var(--cream-dim); }
+.se-spark-v { font-family: var(--f-mono); font-size: 13px; color: var(--cream); }
+.se-drill-facts p { margin: 0 0 6px; font-size: 13px; line-height: 1.55; color: var(--cream-soft); }
+.se-drill-facts b { color: var(--cream); }
+/* Торец несёт смысл вердикта — семантический код, а не вторая рамка (v4, п.4). */
+.se-verdict-box { border-left: 3px solid var(--line-soft); padding: 10px 14px;
+  background: var(--panel); border-radius: 0 8px 8px 0; }
+.se-verdict-box b { color: var(--cream); font-size: 14px; }
+.se-verdict-box p { margin: 5px 0 0; font-size: 13px; line-height: 1.6; color: var(--cream-soft); }
+.se-v--good { border-left-color: var(--success); }
+.se-v--mid { border-left-color: var(--line-soft); }
+.se-v--bad { border-left-color: var(--attention); }
+.se-drill-links { display: flex; flex-wrap: wrap; gap: 18px; margin: 0; font-size: 13px; }
+
+/* --- B5 подсветка двух коммерческих случаев ----------------------------- */
+.se-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+.se-card .k { color: var(--cream-dim); }
+
+/* --- B6 теплокарта: секвенциальная шкала данных, не акцентная ось -------- */
+.se-heat-ctl { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 12px; margin: 6px 0 12px; }
+.se-scale { display: flex; align-items: center; gap: 4px; font-size: 11px; }
+.se-scale i { width: 22px; height: 12px; border-radius: 2px; }
+.se-heat th { font-size: 10px; padding: 6px 4px; }
+.se-heat td.se-cell { font-family: var(--f-mono); font-size: 10.5px; text-align: center;
+  padding: 5px 4px; color: var(--cream); font-variant-numeric: tabular-nums;
+  cursor: pointer; border-bottom: 1px solid var(--bg); }
+.se-cell.is-col { outline: 1px solid var(--gold); outline-offset: -1px; }
+.se-l0 { background: rgba(61, 163, 114, .16); }
+.se-l1 { background: rgba(127, 168, 106, .22); }
+.se-l2 { background: rgba(226, 179, 85, .22); }
+.se-l3 { background: rgba(207, 131, 80, .30); }
+.se-l4 { background: rgba(207, 131, 80, .52); }
+.se-cell.se-l-1 { background: transparent; }
+
+/* --- B6a потолок эффекта ------------------------------------------------ */
+.se-ceil { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 0; }
+.se-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px 28px; margin: 16px 0 0; }
+.se-col h4 { font-size: 13.5px; margin: 0 0 8px; color: var(--cream); }
+.se-theme-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.se-theme-list li { display: flex; justify-content: space-between; gap: 12px;
+  font-size: 13px; padding-bottom: 5px; border-bottom: 1px solid var(--line); }
+.se-theme-n { color: var(--cream-soft); }
+.se-theme-v { font-family: var(--f-mono); font-size: 11.5px; color: var(--cream-dim);
+  white-space: nowrap; }
+
+/* --- B3 калькулятор ----------------------------------------------------- */
+.se-calc { margin: 22px 0 0; padding: 16px 18px; background: var(--panel);
+  border: 1px solid var(--line); border-radius: 12px; }
+.se-calc .se-h3 { margin-top: 0; }
+.se-calc-row { display: flex; align-items: center; gap: 16px; margin: 10px 0; }
+.se-range { flex: 1 1 260px; max-width: 380px; accent-color: var(--gold); }
+.se-calc-n { font-family: var(--f-mono); font-size: 13px; color: var(--cream-soft); white-space: nowrap; }
+.se-calc-n b { color: var(--gold); font-size: 16px; }
+.se-calc-out { font-size: 14px; color: var(--cream-soft); margin: 8px 0 0; }
+.se-calc-v { font-family: var(--f-mono); font-size: 20px; color: var(--gold); }
+
+/* --- B7 рекомендации ---------------------------------------------------- */
+.se-cols--acts { gap: 14px 24px; }
+.se-act { padding: 13px 15px; margin: 0 0 10px; background: var(--panel);
+  border: 1px solid var(--line); border-radius: 10px; }
+.se-act.is-special { border-color: var(--gold-line); background: var(--gold-dim); }
+.se-act-h { margin-bottom: 6px; }
+.se-prio { font-family: var(--f-mono); font-size: 9.5px; text-transform: uppercase;
+  letter-spacing: .05em; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line-soft); color: var(--cream-dim); }
+.se-prio--high { color: var(--gold); border-color: var(--gold-line); background: var(--gold-dim); }
+.se-act-w { margin: 0; font-size: 14px; line-height: 1.5; color: var(--cream); }
+.se-act-e { margin: 7px 0 0; font-size: 12.5px; line-height: 1.55; color: var(--cream-soft); }
+.se-act-e b { color: var(--cream-dim); font-weight: 500; }
+.se-act-l { margin: 8px 0 0; font-size: 12.5px; }
+.se-act-n { margin: 8px 0 0; font-size: 12.5px; line-height: 1.55; color: var(--cream-soft);
+  border-top: 1px solid var(--gold-line); padding-top: 8px; }
+
+/* --- B8 методика -------------------------------------------------------- */
+.se-details { margin: 12px 0 0; border-top: 1px solid var(--line); }
+.se-details > summary { cursor: pointer; list-style: none; font-family: var(--f-mono);
+  font-size: 12.5px; text-transform: uppercase; letter-spacing: .05em;
+  color: var(--cream-soft); padding: 11px 0; }
+.se-details > summary::-webkit-details-marker { display: none; }
+.se-details > summary::before { content: "▸ "; color: var(--gold); }
+.se-details[open] > summary::before { content: "▾ "; }
+.se-details > summary:hover { color: var(--cream); }
+.se-method, .se-limits { list-style: none; padding: 0; margin: 2px 0 14px; display: grid; gap: 9px; }
+.se-limits { padding-left: 18px; list-style: disc; }
+.se-method li, .se-limits li { font-size: 13.5px; line-height: 1.6; color: var(--cream-soft); max-width: 88ch; }
+.se-method li b, .se-limits li b { color: var(--cream); }
+
+/* --- B9 подвал данных --------------------------------------------------- */
+.se-footdata { margin: 28px 0 0; padding: 14px 16px; background: var(--panel-2);
+  border: 1px solid var(--line); border-radius: 10px; font-size: 13px; line-height: 1.6; }
+.se-footdata p { margin: 0; }
+.se-footdata p + p { margin-top: 6px; font-size: 12px; }
+
+@media (max-width: 860px) {
+  .se-bar { position: static; }
+  .se-split { grid-template-columns: 1fr; gap: 4px; }
+  .se-drill-links { gap: 12px; }
+}
+
+/* ячейка «нагрузка»: мини-полоска (секвенциальная шкала данных) + число.
+   Осталась от прежней версии страницы — переиспользуется таблицей агентств. */
 td.sup-load { position: relative; min-width: 96px; }
 .sup-load-bar { position: absolute; left: 8px; top: 50%; transform: translateY(-50%);
   height: 16px; background: var(--gold-line); border-radius: 3px; z-index: 0; max-width: calc(100% - 16px); }
 .sup-load-val { position: relative; z-index: 1; font-family: var(--f-mono);
   font-variant-numeric: tabular-nums; font-weight: 500; }
 
-/* подзаголовок группы агентств по уровню обслуживания */
-tr.sup-grouphdr td { font-family: var(--f-mono); font-size: 10.5px; text-transform: uppercase;
-  letter-spacing: .05em; color: var(--cream-dim); background: var(--panel-2);
-  padding: 7px 12px; border-top: 1px solid var(--line-soft); }
-/* строки-шум (малая база, отток) — приглушены */
-tr.sup-row--mute td, tr.sup-row--mute td.title { color: var(--cream-dim); }
-tr.sup-row--mute .sup-load-bar { opacity: .4; }
-
-/* чип «класс закрытия» темы — отдельная пилюля, не путать с эмодзи-сигналом */
+/* чип «класс управляемости» темы — тоже от прежней версии, живёт в B6a */
 .sup-cls { font-family: var(--f-mono); font-size: 11px; padding: 1px 9px; border-radius: 999px;
   white-space: nowrap; border: 1px solid var(--line-soft); color: var(--cream-soft); }
 .sup-cls--good { color: var(--success); border-color: rgba(61, 163, 114, .45); background: rgba(61, 163, 114, .08); }
 .sup-cls--bad { color: var(--cream-dim); border-style: dashed; }
 .sup-cls--mid { color: var(--cream-soft); }
-
-/* теплокарта Support-ratio (секвенциальная шкала данных, не акцентная ось) */
-.hm-table th { font-size: 10.5px; padding: 6px 5px; }
-.hm-table td.hm { font-family: var(--f-mono); font-size: 10.5px; text-align: center;
-  padding: 4px 5px; color: var(--cream); font-variant-numeric: tabular-nums; }
-.hm--g  { background: rgba(61, 163, 114, .20); }   /* ниже базового — эффективно */
-.hm--y  { background: rgba(226, 179, 85, .18); }   /* выше базового */
-.hm--r  { background: rgba(207, 131, 80, .34); }   /* дорого (≥20) */
-.hm--na { background: transparent; color: var(--cream-dim); }
 
 /* ===================== Печать / сохранение в PDF (2026-07-03) ===================== */
 /* Стейкхолдеры печатают стратегию/выводы. Переопределяем ТОЛЬКО палитру-токены внутри
