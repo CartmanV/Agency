@@ -2125,7 +2125,12 @@ def build_support_econ():
                   "Оценка нижняя: по мере разгона объёма новичок пишет больше.",
     }
 
-    ibc = next((a for a in agencies if a["name"] == "IBC"), None)
+    # Внутреннее агентство холдинга: у него тариф начисляется на другую базу,
+    # поэтому оно и вынесено в отдельную ось «с ним / без него». Имя держим
+    # здесь и отдаём во фронт через meta — в разметке и в js названий
+    # агентств быть не должно.
+    IBC_NAME = "IBC"
+    ibc = next((a for a in agencies if a["name"] == IBC_NAME), None)
     T = totals_all or {}
     share = lambda part, whole: round(part / whole, 4) if part and whole else None
 
@@ -2162,6 +2167,7 @@ def build_support_econ():
             "builtFromCalls": (supplier or {}).get("builtFrom"),
             "fotBase": fot_base, "staff": staff, "months": len(months),
             "window": f"{mkeys[0]} … {mkeys[-1]}" if mkeys else None,
+            "ibcName": IBC_NAME if ibc else None,
             "assumptions": assumptions,
         },
         "months": months,

@@ -1777,6 +1777,11 @@ async function mountSupportEcon() {
 
   const mKeys = D.months.map((m) => m.m);
   const FOTS = D.fotScenarios.map((s) => s.fot);
+  // Названий агентств и порогов-суждений в этом файле быть не должно:
+  // имя внутреннего агентства приходит из сборки, цель и пороги — из авторского слоя.
+  const IBC = D.meta.ibcName;
+  const GOAL = (X.b3 || {}).goalAgencies || 0;
+  const SMALL_OPS = (X.b5 || {}).smallBaseOps || 0;
 
   // --- состояние страницы живёт в адресе -------------------------------
   // Чтобы ссылку на конкретный разрез можно было отправить в чат. localStorage
@@ -1791,7 +1796,7 @@ async function mountSupportEcon() {
       metric: SE_METRICS[p.get("m")] ? p.get("m") : "cost",
       ag: p.get("ag") || null,
       mm: mKeys.includes(p.get("mm")) ? p.get("mm") : null,
-      n: Number.isFinite(n) && n >= 0 && n <= 20 ? n : 20,
+      n: Number.isFinite(n) && n >= 0 && n <= GOAL ? n : GOAL,
       heat: p.get("heat") === "cost" ? "cost" : "ratio",
     };
   }
@@ -1804,7 +1809,7 @@ async function mountSupportEcon() {
     if (state.metric !== "cost") p.set("m", state.metric);
     if (state.ag) p.set("ag", state.ag);
     if (state.mm) p.set("mm", state.mm);
-    if (state.n !== 20) p.set("n", state.n);
+    if (state.n !== GOAL) p.set("n", state.n);
     if (state.heat !== "ratio") p.set("heat", state.heat);
     const q = p.toString();
     history.replaceState(null, "", location.pathname + (q ? "?" + q : "") + location.hash);
@@ -1836,7 +1841,7 @@ async function mountSupportEcon() {
       callsExt: m.callsExt,
     }));
 
-    const list = D.agencies.filter((a) => !ex || a.name !== "IBC");
+    const list = D.agencies.filter((a) => !ex || a.name !== IBC);
     const agencies = list.map((a) => ({
       ...a,
       supportCost: a.supportCost * k,
@@ -1902,7 +1907,7 @@ async function mountSupportEcon() {
     const b0 = X.b0 || {};
     const nc = D.newcomer || {};
     const plus = nc.callsPerNewcomer && nc.baseCallsPerMonth
-      ? (nc.callsPerNewcomer * 20) / nc.baseCallsPerMonth : null;
+      ? (nc.callsPerNewcomer * GOAL) / nc.baseCallsPerMonth : null;
 
     const VAL = {
       supportCost: () => seMoney(M.totals.supportCost),
@@ -2092,7 +2097,7 @@ async function mountSupportEcon() {
         <table class="se-tbl">
           <thead><tr>
             <th>Зарплата специалиста</th><th class="num">Одно обращение</th>
-            <th class="num">Поддержка за 13 мес.</th><th class="num">% выручки</th>
+            <th class="num">Поддержка за ${seNum(D.meta.months)} мес.</th><th class="num">% выручки</th>
             <th class="num">% без IBC</th><th>Что это за сценарий</th>
           </tr></thead>
           <tbody>${rows}</tbody>
@@ -2175,7 +2180,7 @@ async function mountSupportEcon() {
         <h3 class="se-h3">${esc(b.calcHead || "")}</h3>
         <p class="se-lede">${esc(b.calcLede || "")}</p>
         <div class="se-calc-row">
-          <input type="range" min="0" max="20" step="1" value="${state.n}" class="se-range"
+          <input type="range" min="0" max="${GOAL}" step="1" value="${state.n}" class="se-range"
                  aria-label="Сколько новых агентств подключаем" data-se-n />
           <output class="se-calc-n"><b>+${state.n}</b> агентств</output>
         </div>
@@ -2205,7 +2210,7 @@ async function mountSupportEcon() {
     if (!host) return;
     const b = X.b4 || {};
     const sh = D.totals.ibcShare || {};
-    const ibc = D.agencies.find((a) => a.name === "IBC");
+    const ibc = D.agencies.find((a) => a.name === IBC);
     const exT = D.totals.exIbc || {};
 
     const bar = (label, ibcShare) => {
@@ -2252,8 +2257,8 @@ async function mountSupportEcon() {
       <p class="lede se-lede">${esc(b.lede || "")}</p>
       <div class="se-splits">
         <div class="se-legend">
-          <span class="se-key se-key--a">IBC</span>
-          <span class="se-key se-key--b">18 внешних агентств</span>
+          <span class="se-key se-key--a">${esc(IBC || "внутреннее агентство")}</span>
+          <span class="se-key se-key--b">${seNum(D.agencies.length - (IBC ? 1 : 0))} внешних агентств</span>
         </div>
         ${bar("Обращения", sh.calls)}
         ${bar("Объём работы", sh.ops)}
@@ -2315,7 +2320,7 @@ async function mountSupportEcon() {
 
     const rows = list.map((a) => {
       const v = V[a.name] || {};
-      const small = (a.ops || 0) < 500;
+      const small = (a.ops || 0) < SMALL_OPS;
       const open = state.ag === a.name;
       const w = maxPct ? Math.min(100, ((a.pctRevenue || 0) / maxPct) * 100) : 0;
       return `<tr class="se-row${small ? " is-small" : ""}${open ? " is-open" : ""}" data-ag="${esc(a.name)}" tabindex="0">
@@ -2377,7 +2382,7 @@ async function mountSupportEcon() {
       <p class="se-note">${esc(b.newcomerNote || "")}</p>
       <h3 class="se-h3">${esc(b.highlightHead || "")}</h3>
       <div class="se-cards">
-        ${["Аэротон", "KMP Group"].map((nm) => {
+        ${(b.highlight || []).map((nm) => {
           const a = M.agencies.find((x) => x.name === nm);
           const v = V[nm] || {};
           if (!a) return "";
@@ -2423,8 +2428,7 @@ async function mountSupportEcon() {
       </div>`;
     };
     const esc2 = (s) => esc(s || "");
-    const agHref = a.name === "Аэротон" ? "agencies.html#aeroton"
-      : a.name === "Симпл Флайт" ? "agencies.html#simple-flight" : "agencies.html";
+    const agHref = ((X.b5 || {}).agencyLinks || {})[a.name] || "agencies.html";
     return `<tr class="se-drill"><td colspan="9">
       <div class="se-drill-in">
         <div class="se-sparks">

@@ -6,6 +6,7 @@
     "staff": 4.0,
     "months": 13,
     "window": "2025-07 … 2026-07",
+    "ibcName": "IBC",
     "assumptions": [
       {
         "what": "Тарифы IBC 170 ₽ и KazTour 100 ₽",
