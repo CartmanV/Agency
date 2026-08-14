@@ -2588,6 +2588,9 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
 .se-key { font-family: var(--f-mono); font-size: 12px; color: var(--cream-soft);
   display: inline-flex; align-items: center; gap: 6px; }
 .se-key::before { content: ""; width: 12px; height: 3px; border-radius: 2px; background: var(--cat-1); }
+/* --a совпадает с базовым цветом, но объявлен явно: без своего правила он
+   молча сломался бы при любой правке .se-key. */
+.se-key--a::before { background: var(--cat-1); }
 .se-key--b::before { background: var(--cat-2); }
 /* легенда графика денег: столбец — прямоугольник, линия доли — штрих */
 .se-key--bar::before { width: 11px; height: 11px; border-radius: 2px; background: var(--gold-line); }
