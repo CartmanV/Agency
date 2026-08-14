@@ -2421,8 +2421,13 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
 .se-out { font-size: 15px; line-height: 1.6; color: var(--cream);
   margin: 14px 0 0; max-width: 82ch; }
 .se-out b { font-weight: 600; }
-.se-note { font-size: 13.5px; line-height: 1.6; color: var(--cream-soft); margin: 12px 0 0; max-width: 82ch; }
-.se-foot { font-size: 12.5px; line-height: 1.55; color: var(--cream-dim); margin: 10px 0 0; max-width: 82ch; }
+/* Текстовых слоёв на странице ровно три, и у каждого одна работа:
+   .se-lede — вводка блока, .se-out — вывод блока, .se-foot — сноска.
+   Прежний четвёртый слой .se-note удалён, а вложенные <span class="muted">
+   внутри сносок убраны: внутри сноски не бывает ещё более мелкой сноски.
+   Именно эта лестница затухающего серого и читалась как «много текста
+   разного цвета». */
+.se-foot { font-size: 12px; line-height: 1.55; color: var(--cream-dim); margin: 10px 0 0; max-width: 82ch; }
 .se-h3 { font-family: var(--f-display); font-size: 18px; margin: 26px 0 8px; }
 .se-h4 { font-size: 14px; margin: 16px 0 6px; color: var(--cream); }
 /* Методическая оговорка. Раньше это был .callout--soft — розовая пунктирная
@@ -2774,7 +2779,7 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
 .se-footdata { margin: 28px 0 0; padding: 14px 16px; background: var(--panel-2);
   border: 1px solid var(--line); border-radius: 10px; font-size: 13px; line-height: 1.6; }
 .se-footdata p { margin: 0; }
-.se-footdata p + p { margin-top: 6px; font-size: 12px; }
+.se-footdata p + p { margin-top: 6px; font-size: 12px; color: var(--cream-dim); }
 
 @media (max-width: 860px) {
   .se-bar { position: static; }

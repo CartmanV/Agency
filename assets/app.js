@@ -2199,7 +2199,7 @@ async function mountSupportEcon() {
         ${fotWarn}
         <p class="se-lede">${esc(b.lede || "")}</p>
         ${chartMoney(M)}
-        <p class="se-note">${esc(b.note || "")}</p>
+        <p class="se-out">${esc(b.note || "")}</p>
         <h3 class="se-h3">${esc(s.head || "")}</h3>
         <p class="se-lede">${esc(s.lede || "")}</p>
         <div class="table-wrap">
@@ -2212,7 +2212,7 @@ async function mountSupportEcon() {
             <tbody>${rows}</tbody>
           </table>
         </div>
-        <p class="se-note">${esc(s.conclusion || "")}
+        <p class="se-out">${esc(s.conclusion || "")}
           <b>При выбранном сценарии превышение — ${seMoney(t.lossTotal, true)} за 13 месяцев,
           это ${sePct(t.lossPctRevenue, 2)} выручки.</b></p>
         <p class="se-foot">${esc(b.footnote || "")}</p>
@@ -2301,8 +2301,8 @@ async function mountSupportEcon() {
     host.innerHTML = `
       <p class="lede se-lede">${esc(b.lede || "")}</p>
       ${chartCapacity()}
-      <p class="se-note">${esc(b.conclusion || "")}
-        ${tr.rangeText ? `<span class="muted">Диапазон за окно: ${esc(tr.rangeText)}.</span>` : ""}</p>
+      <p class="se-out">${esc(b.conclusion || "")}</p>
+      ${tr.rangeText ? `<p class="se-foot">Диапазон за окно: ${esc(tr.rangeText)}.</p>` : ""}
       <div class="se-calc">
         <h3 class="se-h3">${esc(b.calcHead || "")}</h3>
         <p class="se-lede">${esc(b.calcLede || "")}</p>
@@ -2316,9 +2316,9 @@ async function mountSupportEcon() {
           ${esc((b.calcResult || "").replace("{base}", seNum(base)))}
           — <b>+${Math.round(pct * 100)}%</b> к очереди
         </p>
-        <p class="se-note">${esc((b.calcNote || "").replace("{perNewcomer}", seNum(per, 1)))}</p>
+        <p class="se-foot">${esc((b.calcNote || "").replace("{perNewcomer}", seNum(per, 1)))}</p>
         <p class="se-foot">${esc((b.calcCaveat || "").replace("{count}", String(nc.count || 0)))}
-          ${nc.names ? `<span class="muted">Это ${esc(nc.names.join(", "))}.</span>` : ""}</p>
+          ${nc.names ? `Это ${esc(nc.names.join(", "))}.` : ""}</p>
       </div>`;
     wireTips(host);
     const r = host.querySelector("[data-se-n]");
@@ -2399,7 +2399,7 @@ async function mountSupportEcon() {
         ${bar("Объём работы", sh.ops)}
         ${bar("Выручка", sh.revenue)}
       </div>
-      ${ibc && times ? `<p class="se-note">${esc((b.gapNote || "")
+      ${ibc && times ? `<p class="se-out">${esc((b.gapNote || "")
         .replace("{ibc}", seMoney(ibc.revenuePerCall, true))
         .replace("{ext}", seMoney(exT.revenuePerCall, true))
         .replace("{times}", seNum(times, 1)))}</p>` : ""}
@@ -2580,7 +2580,7 @@ async function mountSupportEcon() {
             </article>`;
           }).join("")}
         </div>
-        <p class="se-note">${esc(b.newcomerNote || "")}</p>
+        <p class="se-out">${esc(b.newcomerNote || "")}</p>
       </details>`;
 
     const more = host.querySelector("[data-more]");
@@ -2640,11 +2640,11 @@ async function mountSupportEcon() {
           ${a.tariffNote ? `<p><b>Тариф:</b> ${esc2(a.tariffNote)}</p>` : ""}
           ${a.escalations != null ? `<p><b>Ушло в разработку:</b> ${seNum(a.escalations)} обращений`
             + `${a.escalationShare != null ? ` (${sePct(a.escalationShare, 0)})` : ""}.
-            <span class="muted">Это нагрузка на разработку, которой нет ни в одной цифре выше.</span></p>` : ""}
+            Это нагрузка на разработку, которой нет ни в одной цифре выше.</p>` : ""}
           ${a.toSupplier != null ? `<p><b>Переадресовано поставщику:</b> ${seNum(a.toSupplier)} из ${seNum(a.callsInSupplierWindow)}
             (${sePct(a.toSupplierShare, 0)}).</p>`
-            : `<p class="muted">Данных о переадресации нет: агентство подключилось позже, чем обрывается выгрузка обращений.</p>`}
-          ${a.firstMonth ? `<p class="muted">Первый месяц с объёмом — ${esc(seMonLong(a.firstMonth))}.</p>` : ""}
+            : `<p>Данных о переадресации нет: агентство подключилось позже, чем обрывается выгрузка обращений.</p>`}
+          ${a.firstMonth ? `<p>Первый месяц с объёмом — ${esc(seMonLong(a.firstMonth))}.</p>` : ""}
         </div>
         ${v.verdict ? `<div class="se-verdict-box se-v--${esc(v.cls || "mid")}">
           <b>${esc(v.verdict)}</b>
@@ -2726,7 +2726,7 @@ async function mountSupportEcon() {
     // месяца, а не аргумент: вывод из карты уже сделан двумя блоками выше.
     // Наверху остаётся строка-вывод, сама карта — под раскрытием.
     host.innerHTML = `
-      <p class="se-note">${esc(b.summaryLine || "")}</p>
+      <p class="se-out">${esc(b.summaryLine || "")}</p>
       <details class="se-details"${state.heatOpen ? " open" : ""} data-heatbox>
       <summary>${esc(b.openLabel || "Развернуть карту")}</summary>
       <p class="lede se-lede">${esc(b.lede || "")}</p>
@@ -2854,7 +2854,7 @@ async function mountSupportEcon() {
         ${seg(pEsc, "esc", b.flowEsc || "в разработку", pEsc)}
         ${seg(pOwnFlow, "own", b.flowOwn || "закрыла сама", pOwnFlow)}
       </div>
-      <p class="se-note">${esc(b.ceilingNote || "")}</p>
+      <p class="se-out">${esc(b.ceilingNote || "")}</p>
       <p class="se-foot">${esc((b.denomNote || "")
         .replace("{total}", seNum(S.total))
         .replace("{months}", seNum(S.monthsCovered))
@@ -2872,7 +2872,7 @@ async function mountSupportEcon() {
           ${themeList(["part"], b.partHead || "Частично зависит от поставщика", "mid")}
           ${themeList(["own"], b.ownHead || "Целиком в наших руках", "good")}
         </div>
-        ${u.total ? `<p class="se-note">${esc((b.unattributedNote || "")
+        ${u.total ? `<p class="se-foot">${esc((b.unattributedNote || "")
           .replace("{n}", seNum(u.total))
           .replace("{pct}", sePct(u.shareOfFlow, 0))
           .replace("{share}", sePct(u.share, 0)))}</p>` : ""}
@@ -2986,7 +2986,7 @@ async function mountSupportEcon() {
     // и период. Происхождение файлов видно в плашке свежести из манифеста.
     host.innerHTML = `<div class="se-footdata">
       <p><b>${esc(b.windowNote || "")}</b> ${esc(b.refreshNote || "")}</p>
-      <p class="muted">Обращения в расчёте — по ${seNum(D.meta.months)} месяцам;
+      <p>Обращения в расчёте — по ${seNum(D.meta.months)} месяцам;
         выгрузка поддержки покрывает ${seNum(S.monthsCovered)} из них${S.windowFact ? ` (${esc(S.windowFact)})` : ""}.
         Зарплата специалиста в опорном расчёте — ${seMoney(D.meta.fotBase, true)} в месяц,
         специалистов ${seNum(D.meta.staff)}.</p>
