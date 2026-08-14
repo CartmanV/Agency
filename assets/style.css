@@ -2413,6 +2413,35 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
   --se-ext:  var(--cat-2);      /* терракота — упирается в поставщика/чужое */
 }
 
+/* --- скелет страницы: лента разделов + нумерация блоков ----------------- */
+/* Восемь блоков шли подряд одинаковыми h2, без нумерации и без навигации:
+   в середине страницы негде было понять, где ты и сколько осталось. Приём
+   тот же, что на «Выводах», но лента строится из самих заголовков (seRail). */
+.se-shell { display: grid; grid-template-columns: 186px minmax(0, 1fr);
+  gap: 0 34px; align-items: start; }
+.se-rail { position: sticky; top: 14px; align-self: start; padding-top: 6px; }
+.se-rail .rlab { display: block; font-family: var(--f-mono); font-size: 10.5px;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--cream-dim);
+  padding: 0 0 9px 12px; }
+.se-rail a { display: flex; gap: 9px; padding: 6px 0 6px 11px; font-size: 12px;
+  line-height: 1.35; color: var(--cream-dim); text-decoration: none;
+  border-left: 2px solid var(--line); }
+.se-rail a:hover { color: var(--cream); border-left-color: var(--line-soft); }
+.se-rail a.is-on { color: var(--gold); border-left-color: var(--gold); }
+.se-rail-n { flex: none; font-family: var(--f-mono); opacity: .7; }
+/* Номер блока у заголовка — та же нумерация, что в ленте. */
+.se-num { font-family: var(--f-mono); font-size: 15px; font-weight: 400;
+  color: var(--gold); margin-right: 11px; }
+.se-num:empty { display: none; }
+/* Заголовок раздела должен отбиваться от предыдущего блока сильнее, чем
+   подзаголовок внутри блока, — иначе уровни спорят (было 32px против 26px). */
+.se-page h2 { margin: 46px 0 14px; scroll-margin-top: 14px; }
+.se-page .se-body > div:first-child { scroll-margin-top: 14px; }
+@media (max-width: 1100px) {
+  .se-shell { grid-template-columns: minmax(0, 1fr); }
+  .se-rail { display: none; }
+}
+
 .se-lede { font-size: 14px; margin: 0 0 14px; }
 /* Вывод блока. Отдельный слой, потому что раньше выводы («направление
    упирается не в бюджет, а в людей», «потолок продукта — не 90%») лежали
@@ -2428,7 +2457,11 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
    Именно эта лестница затухающего серого и читалась как «много текста
    разного цвета». */
 .se-foot { font-size: 12px; line-height: 1.55; color: var(--cream-dim); margin: 10px 0 0; max-width: 82ch; }
-.se-h3 { font-family: var(--f-display); font-size: 18px; margin: 26px 0 8px; }
+/* Подзаголовок внутри блока — своим шрифтом, а не тем же Playfair на кегль
+   меньше: 18px против 22px у h2 читались как один уровень, и «Что будет,
+   если выполнить +20» выглядело новым разделом страницы. */
+.se-h3 { font-family: var(--f-body); font-size: 15px; font-weight: 600;
+  color: var(--cream); margin: 24px 0 8px; }
 .se-h4 { font-size: 14px; margin: 16px 0 6px; color: var(--cream); }
 /* Методическая оговорка. Раньше это был .callout--soft — розовая пунктирная
    врезка на легаси-токенах: лишний розовый в поле зрения плюс пунктир,
@@ -2718,7 +2751,7 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
 .se-theme-bar i.se-theme-bar--mid { background: var(--se-part); }
 .se-theme-bar i.se-theme-bar--good { background: var(--se-own); }
 .se-details--tight { margin-top: 8px; border-top: 0; }
-.se-details--tight > summary { padding: 6px 0; font-size: 11px; }
+.se-details--tight > summary { padding: 6px 0; }
 
 /* --- B3 калькулятор ----------------------------------------------------- */
 .se-calc { margin: 22px 0 0; padding: 16px 18px; background: var(--panel);
@@ -2749,22 +2782,30 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
   border-top: 1px solid var(--gold-line); padding-top: 8px; }
 
 /* --- B8 методика -------------------------------------------------------- */
+/* Раскрытий на странице четырнадцать, и все выглядели одинаково — мелкой
+   mono-строкой в верхнем регистре. По виду нельзя было отличить продолжение
+   аргумента (методика, вердикты, разбор по темам), которое стоит открыть,
+   от справочника (карта 19×13, таблица по агентствам), который можно не
+   открывать вовсе. Теперь это два разных вида. */
 .se-details { margin: 12px 0 0; border-top: 1px solid var(--line); }
-.se-details > summary { cursor: pointer; list-style: none; font-family: var(--f-mono);
-  font-size: 12.5px; text-transform: uppercase; letter-spacing: .05em;
-  color: var(--cream-soft); padding: 11px 0; }
+/* по умолчанию — продолжение аргумента: обычным текстом, в полный кегль */
+.se-details > summary { cursor: pointer; list-style: none; font-family: var(--f-body);
+  font-size: 14px; color: var(--cream); padding: 12px 0; }
 .se-details > summary::-webkit-details-marker { display: none; }
 .se-details > summary::before { content: "▸ "; color: var(--gold); }
 .se-details[open] > summary::before { content: "▾ "; }
-.se-details > summary:hover { color: var(--cream); }
+.se-details > summary:hover { color: var(--gold); }
+/* справочник — тише основного текста: его можно пропустить без потери мысли */
+.se-details--app > summary { font-family: var(--f-mono); font-size: 10.5px;
+  text-transform: uppercase; letter-spacing: .05em; color: var(--cream-dim); }
+.se-details--app > summary:hover { color: var(--cream); }
 .se-method, .se-limits { list-style: none; padding: 0; margin: 2px 0 14px; display: grid; gap: 9px; }
 .se-limits { padding-left: 18px; list-style: disc; }
 .se-method li, .se-limits li { font-size: 13.5px; line-height: 1.6; color: var(--cream-soft); max-width: 88ch; }
 .se-method li b, .se-limits li b { color: var(--cream); }
 
 /* денежный блок внутри методики: свёрнут, заголовок несёт готовый вывод */
-.se-money > summary { text-transform: none; letter-spacing: 0; font-size: 14px;
-  font-family: var(--f-body); color: var(--cream-soft); }
+.se-money > summary { color: var(--cream-soft); }
 .se-money > summary b { color: var(--cream); font-weight: 500; }
 .se-bar--in { position: static; margin-top: 4px; }
 /* Единственное движение в деньгах — месяцы подключения новичков. Торец
@@ -2827,7 +2868,8 @@ td.se-load { min-width: 112px; }
   /* каркас-хром, не нужный на бумаге */
   .site-header, .site-footer, .skip-link, .gsearch,
   .toolbar, .tree-controls, .must-controls, .cols-panel,
-  [data-projbar], .vy-rail { display: none !important; }
+  [data-projbar], .vy-rail, .se-rail { display: none !important; }
+  .se-shell { display: block !important; }
   main { max-width: none; margin: 0; padding: 0; }
   a { color: #14140f; text-decoration: underline; }
   /* не рвать смысловые блоки между страницами */

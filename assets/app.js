@@ -2727,7 +2727,7 @@ async function mountSupportEcon() {
     // Наверху остаётся строка-вывод, сама карта — под раскрытием.
     host.innerHTML = `
       <p class="se-out">${esc(b.summaryLine || "")}</p>
-      <details class="se-details"${state.heatOpen ? " open" : ""} data-heatbox>
+      <details class="se-details se-details--app"${state.heatOpen ? " open" : ""} data-heatbox>
       <summary>${esc(b.openLabel || "Развернуть карту")}</summary>
       <p class="lede se-lede">${esc(b.lede || "")}</p>
       <div class="se-heat-ctl">
@@ -2811,7 +2811,7 @@ async function mountSupportEcon() {
       return `<div class="se-col">
         <h4 class="se-col-h se-col-h--${mod}">${esc(head)}<span>${items.length} ${sePlural(items.length, "тема", "темы", "тем")} · ${seNum(calls)} ${sePlural(calls, "обращение", "обращения", "обращений")}</span></h4>
         <ul class="se-theme-list">${head9.map(li).join("")}</ul>
-        ${rest.length ? `<details class="se-details se-details--tight">
+        ${rest.length ? `<details class="se-details se-details--app se-details--tight">
           <summary>ещё ${seNum(rest.length)} ${sePlural(rest.length, "тема", "темы", "тем")} помельче</summary>
           <ul class="se-theme-list">${rest.map(li).join("")}</ul>
         </details>` : ""}
@@ -2877,7 +2877,7 @@ async function mountSupportEcon() {
           .replace("{pct}", sePct(u.shareOfFlow, 0))
           .replace("{share}", sePct(u.share, 0)))}</p>` : ""}
       </details>
-      <details class="se-details">
+      <details class="se-details se-details--app">
         <summary>Зависимость от поставщика по агентствам</summary>
         <div class="table-wrap">
           <table class="se-tbl">
@@ -3010,6 +3010,51 @@ async function mountSupportEcon() {
     writeState();
   }
   renderAll();
+  seRail();
+
+  // Лента разделов слева и номера у заголовков. Строятся из самих h2 страницы:
+  // отдельный список в разметке разошёлся бы с ней при первой же правке.
+  // Страница длинная — восемь блоков и полтора десятка раскрытий, — и до сих
+  // пор в ней негде было понять, где ты находишься и сколько осталось.
+  function seRail() {
+    const nav = document.querySelector("[data-se-rail]");
+    if (!nav) return;
+    const heads = [...document.querySelectorAll(".se-body h2[id]")];
+    // Первый экран номера не получает: он не раздел, а сводка всех остальных.
+    const items = [{ id: "glavnoe", text: "Главное", n: "" }].concat(
+      heads.map((h, i) => ({ id: h.id, text: h.textContent.trim(), n: String(i + 1), el: h })));
+
+    items.forEach((it) => {
+      if (!it.el) return;
+      const num = document.createElement("span");
+      num.className = "se-num";
+      num.setAttribute("aria-hidden", "true");
+      num.textContent = it.n;
+      it.el.prepend(num);
+    });
+
+    nav.innerHTML = `<span class="rlab">Разделы</span>` + items.map((it) =>
+      `<a href="#${esc(it.id)}" data-rail="${esc(it.id)}">
+         <span class="se-rail-n" aria-hidden="true">${esc(it.n || "·")}</span>
+         <span>${esc(it.text)}</span></a>`).join("");
+
+    const links = new Map();
+    nav.querySelectorAll("a").forEach((a) => links.set(a.dataset.rail, a));
+    // Активен последний заголовок, ушедший под верх экрана. Считаем по позиции,
+    // а не наблюдателем пересечений: блоки здесь очень разной высоты, и порог
+    // видимости у теплокарты и у строки-вывода означал бы разное.
+    const sync = () => {
+      let on = items[0].id;
+      items.forEach((it) => {
+        const el = document.getElementById(it.id);
+        if (el && el.getBoundingClientRect().top <= 120) on = it.id;
+      });
+      links.forEach((a, id) => a.classList.toggle("is-on", id === on));
+    };
+    addEventListener("scroll", sync, { passive: true });
+    addEventListener("resize", sync, { passive: true });
+    sync();
+  }
 
   // Ссылка «разбор →» из первого экрана ведёт в свёрнутый денежный блок.
   // Без этого клик прокручивал к закрытому заголовку, и читатель видел
