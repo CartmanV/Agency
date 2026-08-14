@@ -2484,6 +2484,10 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
 .se-stat--alert .l::before { content: "▲ "; color: var(--attention); }
 
 .se-verdict { margin-top: 18px; }
+/* Раскрытие внутри карточки вывода: рамка сверху — по цвету карточки, чтобы
+   не читаться как граница второго уровня (v4, п.4). */
+.se-verdict-d { border-top-color: var(--line-soft); margin-top: 16px; }
+.se-verdict-d > summary { padding: 10px 0 2px; }
 .se-verdict p + p { margin-top: 9px; }
 /* Селектор весомее .accent-card p — раньше то же добиралось !important. */
 .accent-card p.se-verdict-chip { display: flex; align-items: center; gap: 8px;
@@ -2778,6 +2782,10 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
   letter-spacing: .05em; padding: 2px 8px; border-radius: 999px;
   border: 1px solid var(--line-soft); color: var(--cream-dim); }
 .se-prio--high { color: var(--gold); border-color: var(--gold-line); background: var(--gold-dim); }
+/* «решение принято» — это статус «готово», а он по v4 и есть --success.
+   Приоритетным золотом его метить нельзя: приоритет и статус — разные оси. */
+.se-prio--done { color: var(--success); border-color: rgba(61, 163, 114, .45);
+  background: rgba(61, 163, 114, .08); }
 .se-act-w { margin: 0; font-size: 14px; line-height: 1.5; color: var(--cream); }
 .se-act-e { margin: 7px 0 0; font-size: 12px; line-height: 1.55; color: var(--cream-soft); }
 .se-act-e b { color: var(--cream-dim); font-weight: 500; }

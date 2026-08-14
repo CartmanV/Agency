@@ -1841,6 +1841,8 @@ async function mountSupportEcon() {
       money: p.get("money") === "1" || location.hash === "#dengi",
       heatOpen: p.get("map") === "1" || location.hash === "#pomesyachno",
       small: p.get("small") === "1",
+      // Пять пунктов под выводом первого экрана: свёрнуты по умолчанию.
+      points: p.get("v") === "1",
     };
   }
   const state = readState();
@@ -1857,6 +1859,7 @@ async function mountSupportEcon() {
     if (state.money) p.set("money", "1");
     if (state.heatOpen) p.set("map", "1");
     if (state.small) p.set("small", "1");
+    if (state.points) p.set("v", "1");
     const q = p.toString();
     history.replaceState(null, "", location.pathname + (q ? "?" + q : "") + location.hash);
   }
@@ -1994,23 +1997,36 @@ async function mountSupportEcon() {
       </li>`).join("");
 
     const a = b0.ask || {};
+    // Сам вывод и его статус достоверности видны всегда — это главное
+    // утверждение страницы. Пять пунктов, на которых он держится, свёрнуты:
+    // первый экран должен отвечать одной фразой, а доказательство разворачивают
+    // те, кому оно нужно. Состояние — в адресе, как у остальных раскрытий.
+    const chip = (() => {
+      // evChip возвращает описатель {cls, sign, label}, а не готовую разметку.
+      const c = evChip(v.chipStatus || "подтв.");
+      return `<p class="se-verdict-chip"><span class="ev-chip ${c.cls}" aria-label="${esc(c.label)}">${c.sign} ${esc(c.label)}</span>
+        <span class="muted">${esc(v.chipLabel || "")}</span></p>`;
+    })();
     host.innerHTML = `
       <div class="ag-strip se-kpi">${kpi}</div>
       <article class="accent-card is-nsm se-verdict">
         <h3>${esc(v.head || "")}</h3>
-        <ol class="se-points">${points}</ol>
-        ${(() => {
-          // evChip возвращает описатель {cls, sign, label}, а не готовую разметку.
-          const c = evChip(v.chipStatus || "подтв.");
-          return `<p class="se-verdict-chip"><span class="ev-chip ${c.cls}" aria-label="${esc(c.label)}">${c.sign} ${esc(c.label)}</span>
-            <span class="muted">${esc(v.chipLabel || "")}</span></p>`;
-        })()}
+        ${chip}
+        <details class="se-details se-verdict-d"${state.points ? " open" : ""} data-pointsbox>
+          <summary>${esc(v.pointsHead || "На чём держится вывод")}</summary>
+          <ol class="se-points">${points}</ol>
+        </details>
       </article>
       ${a.text ? `<div class="se-ask">
-        <span class="se-prio se-prio--high">${esc(a.label || "нужно решение")}</span>
+        <span class="se-prio ${a.status === "done" ? "se-prio--done" : "se-prio--high"}">${esc(a.label || "нужно решение")}</span>
         <p>${esc(a.text)}</p>
         <p class="se-ask-l"><a href="#${esc(a.to || "delat")}">${esc(a.linkText || "Что решить")} →</a></p>
       </div>` : ""}`;
+
+    // Раскрытие не должно схлопываться при каждой перерисовке страницы —
+    // та же причина, что у денежного блока.
+    const pd = host.querySelector("[data-pointsbox]");
+    if (pd) pd.addEventListener("toggle", () => { state.points = pd.open; writeState(); });
   }
 
   // -------------------------------------------------------- B1 управление
