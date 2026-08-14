@@ -1728,24 +1728,38 @@ const SE_RU_MON = ["янв", "фев", "мар", "апр", "май", "июн", "
 function sePct(x, d = 1) {
   return x == null ? "—" : (x * 100).toFixed(d).replace(".", ",") + "%";
 }
+// Разряды разделяем УЗКИМ НЕРАЗРЫВНЫМ пробелом. Обычный пробел здесь ломает
+// число переносом: в узкой ячейке таблицы «67,52 млн ₽» распадалось на две
+// строки, а «2 050 ₽» оставляло рубль сиротой на второй.
+const SE_NB = " ";
 function seNum(n, d = 0) {
   if (n == null) return "—";
-  return n.toLocaleString("ru-RU", { minimumFractionDigits: d, maximumFractionDigits: d }).replace(/ /g, " ");
+  return n.toLocaleString("ru-RU", { minimumFractionDigits: d, maximumFractionDigits: d })
+    .replace(/[   ]/g, SE_NB);
 }
 // Деньги крупно: 4317127 → «4,32 млн ₽», 343616 → «344 тыс ₽», 676 → «676 ₽».
 function seMoney(n, long = false) {
   if (n == null) return "—";
-  if (long) return seNum(n) + " ₽";
+  if (long) return seNum(n) + SE_NB + "₽";
   const a = Math.abs(n);
-  if (a >= 1e6) return seNum(n / 1e6, 2) + " млн ₽";
-  if (a >= 1e4) return seNum(n / 1e3) + " тыс ₽";
-  return seNum(n) + " ₽";
+  if (a >= 1e6) return seNum(n / 1e6, 2) + SE_NB + "млн" + SE_NB + "₽";
+  if (a >= 1e4) return seNum(n / 1e3) + SE_NB + "тыс" + SE_NB + "₽";
+  return seNum(n) + SE_NB + "₽";
 }
 // «2025-07» → «июл·25»
 function seMon(key) {
   if (!key) return "";
   const [y, m] = String(key).split("-");
   return (SE_RU_MON[(+m) - 1] || m) + "·" + String(y).slice(2);
+}
+// Полное имя месяца — для фраз в тексте: «пришлась на июль 2026». В подсказках
+// и подписях осей остаётся короткая форма, иначе они не помещаются.
+const SE_RU_MON_FULL = ["январь", "февраль", "март", "апрель", "май", "июнь",
+  "июль", "август", "сентябрь", "октябрь", "ноябрь", "декабрь"];
+function seMonFull(key) {
+  if (!key) return "";
+  const [y, m] = String(key).split("-");
+  return (SE_RU_MON_FULL[(+m) - 1] || m) + " " + y;
 }
 function seMonLong(key) {
   if (!key) return "";
@@ -1759,6 +1773,27 @@ const SE_METRICS = {
   pct: { label: "% выручки", axis: "% выручки", fmt: (v) => sePct(v) },
   load: { label: "Загрузка на специалиста", axis: "обращений на человека", fmt: (v) => seNum(v) },
 };
+
+// «1 тема / 2 темы / 5 тем»: без этого в заголовках колонок стояло «3 тем».
+function sePlural(n, one, few, many) {
+  const a = Math.abs(n) % 100, b = a % 10;
+  if (a > 10 && a < 20) return many;
+  if (b === 1) return one;
+  if (b > 1 && b < 5) return few;
+  return many;
+}
+
+// Ширина холста графиков — почти во всю колонку страницы (--maxw 1280 минус
+// поля = 1232px). Прежние 760 браузер растягивал до той же ширины, увеличивая
+// вместе с картинкой и текст: подписи осей выходили крупнее основного текста
+// страницы и налезали друг на друга. Рисуем 1:1 — размеры подписей задаёт css.
+const SE_W = 1200;
+// Подпись оси — отдельной строкой над полем графика. Раньше она рисовалась в
+// той же точке, что и верхняя риска, и «395 тыс ₽» с «₽ в месяц» печатались
+// друг поверх друга.
+function seAxisCap(x, anchor, text) {
+  return `<text x="${x}" y="15" class="se-axis-cap" text-anchor="${anchor}">${esc(text)}</text>`;
+}
 
 async function mountSupportEcon() {
   const headHost = document.querySelector("[data-se-head]");
@@ -1789,7 +1824,10 @@ async function mountSupportEcon() {
   function readState() {
     const p = new URLSearchParams(location.search);
     const fot = Number(p.get("fot"));
-    const n = Number(p.get("n"));
+    // Number(null) === 0, поэтому без явной проверки ползунок «сколько новых
+    // агентств» открывался на нуле — под заголовком «что будет, если выполнить
+    // цель +20» страница показывала «+0 агентств» и «+0% к очереди».
+    const n = p.has("n") ? Number(p.get("n")) : NaN;
     return {
       base: p.get("base") === "ex" ? "ex" : "all",
       fot: FOTS.includes(fot) ? fot : D.meta.fotBase,
@@ -1798,6 +1836,11 @@ async function mountSupportEcon() {
       mm: mKeys.includes(p.get("mm")) ? p.get("mm") : null,
       n: Number.isFinite(n) && n >= 0 && n <= GOAL ? n : GOAL,
       heat: p.get("heat") === "cost" ? "cost" : "ratio",
+      // Денежный блок свёрнут по умолчанию, но ссылка вида support.html#dengi
+      // должна приводить в раскрытый блок, а не к закрытому заголовку.
+      money: p.get("money") === "1" || location.hash === "#dengi",
+      heatOpen: p.get("map") === "1" || location.hash === "#pomesyachno",
+      small: p.get("small") === "1",
     };
   }
   const state = readState();
@@ -1811,6 +1854,9 @@ async function mountSupportEcon() {
     if (state.mm) p.set("mm", state.mm);
     if (state.n !== GOAL) p.set("n", state.n);
     if (state.heat !== "ratio") p.set("heat", state.heat);
+    if (state.money) p.set("money", "1");
+    if (state.heatOpen) p.set("map", "1");
+    if (state.small) p.set("small", "1");
     const q = p.toString();
     history.replaceState(null, "", location.pathname + (q ? "?" + q : "") + location.hash);
   }
@@ -1889,9 +1935,6 @@ async function mountSupportEcon() {
     };
   }
 
-  // --- общие кусочки разметки -------------------------------------------
-  const srcHint = (text) => `<p class="se-foot">${text} <a href="#znamenatel">Что стоит за числами →</a></p>`;
-
   // ---------------------------------------------------------------- шапка
   const P = X.page || {};
   headHost.innerHTML = `
@@ -1900,12 +1943,16 @@ async function mountSupportEcon() {
     <p class="lede">${esc(P.lede || "")}</p>
     ${P.srcline ? `<p class="ev-srcline">${P.srcline}</p>` : ""}`;
 
-  // ------------------------------------------------------------ B0 сводка
+  // -------------------------------------------- B0 executive summary
+  // Первый экран отвечает на всё сразу: четыре числа, пять выводов и один
+  // запрос. Остальная страница — доказательство каждого из выводов, поэтому
+  // каждый ведёт ссылкой в свой блок.
   function renderSummary(M) {
     const host = document.querySelector("[data-se-summary]");
     if (!host) return;
     const b0 = X.b0 || {};
     const nc = D.newcomer || {};
+    const S = D.supplier || {};
     const plus = nc.callsPerNewcomer && nc.baseCallsPerMonth
       ? (nc.callsPerNewcomer * GOAL) / nc.baseCallsPerMonth : null;
 
@@ -1914,6 +1961,9 @@ async function mountSupportEcon() {
       pctRevenue: () => sePct(M.totals.pctRevenue),
       perSpecialist: () => seNum(M.totals.perSpecialistLast),
       ratio: () => seNum(M.totals.ratio, 1),
+      // Доля к поставщику от базы не зависит: она считается на своём окне и
+      // по всему потоку обращений, включая корзину «Другое».
+      toSupplier: () => sePct(S.share),
       plus20: () => (plus == null ? "—" : "+" + Math.round(plus * 100) + "%"),
     };
     const kpi = (b0.kpi || []).map((k) => {
@@ -1921,26 +1971,34 @@ async function mountSupportEcon() {
       // Загрузка и очередь — величины на всю службу: специалисты общие, и от
       // исключения IBC из денежного среза очередь не становится короче.
       // Без этой оговорки «Без IBC» читается как «а вот тут полегче».
-      const shared = state.base === "ex" && (k.key === "perSpecialist" || k.key === "plus20");
+      // В срезе «Без IBC» три плашки остаются общими по службе: специалисты
+      // одни на всех, и доля к поставщику считается по всему потоку обращений.
+      const SHARED = {
+        perSpecialist: " · считая IBC: люди общие",
+        plus20: " · считая IBC: люди общие",
+        toSupplier: " · доля считается по всему потоку, включая IBC",
+      };
+      const shared = state.base === "ex" ? (SHARED[k.key] || "") : "";
       return `<div class="ag-stat${cls}">
         <div class="v">${esc((VAL[k.key] || (() => "—"))())}</div>
         <div class="l">${esc(k.label || "")}</div>
-        <div class="s">${esc(k.sub || "")}${shared ? " · считая IBC: люди общие" : ""}</div>
+        <div class="s">${esc(k.sub || "")}${shared}</div>
       </div>`;
     }).join("");
 
     const v = b0.verdict || {};
-    const tiles = (b0.tiles || []).map((t) => `
-      <a class="se-tile" href="#${esc(t.to)}">
-        <b>${esc(t.head)}</b>
-        <span>${esc(t.text)}</span>
-      </a>`).join("");
+    const points = (v.points || []).map((p) => `
+      <li>
+        <b>${esc(p.head)}.</b> ${esc(p.text)}
+        ${p.to ? `<a class="se-point-l" href="#${esc(p.to)}">разбор →</a>` : ""}
+      </li>`).join("");
 
+    const a = b0.ask || {};
     host.innerHTML = `
-      <div class="ag-strip">${kpi}</div>
+      <div class="ag-strip se-kpi">${kpi}</div>
       <article class="accent-card is-nsm se-verdict">
         <h3>${esc(v.head || "")}</h3>
-        ${(v.body || []).map((p) => `<p>${esc(p)}</p>`).join("")}
+        <ol class="se-points">${points}</ol>
         ${(() => {
           // evChip возвращает описатель {cls, sign, label}, а не готовую разметку.
           const c = evChip(v.chipStatus || "подтв.");
@@ -1948,59 +2006,41 @@ async function mountSupportEcon() {
             <span class="muted">${esc(v.chipLabel || "")}</span></p>`;
         })()}
       </article>
-      <div class="se-tiles">${tiles}</div>`;
+      ${a.text ? `<div class="se-ask">
+        <span class="se-prio se-prio--high">${esc(a.label || "нужно решение")}</span>
+        <p>${esc(a.text)}</p>
+        <p class="se-ask-l"><a href="#${esc(a.to || "delat")}">${esc(a.linkText || "Что решить")} →</a></p>
+      </div>` : ""}`;
   }
 
   // -------------------------------------------------------- B1 управление
+  // Здесь остаётся только база: она меняет всю страницу. Зарплата специалиста
+  // и показатель графика управляют одним денежным блоком — они живут внутри
+  // него, в разделе «Что стоит за числами», и наверху были лишним шумом.
+  const seOpt = (val, cur, label) =>
+    `<button type="button" class="se-seg${val === cur ? " is-on" : ""}" data-val="${esc(val)}">${esc(label)}</button>`;
+
   function renderControls(M) {
     const host = document.querySelector("[data-se-controls]");
     if (!host) return;
     const c = X.b1 || {};
-    const opt = (val, cur, label) =>
-      `<button type="button" class="se-seg${val === cur ? " is-on" : ""}" data-val="${esc(val)}">${esc(label)}</button>`;
-
-    const warns = [];
-    if (state.fot !== D.meta.fotBase && c.warnFot) {
-      warns.push(c.warnFot
-        .replace("{fot}", seMoney(state.fot, true))
-        .replace("{base}", seMoney(D.meta.fotBase, true)));
-    }
-    if (state.base === "ex" && c.warnExIbc) warns.push(c.warnExIbc);
 
     host.innerHTML = `
       <div class="se-bar">
         <div class="se-ctl" data-ctl="base">
           <span class="se-ctl-l">${esc(c.baseLabel || "База")}</span>
           <div class="se-segs">
-            ${opt("all", state.base, c.baseAll || "Всё направление")}
-            ${opt("ex", state.base, c.baseExIbc || "Без IBC")}
+            ${seOpt("all", state.base, c.baseAll || "Всё направление")}
+            ${seOpt("ex", state.base, c.baseExIbc || "Без IBC")}
           </div>
           <span class="se-ctl-h">${esc(c.baseHint || "")}</span>
         </div>
-        <div class="se-ctl" data-ctl="fot">
-          <span class="se-ctl-l">${esc(c.fotLabel || "Зарплата специалиста")}</span>
-          <div class="se-segs">
-            ${D.fotScenarios.map((s) => opt(String(s.fot), String(state.fot),
-              seNum(s.fot) + (s.base ? " ₽ · опорный" : " ₽"))).join("")}
-          </div>
-          <span class="se-ctl-h">${esc(c.fotHint || "")}</span>
-        </div>
-        <div class="se-ctl" data-ctl="metric">
-          <span class="se-ctl-l">${esc(c.metricLabel || "Показатель на графике")}</span>
-          <div class="se-segs">
-            ${Object.entries(SE_METRICS).map(([k, m]) => opt(k, state.metric, m.label)).join("")}
-          </div>
-        </div>
       </div>
-      ${warns.map((w) => `<p class="se-warn">${esc(w)}</p>`).join("")}`;
+      ${state.base === "ex" && c.warnExIbc ? `<p class="se-warn">${esc(c.warnExIbc)}</p>` : ""}`;
 
     host.querySelectorAll("[data-ctl] .se-seg").forEach((btn) => {
       btn.addEventListener("click", () => {
-        const kind = btn.closest("[data-ctl]").dataset.ctl;
-        const v = btn.dataset.val;
-        if (kind === "fot") state.fot = Number(v);
-        else if (kind === "base") state.base = v;
-        else state.metric = v;
+        state.base = btn.dataset.val;
         renderAll();
       });
     });
@@ -2009,7 +2049,7 @@ async function mountSupportEcon() {
   // ------------------------------------------------------------- B2 деньги
   // Комбинированный график: столбцы — выбранный показатель, линия — доля выручки.
   function chartMoney(M) {
-    const W = 760, H = 260, pL = 62, pR = 52, pT = 16, pB = 38;
+    const W = SE_W, H = 340, pL = 104, pR = 74, pT = 46, pB = 50;
     const key = state.metric;
     const bars = M.months.map((m) => ({
       m: m.m,
@@ -2019,6 +2059,7 @@ async function mountSupportEcon() {
     const vals = bars.map((b) => b.v).filter((v) => v != null);
     if (!vals.length) return `<p class="muted">Нет данных для графика.</p>`;
     const max = Math.max(...vals) * 1.15;
+    const lo = Math.min(...vals), hi = Math.max(...vals);
     const n = bars.length;
     const bw = (W - pL - pR) / n;
     const y = (v) => H - pB - (v / max) * (H - pT - pB);
@@ -2031,11 +2072,11 @@ async function mountSupportEcon() {
     for (let g = 0; g <= 3; g++) {
       const v = (max / 3) * g, yy = y(v).toFixed(1);
       grid += `<line x1="${pL}" x2="${W - pR}" y1="${yy}" y2="${yy}" class="se-grid"/>
-        <text x="${pL - 8}" y="${(+yy + 3).toFixed(1)}" class="ch-ylab" text-anchor="end">${SE_METRICS[key].fmt(v)}</text>`;
+        <text x="${pL - 10}" y="${(+yy + 4).toFixed(1)}" class="ch-ylab" text-anchor="end">${SE_METRICS[key].fmt(v)}</text>`;
     }
     for (let g = 0; g <= 2; g++) {
       const v = (lineMax / 2) * g;
-      grid += `<text x="${W - pR + 8}" y="${(yr(v) + 3).toFixed(1)}" class="ch-ylab ch-ylab--r" text-anchor="start">${sePct(v, 0)}</text>`;
+      grid += `<text x="${W - pR + 10}" y="${(yr(v) + 4).toFixed(1)}" class="ch-ylab ch-ylab--r" text-anchor="start">${sePct(v, 0)}</text>`;
     }
 
     const rects = bars.map((b, i) => {
@@ -2050,30 +2091,58 @@ async function mountSupportEcon() {
         width="${(bw * 0.68).toFixed(1)}" height="${h.toFixed(1)}"/>`;
     }).join("");
 
+    // Разница между месяцами здесь мала (у стоимости — 7%), и на нулевой базе
+    // столбцы выглядят одинаковыми. Поэтому значение подписано над каждым
+    // столбцом: сравнивать глазом всё равно нечего, читать — есть что.
+    const vlab = bars.map((b, i) => b.v == null ? "" :
+      `<text x="${cx(i).toFixed(1)}" y="${(y(b.v) - 9).toFixed(1)}" text-anchor="middle"
+        class="se-val${b.v === hi ? " is-hi" : b.v === lo ? " is-lo" : ""}">${SE_METRICS[key].fmt(b.v)}</text>`).join("");
+
     const pts = M.months.map((m, i) => [cx(i), yr(m.pctRevenue || 0)]);
     const path = pts.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" ");
-    const dots = pts.map((p) => `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="2.5" class="se-line-dot"/>`).join("");
+    const dots = pts.map((p) => `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3" class="se-line-dot"/>`).join("");
 
     const xlab = bars.map((b, i) =>
-      (i % 2 === 0 || i === n - 1)
-        ? `<text x="${cx(i).toFixed(1)}" y="${H - 14}" class="ch-xlab" text-anchor="middle">${seMon(b.m)}</text>`
-        : "").join("");
+      `<text x="${cx(i).toFixed(1)}" y="${H - 16}" class="ch-xlab" text-anchor="middle">${seMon(b.m)}</text>`).join("");
 
     const label = `Столбцы — ${SE_METRICS[key].label.toLowerCase()} по месяцам, линия — доля выручки, `
-      + `с ${seMonLong(mKeys[0])} по ${seMonLong(mKeys[n - 1])}`;
-    return `<svg class="se-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}">
-      ${grid}${rects}
-      <path d="${path}" class="se-line" fill="none"/>${dots}
-      ${xlab}
-      <text x="${pL - 8}" y="${pT}" class="ch-ylab" text-anchor="end">${esc(SE_METRICS[key].axis)}</text>
-      <text x="${W - pR + 8}" y="${pT}" class="ch-ylab ch-ylab--r" text-anchor="start">% выручки</text>
-    </svg>`;
+      + `с ${seMonLong(mKeys[0])} по ${seMonLong(mKeys[n - 1])}. `
+      + `Разброс: от ${SE_METRICS[key].fmt(lo)} до ${SE_METRICS[key].fmt(hi)}`;
+    return `<figure class="se-fig">
+      <figcaption class="se-fig-cap">
+        <span class="se-key se-key--bar">${esc(SE_METRICS[key].label)} по месяцам</span>
+        <span class="se-key se-key--pct">доля выручки, правая ось</span>
+      </figcaption>
+      <svg class="se-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}">
+        ${grid}${rects}${vlab}
+        <path d="${path}" class="se-line se-line--pct" fill="none"/>${dots}
+        ${xlab}
+        ${seAxisCap(0, "start", SE_METRICS[key].axis)}
+        ${seAxisCap(W, "end", "% выручки")}
+      </svg>
+    </figure>`;
+  }
+
+  // Кто именно создал превышение в худшем месяце. Без этого «8,7 тыс в июле»
+  // читается как ухудшение экономики базы, хотя почти всю сумму даёт один
+  // новичок, у которого объём ещё не набран.
+  function worstMonthTop(M) {
+    const w = M.totals.lossWorst;
+    if (!w || !w.loss) return null;
+    const i = mKeys.indexOf(w.m);
+    let top = null;
+    M.agencies.forEach((a) => {
+      const c = (a.series.supportCost || [])[i] || 0;
+      const r = (a.series.revenue || [])[i] || 0;
+      if (c > r && (!top || c - r > top.loss)) top = { name: a.name, loss: c - r, ops: (a.series.ops || [])[i] || 0 };
+    });
+    return top ? { ...w, top, share: top.loss / w.loss } : null;
   }
 
   function renderMoney(M) {
     const host = document.querySelector("[data-se-money]");
     if (!host) return;
-    const b = X.b2 || {}, s = b.sensitivity || {};
+    const b = X.b2 || {}, s = b.sensitivity || {}, sp = b.spike || {};
     const rows = D.fotScenarios.map((sc) => {
       const on = sc.fot === state.fot;
       return `<tr class="${on ? "is-on" : ""}">
@@ -2087,30 +2156,85 @@ async function mountSupportEcon() {
     }).join("");
 
     const t = M.totals;
+    const w = worstMonthTop(M);
+    const spike = w ? esc((sp.text || "")
+      .replace("{total}", seMoney(t.lossTotal, true))
+      .replace("{loss}", seMoney(w.loss, true))
+      .replace("{month}", seMonFull(w.m))
+      .replace("{agency}", w.top.name)
+      .replace("{agencyShare}", Math.round(w.share * 100) + "% суммы")) : "";
+
+    // Весь денежный блок — свёрнутый: в деньгах ограничения нет, и держать
+    // его открытым значит спорить с главным выводом страницы. Заголовок
+    // подписан выводом, чтобы разворачивать было незачем.
+    const fotWarn = state.fot !== D.meta.fotBase && (X.b1 || {}).warnFot
+      ? `<p class="se-warn">${esc((X.b1.warnFot)
+          .replace("{fot}", seMoney(state.fot, true))
+          .replace("{base}", seMoney(D.meta.fotBase, true)))}</p>` : "";
+
     host.innerHTML = `
-      <p class="lede se-lede">${esc(b.lede || "")}</p>
-      ${chartMoney(M)}
-      <p class="se-note">${esc(b.note || "")}</p>
-      <h3 class="se-h3">${esc(s.head || "")}</h3>
-      <p class="se-lede">${esc(s.lede || "")}</p>
-      <div class="table-wrap">
-        <table class="se-tbl">
-          <thead><tr>
-            <th>Зарплата специалиста</th><th class="num">Одно обращение</th>
-            <th class="num">Поддержка за ${seNum(D.meta.months)} мес.</th><th class="num">% выручки</th>
-            <th class="num">% без IBC</th><th>Что это за сценарий</th>
-          </tr></thead>
-          <tbody>${rows}</tbody>
-        </table>
-      </div>
-      <p class="se-note">${esc(s.conclusion || "")}
-        <b>При выбранном сценарии превышение — ${seMoney(t.lossTotal, true)} за 13 месяцев,
-        это ${sePct(t.lossPctRevenue, 2)} выручки.</b></p>
-      ${srcHint(esc(b.footnote || ""))}`;
+      <details class="se-details se-money" id="dengi"${state.money ? " open" : ""}>
+        <summary>${esc(b.head || "Деньги")} — <b>${esc(b.summaryLine || "")}</b></summary>
+        ${w ? `<div class="se-spike">
+          <b>${esc(sp.head || "")}</b>
+          <p>${spike}</p>
+          <p class="se-foot">${esc(sp.foot || "")}</p>
+        </div>` : ""}
+        <div class="se-bar se-bar--in">
+          <div class="se-ctl" data-ctl="fot">
+            <span class="se-ctl-l">${esc((X.b1 || {}).fotLabel || "Зарплата специалиста")}</span>
+            <div class="se-segs">
+              ${D.fotScenarios.map((sc) => seOpt(String(sc.fot), String(state.fot),
+                seNum(sc.fot) + (sc.base ? " ₽ · опорный" : " ₽"))).join("")}
+            </div>
+            <span class="se-ctl-h">${esc((X.b1 || {}).fotHint || "")}</span>
+          </div>
+          <div class="se-ctl" data-ctl="metric">
+            <span class="se-ctl-l">${esc((X.b1 || {}).metricLabel || "Показатель на графике")}</span>
+            <div class="se-segs">
+              ${Object.entries(SE_METRICS).map(([k, m]) => seOpt(k, state.metric, m.label)).join("")}
+            </div>
+          </div>
+        </div>
+        ${fotWarn}
+        <p class="se-lede">${esc(b.lede || "")}</p>
+        ${chartMoney(M)}
+        <p class="se-note">${esc(b.note || "")}</p>
+        <h3 class="se-h3">${esc(s.head || "")}</h3>
+        <p class="se-lede">${esc(s.lede || "")}</p>
+        <div class="table-wrap">
+          <table class="se-tbl">
+            <thead><tr>
+              <th>Зарплата специалиста</th><th class="num">Одно обращение</th>
+              <th class="num">Поддержка за ${seNum(D.meta.months)} мес.</th><th class="num">% выручки</th>
+              <th class="num">% без IBC</th><th>Что это за сценарий</th>
+            </tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+        <p class="se-note">${esc(s.conclusion || "")}
+          <b>При выбранном сценарии превышение — ${seMoney(t.lossTotal, true)} за 13 месяцев,
+          это ${sePct(t.lossPctRevenue, 2)} выручки.</b></p>
+        <p class="se-foot">${esc(b.footnote || "")}</p>
+      </details>`;
     wireTips(host);
+    // Раскрытый блок не должен схлопываться при каждой перерисовке: состояние
+    // держим в state, иначе клик по столбцу графика закрывает сам график.
+    const det = host.querySelector("#dengi");
+    if (det) det.addEventListener("toggle", () => { state.money = det.open; });
+    host.querySelectorAll("[data-ctl] .se-seg").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const kind = btn.closest("[data-ctl]").dataset.ctl;
+        if (kind === "fot") state.fot = Number(btn.dataset.val);
+        else state.metric = btn.dataset.val;
+        state.money = true;
+        renderAll();
+      });
+    });
     host.querySelectorAll("[data-m]").forEach((el) => {
       el.addEventListener("click", () => {
         state.mm = state.mm === el.dataset.m ? null : el.dataset.m;
+        state.money = true;
         renderAll();
       });
     });
@@ -2118,7 +2242,7 @@ async function mountSupportEcon() {
 
   // -------------------------------------------------------------- B3 люди
   function chartCapacity() {
-    const W = 760, H = 220, pL = 46, pR = 20, pT = 18, pB = 34;
+    const W = SE_W, H = 300, pL = 76, pR = 40, pT = 44, pB = 46;
     const cap = D.capacity;
     const vals = cap.map((c) => c.perSpecialist).filter((v) => v != null);
     if (vals.length < 2) return `<p class="muted">Нет данных для графика.</p>`;
@@ -2131,7 +2255,7 @@ async function mountSupportEcon() {
     for (let g = 0; g <= 3; g++) {
       const v = (max / 3) * g, yy = y(v).toFixed(1);
       grid += `<line x1="${pL}" x2="${W - pR}" y1="${yy}" y2="${yy}" class="se-grid"/>
-        <text x="${pL - 8}" y="${(+yy + 3).toFixed(1)}" class="ch-ylab" text-anchor="end">${seNum(v)}</text>`;
+        <text x="${pL - 10}" y="${(+yy + 4).toFixed(1)}" class="ch-ylab" text-anchor="end">${seNum(v)}</text>`;
     }
     const path = cap.map((c, i) => (i ? "L" : "M") + cx(i).toFixed(1) + " " + y(c.perSpecialist).toFixed(1)).join(" ");
 
@@ -2140,26 +2264,29 @@ async function mountSupportEcon() {
     const last = cap[cap.length - 1];
     const mark = (c, cls, txt) => {
       const i = cap.indexOf(c);
-      return `<circle cx="${cx(i).toFixed(1)}" cy="${y(c.perSpecialist).toFixed(1)}" r="4" class="se-mark ${cls}"/>
-        <text x="${cx(i).toFixed(1)}" y="${(y(c.perSpecialist) - 11).toFixed(1)}" class="se-mark-t ${cls}" text-anchor="middle">${esc(txt)}</text>`;
+      const below = cls === "is-lo";   // минимум подписываем снизу, чтобы не спорить с линией
+      return `<circle cx="${cx(i).toFixed(1)}" cy="${y(c.perSpecialist).toFixed(1)}" r="4.5" class="se-mark ${cls}"/>
+        <text x="${cx(i).toFixed(1)}" y="${(y(c.perSpecialist) + (below ? 22 : -14)).toFixed(1)}" class="se-mark-t ${cls}" text-anchor="middle">${esc(txt)}</text>`;
     };
     const dots = cap.map((c, i) => {
       const tip = `<b>${esc(seMonLong(c.m))}</b><br>на специалиста ${seNum(c.perSpecialist)}<br>`
         + `всего закрыто ${seNum(c.capacityTickets)} · из них агентских ${seNum(c.agencyTickets)}`;
-      return `<circle class="ch-hit se-dot" cx="${cx(i).toFixed(1)}" cy="${y(c.perSpecialist).toFixed(1)}" r="9" data-tip="${esc(tip)}"/>`;
+      return `<circle class="ch-hit se-dot" cx="${cx(i).toFixed(1)}" cy="${y(c.perSpecialist).toFixed(1)}" r="11" data-tip="${esc(tip)}"/>`;
     }).join("");
-    const xlab = cap.map((c, i) => (i % 2 === 0 || i === n - 1)
-      ? `<text x="${cx(i).toFixed(1)}" y="${H - 12}" class="ch-xlab" text-anchor="middle">${seMon(c.m)}</text>` : "").join("");
+    const xlab = cap.map((c, i) =>
+      `<text x="${cx(i).toFixed(1)}" y="${H - 16}" class="ch-xlab" text-anchor="middle">${seMon(c.m)}</text>`).join("");
 
-    return `<svg class="se-chart" viewBox="0 0 ${W} ${H}" role="img"
-      aria-label="Загрузка на специалиста по месяцам: минимум ${seNum(lo.perSpecialist)} в ${esc(seMonLong(lo.m))}, максимум ${seNum(hi.perSpecialist)} в ${esc(seMonLong(hi.m))}, последнее значение ${seNum(last.perSpecialist)}">
-      ${grid}
-      <path d="${path}" class="se-line se-line--load" fill="none"/>
-      ${mark(lo, "is-lo", seNum(lo.perSpecialist))}
-      ${mark(hi, "is-hi", seNum(hi.perSpecialist))}
-      ${dots}${xlab}
-      <text x="${pL - 8}" y="${pT - 4}" class="ch-ylab" text-anchor="end">обращений на человека</text>
-    </svg>`;
+    return `<figure class="se-fig">
+      <svg class="se-chart" viewBox="0 0 ${W} ${H}" role="img"
+        aria-label="Загрузка на специалиста по месяцам: минимум ${seNum(lo.perSpecialist)} в ${esc(seMonLong(lo.m))}, максимум ${seNum(hi.perSpecialist)} в ${esc(seMonLong(hi.m))}, последнее значение ${seNum(last.perSpecialist)}">
+        ${grid}
+        <path d="${path}" class="se-line se-line--load" fill="none"/>
+        ${mark(lo, "is-lo", seNum(lo.perSpecialist))}
+        ${mark(hi, "is-hi", seNum(hi.perSpecialist))}
+        ${dots}${xlab}
+        ${seAxisCap(0, "start", "обращений на человека")}
+      </svg>
+    </figure>`;
   }
 
   function renderCapacity() {
@@ -2228,7 +2355,7 @@ async function mountSupportEcon() {
       ? (ibc.revenuePerCall / exT.revenuePerCall) : null;
 
     // Две линии: как менялась нагрузка у IBC и у внешней базы.
-    const W = 760, H = 200, pL = 46, pR = 20, pT = 16, pB = 32;
+    const W = SE_W, H = 290, pL = 76, pR = 40, pT = 44, pB = 46;
     const n = D.months.length;
     const all = D.months.flatMap((m) => [m.ratioIbc, m.ratioExt]).filter((v) => v != null);
     const max = Math.max(...all) * 1.15;
@@ -2242,7 +2369,7 @@ async function mountSupportEcon() {
     for (let g = 0; g <= 3; g++) {
       const v = (max / 3) * g, yy = y(v).toFixed(1);
       grid += `<line x1="${pL}" x2="${W - pR}" y1="${yy}" y2="${yy}" class="se-grid"/>
-        <text x="${pL - 8}" y="${(+yy + 3).toFixed(1)}" class="ch-ylab" text-anchor="end">${seNum(v, 1)}</text>`;
+        <text x="${pL - 10}" y="${(+yy + 4).toFixed(1)}" class="ch-ylab" text-anchor="end">${seNum(v, 1)}</text>`;
     }
     const hits = D.months.map((m, i) => {
       const tip = `<b>${esc(seMonLong(m.m))}</b><br>IBC ${seNum(m.ratioIbc, 1)} · внешние ${seNum(m.ratioExt, 1)}<br>`
@@ -2250,8 +2377,16 @@ async function mountSupportEcon() {
       return `<rect class="ch-hit" x="${(cx(i) - (W - pL - pR) / n / 2).toFixed(1)}" y="${pT}"
         width="${((W - pL - pR) / n).toFixed(1)}" height="${H - pT - pB}" fill="transparent" data-tip="${esc(tip)}"/>`;
     }).join("");
-    const xlab = D.months.map((m, i) => (i % 2 === 0 || i === n - 1)
-      ? `<text x="${cx(i).toFixed(1)}" y="${H - 12}" class="ch-xlab" text-anchor="middle">${seMon(m.m)}</text>` : "").join("");
+    const xlab = D.months.map((m, i) =>
+      `<text x="${cx(i).toFixed(1)}" y="${H - 16}" class="ch-xlab" text-anchor="middle">${seMon(m.m)}</text>`).join("");
+    // Крайние значения подписаны прямо у линий: у обеих серий разница по годам
+    // невелика, и «вырос с 9,3 до 10,6» из формы линии на нулевой базе не видно.
+    const edge = (get, cls) => [0, n - 1].map((i) => {
+      const v = get(D.months[i]);
+      if (v == null) return "";
+      return `<text x="${cx(i).toFixed(1)}" y="${(y(v) - 12).toFixed(1)}" class="se-val ${cls}"
+        text-anchor="${i ? "end" : "start"}">${seNum(v, 1)}</text>`;
+    }).join("");
 
     host.innerHTML = `
       <p class="lede se-lede">${esc(b.lede || "")}</p>
@@ -2269,23 +2404,34 @@ async function mountSupportEcon() {
         .replace("{ext}", seMoney(exT.revenuePerCall, true))
         .replace("{times}", seNum(times, 1)))}</p>` : ""}
       <h3 class="se-h3">${esc(b.trendHead || "")}</h3>
-      <svg class="se-chart" viewBox="0 0 ${W} ${H}" role="img"
-        aria-label="Обращений на 1000 транзакций по месяцам: у IBC растёт, у внешних агентств уровень выше и без роста">
-        ${grid}${line((m) => m.ratioIbc, "se-line--a")}${line((m) => m.ratioExt, "se-line--b")}${hits}${xlab}
-        <text x="${pL - 8}" y="${pT - 2}" class="ch-ylab" text-anchor="end">на 1000 транзакций</text>
-      </svg>
+      <figure class="se-fig">
+        <figcaption class="se-fig-cap">
+          <span class="se-key se-key--a">${esc(IBC || "внутреннее агентство")}</span>
+          <span class="se-key se-key--b">внешние агентства</span>
+        </figcaption>
+        <svg class="se-chart" viewBox="0 0 ${W} ${H}" role="img"
+          aria-label="Обращений на 1000 транзакций по месяцам: у IBC растёт, у внешних агентств уровень выше и без роста">
+          ${grid}${line((m) => m.ratioIbc, "se-line--a")}${line((m) => m.ratioExt, "se-line--b")}
+          ${edge((m) => m.ratioIbc, "is-a")}${edge((m) => m.ratioExt, "is-b")}
+          ${hits}${xlab}
+          ${seAxisCap(0, "start", "на 1000 транзакций")}
+        </svg>
+      </figure>
       <ul class="se-bullets">
         <li><span class="se-key se-key--a"></span>${esc(b.trendIbc || "")}</li>
         <li><span class="se-key se-key--b"></span>${esc(b.trendExt || "")}</li>
       </ul>
       <p class="se-foot">${esc(b.trendNote || "")}</p>
-      <div class="callout--soft se-caveat">${esc(b.caveat || "")}</div>`;
+      <details class="se-details">
+        <summary>Почему IBC нельзя сравнивать с остальными в лоб</summary>
+        <div class="callout--soft se-caveat">${esc(b.caveat || "")}</div>
+      </details>`;
     wireTips(host);
   }
 
   // ------------------------------------------------------- B5 по агентствам
   const SORTS = {
-    pctRevenue: { label: "% выручки на поддержку", get: (a) => a.pctRevenue, dir: -1 },
+    pctRevenue: { label: "% выручки", get: (a) => a.pctRevenue, dir: -1 },
     name: { label: "Агентство", get: (a) => a.name, dir: 1, text: true },
     calls: { label: "Обращения", get: (a) => a.calls, dir: -1 },
     ops: { label: "Объём работы", get: (a) => a.ops, dir: -1 },
@@ -2295,7 +2441,11 @@ async function mountSupportEcon() {
     escalationShare: { label: "Ушло в разработку", get: (a) => a.escalationShare, dir: -1 },
     toSupplierShare: { label: "К поставщику", get: (a) => a.toSupplierShare, dir: -1 },
   };
-  let sortKey = "pctRevenue", sortDir = -1;
+  // Сортировка по умолчанию — стоимость поддержки, а не доля выручки: по доле
+  // первые пять строк занимали новички с базой в десятки транзакций (501%,
+  // 139%, 111%…), и таблица начиналась с шума. По стоимости сверху те, на кого
+  // действительно уходят люди и деньги.
+  let sortKey = "supportCost", sortDir = -1;
 
   function renderTable(M) {
     const host = document.querySelector("[data-se-table]");
@@ -2309,41 +2459,77 @@ async function mountSupportEcon() {
       if (yv == null) return -1;
       return (s.text ? String(x).localeCompare(String(yv), "ru") : x - yv) * sortDir;
     });
-    const maxPct = Math.max(...M.agencies.map((a) => a.pctRevenue || 0));
 
-    const th = (k, extra = "") => {
+    const th = (k, extra = "", note = "") => {
       const on = sortKey === k;
       return `<th class="${extra}${on ? " is-sorted" : ""}" data-sort="${k}"
         aria-sort="${on ? (sortDir < 0 ? "descending" : "ascending") : "none"}">
-        <button type="button">${esc(SORTS[k].label)}${on ? (sortDir < 0 ? " ↓" : " ↑") : ""}</button></th>`;
+        <button type="button">${esc(SORTS[k].label)}${on ? (sortDir < 0 ? " ↓" : " ↑") : ""}</button>
+        ${note ? `<span class="se-th-note">${esc(note)}</span>` : ""}</th>`;
     };
 
-    const rows = list.map((a) => {
+    const row = (a) => {
       const v = V[a.name] || {};
       const small = (a.ops || 0) < SMALL_OPS;
       const open = state.ag === a.name;
-      const w = maxPct ? Math.min(100, ((a.pctRevenue || 0) / maxPct) * 100) : 0;
+      // Полоску меряем от «вся выручка ушла на поддержку» (100%), а не от
+      // максимума в таблице: максимум здесь 501% — Альянс Авиа с двумя
+      // транзакциями за месяц, — и рядом с ним 18 остальных агентств
+      // рисовались одинаковым волоском. Всё, что за 100%, отмечено отдельно.
+      const pctRev = a.pctRevenue || 0;
+      const over = pctRev > 1;
+      const w = Math.min(100, pctRev * 100);
       return `<tr class="se-row${small ? " is-small" : ""}${open ? " is-open" : ""}" data-ag="${esc(a.name)}" tabindex="0">
           <td class="title">
-            <span class="se-caret">${open ? "▾" : "▸"}</span>${esc(a.name)}
-            ${a.isNewcomer ? `<span class="se-tag">новичок</span>` : ""}
-            ${small ? `<span class="se-tag se-tag--warn" title="${esc(b.smallBaseNote || "")}">малая база</span>` : ""}
+            <span class="se-ag">
+              <span class="se-caret">${open ? "▾" : "▸"}</span><b class="se-ag-n">${esc(a.name)}</b>
+              ${a.isNewcomer ? `<span class="se-tag">новичок</span>` : ""}
+              ${small ? `<span class="se-tag se-tag--warn" title="${esc(b.smallBaseNote || "")}">малая база</span>` : ""}
+            </span>
             <span class="se-seg-l">${esc(segRu(a.segment))}</span>
           </td>
           <td class="num">${seNum(a.calls)}</td>
           <td class="num">${seNum(a.ops)}</td>
           <td class="num">${seMoney(a.revenue)}</td>
           <td class="num">${seMoney(a.supportCost)}</td>
-          <td class="num sup-load">
-            <span class="sup-load-bar" style="width:${w.toFixed(1)}%"></span>
-            <span class="sup-load-val">${sePct(a.pctRevenue)}</span>
+          <td class="num se-load">
+            <span class="se-load-val">${sePct(a.pctRevenue)}</span>
+            <span class="se-load-track"><span class="se-load-bar${over ? " is-over" : ""}"
+              style="width:${w.toFixed(1)}%"></span></span>
           </td>
           <td class="num">${seNum(a.ratio, 1)}</td>
           <td class="num">${a.escalationShare == null ? "—" : sePct(a.escalationShare, 0)}</td>
           <td class="num se-dim">${a.toSupplierShare == null ? "—" : sePct(a.toSupplierShare, 0)}</td>
         </tr>
         ${open ? drill(a, v) : ""}`;
-    }).join("");
+    };
+
+    // Агентства с базой меньше порога прячем под строку-раскрытие: на объёме
+    // в десятки транзакций доля выручки на поддержку ничего не измеряет, а
+    // первое впечатление от таблицы забирает целиком. В «Итого» они входят.
+    const isSmall = (a) => (a.ops || 0) < SMALL_OPS;
+    const bigList = list.filter((a) => !isSmall(a));
+    const smallList = list.filter(isSmall);
+    const sumOf = (arr, f) => arr.reduce((t2, a) => t2 + (f(a) || 0), 0);
+    const smallAgg = {
+      calls: sumOf(smallList, (a) => a.calls),
+      ops: sumOf(smallList, (a) => a.ops),
+      revenue: sumOf(smallList, (a) => a.revenue),
+      supportCost: sumOf(smallList, (a) => a.supportCost),
+    };
+    smallAgg.pctRevenue = smallAgg.revenue ? smallAgg.supportCost / smallAgg.revenue : null;
+    smallAgg.ratio = smallAgg.ops ? (smallAgg.calls / smallAgg.ops) * 1000 : null;
+
+    const moreRow = smallList.length ? `
+      <tr class="se-morerow"><td colspan="9">
+        <button type="button" data-more>${state.small ? "▾" : "▸"} ${seNum(smallList.length)}
+          ${esc(b.smallHead || "агентств с малой базой")}</button>
+        <span class="se-morerow-v">вместе: ${seNum(smallAgg.calls)} ${sePlural(smallAgg.calls, "обращение", "обращения", "обращений")} ·
+          ${seMoney(smallAgg.supportCost)} · ${sePct(smallAgg.supportCost / M.totals.supportCost, 1)} всей поддержки</span>
+      </td></tr>` : "";
+
+    const rows = bigList.map(row).join("") + moreRow
+      + (state.small ? smallList.map(row).join("") : "");
 
     const tot = M.totals;
     const totalRow = (label, t, cls) => `<tr class="se-total ${cls}">
@@ -2360,7 +2546,7 @@ async function mountSupportEcon() {
         <table class="se-tbl se-tbl--ag">
           <thead><tr>
             ${th("name", "title")}${th("calls", "num")}${th("ops", "num")}${th("revenue", "num")}
-            ${th("supportCost", "num")}${th("pctRevenue", "num")}${th("ratio", "num")}
+            ${th("supportCost", "num")}${th("pctRevenue", "num", "полоска: 100% = вся выручка агентства")}${th("ratio", "num")}
             ${th("escalationShare", "num")}
             <th class="num se-dim" data-sort="toSupplierShare">
               <button type="button">К поставщику${sortKey === "toSupplierShare" ? (sortDir < 0 ? " ↓" : " ↑") : ""}</button>
@@ -2378,21 +2564,34 @@ async function mountSupportEcon() {
           </tfoot>
         </table>
       </div>
+      ${smallList.length ? `<p class="se-foot">${esc((b.smallNote || "").replace("{ops}", seNum(SMALL_OPS)))}</p>` : ""}
       <p class="se-foot">${esc(b.supplierColNote || "")}</p>
-      <p class="se-note">${esc(b.newcomerNote || "")}</p>
-      <h3 class="se-h3">${esc(b.highlightHead || "")}</h3>
-      <div class="se-cards">
-        ${(b.highlight || []).map((nm) => {
-          const a = M.agencies.find((x) => x.name === nm);
-          const v = V[nm] || {};
-          if (!a) return "";
-          return `<article class="accent-card is-bet1 se-card">
-            <div class="k">${sePct(a.pctRevenue)} выручки на обслуживание</div>
-            <h3>${esc(nm)}</h3>
-            <p><b>${esc(v.verdict || "")}.</b> ${esc(v.text || "")}</p>
-          </article>`;
-        }).join("")}
-      </div>`;
+      <details class="se-details">
+        <summary>${esc(b.highlightHead || "Где нужно решение")}</summary>
+        <div class="se-cards">
+          ${(b.highlight || []).map((nm) => {
+            const a = M.agencies.find((x) => x.name === nm);
+            const v = V[nm] || {};
+            if (!a) return "";
+            return `<article class="accent-card is-bet1 se-card">
+              <div class="k">${sePct(a.pctRevenue)} выручки на обслуживание</div>
+              <h3>${esc(nm)}</h3>
+              <p><b>${esc(v.verdict || "")}.</b> ${esc(v.text || "")}</p>
+            </article>`;
+          }).join("")}
+        </div>
+        <p class="se-note">${esc(b.newcomerNote || "")}</p>
+      </details>`;
+
+    const more = host.querySelector("[data-more]");
+    if (more) {
+      more.addEventListener("click", (e) => {
+        e.stopPropagation();
+        state.small = !state.small;
+        renderTable(M);
+        writeState();
+      });
+    }
 
     host.querySelectorAll("th[data-sort]").forEach((h) => {
       h.addEventListener("click", () => {
@@ -2478,8 +2677,33 @@ async function mountSupportEcon() {
       const c = cell(a, i);
       if (c.v != null) all.push(c.v);
     }));
-    const max = all.length ? Math.max(...all) : 1;
-    const lvl = (v) => (v == null ? -1 : Math.min(4, Math.floor((v / max) * 5)));
+    all.sort((x, y) => x - y);
+    const max = all.length ? all[all.length - 1] : 1;
+    // Уровни режем по квинтилям, а не равными долями от максимума. Максимум
+    // здесь — выброс (2 000 обращений на 1000 транзакций у агентства с двумя
+    // транзакциями за месяц), и на равной шкале 179 клеток из 182 попадали
+    // в самый светлый уровень: карта была одноцветной и не читалась.
+    const q = (p) => (all.length ? all[Math.min(all.length - 1, Math.floor(all.length * p))] : 0);
+    const cuts = [q(0.2), q(0.4), q(0.6), q(0.8)];
+    const lvl = (v) => {
+      if (v == null) return -1;
+      let l = 0;
+      while (l < 4 && v >= cuts[l]) l++;
+      return l;
+    };
+    const fmtV = (v) => (isCost ? seMoney(v) : seNum(v, 0));
+    // В подписях шкалы единица названа один раз слева, поэтому «₽» у каждой
+    // границы убираем — иначе «8 018 ₽–17 тыс ₽» занимает полстроки.
+    const fmtCut = (v) => (isCost ? seMoney(v).replace(SE_NB + "₽", "") : seNum(v, 0));
+    // Подпись под каждым квадратом шкалы: без границ «темнее = больше» — пустое
+    // обещание, по нему нельзя перевести цвет обратно в число.
+    const scaleLabels = [
+      "до " + fmtCut(cuts[0]),
+      fmtCut(cuts[0]) + "–" + fmtCut(cuts[1]),
+      fmtCut(cuts[1]) + "–" + fmtCut(cuts[2]),
+      fmtCut(cuts[2]) + "–" + fmtCut(cuts[3]),
+      "от " + fmtCut(cuts[3]),
+    ];
 
     const rows = M.agencies.map((a) => `
       <tr>
@@ -2498,17 +2722,23 @@ async function mountSupportEcon() {
         }).join("")}
       </tr>`).join("");
 
+    // 19 × 13 = 247 чисел на виду — это справочник для сверки конкретного
+    // месяца, а не аргумент: вывод из карты уже сделан двумя блоками выше.
+    // Наверху остаётся строка-вывод, сама карта — под раскрытием.
     host.innerHTML = `
+      <p class="se-note">${esc(b.summaryLine || "")}</p>
+      <details class="se-details"${state.heatOpen ? " open" : ""} data-heatbox>
+      <summary>${esc(b.openLabel || "Развернуть карту")}</summary>
       <p class="lede se-lede">${esc(b.lede || "")}</p>
       <div class="se-heat-ctl">
         <div class="se-segs">
           <button type="button" class="se-seg${!isCost ? " is-on" : ""}" data-heat="ratio">На 1000 транзакций</button>
           <button type="button" class="se-seg${isCost ? " is-on" : ""}" data-heat="cost">Стоимость, ₽</button>
         </div>
-        <div class="se-scale" role="img" aria-label="Шкала: чем темнее, тем выше значение">
-          <span class="muted">меньше</span>
-          ${[0, 1, 2, 3, 4].map((l) => `<i class="se-l${l}"></i>`).join("")}
-          <span class="muted">больше — до ${isCost ? seMoney(max) : seNum(max, 0)}</span>
+        <div class="se-scale" role="img"
+          aria-label="Шкала: пять уровней по ${esc(isCost ? "стоимости поддержки за месяц" : "обращениям на 1000 транзакций")}, границы ${esc(scaleLabels.join(", "))}">
+          <span class="se-scale-l">${isCost ? "₽ за месяц" : "на 1000 транзакций"}</span>
+          ${[0, 1, 2, 3, 4].map((l) => `<span class="se-scale-i"><i class="se-l${l}"></i><b>${esc(scaleLabels[l])}</b></span>`).join("")}
         </div>
       </div>
       <div class="table-wrap">
@@ -2517,8 +2747,16 @@ async function mountSupportEcon() {
           <tbody>${rows}</tbody>
         </table>
       </div>
-      <p class="se-foot">${esc(b.emptyNote || "")}</p>`;
+      <p class="se-foot">${esc(b.emptyNote || "")}
+        ${isCost
+          ? `Верх шкалы — ${fmtV(max)} за месяц.`
+          : `Верх шкалы — выброс: ${fmtV(max)} у агентства с единичными транзакциями за месяц.`}
+        Уровни нарезаны по равным долям клеток, а не по равным долям максимума:
+        иначе одно крайнее значение забирает всю шкалу и карта выходит одноцветной.</p>
+      </details>`;
 
+    const box = host.querySelector("[data-heatbox]");
+    if (box) box.addEventListener("toggle", () => { state.heatOpen = box.open; });
     host.querySelectorAll("[data-heat]").forEach((btn) => {
       btn.addEventListener("click", () => { state.heat = btn.dataset.heat; renderHeat(M); writeState(); });
     });
@@ -2554,50 +2792,91 @@ async function mountSupportEcon() {
     const shares = { own: pOwn, part: pPart, supp: Math.max(0, 100 - pOwn - pPart) };
     const bp = (k) => shares[k];
 
-    const themeList = (pick, head) => {
+    // Объём самой крупной темы — общий масштаб полосок во всех трёх колонках,
+    // иначе колонки нельзя сравнивать между собой глазами.
+    const themeMax = Math.max(1, ...(S.byTheme || []).map((t) => t.total || 0));
+    // Колонок три, по одной на класс. Раньше рисовались две — «наружу» (3 темы)
+    // и «у нас» (29 тем): половина ширины пустовала, а «частично» из чипов
+    // наверху вообще не имела списка.
+    const themeList = (pick, head, mod, limit = 9) => {
       const items = (S.byTheme || []).filter((t) => pick.includes(cls(t.share)))
         .sort((a, b2) => b2.total - a.total);
+      const li = (t) => `<li>
+        <span class="se-theme-n">${esc(t.level2 === "—" ? t.level1 : t.level2)}</span>
+        <span class="se-theme-v">${seNum(t.total)}${t.share >= th.partial ? ` · наружу ${sePct(t.share, 0)}` : ""}</span>
+        <span class="se-theme-bar"><i class="se-theme-bar--${mod}" style="width:${((t.total / themeMax) * 100).toFixed(1)}%"></i></span>
+      </li>`;
+      const head9 = items.slice(0, limit), rest = items.slice(limit);
+      const calls = items.reduce((s2, t) => s2 + (t.total || 0), 0);
       return `<div class="se-col">
-        <h4>${esc(head)}</h4>
-        <ul class="se-theme-list">
-          ${items.map((t) => `<li>
-            <span class="se-theme-n">${esc(t.level2 === "—" ? t.level1 : t.level2)}</span>
-            <span class="se-theme-v">${seNum(t.total)} обращений${t.share >= th.partial ? ` · наружу ${sePct(t.share, 0)}` : ""}</span>
-          </li>`).join("")}
-        </ul>
+        <h4 class="se-col-h se-col-h--${mod}">${esc(head)}<span>${items.length} ${sePlural(items.length, "тема", "темы", "тем")} · ${seNum(calls)} ${sePlural(calls, "обращение", "обращения", "обращений")}</span></h4>
+        <ul class="se-theme-list">${head9.map(li).join("")}</ul>
+        ${rest.length ? `<details class="se-details se-details--tight">
+          <summary>ещё ${seNum(rest.length)} ${sePlural(rest.length, "тема", "темы", "тем")} помельче</summary>
+          <ul class="se-theme-list">${rest.map(li).join("")}</ul>
+        </details>` : ""}
       </div>`;
     };
 
     const u = S.unattributed || {};
+    // Один знаменатель на весь блок: 6 256 обращений за 12 месяцев выгрузки.
+    // Раньше «10,3% наружу» и «19% в разработку» стояли рядом с «89,7%
+    // остаются у нас» и читались как противоречие — доли считались от разных
+    // оснований, а остаток объявлялся снимаемым продуктом.
+    const pSupp = S.share || 0;
+    const pEsc = S.total ? (S.escalations || 0) / S.total : 0;
+    const pOwnFlow = Math.max(0, 1 - pSupp - pEsc);
+    const seg = (w, cls, label, val) => `<span class="se-flow-i se-flow--${cls}" style="flex:${(w * 100).toFixed(2)}">
+      <b>${sePct(val, 1)}</b><i>${esc(label)}</i></span>`;
+
     host.innerHTML = `
       <p class="lede se-lede">${esc(b.lede || "")}</p>
       <div class="ag-strip">
         <div class="ag-stat">
-          <div class="v">${sePct(S.share)}</div>
-          <div class="l">обращений уходит наружу</div>
-          <div class="s">${seNum(S.toSupplier)} из ${seNum(S.total)} за окно</div>
+          <div class="v">${seNum(S.total)}</div>
+          <div class="l">обращений — знаменатель всего блока</div>
+          <div class="s">за ${seNum(S.monthsCovered)} месяцев выгрузки поддержки</div>
         </div>
-        <div class="ag-stat ag-stat--goal">
-          <div class="v">${sePct(1 - (S.share || 0))}</div>
-          <div class="l">остаются у нас</div>
-          <div class="s">но снимаются продуктом не все — расклад по темам ниже</div>
+        <div class="ag-stat">
+          <div class="v">${sePct(pSupp)}</div>
+          <div class="l">поддержка переадресует наружу</div>
+          <div class="s">${seNum(S.toSupplier)} ${sePlural(S.toSupplier, "обращение", "обращения", "обращений")} — продуктом не снять</div>
+        </div>
+        <div class="ag-stat">
+          <div class="v">${sePct(pEsc)}</div>
+          <div class="l">уходит в разработку</div>
+          <div class="s">${seNum(S.escalations)} ${sePlural(S.escalations, "обращение", "обращения", "обращений")} — снимается кодом, а не настройкой</div>
         </div>
       </div>
-      <div class="callout--soft se-caveat">${esc(b.caveat || "")}</div>
-      <div class="se-ceil">
-        <span class="sup-cls sup-cls--${CLS_CSS.own}">${bp("own")}% ${esc((b.classLabels || {}).own || "")}</span>
-        <span class="sup-cls sup-cls--${CLS_CSS.part}">${bp("part")}% ${esc((b.classLabels || {}).part || "")}</span>
-        <span class="sup-cls sup-cls--${CLS_CSS.supp}">${bp("supp")}% ${esc((b.classLabels || {}).supp || "")}</span>
+      <h3 class="se-h3">${esc(b.flowHead || "Куда уходит поток")}</h3>
+      <div class="se-flow" role="img" aria-label="Из ${seNum(S.total)} обращений: наружу ${sePct(pSupp)}, в разработку ${sePct(pEsc)}, остальное закрывает поддержка сама">
+        ${seg(pSupp, "supp", b.flowSupp || "наружу", pSupp)}
+        ${seg(pEsc, "esc", b.flowEsc || "в разработку", pEsc)}
+        ${seg(pOwnFlow, "own", b.flowOwn || "закрыла сама", pOwnFlow)}
       </div>
-      <p class="se-foot">${esc(b.classNote || "")}</p>
-      <div class="se-cols">
-        ${themeList(["supp"], b.suppHead || "Упирается в поставщика")}
-        ${themeList(["own"], b.ownHead || "Целиком в наших руках")}
-      </div>
-      ${u.total ? `<p class="se-note">${esc((b.unattributedNote || "")
-        .replace("{n}", seNum(u.total))
-        .replace("{pct}", sePct(u.shareOfFlow, 0))
-        .replace("{share}", sePct(u.share, 0)))}</p>` : ""}
+      <p class="se-note">${esc(b.ceilingNote || "")}</p>
+      <p class="se-foot">${esc((b.denomNote || "")
+        .replace("{total}", seNum(S.total))
+        .replace("{months}", seNum(S.monthsCovered))
+        .replace("{calls13}", seNum(D.totals.calls)))}</p>
+      <details class="se-details">
+        <summary>${esc(b.themesHead || "Разбор по темам")}</summary>
+        <div class="se-ceil">
+          <span class="sup-cls sup-cls--${CLS_CSS.own}">${bp("own")}% ${esc((b.classLabels || {}).own || "")}</span>
+          <span class="sup-cls sup-cls--${CLS_CSS.part}">${bp("part")}% ${esc((b.classLabels || {}).part || "")}</span>
+          <span class="sup-cls sup-cls--${CLS_CSS.supp}">${bp("supp")}% ${esc((b.classLabels || {}).supp || "")}</span>
+        </div>
+        <p class="se-foot">${esc(b.classNote || "")}</p>
+        <div class="se-cols se-cols--3">
+          ${themeList(["supp"], b.suppHead || "Упирается в поставщика", "bad")}
+          ${themeList(["part"], b.partHead || "Частично зависит от поставщика", "mid")}
+          ${themeList(["own"], b.ownHead || "Целиком в наших руках", "good")}
+        </div>
+        ${u.total ? `<p class="se-note">${esc((b.unattributedNote || "")
+          .replace("{n}", seNum(u.total))
+          .replace("{pct}", sePct(u.shareOfFlow, 0))
+          .replace("{share}", sePct(u.share, 0)))}</p>` : ""}
+      </details>
       <details class="se-details">
         <summary>Зависимость от поставщика по агентствам</summary>
         <div class="table-wrap">
@@ -2629,17 +2908,31 @@ async function mountSupportEcon() {
       ${r.backlogQuery ? `<p class="se-act-l"><a href="backlog.html?q=${encodeURIComponent(r.backlogQuery)}">Найти в бэклоге →</a></p>` : ""}
       ${r.special && b.specialNote ? `<p class="se-act-n">${esc(b.specialNote)}</p>` : ""}
     </article>`;
-    host.innerHTML = `
+    // Двенадцать карточек подряд читаются как шум: «запросить выгрузку»
+    // стоит рядом с «заложить план по людям» и весит столько же. На виду —
+    // только высокий приоритет, остальное под одним раскрытием.
+    const high = (arr) => (arr || []).filter((r) => r.prio === "высокий");
+    const rest = (arr) => (arr || []).filter((r) => r.prio !== "высокий");
+    const restCount = rest(b.manage).length + rest(b.product).length;
+    const cols = (m, p) => `
       <div class="se-cols se-cols--acts">
         <div class="se-col">
           <h3 class="se-h3">${esc(b.manageHead || "")}</h3>
-          ${(b.manage || []).map(card).join("")}
+          ${m.map(card).join("")}
         </div>
         <div class="se-col">
           <h3 class="se-h3">${esc(b.productHead || "")}</h3>
-          ${(b.product || []).map(card).join("")}
+          ${p.map(card).join("")}
         </div>
       </div>`;
+
+    host.innerHTML = `
+      ${b.lede ? `<p class="lede se-lede">${esc(b.lede)}</p>` : ""}
+      ${cols(high(b.manage), high(b.product))}
+      ${restCount ? `<details class="se-details">
+        <summary>${esc((b.restHead || "ещё {n} решений").replace("{n}", String(restCount)))}</summary>
+        ${cols(rest(b.manage), rest(b.product))}
+      </details>` : ""}`;
   }
 
   // ----------------------------------------------------------- B8 методика
@@ -2717,6 +3010,14 @@ async function mountSupportEcon() {
     writeState();
   }
   renderAll();
+
+  // Ссылка «разбор →» из первого экрана ведёт в свёрнутый денежный блок.
+  // Без этого клик прокручивал к закрытому заголовку, и читатель видел
+  // строку вместо обещанного разбора.
+  document.addEventListener("click", (e) => {
+    const a = e.target.closest && e.target.closest('a[href="#dengi"]');
+    if (a && !state.money) { state.money = true; renderMoney(derive()); writeState(); }
+  });
 }
 
 // ===================== Этапы ценности (etapy.html) =====================
@@ -3601,10 +3902,10 @@ async function mountMetrics() {
       const bnote = m.baselineNote ? `<span>${esc(m.baselineNote)}</span>` : "";
       const blink = m.baselineLink ? `<a href="${esc(m.baselineLink.href)}">${esc(m.baselineLink.text)}</a>` : "";
       const foot = (bnote || blink) ? `<div class="m-base__note">${bnote}${bnote && blink ? " · " : ""}${blink}</div>` : "";
-      base = `<div class="m-base m-base--big"><span class="m-base__h">baseline 2026-05</span>
+      base = `<div class="m-base m-base--big"><span class="m-base__h">baseline</span>
           <div class="m-base__num">${esc(m.baselineNum)}</div>${unit}${asof}${foot}</div>`;
     } else if (m.baseline) {
-      base = `<div class="m-base"><span class="m-base__h">baseline 2026-05</span> ${esc(m.baseline)}</div>`;
+      base = `<div class="m-base"><span class="m-base__h">baseline</span> ${esc(m.baseline)}</div>`;
     } else {
       base = `<div class="m-base m-base--need">baseline нужен</div>`;
     }
