@@ -2421,7 +2421,7 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
    прокручивается вбок. Высоты липких слоёв меряет seNav и кладёт в
    --se-hdr / --se-toc: захардкоженные значения разъезжались бы при первой
    же правке шапки. */
-.se-toc { position: sticky; top: var(--se-hdr, 52px); z-index: 18;
+.se-toc { position: sticky; top: var(--se-hdr, 64px); z-index: 18;
   display: flex; gap: 2px; margin: 20px 0 0; padding: 3px 0; overflow-x: auto;
   background: rgba(10, 31, 22, .93); backdrop-filter: blur(8px);
   border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
@@ -2440,7 +2440,7 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
 /* Заголовок раздела отбивается от предыдущего блока сильнее, чем подзаголовок
    внутри блока, — иначе уровни спорят (было 32px против 26px). Отступ прокрутки
    считаем от липких слоёв: без этого якорь уводил заголовок под шапку. */
-.se-page h2, .se-page [id] { scroll-margin-top: calc(var(--se-hdr, 52px) + var(--se-toc, 42px) + 12px); }
+.se-page h2, .se-page [id] { scroll-margin-top: calc(var(--se-hdr, 64px) + var(--se-toc, 43px) + 12px); }
 .se-page h2 { margin: 46px 0 14px; }
 
 /* Навигация внутри длинного блока: чипы на его собственные части. Появляется
@@ -2528,7 +2528,7 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
 /* --- B1: панель управления, липнет к верху ----------------------------- */
 /* Липнет ПОД шапкой сайта и оглавлением, а не поверх них: при top:0 и z-index
    выше шапки панель наезжала на неё при прокрутке. */
-.se-bar { position: sticky; top: calc(var(--se-hdr, 52px) + var(--se-toc, 42px));
+.se-bar { position: sticky; top: calc(var(--se-hdr, 64px) + var(--se-toc, 43px));
   z-index: 17; display: flex; flex-wrap: wrap;
   gap: 14px 26px; padding: 12px 16px; margin: 22px 0 0;
   background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px;

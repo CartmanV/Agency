@@ -3064,8 +3064,14 @@ async function mountSupportEcon() {
     if (!nav) return;
     const heads = [...document.querySelectorAll(".se-body h2[id]")];
     // Первый экран номера не получает: он не раздел, а сводка всех остальных.
+    // В оглавлении — короткая подпись из data-nav, в заголовке остаётся полная
+    // фраза. С полными восемь пунктов дают 1490px при колонке 1232, то есть
+    // половина разделов сразу уезжает за горизонтальную прокрутку.
     const items = [{ id: "glavnoe", text: "Главное", n: "" }].concat(
-      heads.map((h, i) => ({ id: h.id, text: h.textContent.trim(), n: String(i + 1), el: h })));
+      heads.map((h, i) => ({
+        id: h.id, n: String(i + 1), el: h,
+        text: (h.dataset.nav || h.textContent).trim(),
+      })));
 
     items.forEach((it) => {
       if (!it.el) return;
@@ -3105,13 +3111,15 @@ async function mountSupportEcon() {
         if (el && el.getBoundingClientRect().top <= edge) on = it.id;
       });
       if (on === cur) return;
+      const first = cur === null;
       cur = on;
       links.forEach((a, id) => a.classList.toggle("is-on", id === on));
       // Дотягиваем активный пункт в видимую часть оглавления, если оно
       // прокручено вбок. Двигаем scrollLeft руками: scrollIntoView увёл бы
-      // заодно и вертикальную прокрутку страницы.
+      // заодно и вертикальную прокрутку страницы. На первом вызове не трогаем
+      // вовсе — иначе оглавление стартовало сдвинутым и обрезало «Главное».
       const a = links.get(on);
-      if (!a) return;
+      if (first || !a) return;
       const box = nav.getBoundingClientRect(), r = a.getBoundingClientRect();
       if (r.left < box.left) nav.scrollLeft += r.left - box.left - 12;
       else if (r.right > box.right) nav.scrollLeft += r.right - box.right + 12;
