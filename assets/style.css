@@ -2391,14 +2391,36 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
 }
 
 /* ===================== Экономика поддержки (support.html) ====================
-   Переиспользует .accent-card / .ag-strip / .ag-stat / .table-wrap / .ev-chip /
-   .callout--soft и графические классы .ch-* / .spark. Своё — с префиксом .se-.
+   Переиспользует .accent-card / .ag-strip / .ag-stat / .table-wrap / .ev-chip
+   и графические классы .ch-* / .spark. Своё — с префиксом .se-.
    Цвет по Design Guide v4: золото — единственный акцент действия; розовый
-   --attention ровно один раз в поле зрения (плашка загрузки, она же вывод
-   страницы). Теплокарта — отдельная секвенциальная шкала данных, с легендой.
-   Категориальные --cat-* только там, где есть легенда: IBC против внешних. */
+   --attention закреплён за одной величиной — загрузкой на специалиста (плашка
+   первого экрана и линия графика «Люди»), больше нигде на странице его нет.
+   Категориальные --cat-* только там, где есть легенда: IBC против внешних
+   и оценочная ось ниже. */
+
+/* Оценочная ось страницы — ОДНА на все блоки (2026-08-14).
+   Было пять разных палитр на один и тот же смысл «в наших руках / частично /
+   упирается в чужое»: вердикт агентства, заголовок колонки тем, полоска
+   объёма, полоса потока, чип класса и теплокарта — каждая своя. Читателю
+   приходилось учить пять легенд на один смысл, и это давало ту самую
+   пестроту. Теперь три токена и одна легенда, в блоке «Потолок эффекта».
+   Шкала категориальная (v4 п.3): --success и --attention сюда НЕ входят —
+   они остаются статусом «готово» и «критично». */
+:root {
+  --se-own:  var(--cat-3);      /* шалфей — целиком в наших руках */
+  --se-part: var(--gold-line);  /* частично */
+  --se-ext:  var(--cat-2);      /* терракота — упирается в поставщика/чужое */
+}
 
 .se-lede { font-size: 14px; margin: 0 0 14px; }
+/* Вывод блока. Отдельный слой, потому что раньше выводы («направление
+   упирается не в бюджет, а в людей», «потолок продукта — не 90%») лежали
+   в .se-note — то есть были мельче и тусклее собственной вводки к блоку.
+   Главный текст блока не может быть его самым тихим текстом. */
+.se-out { font-size: 15px; line-height: 1.6; color: var(--cream);
+  margin: 14px 0 0; max-width: 82ch; }
+.se-out b { font-weight: 600; }
 .se-note { font-size: 13.5px; line-height: 1.6; color: var(--cream-soft); margin: 12px 0 0; max-width: 82ch; }
 .se-foot { font-size: 12.5px; line-height: 1.55; color: var(--cream-dim); margin: 10px 0 0; max-width: 82ch; }
 .se-h3 { font-family: var(--f-display); font-size: 18px; margin: 26px 0 8px; }
@@ -2589,9 +2611,9 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
   background: var(--panel); border-radius: 0 8px 8px 0; }
 .se-verdict-box b { color: var(--cream); font-size: 14px; }
 .se-verdict-box p { margin: 5px 0 0; font-size: 13px; line-height: 1.6; color: var(--cream-soft); }
-.se-v--good { border-left-color: var(--success); }
-.se-v--mid { border-left-color: var(--line-soft); }
-.se-v--bad { border-left-color: var(--attention); }
+.se-v--good { border-left-color: var(--se-own); }
+.se-v--mid { border-left-color: var(--se-part); }
+.se-v--bad { border-left-color: var(--se-ext); }
 .se-drill-links { display: flex; flex-wrap: wrap; gap: 18px; margin: 0; font-size: 13px; }
 
 /* строка-раскрытие «ещё N агентств с малой базой» внутри таблицы */
@@ -2627,11 +2649,13 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
 .se-heat td.se-cell.se-l-1 { background-image:
   repeating-linear-gradient(135deg, transparent 0 4px, rgba(147,167,154,.16) 4px 5px); }
 .se-cell.is-col { outline: 1px solid var(--gold); outline-offset: -1px; }
-.se-l0 { background: rgba(61, 163, 114, .16); }
-.se-l1 { background: rgba(127, 168, 106, .22); }
-.se-l2 { background: rgba(226, 179, 85, .22); }
-.se-l3 { background: rgba(207, 131, 80, .30); }
-.se-l4 { background: rgba(207, 131, 80, .52); }
+/* Секвенциальная версия той же оси: от «в наших руках» (шалфей) к «упирается
+   в чужое» (терракота). Изумруд-успех убран — он статус, а не значение. */
+.se-l0 { background: rgba(127, 168, 106, .14); }
+.se-l1 { background: rgba(127, 168, 106, .28); }
+.se-l2 { background: rgba(226, 179, 85, .24); }
+.se-l3 { background: rgba(207, 131, 80, .32); }
+.se-l4 { background: rgba(207, 131, 80, .55); }
 .se-cell.se-l-1 { background: transparent; }
 
 /* --- B6a потолок эффекта ------------------------------------------------ */
@@ -2645,9 +2669,10 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
 .se-flow-i b { font-family: var(--f-mono); font-size: 12.5px; color: var(--cream); }
 .se-flow-i i { font-style: normal; font-size: 10.5px; color: var(--cream-soft);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-.se-flow--supp { background: rgba(207, 131, 80, .40); }
-.se-flow--esc { background: rgba(226, 179, 85, .26); }
-.se-flow--own { background: rgba(61, 163, 114, .18); }
+/* Те же три ступени оценочной оси, что у вердиктов и колонок тем. */
+.se-flow--supp { background: rgba(207, 131, 80, .40); }   /* --se-ext */
+.se-flow--esc { background: rgba(226, 179, 85, .26); }    /* --se-part */
+.se-flow--own { background: rgba(127, 168, 106, .22); }   /* --se-own */
 
 .se-ceil { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 0; }
 .se-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -2660,9 +2685,9 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
   border-left: 3px solid var(--line-soft); }
 .se-col-h span { font-family: var(--f-mono); font-size: 10.5px; font-weight: 400;
   color: var(--cream-dim); letter-spacing: .03em; }
-.se-col-h--bad { border-left-color: var(--cat-2); }
-.se-col-h--mid { border-left-color: var(--line-soft); }
-.se-col-h--good { border-left-color: var(--success); }
+.se-col-h--bad { border-left-color: var(--se-ext); }
+.se-col-h--mid { border-left-color: var(--se-part); }
+.se-col-h--good { border-left-color: var(--se-own); }
 .se-theme-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
 .se-theme-list li { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px;
   font-size: 13px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
@@ -2674,9 +2699,11 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
 .se-theme-bar { grid-column: 1 / -1; height: 3px; border-radius: 2px;
   background: var(--line); overflow: hidden; }
 .se-theme-bar i { display: block; height: 100%; border-radius: 2px; background: var(--line-soft); }
-.se-theme-bar--bad { background: var(--cat-2) !important; }
-.se-theme-bar--mid { background: var(--gold-line) !important; }
-.se-theme-bar--good { background: var(--cat-3) !important; }
+/* Модификатор висит на самом <i>, поэтому селектор должен быть весомее
+   правила выше — раньше это добиралось тремя !important. */
+.se-theme-bar i.se-theme-bar--bad { background: var(--se-ext); }
+.se-theme-bar i.se-theme-bar--mid { background: var(--se-part); }
+.se-theme-bar i.se-theme-bar--good { background: var(--se-own); }
 .se-details--tight { margin-top: 8px; border-top: 0; }
 .se-details--tight > summary { padding: 6px 0; font-size: 11px; }
 
@@ -2763,9 +2790,11 @@ td.se-load { min-width: 112px; }
 /* чип «класс управляемости» темы — тоже от прежней версии, живёт в B6a */
 .sup-cls { font-family: var(--f-mono); font-size: 11px; padding: 1px 9px; border-radius: 999px;
   white-space: nowrap; border: 1px solid var(--line-soft); color: var(--cream-soft); }
-.sup-cls--good { color: var(--success); border-color: rgba(61, 163, 114, .45); background: rgba(61, 163, 114, .08); }
-.sup-cls--bad { color: var(--cream-dim); border-style: dashed; }
-.sup-cls--mid { color: var(--cream-soft); }
+/* Чипы — третье представление той же оси в том же блоке, поэтому цвета те же.
+   Пунктир убран: по v4 пунктир означает «план/черновик», а это не черновик. */
+.sup-cls--good { color: var(--se-own); border-color: var(--se-own); background: rgba(127, 168, 106, .10); }
+.sup-cls--mid { color: var(--cream-soft); border-color: var(--se-part); background: var(--gold-dim); }
+.sup-cls--bad { color: var(--se-ext); border-color: var(--se-ext); background: rgba(207, 131, 80, .10); }
 
 /* ===================== Печать / сохранение в PDF (2026-07-03) ===================== */
 /* Стейкхолдеры печатают стратегию/выводы. Переопределяем ТОЛЬКО палитру-токены внутри
