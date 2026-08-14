@@ -2413,34 +2413,47 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
   --se-ext:  var(--cat-2);      /* терракота — упирается в поставщика/чужое */
 }
 
-/* --- скелет страницы: лента разделов + нумерация блоков ----------------- */
+/* --- скелет страницы: оглавление + нумерация блоков --------------------- */
 /* Восемь блоков шли подряд одинаковыми h2, без нумерации и без навигации:
-   в середине страницы негде было понять, где ты и сколько осталось. Приём
-   тот же, что на «Выводах», но лента строится из самих заголовков (seRail). */
-.se-shell { display: grid; grid-template-columns: 186px minmax(0, 1fr);
-  gap: 0 34px; align-items: start; }
-.se-rail { position: sticky; top: 14px; align-self: start; padding-top: 6px; }
-.se-rail .rlab { display: block; font-family: var(--f-mono); font-size: 10.5px;
-  letter-spacing: .12em; text-transform: uppercase; color: var(--cream-dim);
-  padding: 0 0 9px 12px; }
-.se-rail a { display: flex; gap: 9px; padding: 6px 0 6px 11px; font-size: 12px;
-  line-height: 1.35; color: var(--cream-dim); text-decoration: none;
-  border-left: 2px solid var(--line); }
-.se-rail a:hover { color: var(--cream); border-left-color: var(--line-soft); }
-.se-rail a.is-on { color: var(--gold); border-left-color: var(--gold); }
-.se-rail-n { flex: none; font-family: var(--f-mono); opacity: .7; }
-/* Номер блока у заголовка — та же нумерация, что в ленте. */
+   в середине страницы негде было понять, где ты и сколько осталось.
+   Оглавление горизонтальное и липкое — в отличие от боковой ленты оно не
+   отъедает ширину у таблиц и не пропадает на ноутбучном экране: на узком
+   прокручивается вбок. Высоты липких слоёв меряет seNav и кладёт в
+   --se-hdr / --se-toc: захардкоженные значения разъезжались бы при первой
+   же правке шапки. */
+.se-toc { position: sticky; top: var(--se-hdr, 52px); z-index: 18;
+  display: flex; gap: 2px; margin: 20px 0 0; padding: 3px 0; overflow-x: auto;
+  background: rgba(10, 31, 22, .93); backdrop-filter: blur(8px);
+  border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  scrollbar-width: none; }
+.se-toc::-webkit-scrollbar { display: none; }
+.se-toc a { display: flex; gap: 7px; align-items: baseline; white-space: nowrap;
+  padding: 9px 12px; font-size: 12px; line-height: 1.2; color: var(--cream-dim);
+  text-decoration: none; border-bottom: 2px solid transparent; }
+.se-toc a:hover { color: var(--cream); }
+.se-toc a.is-on { color: var(--gold); border-bottom-color: var(--gold); }
+.se-toc-n { flex: none; font-family: var(--f-mono); opacity: .7; }
+/* Номер блока у заголовка — та же нумерация, что в оглавлении. */
 .se-num { font-family: var(--f-mono); font-size: 15px; font-weight: 400;
   color: var(--gold); margin-right: 11px; }
 .se-num:empty { display: none; }
-/* Заголовок раздела должен отбиваться от предыдущего блока сильнее, чем
-   подзаголовок внутри блока, — иначе уровни спорят (было 32px против 26px). */
-.se-page h2 { margin: 46px 0 14px; scroll-margin-top: 14px; }
-.se-page .se-body > div:first-child { scroll-margin-top: 14px; }
-@media (max-width: 1100px) {
-  .se-shell { grid-template-columns: minmax(0, 1fr); }
-  .se-rail { display: none; }
-}
+/* Заголовок раздела отбивается от предыдущего блока сильнее, чем подзаголовок
+   внутри блока, — иначе уровни спорят (было 32px против 26px). Отступ прокрутки
+   считаем от липких слоёв: без этого якорь уводил заголовок под шапку. */
+.se-page h2, .se-page [id] { scroll-margin-top: calc(var(--se-hdr, 52px) + var(--se-toc, 42px) + 12px); }
+.se-page h2 { margin: 46px 0 14px; }
+
+/* Навигация внутри длинного блока: чипы на его собственные части. Появляется
+   только там, где частей несколько и они не помещаются в экран, — у методики,
+   потолка эффекта и таблицы агентств. */
+.se-subnav { display: flex; flex-wrap: wrap; gap: 7px; margin: 10px 0 4px; }
+.se-subnav a { font-size: 12px; padding: 4px 11px; border-radius: 999px;
+  border: 1px solid var(--line); color: var(--cream-dim); text-decoration: none; }
+.se-subnav a:hover { color: var(--gold); border-color: var(--gold-line); background: var(--gold-dim); }
+/* Возврат к заголовку блока — после таблиц и карт высотой в несколько экранов. */
+.se-uptop { display: inline-block; margin: 14px 0 0; font-size: 12px;
+  color: var(--cream-dim); text-decoration: none; }
+.se-uptop:hover { color: var(--gold); }
 
 .se-lede { font-size: 14px; margin: 0 0 14px; }
 /* Вывод блока. Отдельный слой, потому что раньше выводы («направление
@@ -2513,7 +2526,10 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
 .se-ask-l { font-size: 13px; }
 
 /* --- B1: панель управления, липнет к верху ----------------------------- */
-.se-bar { position: sticky; top: 0; z-index: 30; display: flex; flex-wrap: wrap;
+/* Липнет ПОД шапкой сайта и оглавлением, а не поверх них: при top:0 и z-index
+   выше шапки панель наезжала на неё при прокрутке. */
+.se-bar { position: sticky; top: calc(var(--se-hdr, 52px) + var(--se-toc, 42px));
+  z-index: 17; display: flex; flex-wrap: wrap;
   gap: 14px 26px; padding: 12px 16px; margin: 22px 0 0;
   background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px;
   backdrop-filter: blur(6px); }
@@ -2880,8 +2896,7 @@ td.se-load { min-width: 112px; }
   /* каркас-хром, не нужный на бумаге */
   .site-header, .site-footer, .skip-link, .gsearch,
   .toolbar, .tree-controls, .must-controls, .cols-panel,
-  [data-projbar], .vy-rail, .se-rail { display: none !important; }
-  .se-shell { display: block !important; }
+  [data-projbar], .vy-rail, .se-toc { display: none !important; }
   main { max-width: none; margin: 0; padding: 0; }
   a { color: #14140f; text-decoration: underline; }
   /* не рвать смысловые блоки между страницами */

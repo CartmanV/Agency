@@ -2036,6 +2036,17 @@ async function mountSupportEcon() {
   const seOpt = (val, cur, label) =>
     `<button type="button" class="se-seg${val === cur ? " is-on" : ""}" data-val="${esc(val)}">${esc(label)}</button>`;
 
+  // Навигация внутри длинного блока. Два блока — методика и потолок эффекта —
+  // сами по себе высотой в несколько экранов и состоят из раскрытий: без
+  // чипов на их части единственный способ узнать, что внутри, — пролистать
+  // всё. Возврат к заголовку нужен после таблиц и карты той же высоты.
+  const seSub = (items) => {
+    const li = items.filter((i) => i.id && i.text)
+      .map((i) => `<a href="#${esc(i.id)}">${esc(i.text)}</a>`).join("");
+    return li ? `<nav class="se-subnav" aria-label="Части раздела">${li}</nav>` : "";
+  };
+  const seUp = (id) => `<a class="se-uptop" href="#${esc(id)}">↑ К началу раздела</a>`;
+
   function renderControls(M) {
     const host = document.querySelector("[data-se-controls]");
     if (!host) return;
@@ -2582,7 +2593,7 @@ async function mountSupportEcon() {
       </div>
       ${smallList.length ? `<p class="se-foot">${esc((b.smallNote || "").replace("{ops}", seNum(SMALL_OPS)))}</p>` : ""}
       <p class="se-foot">${esc(b.supplierColNote || "")}</p>
-      <details class="se-details">
+      <details class="se-details" id="reshenie">
         <summary>${esc(b.highlightHead || "Где нужно решение")}</summary>
         <div class="se-cards">
           ${(b.highlight || []).map((nm) => {
@@ -2597,7 +2608,8 @@ async function mountSupportEcon() {
           }).join("")}
         </div>
         <p class="se-out">${esc(b.newcomerNote || "")}</p>
-      </details>`;
+      </details>
+      ${seUp("agentstva")}`;
 
     const more = host.querySelector("[data-more]");
     if (more) {
@@ -2769,7 +2781,8 @@ async function mountSupportEcon() {
           : `Верх шкалы — выброс: ${fmtV(max)} у агентства с единичными транзакциями за месяц.`}
         Уровни нарезаны по равным долям клеток, а не по равным долям максимума:
         иначе одно крайнее значение забирает всю шкалу и карта выходит одноцветной.</p>
-      </details>`;
+      </details>
+      ${seUp("pomesyachno")}`;
 
     const box = host.querySelector("[data-heatbox]");
     if (box) box.addEventListener("toggle", () => { state.heatOpen = box.open; });
@@ -2847,6 +2860,11 @@ async function mountSupportEcon() {
 
     host.innerHTML = `
       <p class="lede se-lede">${esc(b.lede || "")}</p>
+      ${seSub([
+        { id: "potok", text: b.flowHead || "Куда уходит поток" },
+        { id: "temy", text: "Разбор по темам" },
+        { id: "po-agentstvam", text: "Зависимость по агентствам" },
+      ])}
       <div class="ag-strip">
         <div class="ag-stat">
           <div class="v">${seNum(S.total)}</div>
@@ -2864,7 +2882,7 @@ async function mountSupportEcon() {
           <div class="s">${seNum(S.escalations)} ${sePlural(S.escalations, "обращение", "обращения", "обращений")} — снимается кодом, а не настройкой</div>
         </div>
       </div>
-      <h3 class="se-h3">${esc(b.flowHead || "Куда уходит поток")}</h3>
+      <h3 class="se-h3" id="potok">${esc(b.flowHead || "Куда уходит поток")}</h3>
       <div class="se-flow" role="img" aria-label="Из ${seNum(S.total)} обращений: наружу ${sePct(pSupp)}, в разработку ${sePct(pEsc)}, остальное закрывает поддержка сама">
         ${seg(pSupp, "supp", b.flowSupp || "наружу", pSupp)}
         ${seg(pEsc, "esc", b.flowEsc || "в разработку", pEsc)}
@@ -2875,7 +2893,7 @@ async function mountSupportEcon() {
         .replace("{total}", seNum(S.total))
         .replace("{months}", seNum(S.monthsCovered))
         .replace("{calls13}", seNum(D.totals.calls)))}</p>
-      <details class="se-details">
+      <details class="se-details" id="temy">
         <summary>${esc(b.themesHead || "Разбор по темам")}</summary>
         <div class="se-ceil">
           <span class="sup-cls sup-cls--${CLS_CSS.own}">${bp("own")}% ${esc((b.classLabels || {}).own || "")}</span>
@@ -2893,7 +2911,7 @@ async function mountSupportEcon() {
           .replace("{pct}", sePct(u.shareOfFlow, 0))
           .replace("{share}", sePct(u.share, 0)))}</p>` : ""}
       </details>
-      <details class="se-details se-details--app">
+      <details class="se-details se-details--app" id="po-agentstvam">
         <summary>Зависимость от поставщика по агентствам</summary>
         <div class="table-wrap">
           <table class="se-tbl">
@@ -2960,36 +2978,45 @@ async function mountSupportEcon() {
     const gaps = X.gaps || [];
     host.innerHTML = `
       <p class="lede se-lede">${esc(b.lede || "")}</p>
-      <details class="se-details" open>
+      ${seSub([
+        { id: "dengi", text: (X.b2 || {}).head || "Деньги" },
+        { id: "kak-schitali", text: b.methodHead || "Как считали" },
+        { id: "ogranicheniya", text: b.limitsHead || "Ограничения" },
+        { id: "riski", text: b.risksHead || "Риски" },
+        { id: "ogovorki", text: asm.length ? "Оговорки из расчёта" : "" },
+        { id: "chego-ne-hvataet", text: b.openHead || "Чего не хватает" },
+      ])}
+      <details class="se-details" id="kak-schitali" open>
         <summary>${esc(b.methodHead || "Как считали")}</summary>
         <ul class="se-method">${(b.method || []).map((m) => `<li>${m}</li>`).join("")}</ul>
         <p class="se-foot">Обращения агентств за окно — ${seNum(D.totals.calls)}, а всего специалисты закрыли
           ${seNum(D.totals.capacityTickets)} обращений. Разница — непрофильные:
           ${(D.capacityMix || []).map((c) => `${esc(c.name.toLowerCase())} ${seNum(c.total)}`).join(", ")}.</p>
       </details>
-      <details class="se-details">
+      <details class="se-details" id="ogranicheniya">
         <summary>${esc(b.limitsHead || "Ограничения")}</summary>
         <ul class="se-limits">${(b.limits || []).map((l) =>
           `<li><b>${esc(l.what)}.</b> ${esc(l.text)}</li>`).join("")}</ul>
       </details>
-      <details class="se-details">
+      <details class="se-details" id="riski">
         <summary>${esc(b.risksHead || "Риски")}</summary>
         <ul class="se-limits">${(b.risks || []).map((l) =>
           `<li><b>${esc(l.what)}.</b> ${esc(l.text)}</li>`).join("")}</ul>
       </details>
-      ${asm.length ? `<details class="se-details">
+      ${asm.length ? `<details class="se-details" id="ogovorki">
         <summary>${esc(b.sourceCaveatsHead || "Оговорки из расчёта")}</summary>
         <p class="se-foot">${esc(b.sourceCaveatsNote || "")}</p>
         <ul class="se-limits">${asm.map((a) =>
           `<li><b>${esc(a.what)}</b> — ${esc(a.note)}</li>`).join("")}</ul>
       </details>` : ""}
-      <details class="se-details">
+      <details class="se-details" id="chego-ne-hvataet">
         <summary>${esc(b.openHead || "Чего не хватает")}</summary>
         <ul class="se-limits">${(b.open || []).map((o) => `<li>${esc(o)}</li>`).join("")}</ul>
         ${gaps.length ? `<h4 class="se-h4">Что ушло с прежней версии страницы</h4>
           <ul class="se-limits">${gaps.map((g) =>
             `<li><b>${esc(g.what)}.</b> ${esc(g.text)}</li>`).join("")}</ul>` : ""}
-      </details>`;
+      </details>
+      ${seUp("znamenatel")}`;
   }
 
   // ------------------------------------------------------------- B9 подвал
@@ -3026,14 +3053,14 @@ async function mountSupportEcon() {
     writeState();
   }
   renderAll();
-  seRail();
+  seNav();
 
-  // Лента разделов слева и номера у заголовков. Строятся из самих h2 страницы:
-  // отдельный список в разметке разошёлся бы с ней при первой же правке.
+  // Оглавление страницы и номера у заголовков. Строятся из самих h2:
+  // отдельный список в разметке разошёлся бы с ними при первой же правке.
   // Страница длинная — восемь блоков и полтора десятка раскрытий, — и до сих
   // пор в ней негде было понять, где ты находишься и сколько осталось.
-  function seRail() {
-    const nav = document.querySelector("[data-se-rail]");
+  function seNav() {
+    const nav = document.querySelector("[data-se-toc]");
     if (!nav) return;
     const heads = [...document.querySelectorAll(".se-body h2[id]")];
     // Первый экран номера не получает: он не раздел, а сводка всех остальных.
@@ -3049,35 +3076,74 @@ async function mountSupportEcon() {
       it.el.prepend(num);
     });
 
-    nav.innerHTML = `<span class="rlab">Разделы</span>` + items.map((it) =>
-      `<a href="#${esc(it.id)}" data-rail="${esc(it.id)}">
-         <span class="se-rail-n" aria-hidden="true">${esc(it.n || "·")}</span>
+    nav.innerHTML = items.map((it) =>
+      `<a href="#${esc(it.id)}" data-toc="${esc(it.id)}">
+         <span class="se-toc-n" aria-hidden="true">${esc(it.n || "·")}</span>
          <span>${esc(it.text)}</span></a>`).join("");
 
+    // Высоты липких слоёв — в переменные: от них считаются и позиция панели
+    // управления, и отступ прокрутки у якорей. Захардкоженные значения
+    // разъехались бы при любой правке шапки сайта.
+    const measure = () => {
+      const hdr = document.querySelector(".site-header");
+      const R = document.documentElement.style;
+      R.setProperty("--se-hdr", (hdr ? hdr.offsetHeight : 52) + "px");
+      R.setProperty("--se-toc", nav.offsetHeight + "px");
+    };
+
     const links = new Map();
-    nav.querySelectorAll("a").forEach((a) => links.set(a.dataset.rail, a));
-    // Активен последний заголовок, ушедший под верх экрана. Считаем по позиции,
+    nav.querySelectorAll("a").forEach((a) => links.set(a.dataset.toc, a));
+    let cur = null;
+    // Активен последний заголовок, ушедший под липкие слои. Считаем по позиции,
     // а не наблюдателем пересечений: блоки здесь очень разной высоты, и порог
     // видимости у теплокарты и у строки-вывода означал бы разное.
     const sync = () => {
+      const edge = nav.getBoundingClientRect().bottom + 8;
       let on = items[0].id;
       items.forEach((it) => {
         const el = document.getElementById(it.id);
-        if (el && el.getBoundingClientRect().top <= 120) on = it.id;
+        if (el && el.getBoundingClientRect().top <= edge) on = it.id;
       });
+      if (on === cur) return;
+      cur = on;
       links.forEach((a, id) => a.classList.toggle("is-on", id === on));
+      // Дотягиваем активный пункт в видимую часть оглавления, если оно
+      // прокручено вбок. Двигаем scrollLeft руками: scrollIntoView увёл бы
+      // заодно и вертикальную прокрутку страницы.
+      const a = links.get(on);
+      if (!a) return;
+      const box = nav.getBoundingClientRect(), r = a.getBoundingClientRect();
+      if (r.left < box.left) nav.scrollLeft += r.left - box.left - 12;
+      else if (r.right > box.right) nav.scrollLeft += r.right - box.right + 12;
     };
-    addEventListener("scroll", sync, { passive: true });
-    addEventListener("resize", sync, { passive: true });
+
+    measure();
     sync();
+    addEventListener("scroll", sync, { passive: true });
+    addEventListener("resize", () => { measure(); sync(); }, { passive: true });
   }
 
-  // Ссылка «разбор →» из первого экрана ведёт в свёрнутый денежный блок.
-  // Без этого клик прокручивал к закрытому заголовку, и читатель видел
-  // строку вместо обещанного разбора.
+  // Ссылка на свёрнутую часть должна приводить в раскрытую часть, а не к
+  // закрытому заголовку: иначе читатель видит строку вместо обещанного разбора.
+  // Касается и «разбор →» с первого экрана, и чипов навигации внутри блоков.
+  // Денежный блок разворачивается через состояние страницы (оно уезжает в
+  // ссылке), остальным достаточно открыть сам <details> и всех его предков.
   document.addEventListener("click", (e) => {
-    const a = e.target.closest && e.target.closest('a[href="#dengi"]');
-    if (a && !state.money) { state.money = true; renderMoney(derive()); writeState(); }
+    const a = e.target.closest && e.target.closest('a[href^="#"]');
+    if (!a) return;
+    const id = a.getAttribute("href").slice(1);
+    if (!id) return;
+    if (id === "dengi") {
+      if (!state.money) { state.money = true; renderMoney(derive()); writeState(); }
+      return;
+    }
+    const t = document.getElementById(id);
+    if (!t) return;
+    let d = t.tagName === "DETAILS" ? t : t.closest("details");
+    while (d) {
+      d.open = true;
+      d = d.parentElement ? d.parentElement.closest("details") : null;
+    }
   });
 }
 
