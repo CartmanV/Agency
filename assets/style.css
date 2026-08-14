@@ -2485,8 +2485,9 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
 
 .se-verdict { margin-top: 18px; }
 .se-verdict p + p { margin-top: 9px; }
-.se-verdict-chip { display: flex; align-items: center; gap: 8px; margin-top: 14px !important;
-  font-size: 12px; }
+/* Селектор весомее .accent-card p — раньше то же добиралось !important. */
+.accent-card p.se-verdict-chip { display: flex; align-items: center; gap: 8px;
+  margin-top: 14px; font-size: 12px; }
 
 /* Выводы первого экрана: каждый — тезис + ссылка в свой блок-доказательство.
    Прежние три плитки-навигации отсюда убраны: они дублировали тезисы. */
@@ -2495,10 +2496,10 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
 .se-points li { counter-increment: sep; position: relative; padding-left: 26px;
   font-size: 14px; line-height: 1.6; color: var(--cream-soft); max-width: 88ch; }
 .se-points li::before { content: counter(sep); position: absolute; left: 0; top: 1px;
-  font-family: var(--f-mono); font-size: 11px; color: var(--gold);
+  font-family: var(--f-mono); font-size: 10.5px; color: var(--gold);
   width: 18px; text-align: right; }
 .se-points b { color: var(--cream); }
-.se-point-l { white-space: nowrap; font-size: 12.5px; }
+.se-point-l { white-space: nowrap; font-size: 12px; }
 
 /* Запрос, который нельзя закрыть внутри продукта. Розовый на странице один —
    он у плашки загрузки; здесь торец золотой (v4, п.4: цвет = семантика). */
@@ -2516,7 +2517,7 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
 .se-ctl-l { font-family: var(--f-mono); font-size: 10.5px; text-transform: uppercase;
   letter-spacing: .05em; color: var(--cream-dim); }
 /* Каждый контрол объясняет себя строкой рядом, а не всплывающей подсказкой. */
-.se-ctl-h { font-size: 11.5px; color: var(--cream-dim); line-height: 1.45; max-width: 42ch; }
+.se-ctl-h { font-size: 12px; color: var(--cream-dim); line-height: 1.45; max-width: 42ch; }
 .se-segs { display: flex; flex-wrap: wrap; gap: 1px; background: var(--line);
   border: 1px solid var(--line); border-radius: 8px; overflow: hidden; width: fit-content; }
 .se-seg { font-family: var(--f-mono); font-size: 12px; padding: 5px 11px; border: 0;
@@ -2584,7 +2585,7 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
 /* --- B4: две сопоставленные полосы, IBC против внешних ------------------ */
 .se-splits { display: grid; gap: 9px; margin: 14px 0 0; }
 .se-legend { display: flex; gap: 16px; margin-bottom: 4px; }
-.se-key { font-family: var(--f-mono); font-size: 11.5px; color: var(--cream-soft);
+.se-key { font-family: var(--f-mono); font-size: 12px; color: var(--cream-soft);
   display: inline-flex; align-items: center; gap: 6px; }
 .se-key::before { content: ""; width: 12px; height: 3px; border-radius: 2px; background: var(--cat-1); }
 .se-key--b::before { background: var(--cat-2); }
@@ -2597,9 +2598,9 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
 .se-split-a, .se-split-b { display: flex; align-items: center; justify-content: center; min-width: 0; }
 .se-split-a { background: rgba(110, 151, 192, .34); }
 .se-split-b { background: rgba(207, 131, 80, .30); }
-.se-split i { font-family: var(--f-mono); font-size: 11px; font-style: normal; color: var(--cream); }
+.se-split i { font-family: var(--f-mono); font-size: 10.5px; font-style: normal; color: var(--cream); }
 .se-bullets { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 7px; }
-.se-bullets li { display: flex; gap: 9px; align-items: baseline; font-size: 13.5px;
+.se-bullets li { display: flex; gap: 9px; align-items: baseline; font-size: 13px;
   line-height: 1.55; color: var(--cream-soft); }
 .se-bullets .se-key { flex: none; }
 
@@ -2612,7 +2613,7 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
   cursor: pointer; text-transform: inherit; letter-spacing: inherit; }
 .se-tbl th button:hover { color: var(--cream); }
 .se-tbl th.is-sorted { color: var(--gold); }
-.se-th-note { display: block; font-size: 9.5px; text-transform: none; letter-spacing: 0;
+.se-th-note { display: block; font-size: 10.5px; text-transform: none; letter-spacing: 0;
   color: var(--cream-dim); font-weight: 400; margin-top: 2px;
   white-space: normal; max-width: 140px; }
 .se-tbl td { padding: 8px 10px; border-bottom: 1px solid var(--line);
@@ -2630,14 +2631,14 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
 .se-row:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; }
 .se-row.is-small td { opacity: .68; }
 .se-caret { display: inline-block; width: 14px; color: var(--gold); flex: none; }
-.se-seg-l { display: block; font-size: 11px; color: var(--cream-dim); margin-left: 14px; }
+.se-seg-l { display: block; font-size: 10.5px; color: var(--cream-dim); margin-left: 14px; }
 /* Имя и метки — одной строкой: каждая метка с новой строки поднимала высоту
    строки таблицы до четырёх строк, и таблица шла рваными ступенями. */
 .se-tbl--ag td.title { min-width: 250px; }
 .se-ag { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 0; }
 .se-ag-n { font-weight: 500; color: var(--cream); }
 .se-tbl--ag td, .se-tbl--ag th { vertical-align: middle; }
-.se-tag { font-family: var(--f-mono); font-size: 9.5px; text-transform: uppercase;
+.se-tag { font-family: var(--f-mono); font-size: 10.5px; text-transform: uppercase;
   letter-spacing: .04em; padding: 1px 6px; border-radius: 999px; margin-left: 6px;
   border: 1px solid var(--line-soft); color: var(--cream-dim); white-space: nowrap; }
 .se-tag--warn { border-style: dashed; }
@@ -2647,7 +2648,7 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
 .se-drill-in { padding: 16px 18px 18px; display: grid; gap: 14px; }
 .se-sparks { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
 .se-spark { display: grid; gap: 3px; }
-.se-spark-l { font-family: var(--f-mono); font-size: 10px; text-transform: uppercase;
+.se-spark-l { font-family: var(--f-mono); font-size: 10.5px; text-transform: uppercase;
   letter-spacing: .05em; color: var(--cream-dim); }
 .se-spark-v { font-family: var(--f-mono); font-size: 13px; color: var(--cream); }
 .se-drill-facts p { margin: 0 0 6px; font-size: 13px; line-height: 1.55; color: var(--cream-soft); }
@@ -2665,10 +2666,10 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
 /* строка-раскрытие «ещё N агентств с малой базой» внутри таблицы */
 .se-morerow td { background: var(--panel-2); padding: 7px 10px; }
 .se-morerow button { background: none; border: 0; padding: 0; cursor: pointer;
-  font-family: var(--f-mono); font-size: 11.5px; text-transform: uppercase;
+  font-family: var(--f-mono); font-size: 12px; text-transform: uppercase;
   letter-spacing: .04em; color: var(--gold); }
 .se-morerow button:hover { color: var(--cream); }
-.se-morerow-v { margin-left: 12px; font-size: 11.5px; color: var(--cream-dim); }
+.se-morerow-v { margin-left: 12px; font-size: 12px; color: var(--cream-dim); }
 
 /* --- B5 подсветка двух коммерческих случаев ----------------------------- */
 .se-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
@@ -2679,15 +2680,15 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
   gap: 12px; margin: 6px 0 12px; }
 /* У шкалы подписан каждый уровень: без границ «темнее = больше» не даёт
    перевести цвет обратно в число. */
-.se-scale { display: flex; align-items: flex-end; gap: 10px; font-size: 11px; }
-.se-scale-l { font-family: var(--f-mono); font-size: 10px; text-transform: uppercase;
+.se-scale { display: flex; align-items: flex-end; gap: 10px; font-size: 10.5px; }
+.se-scale-l { font-family: var(--f-mono); font-size: 10.5px; text-transform: uppercase;
   letter-spacing: .04em; color: var(--cream-dim); padding-bottom: 1px; }
 .se-scale-i { display: flex; flex-direction: column; gap: 3px; align-items: center; }
-.se-scale-i b { font-family: var(--f-mono); font-size: 10px; font-weight: 400;
+.se-scale-i b { font-family: var(--f-mono); font-size: 10.5px; font-weight: 400;
   color: var(--cream-dim); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .se-scale i { display: block; width: 100%; min-width: 42px; height: 10px; border-radius: 2px; }
 .se-heat th { font-size: 10.5px; padding: 6px 4px; }
-.se-heat td.se-cell { font-family: var(--f-mono); font-size: 11px; text-align: center;
+.se-heat td.se-cell { font-family: var(--f-mono); font-size: 10.5px; text-align: center;
   padding: 6px 4px; color: var(--cream); font-variant-numeric: tabular-nums;
   cursor: pointer; border-bottom: 1px solid var(--bg); }
 /* «Нет данных» — не самый светлый уровень шкалы, а видимая дырка: иначе
@@ -2712,7 +2713,7 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
   overflow: hidden; background: var(--line); }
 .se-flow-i { display: flex; flex-direction: column; align-items: center; justify-content: center;
   min-width: 0; gap: 1px; padding: 0 4px; text-align: center; }
-.se-flow-i b { font-family: var(--f-mono); font-size: 12.5px; color: var(--cream); }
+.se-flow-i b { font-family: var(--f-mono); font-size: 12px; color: var(--cream); }
 .se-flow-i i { font-style: normal; font-size: 10.5px; color: var(--cream-soft);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 /* Те же три ступени оценочной оси, что у вердиктов и колонок тем. */
@@ -2724,7 +2725,7 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
 .se-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 20px 28px; margin: 16px 0 0; }
 .se-cols--3 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-.se-col h4 { font-size: 13.5px; margin: 0 0 8px; color: var(--cream); }
+.se-col h4 { font-size: 13px; margin: 0 0 8px; color: var(--cream); }
 /* Заголовок колонки несёт её вес: три класса тем сравниваются между собой,
    а не только внутри себя. Торец — код класса, как у .se-verdict-box. */
 .se-col-h { display: flex; flex-direction: column; gap: 2px; padding-left: 9px;
@@ -2738,7 +2739,7 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
 .se-theme-list li { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px;
   font-size: 13px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
 .se-theme-n { color: var(--cream-soft); }
-.se-theme-v { font-family: var(--f-mono); font-size: 11.5px; color: var(--cream-dim);
+.se-theme-v { font-family: var(--f-mono); font-size: 12px; color: var(--cream-dim);
   white-space: nowrap; font-variant-numeric: tabular-nums; }
 /* Полоска объёма — общий масштаб на все три колонки, иначе «крупная тема»
    в одной колонке и в другой значат разное. */
@@ -2760,7 +2761,7 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
 .se-calc-row { display: flex; align-items: center; gap: 16px; margin: 10px 0; }
 .se-range { flex: 1 1 260px; max-width: 380px; accent-color: var(--gold); }
 .se-calc-n { font-family: var(--f-mono); font-size: 13px; color: var(--cream-soft); white-space: nowrap; }
-.se-calc-n b { color: var(--gold); font-size: 16px; }
+.se-calc-n b { color: var(--gold); font-size: 15px; }
 .se-calc-out { font-size: 14px; color: var(--cream-soft); margin: 8px 0 0; }
 .se-calc-v { font-family: var(--f-mono); font-size: 20px; color: var(--gold); }
 
@@ -2770,15 +2771,15 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
   border: 1px solid var(--line); border-radius: 10px; }
 .se-act.is-special { border-color: var(--gold-line); background: var(--gold-dim); }
 .se-act-h { margin-bottom: 6px; }
-.se-prio { font-family: var(--f-mono); font-size: 9.5px; text-transform: uppercase;
+.se-prio { font-family: var(--f-mono); font-size: 10.5px; text-transform: uppercase;
   letter-spacing: .05em; padding: 2px 8px; border-radius: 999px;
   border: 1px solid var(--line-soft); color: var(--cream-dim); }
 .se-prio--high { color: var(--gold); border-color: var(--gold-line); background: var(--gold-dim); }
 .se-act-w { margin: 0; font-size: 14px; line-height: 1.5; color: var(--cream); }
-.se-act-e { margin: 7px 0 0; font-size: 12.5px; line-height: 1.55; color: var(--cream-soft); }
+.se-act-e { margin: 7px 0 0; font-size: 12px; line-height: 1.55; color: var(--cream-soft); }
 .se-act-e b { color: var(--cream-dim); font-weight: 500; }
-.se-act-l { margin: 8px 0 0; font-size: 12.5px; }
-.se-act-n { margin: 8px 0 0; font-size: 12.5px; line-height: 1.55; color: var(--cream-soft);
+.se-act-l { margin: 8px 0 0; font-size: 12px; }
+.se-act-n { margin: 8px 0 0; font-size: 12px; line-height: 1.55; color: var(--cream-soft);
   border-top: 1px solid var(--gold-line); padding-top: 8px; }
 
 /* --- B8 методика -------------------------------------------------------- */
@@ -2801,7 +2802,7 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
 .se-details--app > summary:hover { color: var(--cream); }
 .se-method, .se-limits { list-style: none; padding: 0; margin: 2px 0 14px; display: grid; gap: 9px; }
 .se-limits { padding-left: 18px; list-style: disc; }
-.se-method li, .se-limits li { font-size: 13.5px; line-height: 1.6; color: var(--cream-soft); max-width: 88ch; }
+.se-method li, .se-limits li { font-size: 13px; line-height: 1.6; color: var(--cream-soft); max-width: 88ch; }
 .se-method li b, .se-limits li b { color: var(--cream); }
 
 /* денежный блок внутри методики: свёрнут, заголовок несёт готовый вывод */
@@ -2842,7 +2843,7 @@ td.se-load { min-width: 112px; }
 .se-load-bar.is-over { background: var(--gold); }
 
 /* чип «класс управляемости» темы — тоже от прежней версии, живёт в B6a */
-.sup-cls { font-family: var(--f-mono); font-size: 11px; padding: 1px 9px; border-radius: 999px;
+.sup-cls { font-family: var(--f-mono); font-size: 10.5px; padding: 1px 9px; border-radius: 999px;
   white-space: nowrap; border: 1px solid var(--line-soft); color: var(--cream-soft); }
 /* Чипы — третье представление той же оси в том же блоке, поэтому цвета те же.
    Пунктир убран: по v4 пунктир означает «план/черновик», а это не черновик. */
