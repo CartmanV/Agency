@@ -2424,7 +2424,7 @@ async function mountSupportEcon() {
       <p class="se-foot">${esc(b.trendNote || "")}</p>
       <details class="se-details">
         <summary>Почему IBC нельзя сравнивать с остальными в лоб</summary>
-        <div class="callout--soft se-caveat">${esc(b.caveat || "")}</div>
+        <div class="se-caveat">${esc(b.caveat || "")}</div>
       </details>`;
     wireTips(host);
   }

@@ -2425,7 +2425,12 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
 .se-foot { font-size: 12.5px; line-height: 1.55; color: var(--cream-dim); margin: 10px 0 0; max-width: 82ch; }
 .se-h3 { font-family: var(--f-display); font-size: 18px; margin: 26px 0 8px; }
 .se-h4 { font-size: 14px; margin: 16px 0 6px; color: var(--cream); }
-.se-caveat { margin: 16px 0 0; }
+/* Методическая оговорка. Раньше это был .callout--soft — розовая пунктирная
+   врезка на легаси-токенах: лишний розовый в поле зрения плюс пунктир,
+   который по v4 означает «план/черновик», а не «читать с оговоркой». */
+.se-caveat { margin: 16px 0 0; padding: 12px 16px; font-size: 13px;
+  line-height: 1.6; color: var(--cream-soft); background: var(--panel);
+  border: 1px solid var(--line); border-radius: 12px; max-width: 88ch; }
 .se-dim { opacity: .72; }
 
 /* --- B0: плашка-вывод и три плитки ------------------------------------ */
@@ -2517,8 +2522,11 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
 .se-line--a { stroke: var(--cat-1); stroke-width: 2; }
 .se-line--b { stroke: var(--cat-2); stroke-width: 2; stroke-dasharray: 5 3; }
 .se-line-dot { fill: var(--cat-1); }
-.se-mark { fill: var(--bg); stroke: var(--attention); stroke-width: 2; }
-.se-mark-t { font-family: var(--f-mono); font-size: 12px; fill: var(--attention-soft); }
+/* Метки минимума и максимума — нейтральные: розовым на этой странице говорит
+   только сама величина «загрузка на специалиста» (линия ниже и плашка на
+   первом экране), а крайние точки — просто подписи к ней. */
+.se-mark { fill: var(--bg); stroke: var(--cream-soft); stroke-width: 2; }
+.se-mark-t { font-family: var(--f-mono); font-size: 12px; fill: var(--cream); }
 .se-dot { fill: transparent; cursor: default; }
 /* Узкий экран: svg сжимается вместе с подписями, поэтому кегль в единицах
    холста поднимаем — на экране он остаётся прежним. */
@@ -2785,7 +2793,7 @@ td.se-load { min-width: 112px; }
 .se-load-bar { display: block; height: 100%; background: var(--gold-line); border-radius: 2px; }
 /* «за 100%» — обслуживание дороже всей выручки агентства: полоска упирается
    в край дорожки, поэтому сам факт переполнения кодируем цветом торца. */
-.se-load-bar.is-over { background: linear-gradient(90deg, var(--gold-line) 70%, var(--attention)); }
+.se-load-bar.is-over { background: var(--gold); }
 
 /* чип «класс управляемости» темы — тоже от прежней версии, живёт в B6a */
 .sup-cls { font-family: var(--f-mono); font-size: 11px; padding: 1px 9px; border-radius: 999px;
