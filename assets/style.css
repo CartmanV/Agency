@@ -2827,6 +2827,8 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
 .se-details--app > summary { font-family: var(--f-mono); font-size: 10.5px;
   text-transform: uppercase; letter-spacing: .05em; color: var(--cream-dim); }
 .se-details--app > summary:hover { color: var(--cream); }
+/* Внутри подката сноски идут подряд и первой не нужен отступ сверху. */
+.se-details--app > .se-foot:first-of-type { margin-top: 4px; }
 .se-method, .se-limits { list-style: none; padding: 0; margin: 2px 0 14px; display: grid; gap: 9px; }
 .se-limits { padding-left: 18px; list-style: disc; }
 .se-method li, .se-limits li { font-size: 13px; line-height: 1.6; color: var(--cream-soft); max-width: 88ch; }

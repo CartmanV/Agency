@@ -2047,6 +2047,31 @@ async function mountSupportEcon() {
   };
   const seUp = (id) => `<a class="se-uptop" href="#${esc(id)}">↑ К началу раздела</a>`;
 
+  // Единый шаблон блока-измерения (B2–B6), согласован 2026-08-14:
+  //
+  //   h2                 заголовок
+  //   .se-lede           что меряем и на какой вопрос отвечаем
+  //   [данные]           график / таблица / карта
+  //   .se-out            вывод: что из этого следует
+  //   seNotes()          «Как считали и что здесь не учтено»
+  //
+  // До этого у семи блоков было семь разных форм: где-то вывод сверху,
+  // где-то снизу, где-то внутри раскрытия, а методика и оговорки висели
+  // открытым текстом — по три-четыре сноски на блок. Один выученный порядок
+  // избавляет читателя от поиска ответа заново в каждом блоке.
+  //
+  // Исключение — B6 «Помесячно»: там данные сами под раскрытием, и вывод
+  // остаётся НАД ними, иначе до вывода пришлось бы разворачивать карту.
+  const seNotes = (parts, opts = {}) => {
+    const body = parts.filter(Boolean).map((p) => `<p class="se-foot">${p}</p>`).join("")
+      + (opts.raw || "");
+    if (!body) return "";
+    return `<details class="se-details se-details--app">
+      <summary>${esc(opts.head || "Как считали и что здесь не учтено")}</summary>
+      ${body}
+    </details>`;
+  };
+
   function renderControls(M) {
     const host = document.querySelector("[data-se-controls]");
     if (!host) return;
@@ -2591,8 +2616,31 @@ async function mountSupportEcon() {
           </tfoot>
         </table>
       </div>
-      ${smallList.length ? `<p class="se-foot">${esc((b.smallNote || "").replace("{ops}", seNum(SMALL_OPS)))}</p>` : ""}
-      <p class="se-foot">${esc(b.supplierColNote || "")}</p>
+      ${(() => {
+        // Вывод под таблицей. Считается, а не написан руками: у таблицы две
+        // оси — стоимость обслуживания и доля выручки, — и они показывают
+        // разное. Без этого читатель упирался в 19×9 чисел и сам догадывался,
+        // что они доказывают.
+        if (!b.conclusion) return "";
+        const byCost = [...M.agencies].sort((x, y) => (y.supportCost || 0) - (x.supportCost || 0));
+        const totC = M.totals.supportCost || 0;
+        if (!totC) return "";
+        const top3 = byCost.slice(0, 3).reduce((s2, a) => s2 + (a.supportCost || 0), 0) / totC;
+        const lim = b.overShare || 0.25;
+        const over = M.agencies.filter((a) => (a.pctRevenue || 0) > lim);
+        // Новички и малая база: у них доля выручки ничего не измеряет — одно
+        // обращение двигает её на десятки процентов.
+        const raw = over.filter((a) => a.isNewcomer || (a.ops || 0) < SMALL_OPS);
+        return `<p class="se-out">${esc(b.conclusion
+          .replace("{top3}", sePct(top3, 0))
+          .replace("{overN}", String(over.length))
+          .replace("{rawN}", String(raw.length))
+          .replace("{names}", (b.highlight || []).join(" и ")))}</p>`;
+      })()}
+      ${seNotes([
+        smallList.length ? esc((b.smallNote || "").replace("{ops}", seNum(SMALL_OPS))) : "",
+        esc(b.supplierColNote || ""),
+      ])}
       <details class="se-details" id="reshenie">
         <summary>${esc(b.highlightHead || "Где нужно решение")}</summary>
         <div class="se-cards">
