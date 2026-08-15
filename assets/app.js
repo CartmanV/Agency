@@ -2478,11 +2478,14 @@ async function mountSupportEcon() {
         <li><span class="se-key se-key--a"></span>${esc(b.trendIbc || "")}</li>
         <li><span class="se-key se-key--b"></span>${esc(b.trendExt || "")}</li>
       </ul>
-      <p class="se-foot">${esc(b.trendNote || "")}</p>
-      <details class="se-details">
-        <summary>Почему IBC нельзя сравнивать с остальными в лоб</summary>
-        <div class="se-caveat">${esc(b.caveat || "")}</div>
-      </details>`;
+      ${seNotes([
+        b.how || "",
+        esc(b.trendNote || ""),
+      ], {
+        // Оговорка про IBC была отдельным раскрытием рядом со сноской: два
+        // разных способа сказать «читай с поправкой». Теперь один подкат.
+        raw: b.caveat ? `<div class="se-caveat">${esc(b.caveat)}</div>` : "",
+      })}`;
     wireTips(host);
   }
 
