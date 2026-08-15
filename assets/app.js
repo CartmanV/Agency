@@ -2354,7 +2354,6 @@ async function mountSupportEcon() {
       <p class="lede se-lede">${esc(b.lede || "")}</p>
       ${chartCapacity()}
       <p class="se-out">${esc(b.conclusion || "")}</p>
-      ${tr.rangeText ? `<p class="se-foot">Диапазон за окно: ${esc(tr.rangeText)}.</p>` : ""}
       <div class="se-calc">
         <h3 class="se-h3">${esc(b.calcHead || "")}</h3>
         <p class="se-lede">${esc(b.calcLede || "")}</p>
@@ -2368,10 +2367,16 @@ async function mountSupportEcon() {
           ${esc((b.calcResult || "").replace("{base}", seNum(base)))}
           — <b>+${Math.round(pct * 100)}%</b> к очереди
         </p>
-        <p class="se-foot">${esc((b.calcNote || "").replace("{perNewcomer}", seNum(per, 1)))}</p>
-        <p class="se-foot">${esc((b.calcCaveat || "").replace("{count}", String(nc.count || 0)))}
-          ${nc.names ? `Это ${esc(nc.names.join(", "))}.` : ""}</p>
-      </div>`;
+      </div>
+      ${seNotes([
+        // how — авторская разметка, как b8.method: жирным выделен считаемый
+        // показатель. Не экранируем, слой доверенный и правится руками.
+        b.how || "",
+        esc((b.calcNote || "").replace("{perNewcomer}", seNum(per, 1))),
+        esc((b.calcCaveat || "").replace("{count}", String(nc.count || 0)))
+          + (nc.names ? ` Это ${esc(nc.names.join(", "))}.` : ""),
+        tr.rangeText ? `Диапазон за окно: ${esc(tr.rangeText)}.` : "",
+      ])}`;
     wireTips(host);
     const r = host.querySelector("[data-se-n]");
     if (r) {
