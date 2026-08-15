@@ -2945,10 +2945,16 @@ async function mountSupportEcon() {
         ${seg(pOwnFlow, "own", b.flowOwn || "закрыла сама", pOwnFlow)}
       </div>
       <p class="se-out">${esc(b.ceilingNote || "")}</p>
-      <p class="se-foot">${esc((b.denomNote || "")
-        .replace("{total}", seNum(S.total))
-        .replace("{months}", seNum(S.monthsCovered))
-        .replace("{calls13}", seNum(D.totals.calls)))}</p>
+      ${seNotes([
+        b.how || "",
+        esc((b.denomNote || "")
+          .replace("{total}", seNum(S.total))
+          .replace("{months}", seNum(S.monthsCovered))
+          .replace("{calls13}", seNum(D.totals.calls))),
+        // flowNote был написан автором, но не рендерился нигде: оговорка о том,
+        // что признаки не исключают друг друга, до страницы не доходила.
+        esc(b.flowNote || ""),
+      ])}
       <details class="se-details" id="temy">
         <summary>${esc(b.themesHead || "Разбор по темам")}</summary>
         <div class="se-ceil">
