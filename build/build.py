@@ -2713,6 +2713,47 @@ def _load_data_json(name, default):
         return default
 
 
+# Шаблон блока-измерения страницы «Экономика поддержки» (согласован 2026-08-14):
+#   заголовок → лид «что меряем и зачем» → данные → вывод → подкат «как считали».
+# Ключ вывода у блоков исторически называется по-разному, поэтому он в таблице,
+# а не выводится из имени. b6 «Помесячно» — осознанное исключение: данные там
+# сами под раскрытием, и вывод стоит НАД ними, иначе до вывода пришлось бы
+# разворачивать карту 19×13. Своей методики у него нет — карта только сводит
+# уже посчитанное, — поэтому «как считали» с него не спрашиваем.
+SE_BLOCKS = {
+    "b3":  ("Люди",          "conclusion",  True),
+    "b4":  ("Кто создаёт",   "gapNote",     True),
+    "b5":  ("По агентствам", "conclusion",  True),
+    "b6a": ("Потолок",       "ceilingNote", True),
+    "b6":  ("Помесячно",     "summaryLine", False),
+}
+
+
+def lint_support_econ():
+    """Тексты блоков — авторские, и забыть слот легко: страница просто молча
+    теряет вывод, как это уже случилось с таблицей агентств и с b6a.flowNote.
+    Сборку не валим, печатаем дыры — как lint_links."""
+    x = _load_data_json("support_econ_extra.json", None)
+    if not x:
+        return
+    holes = []
+    for key, (name, out_key, needs_how) in SE_BLOCKS.items():
+        b = x.get(key) or {}
+        if not b.get("lede"):
+            holes.append(f"{key} «{name}»: нет лида — читатель не узнает, что меряем и зачем")
+        if not b.get(out_key):
+            holes.append(f"{key} «{name}»: нет вывода (ключ {out_key})")
+        if needs_how and not b.get("how"):
+            holes.append(f"{key} «{name}»: нет «как считали» (ключ how) — подкат выйдет без методики")
+    if holes:
+        print(f"  ⚠ шаблон блоков support.html — дыр {len(holes)}:")
+        for h in holes:
+            print(f"    · {h}")
+    else:
+        print(f"  ✓ шаблон блоков support.html: у всех {len(SE_BLOCKS)} блоков "
+              f"есть лид, вывод и «как считали»")
+
+
 def main():
     print(f"Скоринг: {SCORING_PATH.name} (сверен с каноном {SCORING.get('synced')})")
     items, errors = build_backlog()
@@ -2805,6 +2846,7 @@ def main():
 
     if research:
         lint_links(research, sootv)
+    lint_support_econ()
 
     # home.json — сводка дашбордов главной
     home = build_home(items, agencies, research)

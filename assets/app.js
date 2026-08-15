@@ -2646,6 +2646,7 @@ async function mountSupportEcon() {
           .replace("{names}", (b.highlight || []).join(" и ")))}</p>`;
       })()}
       ${seNotes([
+        b.how || "",
         smallList.length ? esc((b.smallNote || "").replace("{ops}", seNum(SMALL_OPS))) : "",
         esc(b.supplierColNote || ""),
       ])}
