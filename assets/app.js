@@ -1957,11 +1957,18 @@ async function mountSupportEcon() {
     const nc = D.newcomer || {};
     const S = D.supplier || {};
 
+    // Строка «Главное» намеренно НЕ зависит от среза «Без IBC»: числа берутся
+    // из D.totals (всё направление), а не из отфильтрованной модели. Раньше
+    // из восьми плашек на переключатель отзывались две, зато в шести подписях
+    // вылезали оговорки «считая IBC» — текст менялся бурно, числа стояли, и
+    // прочесть, что именно сделал переключатель, было нельзя. Теперь срез
+    // управляет только тем, что ниже него: таблицей, картой и деньгами.
+    // От зарплаты (k) деньги по-прежнему зависят — это другая ось.
     const VAL = {
-      supportCost: () => seMoney(M.totals.supportCost),
-      pctRevenue: () => sePct(M.totals.pctRevenue),
+      supportCost: () => seMoney(D.totals.supportCost * M.k),
+      pctRevenue: () => sePct(D.totals.pctRevenue * M.k),
       perSpecialist: () => seNum(M.totals.perSpecialistLast),
-      ratio: () => seNum(M.totals.ratio, 1),
+      ratio: () => seNum(D.totals.ratio, 1),
       // Доля к поставщику от базы не зависит: она считается на своём окне и
       // по всему потоку обращений, включая корзину «Другое». Доля в разработку
       // берётся оттуда же, а не из totals: у них должен быть один знаменатель
@@ -1975,28 +1982,24 @@ async function mountSupportEcon() {
         const s = D.totals.ibcShare;
         return s ? sePct(s.calls, 0) + " / " + sePct(s.revenue, 0) : "—";
       },
-      ticketCost: () => seMoney(M.totals.ticketCostAvg),
+      ticketCost: () => seMoney(D.totals.ticketCostAvg * M.k),
       newcomers: () => seNum(nc.count),
+    };
+    // Две величины срез «Без IBC» действительно менял по смыслу. Вместо того
+    // чтобы прятать вторую цифру за переключателем, показываем её рядом всегда:
+    // сравнение читается на первом экране, переключать ничего не нужно.
+    const EX = D.totals.exIbc || {};
+    const SUBX = {
+      ratio: () => (EX.ratio ? " · без IBC — " + seNum(EX.ratio, 1) : ""),
+      pctRevenue: () => (EX.pctRevenue ? " · без IBC — " + sePct(EX.pctRevenue * M.k) : ""),
     };
     const kpi = (b0.kpi || []).map((k) => {
       const cls = k.accent === "alert" ? " se-stat--alert" : k.accent === "gold" ? " ag-stat--goal" : "";
-      // Загрузка и очередь — величины на всю службу: специалисты общие, и от
-      // исключения IBC из денежного среза очередь не становится короче.
-      // Без этой оговорки «Без IBC» читается как «а вот тут полегче».
-      // В срезе «Без IBC» три плашки остаются общими по службе: специалисты
-      // одни на всех, и доля к поставщику считается по всему потоку обращений.
-      const SHARED = {
-        perSpecialist: " · считая IBC: люди общие",
-        toSupplier: " · доля считается по всему потоку, включая IBC",
-        toDev: " · доля считается по всему потоку, включая IBC",
-        ticketCost: " · цена по всей службе, включая IBC",
-        ibcSplit: " · это и есть доля IBC — срез её не меняет",
-      };
-      const shared = state.base === "ex" ? (SHARED[k.key] || "") : "";
+      const subx = (SUBX[k.key] || (() => ""))();
       return `<div class="ag-stat${cls}">
         <div class="v">${esc((VAL[k.key] || (() => "—"))())}</div>
         <div class="l">${esc(k.label || "")}</div>
-        <div class="s">${esc(k.sub || "")}${shared}</div>
+        <div class="s">${esc(k.sub || "")}${esc(subx)}</div>
       </div>`;
     }).join("");
 
@@ -2020,6 +2023,7 @@ async function mountSupportEcon() {
     })();
     host.innerHTML = `
       <div class="ag-strip se-kpi">${kpi}</div>
+      ${b0.baseNote ? `<p class="se-foot">${esc(b0.baseNote)}</p>` : ""}
       <article class="accent-card is-nsm se-verdict">
         <h3>${esc(v.head || "")}</h3>
         ${chip}
@@ -2621,7 +2625,11 @@ async function mountSupportEcon() {
             ${th("escalationShare", "num")}
             <th class="num se-dim" data-sort="toSupplierShare">
               <button type="button">К поставщику${sortKey === "toSupplierShare" ? (sortDir < 0 ? " ↓" : " ↑") : ""}</button>
-              <span class="se-th-note">${esc(D.supplier ? `${D.supplier.monthsCovered} из ${D.supplier.monthsTotal} мес.` : "")}</span>
+              <!-- Без слова «выгрузка» подпись читалась как «данные потеряли»:
+                   на деле это окно источника — выгрузка обращений короче
+                   денежного окна на один месяц. -->
+              <span class="se-th-note">${esc(D.supplier
+                ? `по выгрузке: ${D.supplier.monthsCovered} мес. из ${D.supplier.monthsTotal}` : "")}</span>
             </th>
           </tr></thead>
           <tbody>${rows}</tbody>
@@ -2676,6 +2684,10 @@ async function mountSupportEcon() {
         b.how || "",
         smallList.length ? esc((b.smallNote || "").replace("{ops}", seNum(SMALL_OPS))) : "",
         esc(b.supplierColNote || ""),
+        // Сегменты приходят из общей сегментации сайта и на этой странице
+        // появляются без легенды: читатель видит «Опорные (ядро)» и не знает,
+        // кто и по какому признаку так решил.
+        esc(b.segmentNote || ""),
       ])}
       ${seUp("agentstva")}`;
 
@@ -2998,6 +3010,10 @@ async function mountSupportEcon() {
         // flowNote был написан автором, но не рендерился нигде: оговорка о том,
         // что признаки не исключают друг друга, до страницы не доходила.
         esc(b.flowNote || ""),
+        // Названия тем — сырые, как в системе поддержки: «Экстрафилды», «МОМ»,
+        // «простыня». Не переименовываем (иначе список не сойдётся с выгрузкой),
+        // но предупреждаем, что это внутренние названия, а не наш язык.
+        esc(b.themeNamesNote || ""),
       ])}`;
   }
 
