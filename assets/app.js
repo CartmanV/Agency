@@ -2993,7 +2993,9 @@ async function mountSupportEcon() {
           <table class="se-tbl">
             <thead><tr><th>Агентство</th><th class="num">Обращений за окно</th><th class="num">Наружу</th><th class="num">Доля</th></tr></thead>
             <tbody>${(S.byAgency || []).map((r) => `<tr>
-              <td class="title">${esc(r.canon)}</td>
+              <!-- r.name — написание свода, то же, что в таблице экономики;
+                   r.canon остаётся ключом сшивки с выгрузкой. -->
+              <td class="title">${esc(r.name || r.canon)}</td>
               <td class="num">${seNum(r.total)}</td>
               <td class="num">${seNum(r.toSupplier)}</td>
               <td class="num">${sePct(r.share, 0)}</td></tr>`).join("")}

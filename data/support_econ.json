@@ -2707,133 +2707,152 @@
         "total": 2976,
         "toSupplier": 185,
         "escalations": 598,
-        "share": 0.0622
+        "share": 0.0622,
+        "name": "IBC"
       },
       {
         "canon": "ATH",
         "total": 866,
         "toSupplier": 125,
         "escalations": 214,
-        "share": 0.1443
+        "share": 0.1443,
+        "name": "ATH"
       },
       {
         "canon": "Аэроглобус",
         "total": 381,
         "toSupplier": 55,
         "escalations": 57,
-        "share": 0.1444
+        "share": 0.1444,
+        "name": "Аэроглобус"
       },
       {
         "canon": "Аэротон",
         "total": 332,
         "toSupplier": 18,
         "escalations": 55,
-        "share": 0.0542
+        "share": 0.0542,
+        "name": "Аэротон"
       },
       {
         "canon": "Глобал Эир",
         "total": 289,
         "toSupplier": 13,
         "escalations": 45,
-        "share": 0.045
+        "share": 0.045,
+        "name": "Global Air"
       },
       {
         "canon": "Корпорейт Тревел",
         "total": 268,
         "toSupplier": 25,
         "escalations": 44,
-        "share": 0.0933
+        "share": 0.0933,
+        "name": "Corporate Travel"
       },
       {
         "canon": "Космос Тревел",
         "total": 171,
         "toSupplier": 54,
         "escalations": 12,
-        "share": 0.3158
+        "share": 0.3158,
+        "name": "Космос Тревел"
       },
       {
         "canon": "ИНТЕРСИТИ СЕРВИС",
         "total": 136,
         "toSupplier": 14,
         "escalations": 32,
-        "share": 0.1029
+        "share": 0.1029,
+        "name": "KMP Group"
       },
       {
         "canon": "Казтур",
         "total": 124,
         "toSupplier": 6,
         "escalations": 16,
-        "share": 0.0484
+        "share": 0.0484,
+        "name": "KazTour"
       },
       {
         "canon": "Альбатрос",
         "total": 86,
         "toSupplier": 12,
         "escalations": 12,
-        "share": 0.1395
+        "share": 0.1395,
+        "name": "СБ Альбатрос"
       },
       {
         "canon": "Демлинк",
         "total": 31,
         "toSupplier": 0,
         "escalations": 1,
-        "share": 0.0
+        "share": 0.0,
+        "name": "Демлинк"
       },
       {
         "canon": "ГСП",
         "total": 30,
         "toSupplier": 3,
         "escalations": 5,
-        "share": 0.1
+        "share": 0.1,
+        "name": "ГСП-Сервис"
       },
       {
         "canon": "Атланта",
         "total": 20,
         "toSupplier": 4,
         "escalations": 3,
-        "share": 0.2
+        "share": 0.2,
+        "name": "Атланта БТК"
       },
       {
         "canon": "Симпл Флайт",
         "total": 12,
         "toSupplier": 2,
         "escalations": 4,
-        "share": 0.1667
+        "share": 0.1667,
+        "name": "Симпл Флайт"
       },
       {
         "canon": "FS Travel",
         "total": 7,
         "toSupplier": 0,
         "escalations": 0,
-        "share": 0.0
+        "share": 0.0,
+        "name": "FS Travel"
       },
       {
         "canon": "ATPI",
         "total": 7,
         "toSupplier": 2,
         "escalations": 3,
-        "share": 0.2857
+        "share": 0.2857,
+        "name": "ATPI"
       },
       {
         "canon": "РейнаТур",
         "total": 7,
         "toSupplier": 0,
         "escalations": 2,
-        "share": 0.0
+        "share": 0.0,
+        "name": "Рейна-Тур"
       },
       {
         "canon": "Интоп",
         "total": 5,
         "toSupplier": 1,
         "escalations": 2,
-        "share": 0.2
+        "share": 0.2,
+        "name": "ИнТоп"
       },
       {
         "canon": "Иналекс",
         "total": 4,
         "toSupplier": 1,
         "escalations": 1,
-        "share": 0.25
+        "share": 0.25,
+        "name": "Иналекс"
       }
     ]
   },
