@@ -1956,8 +1956,6 @@ async function mountSupportEcon() {
     const b0 = X.b0 || {};
     const nc = D.newcomer || {};
     const S = D.supplier || {};
-    const plus = nc.callsPerNewcomer && nc.baseCallsPerMonth
-      ? (nc.callsPerNewcomer * GOAL) / nc.baseCallsPerMonth : null;
 
     const VAL = {
       supportCost: () => seMoney(M.totals.supportCost),
@@ -1965,9 +1963,20 @@ async function mountSupportEcon() {
       perSpecialist: () => seNum(M.totals.perSpecialistLast),
       ratio: () => seNum(M.totals.ratio, 1),
       // Доля к поставщику от базы не зависит: она считается на своём окне и
-      // по всему потоку обращений, включая корзину «Другое».
+      // по всему потоку обращений, включая корзину «Другое». Доля в разработку
+      // берётся оттуда же, а не из totals: у них должен быть один знаменатель
+      // (12 месяцев выгрузки, 6 256 обращений), иначе две доли рядом нельзя
+      // читать вместе.
       toSupplier: () => sePct(S.share),
-      plus20: () => (plus == null ? "—" : "+" + Math.round(plus * 100) + "%"),
+      toDev: () => sePct(S.escalationShare),
+      // Две доли в одной плашке: смысл не в каждой по отдельности, а в разрыве
+      // между ними — половина нагрузки против 79% выручки.
+      ibcSplit: () => {
+        const s = D.totals.ibcShare;
+        return s ? sePct(s.calls, 0) + " / " + sePct(s.revenue, 0) : "—";
+      },
+      ticketCost: () => seMoney(M.totals.ticketCostAvg),
+      newcomers: () => seNum(nc.count),
     };
     const kpi = (b0.kpi || []).map((k) => {
       const cls = k.accent === "alert" ? " se-stat--alert" : k.accent === "gold" ? " ag-stat--goal" : "";
@@ -1978,8 +1987,10 @@ async function mountSupportEcon() {
       // одни на всех, и доля к поставщику считается по всему потоку обращений.
       const SHARED = {
         perSpecialist: " · считая IBC: люди общие",
-        plus20: " · считая IBC: люди общие",
         toSupplier: " · доля считается по всему потоку, включая IBC",
+        toDev: " · доля считается по всему потоку, включая IBC",
+        ticketCost: " · цена по всей службе, включая IBC",
+        ibcSplit: " · это и есть доля IBC — срез её не меняет",
       };
       const shared = state.base === "ex" ? (SHARED[k.key] || "") : "";
       return `<div class="ag-stat${cls}">
