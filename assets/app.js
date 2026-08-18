@@ -1993,7 +1993,7 @@ async function mountSupportEcon() {
       // одно на другое в уме, чтобы понять, в чью пользу разрыв, — и подпись
       // «половину нагрузки создаёт оно одно» тянула ровно в обратную сторону:
       // 51% обращений при 79% выручки означает, что IBC пишет РЕЖЕ, чем
-      // приносит. Плюс из пары выпадала третья доля — объём работы, 63%, —
+      // приносит. Плюс из пары выпадала третья доля — транзакции, 63%, —
       // без которой картина меняется ещё раз. Теперь на плашке одна величина
       // (концентрация), а две остальные названы в подписи прямым текстом.
       ibcCalls: () => sePct((D.totals.ibcShare || {}).calls, 0),
@@ -2629,7 +2629,7 @@ async function mountSupportEcon() {
           <span class="se-key se-key--b">${seNum(D.agencies.length - (IBC ? 1 : 0))} внешних агентств</span>
         </div>
         ${bar("Обращения", sh.calls)}
-        ${bar("Объём работы", sh.ops)}
+        ${bar("Транзакции", sh.ops)}
         ${bar("Выручка", sh.revenue)}
       </div>
       ${ibc && times ? `<p class="se-out">${esc((b.gapNote || "")
@@ -2670,7 +2670,7 @@ async function mountSupportEcon() {
     pctRevenue: { label: "% выручки", get: (a) => a.pctRevenue, dir: -1 },
     name: { label: "Агентство", get: (a) => a.name, dir: 1, text: true },
     calls: { label: "Обращения", get: (a) => a.calls, dir: -1 },
-    ops: { label: "Объём работы", get: (a) => a.ops, dir: -1 },
+    ops: { label: "Транзакции", get: (a) => a.ops, dir: -1 },
     revenue: { label: "Выручка", get: (a) => a.revenue, dir: -1 },
     supportCost: { label: "Стоимость поддержки", get: (a) => a.supportCost, dir: -1 },
     ratio: { label: "На 1000 транзакций", get: (a) => a.ratio, dir: -1 },
@@ -2734,7 +2734,7 @@ async function mountSupportEcon() {
               style="width:${w.toFixed(1)}%"></span></span>
           </td>
           <td class="num">${seNum(a.ratio, 1)}</td>
-          <td class="num">${a.escalationShare == null ? "—" : sePct(a.escalationShare, 0)}</td>
+          <td class="num se-dim">${a.escalationShare == null ? "—" : sePct(a.escalationShare, 0)}</td>
           <td class="num se-dim">${a.toSupplierShare == null ? "—" : sePct(a.toSupplierShare, 0)}</td>
         </tr>
         ${open ? drill(a, v) : ""}`;
@@ -2773,9 +2773,11 @@ async function mountSupportEcon() {
       <td class="num">${seNum(t.calls)}</td><td class="num">${seNum(t.ops)}</td>
       <td class="num">${seMoney(t.revenue)}</td><td class="num">${seMoney(t.supportCost)}</td>
       <td class="num">${sePct(t.pctRevenue)}</td><td class="num">${seNum(t.ratio, 1)}</td>
-      <td class="num">—</td><td class="num">—</td></tr>`;
+      <td class="num se-dim">—</td><td class="num se-dim">—</td></tr>`;
 
     const exIbc = D.totals.exIbc || {};
+    const winNote = D.supplier
+      ? `по выгрузке: ${D.supplier.monthsCovered} мес. из ${D.supplier.monthsTotal}` : "";
     host.innerHTML = `
       <p class="lede se-lede">${esc(b.lede || "")}</p>
       <div class="table-wrap">
@@ -2783,14 +2785,18 @@ async function mountSupportEcon() {
           <thead><tr>
             ${th("name", "title")}${th("calls", "num")}${th("ops", "num")}${th("revenue", "num")}
             ${th("supportCost", "num")}${th("pctRevenue", "num", "полоска: 100% = вся выручка агентства")}${th("ratio", "num")}
-            ${th("escalationShare", "num")}
+            <!-- Две последние колонки считаны не на денежном окне, а на
+                 выгрузке обращений — она короче на месяц. Раньше окно было
+                 подписано только у «К поставщику», и соседняя «Ушло в
+                 разработку» читалась как посчитанная за 13 месяцев, хотя она
+                 из того же источника. Теперь обе подписаны и обе приглушены:
+                 девять равновесных колонок превращаются в семь основных плюс
+                 две справочные, из другого окна. Без слова «выгрузка» подпись
+                 читалась как «данные потеряли». -->
+            ${th("escalationShare", "num se-dim", winNote)}
             <th class="num se-dim" data-sort="toSupplierShare">
               <button type="button">К поставщику${sortKey === "toSupplierShare" ? (sortDir < 0 ? " ↓" : " ↑") : ""}</button>
-              <!-- Без слова «выгрузка» подпись читалась как «данные потеряли»:
-                   на деле это окно источника — выгрузка обращений короче
-                   денежного окна на один месяц. -->
-              <span class="se-th-note">${esc(D.supplier
-                ? `по выгрузке: ${D.supplier.monthsCovered} мес. из ${D.supplier.monthsTotal}` : "")}</span>
+              <span class="se-th-note">${esc(winNote)}</span>
             </th>
           </tr></thead>
           <tbody>${rows}</tbody>
@@ -2806,7 +2812,7 @@ async function mountSupportEcon() {
       </div>
       ${(() => {
         // Вывод под таблицей. Считается, а не написан руками: у таблицы две
-        // оси — стоимость обслуживания и доля выручки, — и они показывают
+        // оси — стоимость поддержки и доля выручки, — и они показывают
         // разное. Без этого читатель упирался в 19×9 чисел и сам догадывался,
         // что они доказывают.
         if (!b.conclusion) return "";
@@ -2845,6 +2851,7 @@ async function mountSupportEcon() {
         b.how || "",
         smallList.length ? esc((b.smallNote || "").replace("{ops}", seNum(SMALL_OPS))) : "",
         esc(b.supplierColNote || ""),
+        esc(b.devColNote || ""),
         // Сегменты приходят из общей сегментации сайта и на этой странице
         // появляются без легенды: читатель видит «Опорные (ядро)» и не знает,
         // кто и по какому признаку так решил.
@@ -2901,7 +2908,7 @@ async function mountSupportEcon() {
       <div class="se-drill-in">
         <div class="se-sparks">
           ${spark("calls", "Обращения", (x) => seNum(x))}
-          ${spark("ops", "Объём работы", (x) => seNum(x))}
+          ${spark("ops", "Транзакции", (x) => seNum(x))}
           ${spark("revenue", "Выручка", (x) => seMoney(x))}
           ${spark("supportCost", "Стоимость поддержки", (x) => seMoney(x))}
         </div>
