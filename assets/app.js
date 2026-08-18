@@ -2291,11 +2291,11 @@ async function mountSupportEcon() {
           </div>
         </div>
         ${fotWarn}
-        <p class="se-lede">${esc(b.lede || "")}</p>
+        <p class="lede se-lede">${esc(b.lede || "")}</p>
         ${chartMoney(M)}
         <p class="se-out">${esc(b.note || "")}</p>
         <h3 class="se-h3">${esc(s.head || "")}</h3>
-        <p class="se-lede">${esc(s.lede || "")}</p>
+        <p class="lede se-lede">${esc(s.lede || "")}</p>
         <div class="table-wrap">
           <table class="se-tbl">
             <thead><tr>
@@ -2506,7 +2506,7 @@ async function mountSupportEcon() {
       <p class="se-out">${fill(b.conclusion)}</p>
       <div class="se-calc">
         <h3 class="se-h3">${esc(b.calcHead || "")}</h3>
-        <p class="se-lede">${esc(b.calcLede || "")}</p>
+        <p class="lede se-lede">${esc(b.calcLede || "")}</p>
         <div class="se-calc-row">
           <input type="range" min="0" max="${GOAL}" step="1" value="${state.n}" class="se-range"
                  aria-label="Сколько новых агентств подключаем" data-se-n />
@@ -2819,7 +2819,7 @@ async function mountSupportEcon() {
             </article>`;
           }).join("")}
         </div>
-        <p class="se-out">${esc(b.newcomerNote || "")}</p>
+        <p class="se-out se-out--plain">${esc(b.newcomerNote || "")}</p>
       </details>
       ${seNotes([
         b.how || "",
