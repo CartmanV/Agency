@@ -3193,10 +3193,20 @@ async function mountSupportEcon() {
     if (!host) return;
     const b = X.b7 || {};
     const PR = { "высокий": "high", "средний": "mid", "низкий": "low" };
-    const card = (r) => `<article class="se-act se-act--${PR[r.prio] || "mid"}${r.special ? " is-special" : ""}">
-      <div class="se-act-h">
-        <span class="se-prio se-prio--${PR[r.prio] || "mid"}">${esc(r.prio || "")}</span>
-      </div>
+    // Заголовок-действие отдельно от пояснения. Раньше в `what` лежало и то и
+    // другое, слипшееся через двоеточие («Посчитать, сколько специалистов
+    // нужно…: решение принято, срок и объём — нет»), и карточку нельзя было
+    // прочесть беглым взглядом — только целиком.
+    // Чип приоритета показывается только там, где он что-то различает. В
+    // верхней секции видны одни решения высокого приоритета — три одинаковые
+    // метки «высокий» подряд не несли информации, а про отбор сказано в лиде
+    // блока. Под раскрытием лежат средний и низкий вперемешку — там чип
+    // остаётся.
+    const card = (r, showPrio) => `<article class="se-act se-act--${PR[r.prio] || "mid"}${r.special ? " is-special" : ""}">
+      ${r.head || showPrio ? `<div class="se-act-h">
+        ${showPrio ? `<span class="se-prio se-prio--${PR[r.prio] || "mid"}">${esc(r.prio || "")}</span>` : ""}
+        ${r.head ? `<h4 class="se-act-t">${esc(r.head)}</h4>` : ""}
+      </div>` : ""}
       <p class="se-act-w">${esc(r.what || "")}</p>
       <p class="se-act-e"><b>Что это даст.</b> ${esc(r.effect || "")}</p>
       ${r.backlogQuery ? `<p class="se-act-l"><a href="backlog.html?q=${encodeURIComponent(r.backlogQuery)}">Найти в бэклоге →</a></p>` : ""}
@@ -3208,24 +3218,24 @@ async function mountSupportEcon() {
     const high = (arr) => (arr || []).filter((r) => r.prio === "высокий");
     const rest = (arr) => (arr || []).filter((r) => r.prio !== "высокий");
     const restCount = rest(b.manage).length + rest(b.product).length;
-    const cols = (m, p) => `
+    const cols = (m, p, showPrio) => `
       <div class="se-cols se-cols--acts">
         <div class="se-col">
           <h3 class="se-h3">${esc(b.manageHead || "")}</h3>
-          ${m.map(card).join("")}
+          ${m.map((r) => card(r, showPrio)).join("")}
         </div>
         <div class="se-col">
           <h3 class="se-h3">${esc(b.productHead || "")}</h3>
-          ${p.map(card).join("")}
+          ${p.map((r) => card(r, showPrio)).join("")}
         </div>
       </div>`;
 
     host.innerHTML = `
       ${b.lede ? `<p class="lede se-lede">${esc(b.lede)}</p>` : ""}
-      ${cols(high(b.manage), high(b.product))}
+      ${cols(high(b.manage), high(b.product), false)}
       ${restCount ? `<details class="se-details">
         <summary>${esc((b.restHead || "ещё {n} решений").replace("{n}", String(restCount)))}</summary>
-        ${cols(rest(b.manage), rest(b.product))}
+        ${cols(rest(b.manage), rest(b.product), true)}
       </details>` : ""}`;
   }
 

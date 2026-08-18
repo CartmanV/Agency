@@ -2861,7 +2861,15 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
 .se-act { padding: 13px 15px; margin: 0 0 10px; background: var(--panel);
   border: 1px solid var(--line); border-radius: 10px; }
 .se-act.is-special { border-color: var(--gold-line); background: var(--gold-dim); }
-.se-act-h { margin-bottom: 6px; }
+/* Заголовок-действие. Кегль 14 — тот же, что у текста карточки: отличать
+   его достаточно весом и цветом, а поднимать до 15 нельзя, иначе он спорит
+   с .se-h3 «Управленческие решения» над колонкой. Чип приоритета и заголовок
+   стоят в одной строке — там, где чип вообще показан. */
+.se-act-h { margin-bottom: 6px; display: flex; align-items: baseline;
+  gap: 8px; flex-wrap: wrap; }
+.se-act-t { margin: 0; font-family: var(--f-body); font-size: 14px;
+  font-weight: 600; line-height: 1.35; color: var(--cream); }
+.se-act-h .se-prio { flex: none; }
 .se-prio { font-family: var(--f-mono); font-size: 10.5px; text-transform: uppercase;
   letter-spacing: .05em; padding: 2px 8px; border-radius: 999px;
   border: 1px solid var(--line-soft); color: var(--cream-dim); }
@@ -2870,7 +2878,10 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
    Приоритетным золотом его метить нельзя: приоритет и статус — разные оси. */
 .se-prio--done { color: var(--success); border-color: rgba(61, 163, 114, .45);
   background: rgba(61, 163, 114, .08); }
-.se-act-w { margin: 0; font-size: 14px; line-height: 1.5; color: var(--cream); }
+/* Пояснение под заголовком — на ступень тише самого заголовка: заголовок
+   несёт действие, здесь остаются подробности. Раньше и то и другое лежало
+   в одном абзаце этим кеглем и цветом. */
+.se-act-w { margin: 0; font-size: 14px; line-height: 1.5; color: var(--cream-soft); }
 .se-act-e { margin: 7px 0 0; font-size: 12px; line-height: 1.55; color: var(--cream-soft); }
 .se-act-e b { color: var(--cream-dim); font-weight: 500; }
 .se-act-l { margin: 8px 0 0; font-size: 12px; }
