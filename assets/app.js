@@ -1993,10 +1993,12 @@ async function mountSupportEcon() {
       ratio: () => (EX.ratio ? " · без IBC — " + seNum(EX.ratio, 1) : ""),
       pctRevenue: () => (EX.pctRevenue ? " · без IBC — " + sePct(EX.pctRevenue * M.k) : ""),
     };
+    // Плашки первого экрана набраны одинаково: выделять цветом одну из восьми
+    // главных величин больше нечем обосновать, и розовый со страницы убран
+    // целиком (решение Влада 2026-08-17). Ранг задаёт порядок, а не окраска.
     const kpi = (b0.kpi || []).map((k) => {
-      const cls = k.accent === "alert" ? " se-stat--alert" : k.accent === "gold" ? " ag-stat--goal" : "";
       const subx = (SUBX[k.key] || (() => ""))();
-      return `<div class="ag-stat${cls}">
+      return `<div class="ag-stat">
         <div class="v">${esc((VAL[k.key] || (() => "—"))())}</div>
         <div class="l">${esc(k.label || "")}</div>
         <div class="s">${esc(k.sub || "")}${esc(subx)}</div>
@@ -2308,14 +2310,39 @@ async function mountSupportEcon() {
   }
 
   // -------------------------------------------------------------- B3 люди
+  // График отвечает на три вопроса сразу, поэтому в нём три слоя:
+  //   столбцы  — из чего состоит нагрузка (агентские / непрофильные),
+  //   линия    — среднее за 3 месяца: без неё виден зубец, а не рост,
+  //   пунктир  — куда придём при «+20», прямо на той же оси.
+  // Всё в одной величине — «обращений на человека», поэтому вторая ось не
+  // нужна: столбцы складываются ровно в значение месяца. Раньше состав жил
+  // только в подсказке, тренд — текстом в подкате, а проекция — в отдельном
+  // калькуляторе под графиком, и связать их глазами было нельзя.
   function chartCapacity() {
-    const W = SE_W, H = 300, pL = 76, pR = 40, pT = 44, pB = 46;
+    const W = SE_W, H = 320, pL = 76, pR = 64, pT = 44, pB = 46;
     const cap = D.capacity;
     const vals = cap.map((c) => c.perSpecialist).filter((v) => v != null);
     if (vals.length < 2) return `<p class="muted">Нет данных для графика.</p>`;
-    const max = Math.max(...vals) * 1.12, min = 0;
     const n = cap.length;
-    const cx = (i) => pL + (i / (n - 1)) * (W - pL - pR);
+    const staff = D.meta.staff || 1;
+    const nc = D.newcomer || {};
+    const last = cap[n - 1];
+
+    // Проекция: прирост обращений от новых агентств — величина по всей базе,
+    // на специалиста делим на тот же штат. Штат в проекции не меняем: смысл
+    // картинки именно в том, что будет, если людей не добавить.
+    const addCalls = (nc.callsPerNewcomer || 0) * state.n;
+    const proj = last.perSpecialist + addCalls / staff;
+
+    // Место под проекцию держим всегда — иначе при движении ползунка сетка
+    // прыгает. Шкала растёт вместе с проекцией: при +0 график не должен
+    // висеть в пустоте с запасом на будущее.
+    const slots = n + 1;
+    const max = Math.max(Math.max(...vals) * 1.12, proj * 1.06), min = 0;
+    const bw = Math.min(26, (W - pL - pR) / slots * 0.62);
+    // Полем внутрь на полстолбца: у линии крайняя точка садилась ровно на ось,
+    // а столбец той же ширины половиной уезжал в поле с подписями шкалы.
+    const cx = (i) => pL + bw / 2 + (i / (slots - 1)) * (W - pL - pR - bw);
     const y = (v) => H - pB - ((v - min) / (max - min)) * (H - pT - pB);
 
     let grid = "";
@@ -2324,30 +2351,71 @@ async function mountSupportEcon() {
       grid += `<line x1="${pL}" x2="${W - pR}" y1="${yy}" y2="${yy}" class="se-grid"/>
         <text x="${pL - 10}" y="${(+yy + 4).toFixed(1)}" class="ch-ylab" text-anchor="end">${seNum(v)}</text>`;
     }
-    const path = cap.map((c, i) => (i ? "L" : "M") + cx(i).toFixed(1) + " " + y(c.perSpecialist).toFixed(1)).join(" ");
+
+    // Столбец = месяц: снизу агентские, сверху непрофильные (внутренние
+    // тикеты Ракеты, заявки ушедших агентств). Вместе — ровно perSpecialist.
+    const bars = cap.map((c, i) => {
+      const ag = c.agencyTickets ?? 0;
+      const other = Math.max(0, (c.perSpecialist ?? 0) - ag);
+      const x = (cx(i) - bw / 2).toFixed(1);
+      const yAg = y(ag), yTop = y(ag + other);
+      return `<rect x="${x}" y="${yAg.toFixed(1)}" width="${bw.toFixed(1)}"
+          height="${Math.max(0, H - pB - yAg).toFixed(1)}" class="se-cap-ag"/>
+        <rect x="${x}" y="${yTop.toFixed(1)}" width="${bw.toFixed(1)}"
+          height="${Math.max(0, yAg - yTop).toFixed(1)}" class="se-cap-non"/>`;
+    }).join("");
+
+    // Скользящее среднее за 3 месяца: тренд +3,4/мес глазами не читался —
+    // ряд ходит от 107 до 166 и обратно.
+    const AVG = 3;
+    const avg = cap.map((c, i) => {
+      if (i < AVG - 1) return null;
+      const w = cap.slice(i - AVG + 1, i + 1).map((x) => x.perSpecialist);
+      return w.reduce((a, b) => a + b, 0) / AVG;
+    });
+    const avgPath = avg.map((v, i) => v == null ? "" :
+      ((avg[i - 1] == null ? "M" : "L") + cx(i).toFixed(1) + " " + y(v).toFixed(1))).join(" ").trim();
+
+    const projLine = state.n > 0 ? `
+      <path d="M${cx(n - 1).toFixed(1)} ${y(last.perSpecialist).toFixed(1)} L${cx(n).toFixed(1)} ${y(proj).toFixed(1)}"
+        class="se-line se-line--proj" fill="none"/>
+      <circle cx="${cx(n).toFixed(1)}" cy="${y(proj).toFixed(1)}" r="4.5" class="se-mark is-proj"/>
+      <text x="${cx(n).toFixed(1)}" y="${(y(proj) - 14).toFixed(1)}" class="se-mark-t" text-anchor="middle">${seNum(proj)}</text>` : "";
 
     const lo = cap.reduce((a, b) => (b.perSpecialist < a.perSpecialist ? b : a));
     const hi = cap.reduce((a, b) => (b.perSpecialist > a.perSpecialist ? b : a));
-    const last = cap[cap.length - 1];
+    // Обе крайние подписи — над столбцом. Раньше минимум подписывался снизу,
+    // потому что там была пустота под линией; теперь там сам столбец, и число
+    // тонуло в заливке.
     const mark = (c, cls, txt) => {
       const i = cap.indexOf(c);
-      const below = cls === "is-lo";   // минимум подписываем снизу, чтобы не спорить с линией
-      return `<circle cx="${cx(i).toFixed(1)}" cy="${y(c.perSpecialist).toFixed(1)}" r="4.5" class="se-mark ${cls}"/>
-        <text x="${cx(i).toFixed(1)}" y="${(y(c.perSpecialist) + (below ? 22 : -14)).toFixed(1)}" class="se-mark-t ${cls}" text-anchor="middle">${esc(txt)}</text>`;
+      return `<text x="${cx(i).toFixed(1)}" y="${(y(c.perSpecialist) - 12).toFixed(1)}"
+        class="se-mark-t ${cls}" text-anchor="middle">${esc(txt)}</text>`;
     };
     const dots = cap.map((c, i) => {
+      const ag = c.agencyTickets ?? 0;
       const tip = `<b>${esc(seMonLong(c.m))}</b><br>на специалиста ${seNum(c.perSpecialist)}<br>`
-        + `всего закрыто ${seNum(c.capacityTickets)} · из них агентских ${seNum(c.agencyTickets)}`;
+        + `из них агентских ${seNum(ag)} · непрофильных ${seNum(Math.max(0, c.perSpecialist - ag))}<br>`
+        + `всего службой закрыто ${seNum(c.capacityTickets)}`;
       return `<circle class="ch-hit se-dot" cx="${cx(i).toFixed(1)}" cy="${y(c.perSpecialist).toFixed(1)}" r="11" data-tip="${esc(tip)}"/>`;
     }).join("");
     const xlab = cap.map((c, i) =>
-      `<text x="${cx(i).toFixed(1)}" y="${H - 16}" class="ch-xlab" text-anchor="middle">${seMon(c.m)}</text>`).join("");
+      `<text x="${cx(i).toFixed(1)}" y="${H - 16}" class="ch-xlab" text-anchor="middle">${seMon(c.m)}</text>`).join("")
+      + (state.n > 0 ? `<text x="${cx(n).toFixed(1)}" y="${H - 16}" class="ch-xlab" text-anchor="middle">+${state.n}</text>` : "");
 
     return `<figure class="se-fig">
+      <div class="se-legend">
+        <span class="se-key se-key--cap-ag">обращения агентств</span>
+        <span class="se-key se-key--cap-non">непрофильные</span>
+        <span class="se-key se-key--cap-avg">среднее за 3 месяца</span>
+        ${state.n > 0 ? `<span class="se-key se-key--cap-proj">если подключить +${state.n}</span>` : ""}
+      </div>
       <svg class="se-chart" viewBox="0 0 ${W} ${H}" role="img"
-        aria-label="Загрузка на специалиста по месяцам: минимум ${seNum(lo.perSpecialist)} в ${esc(seMonLong(lo.m))}, максимум ${seNum(hi.perSpecialist)} в ${esc(seMonLong(hi.m))}, последнее значение ${seNum(last.perSpecialist)}">
+        aria-label="Загрузка на специалиста по месяцам: минимум ${seNum(lo.perSpecialist)} в ${esc(seMonLong(lo.m))}, максимум ${seNum(hi.perSpecialist)} в ${esc(seMonLong(hi.m))}, последнее значение ${seNum(last.perSpecialist)}${state.n > 0 ? `; при подключении ${state.n} агентств — ${seNum(proj)}` : ""}">
         ${grid}
-        <path d="${path}" class="se-line se-line--load" fill="none"/>
+        ${bars}
+        <path d="${avgPath}" class="se-line se-line--avg" fill="none"/>
+        ${projLine}
         ${mark(lo, "is-lo", seNum(lo.perSpecialist))}
         ${mark(hi, "is-hi", seNum(hi.perSpecialist))}
         ${dots}${xlab}

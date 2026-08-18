@@ -2393,9 +2393,11 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
 /* ===================== Экономика поддержки (support.html) ====================
    Переиспользует .accent-card / .ag-strip / .ag-stat / .table-wrap / .ev-chip
    и графические классы .ch-* / .spark. Своё — с префиксом .se-.
-   Цвет по Design Guide v4: золото — единственный акцент действия; розовый
-   --attention закреплён за одной величиной — загрузкой на специалиста (плашка
-   первого экрана и линия графика «Люди»), больше нигде на странице его нет.
+   Цвет по Design Guide v4: золото — единственный акцент. Розового
+   (--attention) на странице НЕТ вовсе (решение Влада 2026-08-17): он выделял
+   загрузку на специалиста, но выделять одну величину из восьми главных
+   оказалось нечем обосновать — теперь золотом набраны все числа первого
+   экрана и линия графика «Люди».
    Категориальные --cat-* только там, где есть легенда: IBC против внешних
    и оценочная ось ниже. */
 
@@ -2494,10 +2496,13 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
 .se-kpi .ag-stat { display: flex; flex-direction: column; flex: 1 1 calc(25% - 1px); min-width: 190px; }
 .se-kpi .ag-stat .l { line-height: 1.35; }
 .se-kpi .ag-stat .s { margin-top: auto; padding-top: 5px; }
-/* Единственный розовый на странице: ограничение направления — это люди. */
-.se-stat--alert { background: var(--attention-dim); }
-.se-stat--alert .v { color: var(--attention-soft); }
-.se-stat--alert .l::before { content: "▲ "; color: var(--attention); }
+/* Розового на странице больше нет (решение Влада 2026-08-17). Раньше он
+   выделял одну плашку — загрузку на специалиста; теперь выделены ВСЕ числа
+   первого экрана, единообразно: это и есть «главное», и выбирать между ними
+   цветом больше не нужно. Акцент — золото, единственный на странице (v4 п.1).
+   Ранг задаём не цветом, а порядком: первая плашка стоит первой. */
+.se-kpi .ag-stat .v { color: var(--gold); font-size: 21px; }
+.se-kpi .ag-stat { background: rgba(226, 179, 85, .06); }
 
 .se-verdict { margin-top: 18px; }
 /* Раскрытие внутри карточки вывода: рамка сверху — по цвету карточки, чтобы
@@ -2580,13 +2585,26 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
 .se-bar-r.is-on { fill: var(--gold); }
 .se-line { stroke: var(--cream-soft); stroke-width: 1.6; stroke-linejoin: round; }
 .se-line--pct { stroke: var(--cat-1); stroke-width: 2; }
-.se-line--load { stroke: var(--attention); stroke-width: 2; }
+/* График «Люди»: состав столбцами, тренд линией, проекция пунктиром.
+   Новой палитры не заводим — золото и нейтральный серый: агентские обращения
+   держат акцент, непрофильные уходят в фон. Пунктир = «план/проекция» по
+   Design Guide v4 п.4. */
+.se-cap-ag  { fill: var(--gold-line); }
+.se-cap-non { fill: var(--line); }
+.se-line--avg  { stroke: var(--gold); stroke-width: 2.2; }
+.se-line--proj { stroke: var(--gold); stroke-width: 2; stroke-dasharray: 6 4; }
+.se-mark.is-proj { fill: var(--bg); stroke: var(--gold); stroke-width: 2; }
+.se-key--cap-ag::before  { width: 11px; height: 11px; border-radius: 2px; background: var(--gold-line); }
+.se-key--cap-non::before { width: 11px; height: 11px; border-radius: 2px; background: var(--line); }
+.se-key--cap-avg::before { background: var(--gold); }
+/* Штриховая метка легенды: тот же приём, что у пунктира на графике. */
+.se-key--cap-proj::before { background: none; height: 0;
+  border-top: 3px dashed var(--gold); border-radius: 0; }
 .se-line--a { stroke: var(--cat-1); stroke-width: 2; }
 .se-line--b { stroke: var(--cat-2); stroke-width: 2; stroke-dasharray: 5 3; }
 .se-line-dot { fill: var(--cat-1); }
-/* Метки минимума и максимума — нейтральные: розовым на этой странице говорит
-   только сама величина «загрузка на специалиста» (линия ниже и плашка на
-   первом экране), а крайние точки — просто подписи к ней. */
+/* Метки минимума и максимума — нейтральные: цветом на графике говорит сама
+   линия, а крайние точки — просто подписи к ней. */
 .se-mark { fill: var(--bg); stroke: var(--cream-soft); stroke-width: 2; }
 .se-mark-t { font-family: var(--f-mono); font-size: 12px; fill: var(--cream); }
 .se-dot { fill: transparent; cursor: default; }
