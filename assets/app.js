@@ -1843,6 +1843,8 @@ async function mountSupportEcon() {
       small: p.get("small") === "1",
       // Пять пунктов под выводом первого экрана: свёрнуты по умолчанию.
       points: p.get("v") === "1",
+      // Остальные числа первого экрана — там же.
+      kpiAll: p.get("k") === "1",
     };
   }
   const state = readState();
@@ -1860,6 +1862,7 @@ async function mountSupportEcon() {
     if (state.heatOpen) p.set("map", "1");
     if (state.small) p.set("small", "1");
     if (state.points) p.set("v", "1");
+    if (state.kpiAll) p.set("k", "1");
     const q = p.toString();
     history.replaceState(null, "", location.pathname + (q ? "?" + q : "") + location.hash);
   }
@@ -1996,14 +1999,30 @@ async function mountSupportEcon() {
     // Плашки первого экрана набраны одинаково: выделять цветом одну из восьми
     // главных величин больше нечем обосновать, и розовый со страницы убран
     // целиком (решение Влада 2026-08-17). Ранг задаёт порядок, а не окраска.
-    const kpi = (b0.kpi || []).map((k) => {
+    const stat = (k) => {
       const subx = (SUBX[k.key] || (() => ""))();
       return `<div class="ag-stat">
         <div class="v">${esc((VAL[k.key] || (() => "—"))())}</div>
         <div class="l">${esc(k.label || "")}</div>
         <div class="s">${esc(k.sub || "")}${esc(subx)}</div>
       </div>`;
-    }).join("");
+    };
+    // Восемь равновесных чисел ранга не имеют: читатель проходит их все, ещё
+    // не зная, что они доказывают. На виду остаются три, которые держат сам
+    // вывод — люди, деньги, цена роста; остальные пять отвечают на вопросы
+    // отдельных разделов и ждут под раскрытием. Порядок в json сохраняется,
+    // ведущие помечены флагом lead.
+    const all = b0.kpi || [];
+    const lead = all.filter((k) => k.lead);
+    const restK = all.filter((k) => !k.lead);
+    const kpi = (lead.length ? lead : all).map(stat).join("");
+    const kpiRest = lead.length && restK.length ? `
+      <details class="se-details se-details--app se-kpi-more"${state.kpiAll ? " open" : ""} data-kpibox>
+        <summary>${esc((b0.restHead || "ещё {n} {plural} — их разбирают разделы ниже")
+          .replace("{n}", String(restK.length))
+          .replace("{plural}", sePlural(restK.length, "число", "числа", "чисел")))}</summary>
+        <div class="ag-strip se-kpi">${restK.map(stat).join("")}</div>
+      </details>` : "";
 
     const v = b0.verdict || {};
     const points = (v.points || []).map((p) => `
@@ -2023,9 +2042,10 @@ async function mountSupportEcon() {
       return `<p class="se-verdict-chip"><span class="ev-chip ${c.cls}" aria-label="${esc(c.label)}">${c.sign} ${esc(c.label)}</span>
         <span class="muted">${esc(v.chipLabel || "")}</span></p>`;
     })();
+    // Вывод — первым. Раньше он стоял под восемью плашками, и первый экран
+    // начинался с чисел, смысл которых объяснялся абзацем ниже. Теперь порядок
+    // обычный для аргумента: утверждение → чем оно подтверждается → что решено.
     host.innerHTML = `
-      <div class="ag-strip se-kpi">${kpi}</div>
-      ${b0.baseNote ? `<p class="se-foot">${esc(b0.baseNote)}</p>` : ""}
       <article class="accent-card is-nsm se-verdict">
         <h3>${esc(v.head || "")}</h3>
         ${chip}
@@ -2034,6 +2054,9 @@ async function mountSupportEcon() {
           <ol class="se-points">${points}</ol>
         </details>
       </article>
+      <div class="ag-strip se-kpi">${kpi}</div>
+      ${kpiRest}
+      ${b0.baseNote ? `<p class="se-foot">${esc(b0.baseNote)}</p>` : ""}
       ${a.text ? `<div class="se-ask">
         <span class="se-prio ${a.status === "done" ? "se-prio--done" : "se-prio--high"}">${esc(a.label || "нужно решение")}</span>
         <p>${esc(a.text)}</p>
@@ -2044,6 +2067,8 @@ async function mountSupportEcon() {
     // та же причина, что у денежного блока.
     const pd = host.querySelector("[data-pointsbox]");
     if (pd) pd.addEventListener("toggle", () => { state.points = pd.open; writeState(); });
+    const kb = host.querySelector("[data-kpibox]");
+    if (kb) kb.addEventListener("toggle", () => { state.kpiAll = kb.open; writeState(); });
   }
 
   // -------------------------------------------------------- B1 управление
