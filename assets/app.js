@@ -2011,14 +2011,9 @@ async function mountSupportEcon() {
     // Плашки первого экрана набраны одинаково: выделять цветом одну из восьми
     // главных величин больше нечем обосновать, и розовый со страницы убран
     // целиком (решение Влада 2026-08-17). Ранг задаёт порядок, а не окраска.
-    // Доли IBC в подписях подставляются, а не пишутся руками: раньше «63%» и
-    // «79%» жили в тексте json и при новой выгрузке молча разошлись бы с
-    // полосами в разделе «Кто создаёт», где те же три доли считаются.
-    const SH = D.totals.ibcShare || {};
-    const kpiFill = (s) => (s || "")
-      .replace(/\{ibcCalls\}/g, sePct(SH.calls, 0))
-      .replace(/\{ibcOps\}/g, sePct(SH.ops, 0))
-      .replace(/\{ibcRevenue\}/g, sePct(SH.revenue, 0));
+    // Числа в подписях плашек подставляются, а не пишутся руками — те же
+    // ключи, что и в остальных текстах страницы.
+    const kpiFill = (t) => seFill(t, M);
     const stat = (k) => {
       const subx = (SUBX[k.key] || (() => ""))();
       return `<div class="ag-stat">
@@ -2313,7 +2308,7 @@ async function mountSupportEcon() {
         ${fotWarn}
         <p class="lede se-lede">${esc(b.lede || "")}</p>
         ${chartMoney(M)}
-        <p class="se-out">${esc(b.note || "")}</p>
+        <p class="se-out">${esc(seFill(b.note, M))}</p>
         <h3 class="se-h3">${esc(s.head || "")}</h3>
         <p class="lede se-lede">${esc(s.lede || "")}</p>
         <div class="table-wrap">
@@ -2494,7 +2489,51 @@ async function mountSupportEcon() {
   // не видно, что все три про рост.
   const seGrow = (x) => (x >= 0 ? "+" : "") + sePct(x, 0);
 
-  function renderCapacity() {
+  // Числа, которые до сих пор стояли в авторском тексте руками. Все они уже
+  // считаются в support_econ.json, и при новой выгрузке разошлись бы с
+  // графиками молча — а одно уже разошлось: доля новичков «3,7% всей
+  // нагрузки» считалась на самом деле от внешней базы, без IBC; от всего
+  // направления это 1,8%. Теперь обе доли названы своими именами.
+  // Доли от k (зарплаты) не зависят — множитель сокращается в отношении;
+  // а вот разброс расхода зависит и от неё, и от выбранной базы, поэтому
+  // берётся из пересчитанной модели, а не из исходных месяцев.
+  function sePlaceholders(M) {
+    const g = capGrowth() || {};
+    const SH = D.totals.ibcShare || {};
+    const S = D.supplier || {};
+    const nc = D.newcomer || {};
+    const costs = M.months.map((m) => m.supportCost).filter((v) => v != null);
+    const nw = D.agencies.filter((a) => a.isNewcomer);
+    const sum = (f) => nw.reduce((t, a) => t + (f(a) || 0), 0);
+    const nwCost = sum((a) => a.supportCost);
+    const exCost = (D.totals.exIbc || {}).supportCost || 0;
+    return {
+      first: seNum(g.first), last: seNum(g.last),
+      yoy: seGrow(g.yoy), avg: seGrow(g.avg),
+      avgFirst: seNum(g.avgFirst, 1), avgLast: seNum(g.avgLast, 1),
+      loVal: seNum(g.loVal), loMonth: seMonFull(g.loM), fromLo: seGrow(g.fromLo),
+      ibcCalls: sePct(SH.calls, 0), ibcOps: sePct(SH.ops, 0), ibcRevenue: sePct(SH.revenue, 0),
+      suppMonths: seNum(S.monthsCovered), suppTotal: seNum(S.monthsTotal),
+      suppCalls: seNum(S.total),
+      perNewcomer: seNum(nc.callsPerNewcomer, 1),
+      ncCount: seNum(nw.length),
+      ncRevenue: seMoney(sum((a) => a.revenue)),
+      ncCost: seMoney(nwCost),
+      ncShareAll: sePct(D.totals.supportCost ? nwCost / D.totals.supportCost : 0),
+      ncShareExt: sePct(exCost ? nwCost / exCost : 0),
+      costMin: costs.length ? seMoney(Math.min(...costs)) : "—",
+      costMax: costs.length ? seMoney(Math.max(...costs)) : "—",
+    };
+  }
+  // Неизвестный ключ остаётся в строке как есть: у части текстов свои
+  // подстановки ({total}, {top3}, {names}…), и общий проход не должен их съесть.
+  const seFill = (s, M) => {
+    if (!s) return "";
+    const P = sePlaceholders(M);
+    return String(s).replace(/\{(\w+)\}/g, (m, k) => (k in P ? P[k] : m));
+  };
+
+  function renderCapacity(M) {
     const host = document.querySelector("[data-se-capacity]");
     if (!host) return;
     const b = X.b3 || {}, nc = D.newcomer || {};
@@ -2502,23 +2541,9 @@ async function mountSupportEcon() {
     const add = Math.round(per * state.n);
     const pct = base ? add / base : 0;
     const tr = D.capacityTrend || {};
-    const g = capGrowth();
-    // Подстановка в авторский текст: имена полей повторяют то, что видно в
-    // json, чтобы правку формулировки можно было сделать без чтения кода.
-    // Замены глобальные: {loMonth} стоит в сноске дважды, и строковый replace
-    // подставил бы только первое вхождение, оставив «{loMonth}» в тексте.
-    // Средние — с одним знаком: округлённые до целого, они совпали с первым
-    // месяцем (125 и 125), и предложение читалось как опечатка.
-    const fill = (s) => !s || !g ? esc(s || "") : esc(s
-      .replace(/\{first\}/g, seNum(g.first))
-      .replace(/\{last\}/g, seNum(g.last))
-      .replace(/\{yoy\}/g, seGrow(g.yoy))
-      .replace(/\{avgFirst\}/g, seNum(g.avgFirst, 1))
-      .replace(/\{avgLast\}/g, seNum(g.avgLast, 1))
-      .replace(/\{avg\}/g, seGrow(g.avg))
-      .replace(/\{loVal\}/g, seNum(g.loVal))
-      .replace(/\{loMonth\}/g, seMonFull(g.loM))
-      .replace(/\{fromLo\}/g, seGrow(g.fromLo)));
+    // Подстановка идёт через общий seFill: имена ключей те же, что видны в
+    // json, и правку формулировки можно сделать, не заглядывая в код.
+    const fill = (t) => esc(seFill(t, M));
 
     host.innerHTML = `
       <p class="lede se-lede">${esc(b.lede || "")}</p>
@@ -2558,7 +2583,7 @@ async function mountSupportEcon() {
     if (r) {
       r.addEventListener("input", () => {
         state.n = Number(r.value);
-        renderCapacity();
+        renderCapacity(M);
         writeState();
       });
     }
@@ -2845,7 +2870,7 @@ async function mountSupportEcon() {
             </article>`;
           }).join("")}
         </div>
-        <p class="se-out se-out--plain">${esc(b.newcomerNote || "")}</p>
+        <p class="se-out se-out--plain">${esc(seFill(b.newcomerNote, M))}</p>
       </details>
       ${seNotes([
         b.how || "",
@@ -3312,7 +3337,7 @@ async function mountSupportEcon() {
     renderSummary(M);
     renderControls(M);
     renderMoney(M);
-    renderCapacity();
+    renderCapacity(M);
     renderWho(M);
     renderTable(M);
     renderHeat(M);
