@@ -2424,6 +2424,31 @@ async function mountSupportEcon() {
     </figure>`;
   }
 
+  // Рост загрузки — три разных числа в зависимости от точки отсчёта, и
+  // выбор точки здесь важнее самой арифметики. Считаем все три и подставляем
+  // в текст, а не пишем руками: раньше в выводе стояло «+53% за 13 месяцев»,
+  // хотя 53% — это от минимума ряда (ноябрь 2025) до последнего месяца, то
+  // есть от провала, а не от начала окна. Июль к июлю рост втрое скромнее.
+  function capGrowth() {
+    const cap = D.capacity || [];
+    if (cap.length < 4) return null;
+    const v = cap.map((c) => c.perSpecialist);
+    const n = v.length;
+    const mean = (arr) => arr.reduce((a, b) => a + b, 0) / arr.length;
+    const a3 = mean(v.slice(0, 3)), b3 = mean(v.slice(-3));
+    const lo = cap.reduce((a, b) => (b.perSpecialist < a.perSpecialist ? b : a));
+    const pct = (from, to) => (from ? (to / from - 1) : 0);
+    return {
+      first: v[0], last: v[n - 1], firstM: cap[0].m, lastM: cap[n - 1].m,
+      yoy: pct(v[0], v[n - 1]),
+      avgFirst: a3, avgLast: b3, avg: pct(a3, b3),
+      loVal: lo.perSpecialist, loM: lo.m, fromLo: pct(lo.perSpecialist, v[n - 1]),
+    };
+  }
+  // «+31%», «+17%» — знак нужен всегда, иначе в перечислении трёх способов
+  // не видно, что все три про рост.
+  const seGrow = (x) => (x >= 0 ? "+" : "") + sePct(x, 0);
+
   function renderCapacity() {
     const host = document.querySelector("[data-se-capacity]");
     if (!host) return;
@@ -2432,11 +2457,28 @@ async function mountSupportEcon() {
     const add = Math.round(per * state.n);
     const pct = base ? add / base : 0;
     const tr = D.capacityTrend || {};
+    const g = capGrowth();
+    // Подстановка в авторский текст: имена полей повторяют то, что видно в
+    // json, чтобы правку формулировки можно было сделать без чтения кода.
+    // Замены глобальные: {loMonth} стоит в сноске дважды, и строковый replace
+    // подставил бы только первое вхождение, оставив «{loMonth}» в тексте.
+    // Средние — с одним знаком: округлённые до целого, они совпали с первым
+    // месяцем (125 и 125), и предложение читалось как опечатка.
+    const fill = (s) => !s || !g ? esc(s || "") : esc(s
+      .replace(/\{first\}/g, seNum(g.first))
+      .replace(/\{last\}/g, seNum(g.last))
+      .replace(/\{yoy\}/g, seGrow(g.yoy))
+      .replace(/\{avgFirst\}/g, seNum(g.avgFirst, 1))
+      .replace(/\{avgLast\}/g, seNum(g.avgLast, 1))
+      .replace(/\{avg\}/g, seGrow(g.avg))
+      .replace(/\{loVal\}/g, seNum(g.loVal))
+      .replace(/\{loMonth\}/g, seMonFull(g.loM))
+      .replace(/\{fromLo\}/g, seGrow(g.fromLo)));
 
     host.innerHTML = `
       <p class="lede se-lede">${esc(b.lede || "")}</p>
       ${chartCapacity()}
-      <p class="se-out">${esc(b.conclusion || "")}</p>
+      <p class="se-out">${fill(b.conclusion)}</p>
       <div class="se-calc">
         <h3 class="se-h3">${esc(b.calcHead || "")}</h3>
         <p class="se-lede">${esc(b.calcLede || "")}</p>
@@ -2458,6 +2500,12 @@ async function mountSupportEcon() {
         esc((b.calcNote || "").replace("{perNewcomer}", seNum(per, 1))),
         esc((b.calcCaveat || "").replace("{count}", String(nc.count || 0)))
           + (nc.names ? ` Это ${esc(nc.names.join(", "))}.` : ""),
+        // Все три способа посчитать рост — рядом и с числами. Иначе выбор
+        // точки отсчёта остаётся невидимым решением автора, а именно он и
+        // определяет, «в полтора раза» вырос показатель или «на треть».
+        fill(b.growthNote),
+        // Наклон линии считается в источнике, но до сих пор никуда не выводился.
+        tr.slopeText ? `Наклон линии по всему ряду — ${esc(tr.slopeText.replace(/\s+/g, " "))}.` : "",
         tr.rangeText ? `Диапазон за окно: ${esc(tr.rangeText)}.` : "",
       ])}`;
     wireTips(host);
