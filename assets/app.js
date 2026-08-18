@@ -1979,12 +1979,14 @@ async function mountSupportEcon() {
       // читать вместе.
       toSupplier: () => sePct(S.share),
       toDev: () => sePct(S.escalationShare),
-      // Две доли в одной плашке: смысл не в каждой по отдельности, а в разрыве
-      // между ними — половина нагрузки против 79% выручки.
-      ibcSplit: () => {
-        const s = D.totals.ibcShare;
-        return s ? sePct(s.calls, 0) + " / " + sePct(s.revenue, 0) : "—";
-      },
+      // Одна доля, а не пара «51 / 79». Пара требовала от читателя разделить
+      // одно на другое в уме, чтобы понять, в чью пользу разрыв, — и подпись
+      // «половину нагрузки создаёт оно одно» тянула ровно в обратную сторону:
+      // 51% обращений при 79% выручки означает, что IBC пишет РЕЖЕ, чем
+      // приносит. Плюс из пары выпадала третья доля — объём работы, 63%, —
+      // без которой картина меняется ещё раз. Теперь на плашке одна величина
+      // (концентрация), а две остальные названы в подписи прямым текстом.
+      ibcCalls: () => sePct((D.totals.ibcShare || {}).calls, 0),
       ticketCost: () => seMoney(D.totals.ticketCostAvg * M.k),
       newcomers: () => seNum(nc.count),
     };
@@ -1999,12 +2001,20 @@ async function mountSupportEcon() {
     // Плашки первого экрана набраны одинаково: выделять цветом одну из восьми
     // главных величин больше нечем обосновать, и розовый со страницы убран
     // целиком (решение Влада 2026-08-17). Ранг задаёт порядок, а не окраска.
+    // Доли IBC в подписях подставляются, а не пишутся руками: раньше «63%» и
+    // «79%» жили в тексте json и при новой выгрузке молча разошлись бы с
+    // полосами в разделе «Кто создаёт», где те же три доли считаются.
+    const SH = D.totals.ibcShare || {};
+    const kpiFill = (s) => (s || "")
+      .replace(/\{ibcCalls\}/g, sePct(SH.calls, 0))
+      .replace(/\{ibcOps\}/g, sePct(SH.ops, 0))
+      .replace(/\{ibcRevenue\}/g, sePct(SH.revenue, 0));
     const stat = (k) => {
       const subx = (SUBX[k.key] || (() => ""))();
       return `<div class="ag-stat">
         <div class="v">${esc((VAL[k.key] || (() => "—"))())}</div>
-        <div class="l">${esc(k.label || "")}</div>
-        <div class="s">${esc(k.sub || "")}${esc(subx)}</div>
+        <div class="l">${esc(kpiFill(k.label))}</div>
+        <div class="s">${esc(kpiFill(k.sub))}${esc(subx)}</div>
       </div>`;
     };
     // Восемь равновесных чисел ранга не имеют: читатель проходит их все, ещё
