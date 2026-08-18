@@ -1767,11 +1767,21 @@ function seMonLong(key) {
   return (SE_RU_MON[(+m) - 1] || m) + " " + y;
 }
 
+// Столбцы графика денег. Показателей было четыре, осталось два, и оба
+// оставшихся линия графика не повторяет:
+//   · «% выручки» — это ровно тот ряд, который линия и рисует. Выбрав его,
+//     читатель получал один и тот же ряд дважды в разных масштабах (левая
+//     ось от максимума столбцов, правая — своя), и две «разные» кривые
+//     расходились на глазах. Линия доли выручки на графике есть всегда,
+//     отдельным столбцом её показывать незачем.
+//   · «Загрузка на специалиста» целиком дублировала раздел «Люди», причём
+//     более слабой картинкой: там у того же ряда есть состав, скользящее
+//     среднее и проекция под цель «+20», здесь — голые столбцы.
+// Старые ссылки с ?m=pct и ?m=load не ломаются: readState не находит ключ
+// и молча возвращается к опорной «Стоимость, ₽».
 const SE_METRICS = {
   calls: { label: "Обращения", axis: "обращений", fmt: (v) => seNum(v) },
   cost: { label: "Стоимость, ₽", axis: "₽ в месяц", fmt: (v) => seMoney(v) },
-  pct: { label: "% выручки", axis: "% выручки", fmt: (v) => sePct(v) },
-  load: { label: "Загрузка на специалиста", axis: "обращений на человека", fmt: (v) => seNum(v) },
 };
 
 // «1 тема / 2 темы / 5 тем»: без этого в заголовках колонок стояло «3 тем».
@@ -2157,8 +2167,7 @@ async function mountSupportEcon() {
     const key = state.metric;
     const bars = M.months.map((m) => ({
       m: m.m,
-      v: key === "calls" ? m.calls : key === "pct" ? m.pctRevenue
-        : key === "load" ? m.perSpecialist : m.supportCost,
+      v: key === "calls" ? m.calls : m.supportCost,
     }));
     const vals = bars.map((b) => b.v).filter((v) => v != null);
     if (!vals.length) return `<p class="muted">Нет данных для графика.</p>`;
@@ -2294,10 +2303,11 @@ async function mountSupportEcon() {
             <span class="se-ctl-h">${esc((X.b1 || {}).fotHint || "")}</span>
           </div>
           <div class="se-ctl" data-ctl="metric">
-            <span class="se-ctl-l">${esc((X.b1 || {}).metricLabel || "Показатель на графике")}</span>
+            <span class="se-ctl-l">${esc((X.b1 || {}).metricLabel || "Столбцы графика")}</span>
             <div class="se-segs">
               ${Object.entries(SE_METRICS).map(([k, m]) => seOpt(k, state.metric, m.label)).join("")}
             </div>
+            <span class="se-ctl-h">${esc((X.b1 || {}).metricHint || "")}</span>
           </div>
         </div>
         ${fotWarn}
