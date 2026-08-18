@@ -2608,8 +2608,8 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
   font-variant-numeric: tabular-nums; }
 .se-val.is-hi { fill: var(--cream); }
 .se-val.is-lo { fill: var(--cream); }
-.se-val.is-a { fill: var(--cat-1); }
-.se-val.is-b { fill: var(--cat-2); }
+.se-val.is-a { fill: var(--gold); }
+.se-val.is-b { fill: var(--cream-dim); }
 .se-bar-r { fill: var(--gold-line); transition: fill .12s; cursor: pointer; }
 .se-bar-r:hover { fill: var(--gold); }
 .se-bar-r.is-on { fill: var(--gold); }
@@ -2630,8 +2630,19 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
 /* Штриховая метка легенды: тот же приём, что у пунктира на графике. */
 .se-key--cap-proj::before { background: none; height: 0;
   border-top: 3px dashed var(--gold); border-radius: 0; }
-.se-line--a { stroke: var(--cat-1); stroke-width: 2; }
-.se-line--b { stroke: var(--cat-2); stroke-width: 2; stroke-dasharray: 5 3; }
+/* B4 «Кто создаёт»: IBC против внешних. Пара была на cat-1/cat-2, и терракота
+   означала здесь «внешние агентства», а тремя экранами ниже, в «Потолке», та
+   же терракота (--se-ext) означает «упирается в поставщика, не в наших руках».
+   Читатель, выучивший оценочную ось, получал её поверх нейтральной категории:
+   внешние агентства окрашивались в «чужое и плохое», хотя это просто вторая
+   половина базы.
+   Категориальную шкалу здесь заводить не за чем: это не роли и не этапы, а
+   «один против остальных». Берём тот же приём, что уже принят в графике
+   «Люди», — акцент и фон: IBC золотом (о нём весь блок), внешние нейтральным
+   серым. Терракота остаётся только за оценочной осью, синий (cat-1) — только
+   за линией «доля выручки» в деньгах, и пересечений не остаётся. */
+.se-line--a { stroke: var(--gold); stroke-width: 2; }
+.se-line--b { stroke: var(--cream-dim); stroke-width: 2; stroke-dasharray: 5 3; }
 .se-line-dot { fill: var(--cat-1); }
 /* Метки минимума и максимума — нейтральные: цветом на графике говорит сама
    линия, а крайние точки — просто подписи к ней. */
@@ -2658,11 +2669,14 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
 .se-legend { display: flex; gap: 16px; margin-bottom: 4px; }
 .se-key { font-family: var(--f-mono); font-size: 12px; color: var(--cream-soft);
   display: inline-flex; align-items: center; gap: 6px; }
-.se-key::before { content: ""; width: 12px; height: 3px; border-radius: 2px; background: var(--cat-1); }
-/* --a совпадает с базовым цветом, но объявлен явно: без своего правила он
-   молча сломался бы при любой правке .se-key. */
-.se-key--a::before { background: var(--cat-1); }
-.se-key--b::before { background: var(--cat-2); }
+/* Запасной цвет метки — золото, а не cat-1: категориальная шкала на странице
+   осталась ровно за двумя смыслами (оценочная ось и линия «доля выручки»), и
+   забытый модификатор не должен молча подмешивать к ним третий. */
+.se-key::before { content: ""; width: 12px; height: 3px; border-radius: 2px; background: var(--gold-line); }
+/* --a объявлен явно, а не наследует базовый цвет: без своего правила он молча
+   сломался бы при любой правке .se-key. */
+.se-key--a::before { background: var(--gold); }
+.se-key--b::before { background: var(--cream-dim); }
 /* легенда графика денег: столбец — прямоугольник, линия доли — штрих */
 .se-key--bar::before { width: 11px; height: 11px; border-radius: 2px; background: var(--gold-line); }
 .se-key--pct::before { background: var(--cat-1); }
@@ -2670,8 +2684,11 @@ a.badge:hover { filter: brightness(1.12); text-decoration: none; }
 .se-split-l { font-size: 13px; color: var(--cream-soft); }
 .se-split-bar { display: flex; height: 26px; border-radius: 6px; overflow: hidden; background: var(--line); }
 .se-split-a, .se-split-b { display: flex; align-items: center; justify-content: center; min-width: 0; }
-.se-split-a { background: rgba(110, 151, 192, .34); }
-.se-split-b { background: rgba(207, 131, 80, .30); }
+/* Те же две роли, что у линий блока, и теми же токенами: сырые rgba здесь
+   были копиями cat-1 и cat-2 с подобранной прозрачностью — то есть хардкодом
+   мимо палитры (v4 п.6) и вторым местом, где пришлось бы править цвет. */
+.se-split-a { background: var(--gold-line); }
+.se-split-b { background: var(--line-soft); }
 .se-split i { font-family: var(--f-mono); font-size: 10.5px; font-style: normal; color: var(--cream); }
 .se-bullets { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 7px; }
 .se-bullets li { display: flex; gap: 9px; align-items: baseline; font-size: 13px;
